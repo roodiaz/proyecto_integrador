@@ -4,30 +4,38 @@
     <!-- Navbar con Angular Material -->
     <mat-toolbar class="main-toolbar">
       <div class="toolbar-content">
-        <button mat-raised-button 
-                class="nav-button" 
-                [class.active]="isActive('ingresar')"
-                (click)="setActive('ingresar')">
+        <a mat-raised-button 
+           class="nav-button" 
+           [class.active]="isActive('login')"
+           (click)="setActive('login')"
+           routerLink="login"
+           routerLinkActive="active">
           Ingresar
-        </button>
-        <button mat-raised-button 
-                class="nav-button" 
-                [class.active]="isActive('registrarse')"
-                (click)="setActive('registrarse')">
+        </a>
+        <a mat-raised-button 
+           class="nav-button" 
+           [class.active]="isActive('registro')"
+           (click)="setActive('registro')"
+           routerLink="registro"
+           routerLinkActive="active">
           Registrarse
-        </button>
-        <button mat-raised-button 
-                class="nav-button" 
-                [class.active]="isActive('nosotros')"
-                (click)="setActive('nosotros')">
+        </a>
+        <a mat-raised-button 
+           class="nav-button" 
+           [class.active]="isActive('nosotros')"
+           (click)="setActive('nosotros')"
+           routerLink="nosotros"
+           routerLinkActive="active">
           Nosotros
-        </button>
-        <button mat-raised-button 
-                class="nav-button" 
-                [class.active]="isActive('contacto')"
-                (click)="setActive('contacto')">
+        </a>
+        <a mat-raised-button 
+           class="nav-button" 
+           [class.active]="isActive('contacto')"
+           (click)="setActive('contacto')"
+           routerLink="contacto"
+           routerLinkActive="active">
           Contacto
-        </button>
+        </a>
       </div>
     </mat-toolbar>
     <!-- La imagen se maneja desde el CSS -->
@@ -35,7 +43,7 @@
   
   <!-- Sección de contenido (35% del ancho) -->
   <div class="content-section">
-    <ng-content></ng-content> <!-- Aquí se inyectará el contenido dinámico -->
+    <router-outlet></router-outlet>
     <mat-toolbar class="app-footer" color="primary">
       <span class="footer-text">© 2025 StockWatch. Todos los derechos reservados.</span>
     </mat-toolbar>
