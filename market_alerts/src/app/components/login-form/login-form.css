@@ -1,0 +1,214 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-element {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px); /* Resta la altura del header y footer */
+  padding: 2rem;
+  background-color: #121418;
+  color: white;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 520px; /* Aumentado de 460px */
+  padding: 3rem; /* Aumentado de 2.5rem */
+  box-shadow: none;
+  background-color: transparent;
+  color: white;
+}
+
+.card-header {
+  text-align: left;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+.login-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Espacio entre las líneas */
+  font-size: 4rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: white;
+  line-height: 1;
+  padding-bottom: 0.5rem; /* Espacio adicional debajo del título */
+}
+
+.title-line {
+  display: block;
+  line-height: 1;
+}
+
+mat-card-subtitle {
+  color: white !important;
+  opacity: 0.8;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.password-field-container {
+  margin-bottom: 0.1rem;
+  margin-top: 1.75rem;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+  margin-bottom: -1.25em !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+  padding: 0.5em 0 0.5em 0 !important;
+}
+
+.forgot-password-container {
+  text-align: right;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.forgot-password {
+  color: #B0C956;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.forgot-password:hover {
+  color: #9bb44d;
+  text-decoration: underline;
+}
+
+.forgot-password {
+  color: #B0C956;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.forgot-password:hover {
+  color: #9bb44d;
+  text-decoration: underline;
+}
+
+.login-button {
+  width: 100%;
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 1rem 0;
+  background-color: #B0C956;
+  color: #121418;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #9bb44d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.login-button:disabled {
+  background-color: #6c7a3e;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.register-text {
+  color: #B0C956;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.register-text:hover {
+  color: #9bb44d;
+  text-decoration: underline;
+}
+
+/* Estilos para los campos del formulario */
+::ng-deep .mat-form-field {
+  color: white;
+}
+
+::ng-deep .mat-form-field-outline {
+  background-color: #1D2129;
+  border-radius: 4px;
+  color: #2f3640;
+}
+
+::ng-deep .mat-form-field-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0;
+  margin-bottom: -0.5em !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #B0C956;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #B0C956;
+}
+
+::ng-deep .mat-input-element {
+  color: white !important;
+  caret-color: #B0C956;
+}
+
+::ng-deep .mat-checkbox-frame {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+::ng-deep .mat-checkbox-checked .mat-checkbox-background {
+  background-color: #B0C956;
+}
+
+::ng-deep .mat-checkbox-checkmark {
+  color: #121418;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .login-card {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .login-title {
+    font-size: 1.5rem;
+  }
+  
+  .login-button {
+    height: 44px;
+  }
+}
