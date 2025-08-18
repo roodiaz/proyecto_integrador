@@ -1,1 +1,43 @@
-<p>landing-body works!</p>
+<div class="landing-container">
+  <!-- Sección de imagen (65% del ancho) -->
+  <div class="image-section">
+    <!-- Navbar con Angular Material -->
+    <mat-toolbar class="main-toolbar">
+      <div class="toolbar-content">
+        <button mat-raised-button 
+                class="nav-button" 
+                [class.active]="isActive('ingresar')"
+                (click)="setActive('ingresar')">
+          Ingresar
+        </button>
+        <button mat-raised-button 
+                class="nav-button" 
+                [class.active]="isActive('registrarse')"
+                (click)="setActive('registrarse')">
+          Registrarse
+        </button>
+        <button mat-raised-button 
+                class="nav-button" 
+                [class.active]="isActive('nosotros')"
+                (click)="setActive('nosotros')">
+          Nosotros
+        </button>
+        <button mat-raised-button 
+                class="nav-button" 
+                [class.active]="isActive('contacto')"
+                (click)="setActive('contacto')">
+          Contacto
+        </button>
+      </div>
+    </mat-toolbar>
+    <!-- La imagen se maneja desde el CSS -->
+  </div>
+  
+  <!-- Sección de contenido (35% del ancho) -->
+  <div class="content-section">
+    <ng-content></ng-content> <!-- Aquí se inyectará el contenido dinámico -->
+    <mat-toolbar class="app-footer" color="primary">
+      <span class="footer-text">© 2025 StockWatch. Todos los derechos reservados.</span>
+    </mat-toolbar>
+  </div>
+</div>
