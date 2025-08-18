@@ -64,7 +64,7 @@ mat-card-subtitle {
 
 .password-field-container {
   margin-bottom: 0.1rem;
-  margin-top: 1.75rem;
+  margin-top: 1rem;
 }
 
 ::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {

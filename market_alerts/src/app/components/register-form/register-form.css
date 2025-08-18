@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-element {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  padding: 2rem;
+  background-color: #121418;
+  color: white;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 3rem;
+  box-shadow: none;
+  background-color: transparent;
+  color: white;
+}
+
+.card-header {
+  text-align: left;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+
+.register-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 4rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: white;
+  line-height: 1;
+  padding-bottom: 0.5rem;
+}
+
+.title-line {
+  display: block;
+  line-height: 1;
+}
+
+mat-card-subtitle {
+  color: white !important;
+  opacity: 0.8;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.password-field-container {
+  margin-bottom: 0.1rem;
+  margin-top: 1rem;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+  margin-bottom: -1.25em !important;
+  margin-top: 1rem !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+  padding: 0.5em 0 0.5em 0 !important;
+}
+
+.register-button {
+  width: 100%;
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 1rem 0;
+  background-color: #B0C956;
+  color: #121418;
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.register-button:hover {
+  background-color: #9bb44d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.register-button:disabled {
+  background-color: #6c7a3e;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.link {
+  color: #B0C956;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.link:hover {
+  color: #9bb44d;
+  text-decoration: underline;
+}
+
+/* Estilos para los campos del formulario */
+::ng-deep .mat-form-field {
+  color: white;
+}
+
+::ng-deep .mat-form-field-outline {
+  background-color: #1D2129;
+  border-radius: 4px;
+  color: #2f3640;
+}
+
+::ng-deep .mat-form-field-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0;
+  margin-bottom: -0.5em !important;
+}
+
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
+  color: #B0C956;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #B0C956;
+}
+
+::ng-deep .mat-input-element {
+  color: white !important;
+  caret-color: #B0C956;
+}
+
+/* Estilos para los mensajes de error */
+::ng-deep .mat-mdc-form-field-error {
+  color: #f44336;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Estilos para el botón de alternar visibilidad de contraseña */
+::ng-deep .mat-icon-button {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+::ng-deep .mat-icon-button:hover {
+  color: #B0C956;
+}
+
+/* Estilos para el botón de envío */
+button[mat-raised-button] {
+  margin-top: 1.5rem;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 600px) {
+  .register-card {
+    padding: 1.5rem;
+  }
+  
+  .register-title {
+    font-size: 3rem;
+  }
+  
+  .card-header {
+    margin-bottom: 1.5rem;
+  }
+}

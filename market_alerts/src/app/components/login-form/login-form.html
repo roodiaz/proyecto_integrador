@@ -24,7 +24,7 @@
             El correo electrónico es requerido
           </mat-error>
           <mat-error *ngIf="email?.hasError('email')">
-            Por favor ingresa un correo electrónico válido
+            Por favor ingresa un correo válido
           </mat-error>
         </mat-form-field>
 
@@ -49,7 +49,7 @@
               La contraseña es requerida
             </mat-error>
             <mat-error *ngIf="password?.hasError('minlength')">
-              La contraseña debe tener al menos 6 caracteres
+              Minimo 6 caracteres
             </mat-error>
           </mat-form-field>
           <div class="forgot-password-container">
@@ -70,7 +70,7 @@
                 type="submit" 
                 class="login-button"
                 [disabled]="!loginForm.valid">
-          Iniciar Sesión
+          Confirmar
         </button>
       </form>
     </mat-card-content>
