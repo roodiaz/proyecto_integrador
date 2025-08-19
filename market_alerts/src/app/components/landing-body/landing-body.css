@@ -14,22 +14,27 @@
   overflow: hidden;
   background-color: #121418;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.image-section {
-  flex: 0 0 65%;
-  position: relative;
-  overflow: hidden;
-  background-color: #121418;
-  min-height: 0; /* Permite que el contenedor se encoja si es necesario */
-  display: flex;
   justify-content: flex-start;
   align-items: flex-end;
   padding: 0;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+@keyframes zoomOut {
+  0% { 
+    transform: scale(1.2);
+    opacity: 0.9;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.image-section {
+  position: relative;
+  /* otros estilos existentes */
 }
 
 .image-section::before {
@@ -41,11 +46,19 @@
   height: 100%;
   background-image: url('../../../assets/landing_background.jpg');
   background-size: contain;
-  background-position: left bottom; /* Anclar a la esquina inferior izquierda */
+  background-position: left bottom;
   background-repeat: no-repeat;
   z-index: 1;
   background-color: #121418;
-  transform-origin: left bottom; /* Punto de origen para la escala */
+  transform-origin: left bottom;
+}
+
+.image-section.animate-zoom::before {
+  animation: zoomOut 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+  transform: translateZ(0);
 }
 
 /* Ajustar la imagen en diferentes tamaños de pantalla */
