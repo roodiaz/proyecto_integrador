@@ -3,19 +3,23 @@
   height: 100vh;
   overflow: hidden;
   background-color: #101B20;
+  position: relative;
 }
 
 /* Estilos para el contenedor del sidebar */
 .sidebar-container {
-  width: 250px;
+  width: 280px;
   height: 100%;
   transition: transform 0.3s ease;
   z-index: 2;
+  position: relative;
+  flex-shrink: 0;
 }
 
 .sidebar-container.sidebar-collapsed {
-  transform: translateX(-250px);
+  transform: translateX(-280px);
   position: absolute;
+  left: 0;
 }
 
 /* Estilos para el contenido principal */
@@ -24,12 +28,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  transition: margin-left 0.3s ease;
-  margin-left: 250px;
-  width: calc(100% - 250px);
+  width: 100%;
+  overflow: auto;
 }
 
-.main-content.content-expanded {
+/* Ajuste para cuando el sidebar está colapsado */
+:host-context(.sidebar-collapsed) .main-content {
   margin-left: 0;
   width: 100%;
 }
