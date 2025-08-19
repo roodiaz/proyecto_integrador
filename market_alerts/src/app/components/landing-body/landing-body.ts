@@ -1,11 +1,22 @@
-import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, ViewChild, OnInit, AfterViewInit } from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { filter } from 'rxjs/operators';
+import { 
+  Stock, 
+  MarketIndex, 
+  MarketNews, 
+  SAMPLE_STOCKS, 
+  SAMPLE_INDICES, 
+  SAMPLE_NEWS 
+} from '../../models/landing/landing.models';
 
 @Component({
   selector: 'app-landing-body',
@@ -18,14 +29,26 @@ import { filter } from 'rxjs/operators';
     MatCardModule,
     MatButtonModule,
     MatDividerModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatIconModule,
+    MatTabsModule,
+    MatTooltipModule,
+    CurrencyPipe
   ],
   templateUrl: './landing-body.html',
-  styleUrl: './landing-body.css'
+  styleUrls: ['./landing-body.css']
 })
-export class LandingBody implements OnInit {
+export class LandingBody implements OnInit, AfterViewInit {
   @ViewChild('imageSection') imageSection!: ElementRef;
   activeButton: string | null = null;
+  activeSection: string = '';
+  isSlidingSectionVisible: boolean = false;
+  activeTabIndex = 0;
+  
+  // Datos de mercado
+  topStocks: Stock[] = SAMPLE_STOCKS;
+  marketNews: MarketNews[] = SAMPLE_NEWS;
+  marketIndices: MarketIndex[] = SAMPLE_INDICES;
 
   constructor(private router: Router) {
     this.router.events.pipe(
@@ -61,5 +84,14 @@ export class LandingBody implements OnInit {
 
   isActive(buttonName: string): boolean {
     return this.activeButton === buttonName;
+  }
+
+  ngAfterViewInit() {
+    // Inicialización después de que la vista se ha cargado
+    this.triggerAnimation();
+  }
+
+  toggleSlidingSection() {
+    this.isSlidingSectionVisible = !this.isSlidingSectionVisible;
   }
 }
