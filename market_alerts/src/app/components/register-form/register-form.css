@@ -9,7 +9,7 @@ body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-elem
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 120px);
-  padding: 2rem;
+  padding: 1rem 0;
   background-color: #121418;
   color: white;
   box-sizing: border-box;
@@ -18,8 +18,8 @@ body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-elem
 
 .register-card {
   width: 100%;
-  max-width: 520px;
-  padding: 3rem;
+  max-width: 420px;
+  padding: 1.5rem 2rem;
   box-shadow: none;
   background-color: transparent;
   color: white;
@@ -27,20 +27,19 @@ body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-elem
 
 .card-header {
   text-align: left;
-  margin-bottom: 2rem;
-  padding-left: 0.5rem;
+  margin-bottom: 1rem;
+  padding-left: 0.25rem;
 }
 
 .register-title {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  font-size: 4rem;
+  gap: 0.25rem;
+  font-size: 2.5rem;
   font-weight: 500;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: white;
   line-height: 1;
-  padding-bottom: 0.5rem;
 }
 
 .title-line {
@@ -51,6 +50,7 @@ body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-elem
 mat-card-subtitle {
   color: white !important;
   opacity: 0.8;
+  margin-bottom: 0.5rem;
 }
 
 .register-form {
@@ -62,16 +62,10 @@ mat-card-subtitle {
   width: 100%;
 }
 
-.password-field-container {
-  margin-bottom: 0.1rem;
-  margin-top: 1rem;
-}
-
 ::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
   margin: 0 !important;
   padding: 0 !important;
   margin-bottom: -1.25em !important;
-  margin-top: 1rem !important;
 }
 
 ::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
@@ -80,16 +74,13 @@ mat-card-subtitle {
 
 .register-button {
   width: 100%;
-  height: 48px;
-  font-size: 1rem;
+  height: 40px;
+  font-size: 0.95rem;
   font-weight: 500;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
   background-color: #B0C956;
   color: #121418;
-  transition: all 0.3s ease;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .register-button:hover {
@@ -105,9 +96,22 @@ mat-card-subtitle {
 
 .register-link {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+}
+
+.register-text {
+  color: #B0C956;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.register-text:hover {
+  color: #9bb44d;
+  text-decoration: underline;
 }
 
 .link {
@@ -157,38 +161,32 @@ mat-card-subtitle {
   caret-color: #B0C956;
 }
 
-/* Estilos para los mensajes de error */
-::ng-deep .mat-mdc-form-field-error {
-  color: #f44336;
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
+::ng-deep .mat-checkbox-frame {
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
-/* Estilos para el botón de alternar visibilidad de contraseña */
-::ng-deep .mat-icon-button {
-  color: rgba(255, 255, 255, 0.7);
+::ng-deep .mat-checkbox-checked .mat-checkbox-background {
+  background-color: #B0C956;
 }
 
-::ng-deep .mat-icon-button:hover {
-  color: #B0C956;
+::ng-deep .mat-checkbox-checkmark {
+  color: #121418;
 }
 
-/* Estilos para el botón de envío */
-button[mat-raised-button] {
-  margin-top: 1.5rem;
-}
-
-/* Estilos para pantallas pequeñas */
+/* Responsive */
 @media (max-width: 600px) {
   .register-card {
-    padding: 1.5rem;
+    padding: 1.25rem;
+    margin: 0.5rem;
   }
   
   .register-title {
-    font-size: 3rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
   }
   
-  .card-header {
-    margin-bottom: 1.5rem;
+  .register-button {
+    height: 38px;
+    margin: 0.5rem 0;
   }
 }
