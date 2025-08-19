@@ -111,13 +111,14 @@ mat-card-subtitle {
 
 .login-button {
   width: 100%;
-  height: 40px;
-  font-size: 0.95rem;
+  padding: 12px 0;
+  font-size: 1rem;
   font-weight: 500;
-  margin: 0.75rem 0;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 50px;
   background-color: #B0C956;
   color: #121418;
-  transition: all 0.2s ease;
 }
 
 .login-button:hover {
@@ -217,4 +218,56 @@ mat-card-subtitle {
   .forgot-password, .register-link {
     font-size: 0.85rem;
   }
+}
+
+/* Estilos para el divisor */
+.divider {
+  display: flex;
+  align-items: center;
+  margin-top: 0.1rem;
+  margin-bottom: 1rem;
+  color: #B6B6B6;
+}
+
+.divider mat-divider {
+  flex: 1;
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.divider .divider-text {
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+
+/* Estilos para el botón de Google */
+.google-button {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background-color: #fff;
+  color: #5f6368;
+  border: 1px solid #dadce0;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 50px;
+}
+
+.google-button:hover {
+  background-color: #f7f8f8;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3);
+}
+
+.google-button:active {
+  background-color: #e8e8e9;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
 }

@@ -34,6 +34,10 @@ export class LoginForm {
     }
   }
 
+  onGoogleSignIn() {
+    alert('Inicio de sesión con Google estará disponible próximamente');
+  }
+
   get email() { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }
 }

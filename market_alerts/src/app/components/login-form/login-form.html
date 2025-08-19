@@ -75,6 +75,22 @@
                 [disabled]="!loginForm.valid">
           Iniciar Sesión
         </button>
+
+        <!-- Divider -->
+        <div class="divider">
+          <mat-divider></mat-divider>
+          <span class="divider-text">o</span>
+          <mat-divider></mat-divider>
+        </div>
+
+        <!-- Google Sign In Button -->
+        <button mat-stroked-button 
+                type="button" 
+                class="google-button"
+                (click)="onGoogleSignIn()">
+          <img src="https://www.google.com/favicon.ico" alt="Google" class="google-icon">
+          Continuar con Google
+        </button>
       </form>
     </mat-card-content>
   </mat-card>
