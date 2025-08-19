@@ -1,63 +1,57 @@
-<mat-sidenav-container class="sidenav-container">
-    <mat-sidenav #sidenav mode="side" [opened]="true" class="sidenav" [ngClass]="{'collapsed': isCollapsed}">
-      <div class="sidenav-header" (click)="toggleSidebar()" style="cursor: pointer;">
-        <img [src]="isCollapsed ? '../img/logo.png' : '../img/logo_name_v2.png'" alt="Market Alerts" class="logo">
-      </div>
-  
-      <mat-nav-list>
-        <!-- Dashboard -->
-        <a mat-list-item routerLink="/dashboard" routerLinkActive="active" matTooltip="Dashboard" [matTooltipDisabled]="!isCollapsed">
-          <mat-icon>dashboard</mat-icon>
-          <span class="menu-text">Dashboard</span>
-        </a>
-  
-        <!-- Mercado -->
-        <a mat-list-item routerLink="/market" routerLinkActive="active" matTooltip="Mercado" [matTooltipDisabled]="!isCollapsed">
-          <mat-icon>trending_up</mat-icon>
-          <span class="menu-text">Mercado</span>
-        </a>
-  
-        <!-- Portafolio -->
-        <a mat-list-item routerLink="/portfolio" routerLinkActive="active" matTooltip="Mi Portafolio" [matTooltipDisabled]="!isCollapsed">
-          <mat-icon>account_balance_wallet</mat-icon>
-          <span class="menu-text">Mi Portafolio</span>
-        </a>
-  
-        <!-- Alertas -->
-        <a mat-list-item routerLink="/alerts" routerLinkActive="active" matTooltip="Alertas" [matTooltipDisabled]="!isCollapsed">
-          <mat-icon>notifications</mat-icon>
-          <span class="menu-text">Alertas</span>
-        </a>
-  
-        <!-- Lista de Seguimiento -->
-        <a mat-list-item routerLink="/watchlist" routerLinkActive="active">
-          <mat-icon>star</mat-icon>
-          <span>Lista de Seguimiento</span>
-        </a>
-  
-        <!-- Historial -->
-        <a mat-list-item routerLink="/history" routerLinkActive="active">
-          <mat-icon>history</mat-icon>
-          <span>Historial</span>
-        </a>
-  
-        <mat-divider></mat-divider>
-  
-        <!-- Configuración -->
-        <a mat-list-item routerLink="/settings" routerLinkActive="active">
-          <mat-icon>settings</mat-icon>
-          <span>Configuración</span>
-        </a>
-  
-        <!-- Cerrar Sesión -->
-        <a mat-list-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Cerrar Sesión</span>
-        </a>
-      </mat-nav-list>
-    </mat-sidenav>
-  
-    <mat-sidenav-content>
-      <router-outlet></router-outlet>
-    </mat-sidenav-content>
-  </mat-sidenav-container>
+<mat-sidenav #sidenav mode="side" [opened]="true" class="sidenav" [ngClass]="{'collapsed': isCollapsed}">
+  <div class="sidenav-header" (click)="toggleSidebar()" style="cursor: pointer;">
+    <img [src]="isCollapsed ? '../img/logo.png' : '../img/logo_name_v2.png'" alt="Market Alerts" class="logo">
+  </div>
+
+  <mat-nav-list>
+    <!-- Dashboard -->
+    <a mat-list-item routerLink="/dashboard" routerLinkActive="active" matTooltip="Dashboard" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>dashboard</mat-icon>
+      <span class="menu-text">Dashboard</span>
+    </a>
+
+    <!-- Mercado -->
+    <a mat-list-item routerLink="/market" routerLinkActive="active" matTooltip="Mercado" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>trending_up</mat-icon>
+      <span class="menu-text">Mercado</span>
+    </a>
+
+    <!-- Portafolio -->
+    <a mat-list-item routerLink="/portfolio" routerLinkActive="active" matTooltip="Mi Portafolio" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>account_balance_wallet</mat-icon>
+      <span class="menu-text">Mi Portafolio</span>
+    </a>
+
+    <!-- Alertas -->
+    <a mat-list-item routerLink="/alerts" routerLinkActive="active" matTooltip="Alertas" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>notifications</mat-icon>
+      <span class="menu-text">Alertas</span>
+    </a>
+
+    <!-- Lista de Seguimiento -->
+    <a mat-list-item routerLink="/watchlist" routerLinkActive="active" matTooltip="Lista de Seguimiento" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>star</mat-icon>
+      <span class="menu-text">Lista de Seguimiento</span>
+    </a>
+
+    <!-- Historial -->
+    <a mat-list-item routerLink="/history" routerLinkActive="active" matTooltip="Historial" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>history</mat-icon>
+      <span class="menu-text">Historial</span>
+    </a>
+
+    <mat-divider></mat-divider>
+
+    <!-- Configuración -->
+    <a mat-list-item routerLink="/settings" routerLinkActive="active" matTooltip="Configuración" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>settings</mat-icon>
+      <span class="menu-text">Configuración</span>
+    </a>
+
+    <!-- Cerrar Sesión -->
+    <a mat-list-item (click)="logout()" matTooltip="Cerrar Sesión" [matTooltipDisabled]="!isCollapsed">
+      <mat-icon>logout</mat-icon>
+      <span class="menu-text">Cerrar Sesión</span>
+    </a>
+  </mat-nav-list>
+</mat-sidenav>

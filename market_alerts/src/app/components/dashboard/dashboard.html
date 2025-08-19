@@ -1,1 +1,25 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <div class="sidebar-container" [class.sidebar-collapsed]="!showSidebar">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.content-expanded]="!showSidebar">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <h1>Dashboard</h1>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <router-outlet></router-outlet>
+      
+      <!-- Contenido del Dashboard -->
+      <div class="dashboard-content">
+        <h2>Bienvenido al Panel de Control</h2>
+        <p>Selecciona una opción del menú lateral para comenzar.</p>
+      </div>
+    </div>
+  </div>
+</div>
