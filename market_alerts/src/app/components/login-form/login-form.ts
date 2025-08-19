@@ -50,7 +50,7 @@ export class LoginForm {
         localStorage.setItem('userEmail', email);
         
         // Redirigir al dashboard
-        this.router.navigate(['/app/dashboard']);
+        this.router.navigate(['/dashboard']);
       } else {
         this.loginError = 'Email o contraseña incorrectos';
       }
