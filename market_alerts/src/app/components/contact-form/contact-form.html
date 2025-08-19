@@ -1,12 +1,12 @@
 <div class="contact-container">
     <mat-card class="contact-card">
-      <!-- <mat-card-header class="card-header">
+      <mat-card-header class="card-header">
         <mat-card-title class="contact-title">
-    <div class="title-line">CONTACTATE</div>
-    <div class="title-line">CON NOSOTROS</div>
+    <!-- <div class="title-line">CONTACTATE</div>
+    <div class="title-line">CON NOSOTROS</div> -->
   </mat-card-title>
-        <mat-card-subtitle>Completa tus datos para enviar la consulta</mat-card-subtitle>
-      </mat-card-header> -->
+        <mat-card-subtitle class="contact-subtitle">Envianos tu consulta</mat-card-subtitle>
+      </mat-card-header>
   
       <mat-card-content>
         <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
@@ -73,7 +73,7 @@
                 <textarea matInput 
                         formControlName="consulta"
                         cdkTextareaAutosize
-                        cdkAutosizeMinRows="8"
+                        cdkAutosizeMinRows="5"
                         cdkAutosizeMaxRows="12"
                         style="color: white !important; -webkit-text-fill-color: white !important; min-height: 120px; resize: vertical;">
                 </textarea>
