@@ -47,6 +47,25 @@ body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-elem
   line-height: 1;
 }
 
+/* Estilos para el mensaje de error */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.error-message mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
 mat-card-subtitle {
   color: white !important;
   opacity: 0.8;

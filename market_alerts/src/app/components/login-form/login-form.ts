@@ -1,8 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../shared/material.module';
+
+// Credenciales quemadas
+const HARDCODED_CREDENTIALS = {
+  email: 'admin@gmail.com',
+  password: 'admin'
+};
 
 @Component({
   selector: 'app-login-form',
@@ -19,18 +25,35 @@ import { MaterialModule } from '../../shared/material.module';
 export class LoginForm {
   loginForm: FormGroup;
   hidePassword = true;
+  loginError: string | null = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(4)]]
     });
   }
 
   onSubmit() {
     if (this.loginForm.valid) {
-      console.log('Formulario enviado', this.loginForm.value);
-      // Aquí iría la lógica de autenticación
+      const { email, password } = this.loginForm.value;
+      
+      if (email === HARDCODED_CREDENTIALS.email && password === HARDCODED_CREDENTIALS.password) {
+        console.log('Inicio de sesión exitoso');
+        this.loginError = null;
+        
+        // Guardar en localStorage (simulando autenticación)
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', email);
+        
+        // Redirigir al dashboard
+        this.router.navigate(['/app/dashboard']);
+      } else {
+        this.loginError = 'Email o contraseña incorrectos';
+      }
     }
   }
 

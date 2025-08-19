@@ -55,6 +55,13 @@
               Minimo 6 caracteres
             </mat-error>
           </mat-form-field>
+
+          <!-- Mensaje de error de credenciales -->
+        <div *ngIf="loginError" class="error-message">
+          <mat-icon>error_outline</mat-icon>
+          {{ loginError }}
+        </div>
+
           <div class="forgot-password-container">
             <a routerLink="/recuperar-contrasena" class="forgot-password">
               ¿Olvidaste tu contraseña?
