@@ -1,0 +1,167 @@
+.sidenav-container {
+  height: 100vh;
+  background-color: #121418;
+}
+
+.sidenav {
+  width: 280px;
+  background-color: #121418;
+  color: #e0e0e0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  transition: width 0.3s ease;
+  overflow: hidden;
+}
+
+/* Estilos para el sidebar colapsado */
+.sidenav.collapsed {
+  width: 70px;
+}
+
+.sidenav.collapsed .menu-text,
+.sidenav.collapsed .badge {
+  display: none;
+}
+
+.sidenav.collapsed .mat-list-item {
+  justify-content: center;
+  padding: 0 8px !important;
+}
+
+.sidenav.collapsed .mat-icon {
+  margin-right: 0;
+  transform: scale(1.1);
+}
+
+.sidenav.collapsed .sidenav-header {
+  padding: 15px 0;
+  justify-content: center;
+}
+
+.sidenav.collapsed .sidenav-header .logo {
+  max-width: 40px;
+  margin: 0 auto;
+}
+
+.sidenav-header {
+  padding: 15px 60px 15px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #121418;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: 80px;
+  box-sizing: border-box;
+}
+
+.sidenav-header .logo {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.sidenav-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.toggle-button {
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.toggle-button:hover {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+mat-nav-list {
+  padding: 16px 0;
+}
+
+mat-nav-list a {
+  color: #ffffff !important;
+  border-left: 4px solid transparent;
+  transition: all 0.3s ease;
+  margin: 4px 8px;
+  border-radius: 6px;
+  padding: 10px 16px !important;
+  display: flex;
+  align-items: center;
+}
+
+mat-nav-list a span {
+  color: #ffffff !important;
+}
+
+mat-nav-list a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+mat-nav-list a.active {
+  background-color: rgba(176, 201, 86, 0.15);
+  border-left: 4px solid #B0C956;
+  color: #B0C956;
+  font-weight: 500;
+}
+
+mat-nav-list a.active mat-icon {
+  color: #B0C956;
+}
+
+mat-icon {
+  margin-right: 12px;
+  color: rgba(224, 224, 224, 0.7);
+  transition: all 0.3s ease;
+}
+
+/* Estilos para el contenido principal */
+.main-content {
+  background-color: #121418;
+  color: #e0e0e0;
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Estilos para las secciones del sidebar */
+.section-title {
+  color: rgba(224, 224, 224, 0.6);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 16px 24px 8px;
+  margin: 0;
+}
+
+/* Estilos para los badges */
+.badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: auto;
+  color: white;
+}
+
+.badge.portfolio {
+  background-color: rgba(0, 200, 83, 0.15);
+  color: #4caf50;
+}
+
+.badge.alerts {
+  background-color: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+
+mat-divider {
+  margin: 16px 0;
+  border-top-color: rgba(255, 255, 255, 0.12);
+}

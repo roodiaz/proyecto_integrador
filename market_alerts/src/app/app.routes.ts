@@ -4,7 +4,7 @@ import { LoginForm } from './components/login-form/login-form';
 import { RegisterForm } from './components/register-form/register-form';
 import { AboutPage } from './components/about-page/about-page';
 import { ContactForm } from './components/contact-form/contact-form';
-import { DashboardComponent } from './components/dashboard/dashboard';
+import { Dashboard } from './components/dashboard/dashboard';
 
 export const routes: Routes = [
   // rutas publicas
@@ -21,7 +21,7 @@ export const routes: Routes = [
   },
   
   // rutas del privadas
-  { path: 'dashboard', component: DashboardComponent },
+  { path: 'dashboard', component: Dashboard },
   
   // redireccion de rutas desconocidas
   { path: '**', redirectTo: '' },
