@@ -6,6 +6,7 @@ import { AboutPage } from './components/about-page/about-page';
 import { ContactForm } from './components/contact-form/contact-form';
 import { Dashboard } from './components/dashboard/dashboard';
 import { UserProfile } from './components/user-profile/user-profile';
+import { LayoutComponent } from './components/layout/layout';
 
 export const routes: Routes = [
   // rutas publicas
@@ -22,8 +23,14 @@ export const routes: Routes = [
   },
   
   // rutas del privadas
-  { path: 'dashboard', component: Dashboard },
-  { path: 'perfil', component: UserProfile },
+  {
+    path: '',
+    component: LayoutComponent,
+    children: [
+      { path: 'dashboard', component: Dashboard },
+      { path: 'perfil', component: UserProfile },
+    ]
+  },
   
   // redireccion de rutas desconocidas
   { path: '**', redirectTo: '' },

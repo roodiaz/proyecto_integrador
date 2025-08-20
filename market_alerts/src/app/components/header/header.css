@@ -10,6 +10,7 @@
     height: 64px;
     background-color: #121418 !important;
     color: #e0e0e0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .header-content {

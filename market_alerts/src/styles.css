@@ -1,4 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+:root {
+  --primary-bg: #121418;
+  --card-bg: #1E1E1E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #b0bec5;
+  --accent-green: #B0C956;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+html, body { 
+  height: 100%;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+}
+
+body { 
+  margin: 0; 
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--primary-bg);
+}
+
+/* Asegurar que el área principal ocupe todo el espacio */
+.main-content {
+  min-height: calc(100vh - 64px); /* Ajustar según la altura del header */
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+}

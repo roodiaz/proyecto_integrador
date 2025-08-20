@@ -148,11 +148,11 @@
           </div>
   
           <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid">
+            <button mat-raised-button type="submit">
               <mat-icon>save</mat-icon>
               Guardar Cambios
             </button>
-            <button mat-button type="button" (click)="profileForm.reset()">
+            <button mat-stroked-button type="button" (click)="profileForm.reset()">
               <mat-icon>refresh</mat-icon>
               Restablecer
             </button>

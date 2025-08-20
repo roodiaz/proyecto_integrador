@@ -2,7 +2,7 @@
   width: 280px;
   background-color: #121418;
   color: #e0e0e0;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
   transition: width 0.3s ease;
   overflow: hidden;
@@ -47,7 +47,7 @@
   justify-content: center;
   align-items: center;
   background-color: #121418;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   height: 80px;
   box-sizing: border-box;
 }
@@ -161,5 +161,5 @@ mat-icon {
 
 mat-divider {
   margin: 16px 0;
-  border-top-color: rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.05);
 }

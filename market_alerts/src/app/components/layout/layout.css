@@ -1,0 +1,15 @@
+:host {
+  display: flex;
+  height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  position: relative; /* Para que el header fijo se posicione correctamente dentro */
+  overflow-y: auto; /* Permite scroll solo en el área de contenido */
+}
+
+.content-area {
+  padding: 20px;
+  margin-top: 64px; /* Altura del header */
+}

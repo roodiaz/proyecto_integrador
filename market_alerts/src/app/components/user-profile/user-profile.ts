@@ -83,7 +83,16 @@ export class UserProfile implements OnInit {
       currentPassword: [''],
       newPassword: [''],
       confirmPassword: ['']
-    }, { validator: this.passwordMatchValidator });
+    });
+
+    // Suscribirse a los cambios en los campos de contraseña para aplicar la validación dinámicamente
+    this.profileForm.get('newPassword')?.valueChanges.subscribe(() => {
+      this.profileForm.get('confirmPassword')?.updateValueAndValidity();
+    });
+
+    this.profileForm.get('confirmPassword')?.valueChanges.subscribe(() => {
+      this.passwordMatchValidator(this.profileForm);
+    });
   }
 
   ngOnInit(): void {
@@ -110,13 +119,20 @@ export class UserProfile implements OnInit {
   }
 
   passwordMatchValidator(form: FormGroup) {
-    const password = form.get('newPassword')?.value;
-    const confirmPassword = form.get('confirmPassword')?.value;
-    
-    if (password && confirmPassword && password !== confirmPassword) {
-      form.get('confirmPassword')?.setErrors({ passwordMismatch: true });
+    const newPassword = form.get('newPassword');
+    const confirmPassword = form.get('confirmPassword');
+
+    // Si ambos campos están vacíos o no han sido tocados, no hay error
+    if (!newPassword?.value && !confirmPassword?.value) {
+      confirmPassword?.setErrors(null);
+      return;
+    }
+
+    // Si las contraseñas no coinciden, establecer error
+    if (newPassword?.value !== confirmPassword?.value) {
+      confirmPassword?.setErrors({ passwordMismatch: true });
     } else {
-      form.get('confirmPassword')?.setErrors(null);
+      confirmPassword?.setErrors(null);
     }
   }
 
