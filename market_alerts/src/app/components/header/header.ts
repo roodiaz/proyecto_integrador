@@ -50,17 +50,17 @@ export class Header {
     notifications: 3
   };
 
-  // Currency settings
-  currency: 'USD' | 'ARS' = 'USD';
+  // Language settings
+  language: 'es' | 'en' = 'es';
 
   // Mostrar monto fijo sin conversión
   get walletAmount(): string {
     return `$${this.user.wallet.toFixed(2)}`;
   }
 
-  // Cambiar solo la moneda visualmente
-  changeCurrency(currency: 'USD' | 'ARS') {
-    this.currency = currency;
+  // Cambiar solo el idioma visualmente
+  setLanguage(language: 'es' | 'en') {
+    this.language = language;
   }
 
   // Handle menu actions

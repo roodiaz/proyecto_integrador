@@ -67,7 +67,32 @@
     color: #e0e0e0 !important;
   }
   
-  .currency-button, .user-menu-button {
+  .currency-button, .language-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.language-button {
+    color: #e0e0e0 !important;
+}
+
+.language-button span {
+    margin-left: 8px;
+}
+
+.language-button mat-icon {
+    margin-left: 4px;
+}
+
+.language-flag, .menu-flag {
+    width: 24px;
+    height: 16px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.user-menu-button {
     border-radius: 20px;
     padding: 0 16px;
     height: 36px;
@@ -203,7 +228,20 @@
     padding: 8px;
   }
   
-  /* Responsive adjustments */
+  .user-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-menu-header .user-name {
+    margin-left: 0;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
   .header-toolbar.sidebar-collapsed {
     margin-left: 70px;
     width: calc(100% - 70px);

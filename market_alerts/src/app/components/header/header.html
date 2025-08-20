@@ -11,41 +11,39 @@
   
       <!-- Right side - User controls -->
       <div class="header-right">
-        <!-- Currency Selector -->
-        <button mat-button [matMenuTriggerFor]="currencyMenu" class="currency-button">
-          <img [src]="'../img/' + (currency === 'USD' ? 'usd.png' : 'ars.png')" 
-               [alt]="currency + ' flag'" 
-               class="currency-flag">
-          <span>{{ currency }}</span>
+        <!-- Language Selector -->
+        <button mat-button [matMenuTriggerFor]="languageMenu" class="language-button">
+          <img [src]="'../img/' + (language === 'es' ? 'es.png' : 'en.png')" 
+               [alt]="language + ' flag'" 
+               class="language-flag">
+          <span>{{ language.toUpperCase() }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
-        </button>
-        
-        <!-- User Menu -->
-        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-button">
-          <mat-icon>account_circle</mat-icon>
-        </button>
+        </button>    
                 
-        <mat-menu #currencyMenu="matMenu" class="currency-menu">
-          <button mat-menu-item (click)="changeCurrency('ARS')">
-            <img src="../img/ars.png" alt="ARS flag" class="menu-flag">
-            <span>ARS - Peso Argentino</span>
+        <mat-menu #languageMenu="matMenu" class="language-menu">
+          <button mat-menu-item (click)="setLanguage('es')">
+            <img src="../img/es.png" alt="ES flag" class="menu-flag">
+            <span>Español</span>
           </button>
-          <button mat-menu-item (click)="changeCurrency('USD')">
-            <img src="../img/usd.png" alt="USD flag" class="menu-flag">
-            <span>USD - Dólar Estadounidense</span>
+          <button mat-menu-item (click)="setLanguage('en')">
+            <img src="../img/en.png" alt="EN flag" class="menu-flag">
+            <span>English</span>
           </button>
         </mat-menu>
-  
         <!-- Notifications -->
         <button mat-icon-button [matMenuTriggerFor]="notificationsMenu" class="notifications-button">
           <mat-icon [matBadge]="user.notifications" matBadgeColor="warn">notifications</mat-icon>
         </button>
   
         <!-- User Menu -->
-        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-button">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+
+        <!-- <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
           <span class="user-name">{{ user.name }}</span>
           <mat-icon>expand_more</mat-icon>
-        </button>
+        </button> -->
       </div>
     </div>
   </mat-toolbar>
@@ -72,6 +70,9 @@
   
   <!-- User Menu -->
   <mat-menu #userMenu="matMenu" class="user-menu">
+    <div class="user-menu-header">
+      <span class="user-name">{{ user.name }}</span>
+    </div>
     <button mat-menu-item [routerLink]="['/perfil']">
       <mat-icon>manage_accounts</mat-icon>
       <span>Mi Perfil</span>
