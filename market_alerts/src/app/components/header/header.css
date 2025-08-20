@@ -1,0 +1,212 @@
+.header-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    height: 64px;
+    background-color: #121418 !important;
+    color: #e0e0e0 !important;
+  }
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 24px; /* Aumentar el padding general */
+  }
+  
+  .header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* Aumentar el espacio entre elementos */
+  }
+  
+  .header-left {
+    gap: 16px; /* Espacio consistente entre elementos */
+    margin-right: auto; /* Empuja todo a la izquierda */
+  }
+  
+  .logo span {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-left: 8px;
+    color: #e0e0e0;
+  }
+  
+  .wallet-balance {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    padding: 0 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    height: 36px;
+    margin-left: 50px;
+    color: #e0e0e0;
+  }
+  
+  .wallet-balance mat-icon {
+    color: #e0e0e0;
+  }
+  
+  .currency-button {
+    color: #e0e0e0 !important;
+  }
+  
+  .currency-button mat-icon {
+    margin-left: 4px;
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
+    color: #e0e0e0 !important;
+  }
+  
+  .currency-button, .user-menu-button {
+    border-radius: 20px;
+    padding: 0 16px;
+    height: 36px;
+    color: #e0e0e0 !important;
+  }
+  
+  .user-menu-button .user-name {
+    color: #e0e0e0;
+  }
+  
+  .user-menu-button mat-icon {
+    color: #e0e0e0 !important;
+  }
+  
+  .notifications-button {
+    margin: 0 4px;
+    color: #e0e0e0 !important;
+  }
+  
+  .notifications-button mat-icon {
+    color: #e0e0e0 !important;
+  }
+  
+  /* Estilos para el menú de usuario */
+  .mat-menu-panel {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+  }
+  
+  .mat-menu-item {
+    color: #e0e0e0 !important;
+  }
+  
+  .mat-menu-item:hover:not([disabled]) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .mat-menu-item .mat-icon {
+    color: #e0e0e0 !important;
+  }
+  
+  /* User menu styles */
+  .user-info {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    min-width: 200px;
+  }
+  
+  .user-avatar {
+    margin-right: 12px;
+  }
+  
+  .user-avatar mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .currency-flag, .menu-flag {
+    width: 20px;
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-right: 8px;
+  }
+
+  .currency-button mat-icon {
+    margin-left: 4px;
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
+  }
+  
+  .mat-menu-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .user-details h4 {
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  .user-details p {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  
+  /* Notifications menu */
+  .notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+  }
+  
+  .notifications-header h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  .notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px;
+    min-width: 300px;
+  }
+  
+  .notification-item mat-icon {
+    margin-right: 12px;
+    color: #666;
+  }
+  
+  .notification-content {
+    flex: 1;
+  }
+  
+  .notification-content p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .notification-content small {
+    color: #666;
+    font-size: 0.8rem;
+  }
+  
+  .notification-actions {
+    text-align: center;
+    padding: 8px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .user-name {
+      display: none;
+    }
+    
+    .wallet-balance span:first-child {
+      display: none;
+    }
+  }

@@ -1,0 +1,104 @@
+<p>header works!</p>
+<mat-toolbar color="primary" class="header-toolbar">
+    <div class="header-content">
+      <!-- Left side - Menu button, logo and wallet -->
+      <div class="header-left">
+        <button mat-icon-button (click)="onToggleSidebar()" class="menu-button">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <div class="logo">
+          <span>Market Alerts</span>
+        </div>
+        <!-- Moved Wallet Balance to left side -->
+        <div class="wallet-balance">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <span>{{ walletAmount }}</span>
+        </div>
+      </div>
+  
+      <!-- Right side - User controls -->
+      <div class="header-right">
+        <!-- Currency Selector -->
+        <button mat-button [matMenuTriggerFor]="currencyMenu" class="currency-button">
+          <img [src]="'../img/' + (currency === 'USD' ? 'usd.png' : 'ars.png')" 
+               [alt]="currency + ' flag'" 
+               class="currency-flag">
+          <span>{{ currency }}</span>
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        
+        <mat-menu #currencyMenu="matMenu" class="currency-menu">
+          <button mat-menu-item (click)="changeCurrency('ARS')">
+            <img src="../img/ars.png" alt="ARS flag" class="menu-flag">
+            <span>ARS - Peso Argentino</span>
+          </button>
+          <button mat-menu-item (click)="changeCurrency('USD')">
+            <img src="../img/usd.png" alt="USD flag" class="menu-flag">
+            <span>USD - Dólar Estadounidense</span>
+          </button>
+        </mat-menu>
+  
+        <!-- Notifications -->
+        <button mat-icon-button [matMenuTriggerFor]="notificationsMenu" class="notifications-button">
+          <mat-icon [matBadge]="user.notifications" matBadgeColor="warn">notifications</mat-icon>
+        </button>
+  
+        <!-- User Menu -->
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+          <span class="user-name">{{ user.name }}</span>
+          <mat-icon>expand_more</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>
+  
+  <!-- Notifications Menu -->
+  <mat-menu #notificationsMenu="matMenu" class="notifications-menu">
+    <div class="notifications-header">
+      <h3>Notificaciones</h3>
+      <button mat-button color="primary">Marcar todo como leído</button>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="notification-item">
+      <mat-icon>info</mat-icon>
+      <div class="notification-content">
+        <p>Nueva alerta de precio</p>
+        <small>Hace 5 minutos</small>
+      </div>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="notification-actions">
+      <button mat-button>Ver todas las notificaciones</button>
+    </div>
+  </mat-menu>
+  
+  <!-- User Menu -->
+  <mat-menu #userMenu="matMenu" class="user-menu">
+    <div class="user-info">
+      <div class="user-avatar">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <div class="user-details">
+        <h4>{{ user.name }}</h4>
+        <p>{{ user.email }}</p>
+      </div>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="handleMenuAction('profile')">
+      <mat-icon>person</mat-icon>
+      <span>Mi perfil</span>
+    </button>
+    <button mat-menu-item (click)="handleMenuAction('theme')">
+      <mat-icon>dark_mode</mat-icon>
+      <span>Cambiar tema</span>
+    </button>
+    <button mat-menu-item (click)="handleMenuAction('language')">
+      <mat-icon>language</mat-icon>
+      <span>Cambiar idioma</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="handleMenuAction('logout')" class="logout-button">
+      <mat-icon>logout</mat-icon>
+      <span>Cerrar sesión</span>
+    </button>
+  </mat-menu>
