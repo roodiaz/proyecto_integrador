@@ -240,6 +240,7 @@
 .user-menu-header .user-name {
     margin-left: 0;
     font-weight: 500;
+    color: #e0e0e0 !important;
 }
 
 /* Responsive adjustments */

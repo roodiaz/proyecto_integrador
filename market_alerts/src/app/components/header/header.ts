@@ -1,7 +1,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { SidebarService } from '../../services/sidebar.service';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../shared/material.module';
 
@@ -20,7 +20,7 @@ import { MaterialModule } from '../../shared/material.module';
 export class Header {
   isSidebarCollapsed = false;
 
-  constructor(private sidebarService: SidebarService) {
+  constructor(private sidebarService: SidebarService, private router: Router) {
     this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
       this.isSidebarCollapsed = isCollapsed;
     });
@@ -55,7 +55,7 @@ export class Header {
   handleMenuAction(action: string) {
     switch(action) {
       case 'profile':
-        // Navigate to profile
+        this.router.navigate(['/perfil']);
         break;
       case 'theme':
         this.toggleTheme.emit();
@@ -65,6 +65,7 @@ export class Header {
         break;
       case 'logout':
         this.logout.emit();
+        this.router.navigate(['/login']);
         break;
     }
   }

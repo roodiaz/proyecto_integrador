@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { SidebarService } from '../../services/sidebar.service';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MaterialModule } from '../../shared/material.module';
 
 @Component({
@@ -18,7 +18,7 @@ import { MaterialModule } from '../../shared/material.module';
 export class Sidebar {
   isCollapsed = false;
 
-  constructor(private sidebarService: SidebarService) {
+  constructor(private sidebarService: SidebarService, private router: Router) {
     this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
       this.isCollapsed = isCollapsed;
     });
@@ -29,7 +29,6 @@ export class Sidebar {
   }
 
   logout() {
-    // Lógica de cierre de sesión
-    console.log('Cerrar sesión');
+    this.router.navigate(['/login']);
   }
 }

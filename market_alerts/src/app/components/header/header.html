@@ -70,14 +70,11 @@
   
   <!-- User Menu -->
   <mat-menu #userMenu="matMenu" class="user-menu">
-    <div class="user-menu-header">
-      <span class="user-name">{{ user.name }}</span>
-    </div>
     <button mat-menu-item [routerLink]="['/perfil']">
       <mat-icon>manage_accounts</mat-icon>
       <span>Mi Perfil</span>
     </button>
-    <button mat-menu-item>
+    <button mat-menu-item (click)="handleMenuAction('logout')">
       <mat-icon>logout</mat-icon>
       <span>Cerrar Sesión</span>
     </button>

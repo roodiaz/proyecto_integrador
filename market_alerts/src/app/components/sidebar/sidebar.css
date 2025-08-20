@@ -1,5 +1,5 @@
 .sidenav {
-  width: 280px;
+  width: 260px;
   background-color: #121418;
   color: #e0e0e0;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
@@ -42,7 +42,7 @@
 }
 
 .sidenav-header {
-  padding: 15px 70px 15px 20px;
+  padding: 14px 50px 15px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -88,7 +88,7 @@ mat-nav-list a {
   transition: all 0.3s ease;
   margin: 4px 8px;
   border-radius: 6px;
-  padding: 10px 16px !important;
+  padding: 10px 6px !important;
   display: flex;
   align-items: center;
 }
