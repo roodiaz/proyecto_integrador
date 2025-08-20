@@ -5,6 +5,7 @@ import { RegisterForm } from './components/register-form/register-form';
 import { AboutPage } from './components/about-page/about-page';
 import { ContactForm } from './components/contact-form/contact-form';
 import { Dashboard } from './components/dashboard/dashboard';
+import { UserProfile } from './components/user-profile/user-profile';
 
 export const routes: Routes = [
   // rutas publicas
@@ -22,6 +23,7 @@ export const routes: Routes = [
   
   // rutas del privadas
   { path: 'dashboard', component: Dashboard },
+  { path: 'perfil', component: UserProfile },
   
   // redireccion de rutas desconocidas
   { path: '**', redirectTo: '' },
