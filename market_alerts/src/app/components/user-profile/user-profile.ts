@@ -3,6 +3,12 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../shared/material.module';
+import { 
+  UserProfileData, 
+  UserProfileFormData, 
+  mockUserProfileData, 
+  userProfileSelectOptions 
+} from '../../models/user-profile.model';
 
 @Component({
   selector: 'app-user-profile',
@@ -20,22 +26,9 @@ export class UserProfile implements OnInit {
   hidePassword = true;
   
   // Opciones para los selects
-  currencies = [
-    { value: 'USD', viewValue: 'Dólar Estadounidense (USD)' },
-    { value: 'ARS', viewValue: 'Peso Argentino (ARS)' }
-  ];
-  
-  themes = [
-    { value: 'light', viewValue: 'Claro' },
-    { value: 'dark', viewValue: 'Oscuro' },
-    { value: 'system', viewValue: 'Sistema' }
-  ];
-  
-  updateIntervals = [
-    { value: 1, viewValue: 'Cada minuto' },
-    { value: 5, viewValue: 'Cada 5 minutos' },
-    { value: 15, viewValue: 'Cada 15 minutos' }
-  ];
+  currencies = userProfileSelectOptions.currencies;
+  themes = userProfileSelectOptions.themes;
+  updateIntervals = userProfileSelectOptions.updateIntervals;
 
   constructor(
     private fb: FormBuilder,
@@ -79,21 +72,13 @@ export class UserProfile implements OnInit {
   }
 
   loadUserData(): void {
-    // Aquí iría la lógica para cargar los datos del usuario
-    // Por ahora, datos de ejemplo
-    const userData = {
-      fullName: 'Juan Pérez',
-      email: 'juan.perez@ejemplo.com',
-      birthDate: new Date(1990, 0, 1),
-      phone: '+54 11 1234-5678',
-      currency: 'USD',
-      theme: 'system',
-      updateInterval: 5,
-      emailNotifications: true,
-      pushNotifications: true
-    };
-    
-    this.profileForm.patchValue(userData);
+    // Usamos los datos de ejemplo del modelo
+    this.profileForm.patchValue({
+      ...mockUserProfileData,
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
   }
 
   passwordMatchValidator(form: FormGroup) {

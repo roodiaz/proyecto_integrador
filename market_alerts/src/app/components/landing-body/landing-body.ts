@@ -10,7 +10,7 @@ import {
   SAMPLE_STOCKS, 
   SAMPLE_INDICES, 
   SAMPLE_NEWS 
-} from '../../models/landing/landing.models';
+} from '../../models/landing.models';
 
 @Component({
   selector: 'app-landing-body',
