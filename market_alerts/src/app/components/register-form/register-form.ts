@@ -1,11 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+import { MaterialModule } from '../../shared/material.module';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -14,11 +10,7 @@ import { Router, RouterModule } from '@angular/router';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatButtonModule,
+    MaterialModule,
     RouterModule
   ],
   templateUrl: './register-form.html',

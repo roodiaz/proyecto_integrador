@@ -1,12 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { MaterialModule } from '../../shared/material.module';
 
 @Component({
   selector: 'app-contact-form',
@@ -14,12 +10,8 @@ import { TextFieldModule } from '@angular/cdk/text-field';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule, 
-    MatFormFieldModule, 
-    MatInputModule, 
-    MatIconModule, 
-    MatButtonModule,
-    TextFieldModule
+    TextFieldModule,
+    MaterialModule
   ],
   templateUrl: './contact-form.html',
   styleUrls: ['./contact-form.css']

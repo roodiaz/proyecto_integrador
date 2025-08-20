@@ -1,13 +1,7 @@
 import { Component, ElementRef, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MaterialModule } from '../../shared/material.module';
 import { filter } from 'rxjs/operators';
 import { 
   Stock, 
@@ -26,14 +20,8 @@ import {
     RouterModule,
     RouterLink,
     RouterLinkActive,
-    MatCardModule,
-    MatButtonModule,
-    MatDividerModule,
-    MatToolbarModule,
-    MatIconModule,
-    MatTabsModule,
-    MatTooltipModule,
-    CurrencyPipe
+    CurrencyPipe,
+    MaterialModule
   ],
   templateUrl: './landing-body.html',
   styleUrls: ['./landing-body.css']
