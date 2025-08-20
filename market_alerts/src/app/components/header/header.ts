@@ -1,4 +1,5 @@
 import { Component, Output, EventEmitter } from '@angular/core';
+import { SidebarService } from '../../services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -29,6 +30,13 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./header.css']
 })
 export class Header {
+  isSidebarCollapsed = false;
+
+  constructor(private sidebarService: SidebarService) {
+    this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
+      this.isSidebarCollapsed = isCollapsed;
+    });
+  }
   @Output() toggleSidebar = new EventEmitter<void>();
   @Output() toggleTheme = new EventEmitter<void>();
   @Output() changeLanguage = new EventEmitter<string>();

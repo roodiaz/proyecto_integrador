@@ -1,13 +1,7 @@
-<mat-toolbar color="primary" class="header-toolbar">
+<mat-toolbar color="primary" class="header-toolbar" [class.sidebar-collapsed]="isSidebarCollapsed">
     <div class="header-content">
-      <!-- Left side - Menu button, logo and wallet -->
+      <!-- Left side - Wallet -->
       <div class="header-left">
-        <button mat-icon-button (click)="onToggleSidebar()" class="menu-button">
-          <mat-icon>menu</mat-icon>
-        </button>
-        <div class="logo">
-          <span>Market Alerts</span>
-        </div>
         <!-- Moved Wallet Balance to left side -->
         <div class="wallet-balance">
           <mat-icon>account_balance_wallet</mat-icon>

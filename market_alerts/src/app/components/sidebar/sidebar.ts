@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { SidebarService } from '../../services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -27,11 +28,15 @@ import { of } from 'rxjs';
 })
 export class Sidebar {
   isCollapsed = false;
-  portfolioValue = 12500.75;
-  alertsCount = 2;
+
+  constructor(private sidebarService: SidebarService) {
+    this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
+      this.isCollapsed = isCollapsed;
+    });
+  }
 
   toggleSidebar() {
-    this.isCollapsed = !this.isCollapsed;
+    this.sidebarService.toggle();
   }
 
   logout() {
