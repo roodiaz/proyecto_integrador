@@ -1,10 +1,16 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Alert, AlertHistory, ALERT_CONDITIONS, mockAlerts, mockAlertHistory } from '../../models/alert.model';
 import { MaterialModule } from '../../shared/material.module';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { MatTable } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 // Import the component class without importing the type
 const ConfirmDialogComponent = () => import('../../shared/confirm-dialog/confirm-dialog.component')
@@ -16,13 +22,19 @@ const ConfirmDialogComponent = () => import('../../shared/confirm-dialog/confirm
   imports: [
     CommonModule,
     MaterialModule,
-    MatTable
-    ],
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    MatTooltipModule
+  ],
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']
 })
 export class Alerts implements OnInit {
-  activeTabIndex = 0;
+  activeView: 'alerts' | 'history' = 'alerts';
   alerts: Alert[] = [];
   filteredAlerts: Alert[] = [];
   alertHistory: AlertHistory[] = [];
@@ -33,7 +45,6 @@ export class Alerts implements OnInit {
   isEditing = false;
   currentAlertId: string | null = null;
 
-  @ViewChild(MatTable) table!: MatTable<Alert>;
 
   constructor(
     private snackBar: MatSnackBar,
@@ -43,6 +54,18 @@ export class Alerts implements OnInit {
   ngOnInit() {
     this.loadAlerts();
     this.loadAlertHistory();
+  }
+
+  setActiveView(view: 'alerts' | 'history') {
+    this.activeView = view;
+  }
+
+  getActiveAlertsCount(): number {
+    return this.alerts.filter(alert => alert.isActive).length;
+  }
+
+  getUnreadHistoryCount(): number {
+    return this.alertHistory.filter(history => !history.isRead).length;
   }
 
   applyFilter(event: Event) {
@@ -68,11 +91,56 @@ export class Alerts implements OnInit {
 
   loadAlertHistory() {
     // En una aplicación real, esto vendría de un servicio
-    this.alertHistory = [...mockAlertHistory];
+    this.alertHistory = mockAlertHistory.map(history => ({
+      ...history,
+      priceChange: history.priceChange || 0,
+      triggered: history.triggered || false
+    }));
   }
 
-  onTabChange(index: number) {
-    this.activeTabIndex = index;
+  private showNotification(message: string) {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
+  async markAllAsRead() {
+    this.alertHistory.forEach(history => {
+      if (!history.isRead) {
+        history.isRead = true;
+      }
+    });
+    this.showNotification('Todas las alertas marcadas como leídas');
+  }
+
+  async markAsRead(history: AlertHistory) {
+    if (!history.isRead) {
+      history.isRead = true;
+      history.readAt = new Date();
+      this.showNotification('Alerta marcada como leída');
+    }
+  }
+
+  async deleteHistory(history: AlertHistory) {
+    const ConfirmDialog = await import('../../shared/confirm-dialog/confirm-dialog.component');
+    const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
+      width: '350px',
+      data: {
+        title: 'Eliminar Historial',
+        message: '¿Estás seguro de que deseas eliminar este registro del historial?'
+      }
+    });
+
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      const index = this.alertHistory.findIndex(h => h.id === history.id);
+      if (index > -1) {
+        this.alertHistory.splice(index, 1);
+        this.showNotification('Registro de alerta eliminado');
+      }
+    }
   }
 
   async createNewAlert() {
@@ -148,27 +216,14 @@ export class Alerts implements OnInit {
     }
   }
 
-  toggleAlert(alert: Alert, isActive: boolean) {
+  async toggleAlert(alert: Alert, isActive: boolean) {
     const alertToUpdate = this.alerts.find(a => a.id === alert.id);
     if (alertToUpdate) {
       alertToUpdate.isActive = isActive;
       alertToUpdate.updatedAt = new Date();
       // Update the filtered alerts to reflect the change
       this.filteredAlerts = [...this.alerts];
-      // In a real app, you would update the alert on the server here
-      this.snackBar.open(`Alerta ${isActive ? 'activada' : 'desactivada'}`, 'Cerrar', {
-        duration: 2000,
-      });
-    }
-  }
-
-  markAsRead(history: AlertHistory) {
-    if (!history.isRead) {
-      history.isRead = true;
-      // In a real app, you would update the history on the server here
-      this.snackBar.open('Mensaje marcado como leído', 'Cerrar', {
-        duration: 2000,
-      });
+      this.showNotification(`Alerta ${isActive ? 'activada' : 'desactivada'}`);
     }
   }
 

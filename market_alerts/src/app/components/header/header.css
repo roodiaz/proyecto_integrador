@@ -1,6 +1,6 @@
 .header-toolbar {
-    margin-left: 280px;
-    width: calc(100% - 280px);
+    margin: 12px 12px 0 300px; /* 280px + 12px margin */
+    width: calc(100% - 318px); /* 280px + 24px margin */
     transition: margin-left 0.3s ease, width 0.3s ease;
     position: fixed;
     top: 0;
@@ -10,7 +10,8 @@
     height: 64px;
     background-color: #121418 !important;
     color: #e0e0e0 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .header-content {
@@ -245,8 +246,9 @@
 
 /* Responsive adjustments */
   .header-toolbar.sidebar-collapsed {
-    margin-left: 70px;
-    width: calc(100% - 70px);
+    margin-left: 110px;
+    /* width: calc(100% - 70px); */
+    width: 90%;
 }
 
 @media (max-width: 600px) {

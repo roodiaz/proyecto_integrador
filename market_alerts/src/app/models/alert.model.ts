@@ -16,11 +16,13 @@ export interface AlertHistory {
   id: string;
   alertId: string;
   symbol: string;
-  price: number;
-  condition: string;
   message: string;
+  price: number;
+  priceChange: number;
   timestamp: Date;
   isRead: boolean;
+  readAt?: Date;
+  triggered: boolean;
 }
 
 // Tipos de condiciones disponibles
@@ -74,9 +76,32 @@ export const mockAlertHistory: AlertHistory[] = [
     alertId: '1',
     symbol: 'AAPL',
     price: 149.50,
-    condition: 'below',
+    priceChange: -1.5,
     message: 'AAPL ha bajado por debajo de $150.00',
     timestamp: new Date(),
-    isRead: false
+    isRead: false,
+    triggered: true
+  },
+  {
+    id: '2',
+    alertId: '2',
+    symbol: 'MSFT',
+    price: 320.75,
+    priceChange: 2.3,
+    message: 'MSFT ha subido un 5% en las últimas 24h',
+    timestamp: new Date(Date.now() - 3600000), // 1 hour ago
+    isRead: false,
+    triggered: true
+  },
+  {
+    id: '3',
+    alertId: '3',
+    symbol: 'GOOGL',
+    price: 2850.25,
+    priceChange: 1.8,
+    message: 'GOOGL ha alcanzado el precio objetivo',
+    timestamp: new Date(Date.now() - 86400000), // 1 day ago
+    isRead: true,
+    triggered: true
   }
 ];

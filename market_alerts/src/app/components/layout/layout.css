@@ -1,15 +1,43 @@
 :host {
+  --primary-bg: #111B20;
+  --card-bg: #1E1E1E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #b0bec5;
+  --accent-green: #B0C956;
+  --border-color: rgba(255, 255, 255, 0.1);
+  
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
 }
 
 .main-content {
   flex-grow: 1;
-  position: relative; /* Para que el header fijo se posicione correctamente dentro */
-  overflow-y: auto; /* Permite scroll solo en el área de contenido */
+  margin-left: 280px; /* Same as sidebar width */
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+  background-color: var(--primary-bg);
+}
+
+.main-content.collapsed {
+  margin-left: 94px; /* Collapsed sidebar width + margins */
 }
 
 .content-area {
   padding: 20px;
-  margin-top: 64px; /* Altura del header */
+  margin-top: 76px; /* Header height + margin */
+  min-height: calc(100vh - 76px);
+  background-color: var(--primary-bg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 959px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.collapsed {
+    margin-left: 0;
+  }
 }
