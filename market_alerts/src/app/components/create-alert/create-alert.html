@@ -1,0 +1,72 @@
+<div class="create-alert-dialog">
+  <h2 mat-dialog-title>{{ isEditMode ? 'Editar Alerta' : 'Nueva Alerta' }}</h2>
+  
+  <mat-dialog-content>
+    <form [formGroup]="alertForm" (ngSubmit)="onSubmit()" class="alert-form">
+      <!-- Symbol Input -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Símbolo</mat-label>
+        <input matInput placeholder="Ej: AAPL" formControlName="symbol" uppercase>
+        <mat-error *ngIf="alertForm.get('symbol')?.hasError('required')">
+          El símbolo es requerido
+        </mat-error>
+        <mat-error *ngIf="alertForm.get('symbol')?.hasError('pattern')">
+          Ingrese un símbolo válido (1-5 letras mayúsculas)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Condition Selector -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Condición</mat-label>
+        <mat-select formControlName="condition">
+          <mat-option *ngFor="let cond of conditions" [value]="cond.value">
+            {{ cond.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Price Input (shown for non-percentage conditions) -->
+      <mat-form-field appearance="outline" class="full-width" *ngIf="!isPercentageCondition()">
+        <mat-label>Precio objetivo</mat-label>
+        <input matInput type="number" step="0.01" min="0.01" formControlName="price" placeholder="0.00">
+        <span matTextPrefix>$&nbsp;</span>
+        <mat-error *ngIf="alertForm.get('price')?.hasError('required')">
+          El precio es requerido
+        </mat-error>
+        <mat-error *ngIf="alertForm.get('price')?.hasError('min')">
+          El precio debe ser mayor a 0
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Percentage Input (shown for percentage conditions) -->
+      <mat-form-field appearance="outline" class="full-width" *ngIf="isPercentageCondition()">
+        <mat-label>Cambio porcentual</mat-label>
+        <input matInput type="number" step="0.01" min="0.01" max="100" formControlName="percentChange" placeholder="0.00">
+        <span matSuffix>%</span>
+        <mat-error *ngIf="alertForm.get('percentChange')?.hasError('required')">
+          El porcentaje es requerido
+        </mat-error>
+        <mat-error *ngIf="alertForm.get('percentChange')?.hasError('min')">
+          El porcentaje debe ser mayor a 0
+        </mat-error>
+        <mat-error *ngIf="alertForm.get('percentChange')?.hasError('max')">
+          El porcentaje no puede ser mayor a 100
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Active Toggle -->
+      <mat-slide-toggle formControlName="isActive" color="primary">
+        {{ alertForm.get('isActive')?.value ? 'Activa' : 'Inactiva' }}
+      </mat-slide-toggle>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button mat-raised-button color="primary" 
+            [disabled]="alertForm.invalid" 
+            (click)="onSubmit()">
+      {{ isEditMode ? 'Actualizar' : 'Crear' }}
+    </button>
+  </mat-dialog-actions>
+</div>

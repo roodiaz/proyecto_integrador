@@ -6,6 +6,7 @@ import { AboutPage } from './components/about-page/about-page';
 import { ContactForm } from './components/contact-form/contact-form';
 import { Dashboard } from './components/dashboard/dashboard';
 import { UserProfile } from './components/user-profile/user-profile';
+import { Alerts } from './components/alerts/alerts';
 import { LayoutComponent } from './components/layout/layout';
 
 export const routes: Routes = [
@@ -29,6 +30,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: Dashboard },
       { path: 'perfil', component: UserProfile },
+      { path: 'alertas', component: Alerts },
     ]
   },
   

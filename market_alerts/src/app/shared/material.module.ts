@@ -19,6 +19,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule } from '@angular/material/table';
+import { MatChipsModule } from '@angular/material/chips';
 
 export const materialModules = [
   MatBadgeModule,
@@ -40,7 +43,10 @@ export const materialModules = [
   MatSnackBarModule,
   MatTabsModule,
   MatToolbarModule,
-  MatTooltipModule
+  MatTooltipModule,
+  MatDialogModule,
+  MatTableModule,
+  MatChipsModule
 ] as const;
 
 // Este módulo ya no es necesario en la nueva versión de Angular con standalone components

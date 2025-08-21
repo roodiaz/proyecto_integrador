@@ -1,0 +1,146 @@
+<div class="alerts-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Gestión de Alertas</mat-card-title>
+      <mat-card-subtitle>Crea y gestiona tus alertas de precios</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-tab-group [(selectedIndex)]="activeTabIndex">
+        <!-- Alerts Tab -->
+        <mat-tab label="Mis Alertas">
+          <div class="tab-content">
+            <div class="actions-row">
+              <button mat-raised-button color="primary" (click)="createNewAlert()">
+                <mat-icon>add</mat-icon> Nueva Alerta
+              </button>
+              <mat-form-field class="search-field">
+                <mat-label>Buscar</mat-label>
+                <input matInput placeholder="Símbolo o condición" #searchInput (keyup)="applyFilter($event)">
+                <button mat-icon-button matSuffix (click)="clearSearch(searchInput)" *ngIf="searchInput.value">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </mat-form-field>
+            </div>
+
+            <div class="table-container">
+              <table mat-table [dataSource]="filteredAlerts" class="mat-elevation-z1">
+                <!-- Symbol Column -->
+                <ng-container matColumnDef="symbol">
+                  <th mat-header-cell *matHeaderCellDef>Símbolo</th>
+                  <td mat-cell *matCellDef="let alert">{{alert.symbol}}</td>
+                </ng-container>
+
+                <!-- Condition Column -->
+                <ng-container matColumnDef="condition">
+                  <th mat-header-cell *matHeaderCellDef>Condición</th>
+                  <td mat-cell *matCellDef="let alert">{{getConditionDisplay(alert.condition)}}</td>
+                </ng-container>
+
+                <!-- Target Column -->
+                <ng-container matColumnDef="target">
+                  <th mat-header-cell *matHeaderCellDef>Objetivo</th>
+                  <td mat-cell *matCellDef="let alert">{{getTargetDisplay(alert)}}</td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Estado</th>
+                  <td mat-cell *matCellDef="let alert">
+                    <mat-slide-toggle [checked]="alert.isActive" (change)="toggleAlert(alert, $event.checked)">
+                      {{alert.isActive ? 'Activa' : 'Inactiva'}}
+                    </mat-slide-toggle>
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                  <td mat-cell *matCellDef="let alert">
+                    <button mat-icon-button color="primary" (click)="editAlert(alert)" matTooltip="Editar">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteAlert(alert)" matTooltip="Eliminar">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- History Tab -->
+
+        <!-- Pestaña de Historial -->
+        <mat-tab label="Historial">
+          <div class="tab-content">
+            <div class="table-container" *ngIf="alertHistory.length > 0; else noHistory">
+              <table mat-table [dataSource]="alertHistory" class="mat-elevation-z1">
+                <!-- Símbolo -->
+                <ng-container matColumnDef="symbol">
+                  <th mat-header-cell *matHeaderCellDef> Símbolo </th>
+                  <td mat-cell *matCellDef="let history">
+                    <strong>{{history.symbol}}</strong>
+                  </td>
+                </ng-container>
+
+                <!-- Mensaje -->
+                <ng-container matColumnDef="message">
+                  <th mat-header-cell *matHeaderCellDef> Mensaje </th>
+                  <td mat-cell *matCellDef="let history">
+                    {{history.message}}
+                  </td>
+                </ng-container>
+
+                <!-- Precio -->
+                <ng-container matColumnDef="price">
+                  <th mat-header-cell *matHeaderCellDef> Precio </th>
+                  <td mat-cell *matCellDef="let history">
+                    ${{history.price | number:'1.2-2'}}
+                  </td>
+                </ng-container>
+
+                <!-- Fecha -->
+                <ng-container matColumnDef="timestamp">
+                  <th mat-header-cell *matHeaderCellDef> Fecha </th>
+                  <td mat-cell *matCellDef="let history">
+                    {{history.timestamp | date:'medium'}}
+                  </td>
+                </ng-container>
+
+                <!-- Leído -->
+                <ng-container matColumnDef="read">
+                  <th mat-header-cell *matHeaderCellDef> Estado </th>
+                  <td mat-cell *matCellDef="let history">
+                    <mat-chip [color]="history.isRead ? 'primary' : 'accent'" selected>
+                      {{history.isRead ? 'Leído' : 'Nuevo'}}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+                <tr mat-row 
+                    *matRowDef="let row; columns: historyColumns;"
+                    (click)="!row.isRead && markAsRead(row)"
+                    [class.cursor-pointer]="!row.isRead"
+                    [class.unread]="!row.isRead">
+                </tr>
+              </table>
+            </div>
+
+            <ng-template #noHistory>
+              <div class="no-data">
+                <mat-icon>history</mat-icon>
+                <p>No hay historial de alertas</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>
