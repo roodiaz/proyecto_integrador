@@ -1,0 +1,140 @@
+/* Main dialog container */
+.create-alert-dialog {
+    background: #1E1E1E;
+    color: #FFFFFF;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  /* Title */
+  .create-alert-dialog h2 {
+    color: #FFFFFF;
+    margin: 0;
+    padding: 20px 24px;
+    background: #121418;
+    font-size: 1.25rem;
+    font-weight: 500;
+    border-bottom: 2px solid #B0C956;
+  }
+  
+  /* Dialog content */
+  .mat-dialog-content {
+    padding: 20px 24px;
+    margin: 0;
+    background: #1E1E1E;
+    color: #E0E0E0;
+  }
+  
+  /* Form fields */
+  .alert-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  /* Form fields styling */
+  .mat-form-field {
+    width: 100%;
+  }
+  
+  /* Input text color */
+  .mat-input-element {
+    color: #E0E0E0 !important;
+  }
+  
+  /* Input label color */
+  .mat-form-field-label {
+    color: #B0BEC5 !important;
+  }
+  
+  /* Input underline color */
+  .mat-form-field-underline {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* Focused input */
+  .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+    color: #B0C956 !important;
+  }
+  
+  /* Focused label */
+  .mat-focused .mat-form-field-label {
+    color: #B0C956 !important;
+  }
+  
+  /* Select panel styling */
+  .mat-select-panel {
+    background: #2A2A2A;
+    color: #E0E0E0;
+  }
+  
+  /* Select option hover */
+  .mat-option:hover:not(.mat-option-disabled),
+  .mat-option:focus:not(.mat-option-disabled) {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Selected option */
+  .mat-option.mat-selected:not(.mat-option-disabled) {
+    color: #B0C956;
+  }
+  
+  /* Toggle styling */
+  .mat-slide-toggle {
+    margin: 10px 0;
+  }
+  
+  .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
+    background-color: #B0C956;
+  }
+  
+  .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
+    background-color: rgba(176, 201, 86, 0.54);
+  }
+  
+  /* Dialog actions */
+  .mat-dialog-actions {
+    padding: 12px 24px;
+    margin: 0;
+    background: #1E1E1E;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-end;
+  }
+  
+  /* Buttons */
+  .mat-button, .mat-raised-button {
+    margin-left: 8px;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Primary button */
+  .mat-raised-button[color="primary"] {
+    background-color: #B0C956;
+    color: #1E1E1E;
+  }
+  
+  .mat-raised-button[color="primary"]:hover {
+    background-color: #9bb34b;
+  }
+  
+  /* Error messages */
+  .mat-error {
+    color: #f44336;
+    font-size: 0.75rem;
+    margin-top: 4px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .create-alert-dialog {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+    
+    .mat-dialog-container {
+      padding: 0;
+    }
+  }

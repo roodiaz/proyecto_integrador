@@ -98,28 +98,18 @@ export class Alerts implements OnInit {
     }));
   }
 
-  private showNotification(message: string) {
-    this.snackBar.open(message, 'Cerrar', {
-      duration: 3000,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
-    });
-  }
-
   async markAllAsRead() {
     this.alertHistory.forEach(history => {
       if (!history.isRead) {
         history.isRead = true;
       }
     });
-    this.showNotification('Todas las alertas marcadas como leídas');
   }
 
   async markAsRead(history: AlertHistory) {
     if (!history.isRead) {
       history.isRead = true;
       history.readAt = new Date();
-      this.showNotification('Alerta marcada como leída');
     }
   }
 
@@ -128,7 +118,7 @@ export class Alerts implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',
       data: {
-        title: 'Eliminar Historial',
+        title: 'Eliminar alerta',
         message: '¿Estás seguro de que deseas eliminar este registro del historial?'
       }
     });
@@ -138,7 +128,6 @@ export class Alerts implements OnInit {
       const index = this.alertHistory.findIndex(h => h.id === history.id);
       if (index > -1) {
         this.alertHistory.splice(index, 1);
-        this.showNotification('Registro de alerta eliminado');
       }
     }
   }
@@ -203,7 +192,7 @@ export class Alerts implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',
       data: {
-        title: 'Eliminar Alerta',
+        title: 'Eliminar alerta',
         message: `¿Estás seguro de que deseas eliminar la alerta para ${alert.symbol}?`
       }
     });
@@ -223,7 +212,6 @@ export class Alerts implements OnInit {
       alertToUpdate.updatedAt = new Date();
       // Update the filtered alerts to reflect the change
       this.filteredAlerts = [...this.alerts];
-      this.showNotification(`Alerta ${isActive ? 'activada' : 'desactivada'}`);
     }
   }
 

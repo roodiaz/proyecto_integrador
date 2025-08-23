@@ -34,13 +34,16 @@
           <div class="view" [class.active]="activeView === 'alerts'">
             <div class="view-header">
               <h2>Mis Alertas Activas</h2>
-              <mat-form-field appearance="outline" class="search-field">
-                <mat-label>Buscar alertas</mat-label>
-                <input matInput placeholder="Símbolo, condición..." #searchInput (keyup)="applyFilter($event)">
-                <button mat-icon-button matSuffix (click)="clearSearch(searchInput)" *ngIf="searchInput.value">
+              <div class="custom-search-field">
+                <input type="text" 
+                       placeholder="Buscar alertas..." 
+                       #searchInput 
+                       (keyup)="applyFilter($event)"
+                       class="search-input">
+                <button mat-icon-button class="clear-btn" (click)="clearSearch(searchInput)" *ngIf="searchInput.value">
                   <mat-icon>close</mat-icon>
                 </button>
-              </mat-form-field>
+              </div>
             </div>
 
             <div class="cards-grid">
@@ -72,11 +75,7 @@
                     <span class="label">Objetivo:</span>
                     <span class="value target">{{getTargetDisplay(alert)}}</span>
                   </div>
-                </div>
-                
-                <div class="alert-status" [class.active]="alert.isActive">
-                  {{alert.isActive ? 'Activa' : 'Inactiva'}}
-                </div>
+                </div>          
               </div>
 
               <div class="no-items" *ngIf="filteredAlerts.length === 0">
@@ -96,7 +95,7 @@
             <div class="view-header">
               <h2>Historial de Alertas</h2>
               <div class="spacer"></div>
-              <button mat-stroked-button (click)="markAllAsRead()" [disabled]="getUnreadHistoryCount() === 0">
+              <button mat-stroked-button class="mark-all-read-btn" color="accent" (click)="markAllAsRead()" [disabled]="getUnreadHistoryCount() === 0">
                 <mat-icon>mark_email_read</mat-icon>
                 Marcar todo como leído
               </button>
@@ -104,14 +103,8 @@
 
             <div class="history-container">
               <div *ngFor="let history of alertHistory" class="history-item" [class.unread]="!history.isRead">
-                <div class="history-icon">
-                  <mat-icon [class.triggered]="history.triggered">
-                    {{ history.triggered ? 'notifications_active' : 'notifications_off' }}
-                  </mat-icon>
-                </div>
                 <div class="history-content">
                   <div class="history-message">
-                    <span class="symbol">{{history.symbol}}</span> 
                     {{history.message}}
                     <span class="price" [class.up]="history.priceChange >= 0" [class.down]="history.priceChange < 0">
                       {{history.price | currency}}
