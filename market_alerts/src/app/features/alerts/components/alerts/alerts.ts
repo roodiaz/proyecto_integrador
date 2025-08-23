@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Alert, AlertHistory, ALERT_CONDITIONS, mockAlerts, mockAlertHistory } from '../../models/alert.model';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../../../shared/material.module';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,7 +13,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 // Import the component class without importing the type
-const ConfirmDialogComponent = () => import('../../shared/confirm-dialog/confirm-dialog.component')
+const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/confirm-dialog.component')
   .then(m => m.ConfirmDialogComponent);
 
 @Component({
@@ -114,7 +114,7 @@ export class Alerts implements OnInit {
   }
 
   async deleteHistory(history: AlertHistory) {
-    const ConfirmDialog = await import('../../shared/confirm-dialog/confirm-dialog.component');
+    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',
       data: {
@@ -186,7 +186,7 @@ export class Alerts implements OnInit {
 
   async deleteAlert(alert: Alert) {
     // Dynamically import the component
-    const ConfirmDialog = await import('../../shared/confirm-dialog/confirm-dialog.component');
+    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
     
     // Open the dialog with the dynamically imported component
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {

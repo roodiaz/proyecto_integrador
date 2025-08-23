@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { SidebarService } from '../../services/sidebar.service';
+import { SidebarService } from '../core/services/sidebar.service';
 import { RouterOutlet } from '@angular/router';
-import { Header } from '../header/header';
-import { Sidebar } from '../sidebar/sidebar';
+import { Header } from '../shared/components/header/header';
+import { Sidebar } from '../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-layout',

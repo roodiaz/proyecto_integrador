@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { LandingBody } from './components/landing-body/landing-body';
-import { LoginForm } from './components/login-form/login-form';
-import { RegisterForm } from './components/register-form/register-form';
-import { AboutPage } from './components/about-page/about-page';
-import { ContactForm } from './components/contact-form/contact-form';
-import { Dashboard } from './components/dashboard/dashboard';
-import { UserProfile } from './components/user-profile/user-profile';
-import { Alerts } from './components/alerts/alerts';
-import { LayoutComponent } from './components/layout/layout';
+import { LandingBody } from './features/home/components/landing-body/landing-body';
+import { LoginForm } from './features/auth/components/login-form/login-form';
+import { RegisterForm } from './features/auth/components/register-form/register-form';
+import { AboutPage } from './features/home/components/about-page/about-page';
+import { ContactForm } from './features/home/components/contact-form/contact-form';
+import { Dashboard } from './features/dashboard/components/dashboard/dashboard';
+import { UserProfile } from './features/settings/components/user-profile/user-profile';
+import { Alerts } from './features/alerts/components/alerts/alerts';
+import { LayoutComponent } from './layout/layout';
 
 export const routes: Routes = [
   // rutas publicas

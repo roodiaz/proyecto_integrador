@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive, NavigationEnd, Router } from '@angular/router';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../../../shared/material.module';
 import { filter } from 'rxjs/operators';
 import { 
   Stock, 

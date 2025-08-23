@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MaterialModule } from '../../shared/material.module';
+import { MaterialModule } from '../../../../shared/material.module';
 import { Alert, ALERT_CONDITIONS } from '../../models/alert.model';
 
 type AlertFormData = Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
