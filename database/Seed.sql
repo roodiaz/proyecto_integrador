@@ -18,15 +18,10 @@ VALUES
 -- =========================
 -- 2. Users
 -- =========================
-INSERT INTO Users (Username, Email, PasswordHash, IsActive, Balance)
+INSERT INTO Users (Username, Email, PasswordHash, IsActive, Balance, PlanId)
 VALUES
-('rocio_free', 'rocio.free@mail.com', 'HASH123', 1, 1000),
-('rocio_premium', 'rocio.premium@mail.com', 'HASH456', 1, 10000);
-
-
--- Asignar planes
-UPDATE Users SET PlanId = 1 WHERE Username = 'rocio_free';
-UPDATE Users SET PlanId = 2 WHERE Username = 'rocio_premium';
+('rocio_free', 'rocio.free@mail.com', 'HASH123', 1, 1000,1),
+('rocio_premium', 'rocio.premium@mail.com', 'HASH456', 1, 10000,2);
 
 
 -- =========================
