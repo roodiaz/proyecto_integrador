@@ -1,0 +1,183 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header class="card-header">
+      <mat-card-title class="register-title">
+        <div class="title-line">CREAR CUENTA</div>
+      </mat-card-title>
+      <mat-card-subtitle>
+        <div class="step-indicator">
+          <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+            <div class="step-number">1</div>
+            <div class="step-label">Datos</div>
+          </div>
+          <div class="step-separator"></div>
+          <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+            <div class="step-number">2</div>
+            <div class="step-label">Plan</div>
+          </div>
+          <div class="step-separator"></div>
+          <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+            <div class="step-number">3</div>
+            <div class="step-label">Pago</div>
+          </div>
+        </div>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+      
+      <!-- Loading Overlay -->
+      <div *ngIf="isLoading" class="loading-overlay">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Procesando registro...</p>
+      </div>
+      
+      <!-- Step 1: Account Information -->
+      <form *ngIf="currentStep === 1 && !isLoading" [formGroup]="registerForm" (ngSubmit)="onFormSubmit()" class="register-form" [class.loading]="isLoading">
+        <h2 class="text-center">Crear Cuenta</h2>
+        <p class="text-center subtitle">Completa tus datos personales</p>
+
+        <!-- Full Name -->
+        <div class="field-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre Completo</mat-label>
+            <input matInput 
+                  formControlName="fullName" 
+                  placeholder="Ej: Juan Pérez"
+                  autocomplete="name">
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="fullName?.hasError('required')">
+              El nombre es requerido
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Email Field -->
+        <div class="field-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Correo Electrónico</mat-label>
+            <input matInput 
+                  type="email" 
+                  formControlName="email" 
+                  placeholder="ejemplo@correo.com"
+                  autocomplete="email">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="email?.hasError('required')">
+              El correo electrónico es requerido
+            </mat-error>
+            <mat-error *ngIf="email?.hasError('email')">
+              Por favor ingresa un correo válido
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Password Field -->
+        <div class="field-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Contraseña</mat-label>
+            <input matInput 
+                  [type]="hidePassword ? 'password' : 'text'" 
+                  formControlName="password"
+                  autocomplete="new-password">
+            <button type="button" 
+                    mat-icon-button 
+                    matSuffix 
+                    (click)="hidePassword = !hidePassword" 
+                    [attr.aria-label]="'Ocultar contraseña'"
+                    [attr.aria-pressed]="hidePassword">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="password?.hasError('required')">
+              La contraseña es requerida
+            </mat-error>
+            <mat-error *ngIf="password?.hasError('minlength')">
+              Mínimo 6 caracteres
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="field-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirmar Contraseña</mat-label>
+            <input matInput 
+                  [type]="hideConfirmPassword ? 'password' : 'text'" 
+                  formControlName="confirmPassword"
+                  autocomplete="new-password">
+            <button type="button" 
+                    mat-icon-button 
+                    matSuffix 
+                    (click)="hideConfirmPassword = !hideConfirmPassword" 
+                    [attr.aria-label]="'Ocultar confirmación de contraseña'"
+                    [attr.aria-pressed]="hideConfirmPassword">
+              <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="confirmPassword?.hasError('required')">
+              Por favor confirma tu contraseña
+            </mat-error>
+            <mat-error *ngIf="registerForm?.hasError('mismatch')">
+              Las contraseñas no coinciden
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="actions">
+          <button 
+            mat-flat-button 
+            color="primary" 
+            type="submit"
+            [disabled]="!registerForm.valid"
+            class="full-width"
+          >
+            Siguiente
+          </button>
+        </div>
+      </form>
+
+      <!-- Step 2: Plan Selection -->
+      <div *ngIf="currentStep === 2 && !isLoading" class="plan-selection-container">
+        <div class="selected-plan-container">
+          <h3>Plan seleccionado: <strong>{{ selectedPlan === PlanType.FREE ? 'Gratis' : 'Premium' }}</strong></h3>
+          <p *ngIf="selectedPlan === PlanType.PREMIUM">
+            Próximo cargo: {{ formData.paymentInfo?.nextBillingDate || '' }}
+          </p>
+          
+          <button mat-raised-button color="primary" (click)="openPlanSelection()" class="change-plan-btn">
+            <mat-icon>swap_horiz</mat-icon>
+            Cambiar plan
+          </button>
+        </div>
+        
+        <div class="navigation-buttons">
+          <button mat-stroked-button type="button" (click)="previousStep()">
+            <mat-icon>arrow_back</mat-icon>
+            Volver
+          </button>
+          <button mat-raised-button color="primary" type="button" (click)="nextStep()" [disabled]="!selectedPlan">
+            {{ selectedPlan === PlanType.PREMIUM ? 'Continuar al pago' : 'Continuar' }}
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Payment Form (only for Premium) -->
+      <div *ngIf="currentStep === 3 && !isLoading" class="payment-form-container">
+        <app-payment-form 
+          (paymentSubmitted)="onPaymentSubmitted($event)"
+          (back)="onBackToPlanSelection()"
+          [isLoading]="isLoading">
+        </app-payment-form>
+      </div>
+
+      <div class="register-link" *ngIf="currentStep === 1">
+        Al registrarte estas de acuerdo con nuestros 
+        <a routerLink="/terms" class="link">Términos y Condiciones</a>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
