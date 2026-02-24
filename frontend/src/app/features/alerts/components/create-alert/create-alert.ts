@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -16,7 +16,8 @@ type AlertFormData = Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
     MaterialModule
   ],
   templateUrl: './create-alert.html',
-  styleUrls: ['./create-alert.css']
+  styleUrls: ['./create-alert.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class CreateAlertComponent implements OnInit {
   alertForm: FormGroup;

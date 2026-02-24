@@ -1,145 +1,303 @@
 <div class="alerts-container">
-  <mat-card class="main-card">
-    <mat-card-header>
-      <mat-card-title>Gestión de Alertas</mat-card-title>
-      <mat-card-subtitle>Monitorea tus activos en tiempo real</mat-card-subtitle>
-    </mat-card-header>
+  <div class="alerts-content">
+    <!-- Header Interno -->
+    <div class="alerts-header">
+      <div class="header-info">
+        <h1>Alertas</h1>
+        <p class="header-subtitle">
+          {{getActiveAlertsCount()}} activas • {{getTriggeredAlertsCount()}} disparada
+        </p>
+      </div>
+      <button class="new-alert-btn" (click)="createNewAlert()" [disabled]="isPlanLimitReached()">
+        <span class="icon">➕</span>
+        Nueva Alerta
+      </button>
+    </div>
 
-    <mat-card-content>
-      <div class="layout-container">
-        <!-- Side Navigation -->
-        <div class="sidenav">
-          <div class="sidenav-content">
-            <div class="nav-item" [class.active]="activeView === 'alerts'" (click)="setActiveView('alerts')">
-              <mat-icon>notifications_active</mat-icon>
-              <span>Mis Alertas</span>
-              <span class="badge" *ngIf="getActiveAlertsCount() > 0">{{getActiveAlertsCount()}}</span>
-            </div>
-            <div class="nav-item" [class.active]="activeView === 'history'" (click)="setActiveView('history')">
-              <mat-icon>history</mat-icon>
-              <span>Historial</span>
-              <span class="badge" *ngIf="getUnreadHistoryCount() > 0">{{getUnreadHistoryCount()}}</span>
-            </div>
-            <div class="divider"></div>
-            <button mat-flat-button color="primary" class="new-alert-btn" (click)="createNewAlert()">
-              <mat-icon>add_alert</mat-icon>
-              Nueva Alerta
-            </button>
+    <!-- Tabs Principales -->
+    <div class="tabs-container">
+      <div class="tabs">
+        <button class="tab" [class.active]="activeView === 'alerts'" (click)="setActiveView('alerts')">
+          Mis Alertas
+        </button>
+        <button class="tab" [class.active]="activeView === 'history'" (click)="setActiveView('history')">
+          Notificaciones
+        </button>
+      </div>
+    </div>
+
+    <!-- 🟢 TAB 1 — MIS ALERTAS (Configuradas) -->
+    <div class="tab-content" [class.active]="activeView === 'alerts'">
+      <!-- Cards de Resumen -->
+      <div class="summary-cards">
+        <div class="summary-card active">
+          <div class="summary-icon">🟢</div>
+          <div class="summary-content">
+            <div class="summary-title">Alertas Activas</div>
+            <div class="summary-value">{{getActiveAlertsCount()}}</div>
           </div>
         </div>
-
-        <!-- Main Content -->
-        <div class="content-area">
-          <!-- Alerts View -->
-          <div class="view" [class.active]="activeView === 'alerts'">
-            <div class="view-header">
-              <h2>Mis Alertas Activas</h2>
-              <div class="custom-search-field">
-                <input type="text" 
-                       placeholder="Buscar alertas..." 
-                       #searchInput 
-                       (keyup)="applyFilter($event)"
-                       class="search-input">
-                <button mat-icon-button class="clear-btn" (click)="clearSearch(searchInput)" *ngIf="searchInput.value">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-            </div>
-
-            <div class="cards-grid">
-              <div *ngFor="let alert of filteredAlerts" class="alert-card" [class.inactive]="!alert.isActive">
-                <div class="alert-header">
-                  <div class="symbol">{{alert.symbol}}</div>
-                  <div class="alert-actions">
-                    <mat-slide-toggle [checked]="alert.isActive" (change)="toggleAlert(alert, $event.checked)">
-                    </mat-slide-toggle>
-                    <button mat-icon-button (click)="$event.stopPropagation(); editAlert(alert)" matTooltip="Editar">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="$event.stopPropagation(); deleteAlert(alert)" matTooltip="Eliminar" class="delete-btn">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="alert-details">
-                  <div class="detail">
-                    <span class="label">Condición:</span>
-                    <span class="value condition" 
-                          [class.up]="alert.condition === '>' || alert.condition === '>=' || alert.condition === '%>'"
-                          [class.down]="alert.condition === '<' || alert.condition === '<=' || alert.condition === '%<'">
-                      {{getConditionDisplay(alert.condition)}}
-                    </span>
-                  </div>
-                  <div class="detail">
-                    <span class="label">Objetivo:</span>
-                    <span class="value target">{{getTargetDisplay(alert)}}</span>
-                  </div>
-                </div>          
-              </div>
-
-              <div class="no-items" *ngIf="filteredAlerts.length === 0">
-                <mat-icon>notifications_off</mat-icon>
-                <h3>No hay alertas activas</h3>
-                <p>Crea tu primera alerta para comenzar a monitorear precios</p>
-                <button mat-stroked-button color="primary" (click)="createNewAlert()">
-                  <mat-icon>add_alert</mat-icon>
-                  Crear Alerta
-                </button>
-              </div>
+        
+        <div class="summary-card paused">
+          <div class="summary-icon">⏸️</div>
+          <div class="summary-content">
+            <div class="summary-title">Alertas Pausadas</div>
+            <div class="summary-value">{{getPausedAlertsCount()}}</div>
+          </div>
+        </div>
+        
+        <div class="summary-card triggered">
+          <div class="summary-icon">🔴</div>
+          <div class="summary-content">
+            <div class="summary-title">Disparadas Hoy</div>
+            <div class="summary-value">{{getTodayTriggeredCount()}}</div>
+          </div>
+        </div>
+        
+        <div class="summary-card usage">
+          <div class="summary-icon">📊</div>
+          <div class="summary-content">
+            <div class="summary-title">Alertas Utilizadas</div>
+            <div class="summary-value">{{usedAlerts}}/{{planLimits.free}}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="(usedAlerts / planLimits.free) * 100"></div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- History View -->
-          <div class="view" [class.active]="activeView === 'history'">
-            <div class="view-header">
-              <h2>Historial de Alertas</h2>
-              <div class="spacer"></div>
-              <button mat-stroked-button class="mark-all-read-btn" color="accent" (click)="markAllAsRead()" [disabled]="getUnreadHistoryCount() === 0">
-                <mat-icon>mark_email_read</mat-icon>
-                Marcar todo como leído
-              </button>
+      <!-- Filtros Superiores -->
+      <div class="filters-section">
+        <div class="filter-controls">
+          <input 
+            type="text" 
+            placeholder="Filtrar por ticker..." 
+            class="filter-input"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="applyFilter()"
+          >
+          <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
+            <option value="">Todos los estados</option>
+            <option value="active">Activa</option>
+            <option value="paused">Pausada</option>
+          </select>
+          <button class="clear-btn" (click)="clearSearch()">Limpiar</button>
+        </div>
+      </div>
+
+      <!-- Lista de Alertas en Columnas -->
+      <div class="alerts-list-container">
+        <div class="alerts-list-header">
+          <div class="header-column symbol">Símbolo</div>
+          <div class="header-column condition">Condición</div>
+          <div class="header-column status">Estado</div>
+          <div class="header-column dates">Fechas</div>
+          <div class="header-column actions">Acciones</div>
+        </div>
+        <div class="alerts-list">
+          <div class="alert-item" 
+               *ngFor="let alert of paginatedAlerts"
+               [class.active]="alert.isActive" 
+               [class.paused]="!alert.isActive">
+            <div class="alert-column symbol">
+              <div class="alert-symbol-large">{{alert.symbol}}</div>
             </div>
-
-            <div class="history-container">
-              <div *ngFor="let history of alertHistory" class="history-item" [class.unread]="!history.isRead">
-                <div class="history-content">
-                  <div class="history-message">
-                    {{history.message}}
-                    <span class="price" [class.up]="history.priceChange >= 0" [class.down]="history.priceChange < 0">
-                      {{history.price | currency}}
-                      <span class="change" *ngIf="history.priceChange !== 0">
-                        ({{history.priceChange > 0 ? '+' : ''}}{{history.priceChange | number:'1.2-2'}}%)
-                      </span>
-                    </span>
-                  </div>
-                  <div class="history-time">
-                    {{history.timestamp | date:'medium'}}
-                    <span class="read-status" *ngIf="!history.isRead">
-                      <mat-icon>fiber_manual_record</mat-icon>
-                      No leído
-                    </span>
-                  </div>
-                </div>
-                <div class="history-actions">
-                  <button mat-icon-button (click)="markAsRead(history)" matTooltip="Marcar como leído" *ngIf="!history.isRead">
-                    <mat-icon>drafts</mat-icon>
-                  </button>
-                  <button mat-icon-button (click)="deleteHistory(history)" matTooltip="Eliminar">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
+            
+            <div class="alert-column condition">
+              <div class="alert-condition-text">
+                {{getConditionDisplay(alert.condition)}} {{getTargetDisplay(alert)}}
               </div>
-
-              <div class="no-items" *ngIf="alertHistory.length === 0">
-                <mat-icon>history_off</mat-icon>
-                <h3>No hay historial de alertas</h3>
-                <p>Las alertas activadas aparecerán aquí</p>
+            </div>
+            
+            <div class="alert-column status">
+              <div class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
+                {{alert.isActive ? 'Activa' : 'Pausada'}}
+              </div>
+            </div>
+            
+            <div class="alert-column dates">
+              <div class="alert-date">
+                Creada: {{alert.createdAt | date:'short'}}
+              </div>
+              <div class="alert-last-triggered">
+                Última: {{alert.lastTriggered ? (alert.lastTriggered | date:'short') : 'Nunca'}}
+              </div>
+            </div>
+            
+            <div class="alert-column actions">
+              <div class="alert-actions-list">
+                <div class="switch-container">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="alert.isActive" (change)="onToggleSwitch(alert, $event)">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <button class="edit-btn" (click)="editAlert(alert)">✏️</button>
+                <button class="delete-btn" (click)="deleteAlert(alert)">🗑</button>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </mat-card-content>
-  </mat-card>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="totalPages > 1">
+        <div class="pagination-info">
+          <span>Página {{currentPage}} de {{totalPages}}</span>
+          <span>({{filteredAlerts.length}} alertas)</span>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" 
+                  [disabled]="currentPage === 1" 
+                  (click)="previousPage()">
+            ← Anterior
+          </button>
+          <div class="page-numbers">
+            <button class="page-btn" 
+                    *ngFor="let page of getPageNumbers()" 
+                    [class.active]="page === currentPage"
+                    (click)="goToPage(page)">
+              {{page}}
+            </button>
+          </div>
+          <button class="pagination-btn" 
+                  [disabled]="currentPage === totalPages" 
+                  (click)="nextPage()">
+            Siguiente →
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State para Cards -->
+      <div class="empty-state" *ngIf="filteredAlerts.length === 0">
+        <div class="empty-icon">🔔</div>
+        <h3>No hay alertas configuradas</h3>
+        <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
+        <button class="cta-button" (click)="createNewAlert()" [disabled]="isPlanLimitReached()">
+          Crear Primera Alerta
+        </button>
+      </div>
+
+      <!-- Tabla Principal -->
+      <div class="alerts-table-container" *ngIf="false">
+        <table class="alerts-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Condición</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let alert of filteredAlerts" 
+                [class.status-active]="alert.isActive" 
+                [class.status-paused]="!alert.isActive">
+              <td class="ticker-cell">{{alert.symbol}}</td>
+              <td class="condition-cell">
+                <span class="condition-text">
+                  {{getConditionDisplay(alert.condition)}} {{getTargetDisplay(alert)}}
+                </span>
+              </td>
+              <td class="status-cell">
+                <span class="status-indicator" [class.active]="alert.isActive">
+                  {{alert.isActive ? 'Activa' : 'Pausada'}}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  <button class="toggle-btn" 
+                          [class.active]="alert.isActive"
+                          (click)="toggleAlert(alert, !alert.isActive)">
+                    {{alert.isActive ? '⏸️' : '▶️'}}
+                  </button>
+                  <button class="edit-btn" (click)="editAlert(alert)">✏️</button>
+                  <button class="delete-btn" (click)="deleteAlert(alert)">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="filteredAlerts.length === 0">
+          <div class="empty-icon">🔔</div>
+          <h3>No hay alertas configuradas</h3>
+          <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
+          <button class="cta-button" (click)="createNewAlert()" [disabled]="isPlanLimitReached()">
+            Crear Primera Alerta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2 — NOTIFICACIONES (Alertas Disparadas) -->
+    <div class="tab-content" [class.active]="activeView === 'history'">
+      <div class="notifications-header">
+        <h3>Notificaciones de Alertas Disparadas</h3>
+        <button class="mark-all-read-btn" (click)="markAllAsRead()" *ngIf="getUnreadHistoryCount() > 0">
+          Marcar todo como leído
+        </button>
+      </div>
+
+      <div class="notifications-container">
+        <div class="notification-item" *ngFor="let history of paginatedNotifications" [class.unread]="!history.isRead">
+          <div class="notification-content">
+            <div class="notification-message">
+              <span class="notification-icon">🔔</span>
+              <span class="message-text">{{history.message}}</span>
+              <span class="unread-indicator" *ngIf="!history.isRead">●</span>
+            </div>
+            <div class="notification-details">
+              <span class="price">${{history.price.toFixed(2)}}</span>
+              <span class="timestamp">{{history.timestamp | date:'short'}}</span>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mark-read-btn" *ngIf="!history.isRead" (click)="markAsRead(history)">
+              ✅
+            </button>
+            <button class="delete-notification-btn" (click)="deleteHistory(history)">
+              🗑
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="alertHistory.length === 0">
+          <div class="empty-icon">📋</div>
+          <h3>No hay notificaciones</h3>
+          <p>Las alertas disparadas aparecerán aquí como notificaciones</p>
+        </div>
+      </div>
+
+      <!-- Notifications Pagination -->
+      <div class="pagination-container" *ngIf="totalNotificationPages > 1">
+        <div class="pagination-info">
+          <span>Página {{currentNotificationPage}} de {{totalNotificationPages}}</span>
+          <span>({{alertHistory.length}} notificaciones)</span>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" 
+                  [disabled]="currentNotificationPage === 1" 
+                  (click)="previousNotificationPage()">
+            ← Anterior
+          </button>
+          <div class="page-numbers">
+            <button class="page-btn" 
+                    *ngFor="let page of getNotificationPageNumbers()" 
+                    [class.active]="page === currentNotificationPage"
+                    (click)="goToNotificationPage(page)">
+              {{page}}
+            </button>
+          </div>
+          <button class="pagination-btn" 
+                  [disabled]="currentNotificationPage === totalNotificationPages" 
+                  (click)="nextNotificationPage()">
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

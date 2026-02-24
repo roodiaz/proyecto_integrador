@@ -29,7 +29,7 @@
 .content-area {
   flex-grow: 1;
   padding: 20px;
-  margin-top: 76px; /* Header height (64px) + spacing (12px) */
+  margin-top: 0; /* Eliminado el espacio del header */
   background-color: var(--primary-bg);
   overflow-y: auto;
 }
@@ -45,6 +45,6 @@
   }
   
   .content-area {
-    margin-top: 76px; /* Keep header spacing on mobile */
+    margin-top: 0; /* Eliminado el espacio del header en móvil también */
   }
 }
