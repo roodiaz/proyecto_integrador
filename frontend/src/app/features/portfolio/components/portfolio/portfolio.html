@@ -1,111 +1,113 @@
 <div class="portfolio-container">
-  <!-- Resumen del Portfolio -->
-  <div class="portfolio-summary">
-    <div class="summary-cards">
-      <div class="summary-card">
-        <h3>Saldo Inicial</h3>
-        <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
-      </div>
-      <div class="summary-card">
-        <h3>Saldo Actual</h3>
-        <p class="amount" [class.positive]="portfolioSummary.totalProfitLoss > 0" [class.negative]="portfolioSummary.totalProfitLoss < 0">
-          ${{ portfolioSummary.currentBalance.toFixed(2) }}
-        </p>
-      </div>
-      <div class="summary-card">
-        <h3>Ganancia/Pérdida</h3>
-        <p class="amount" [class.positive]="portfolioSummary.totalProfitLoss > 0" [class.negative]="portfolioSummary.totalProfitLoss < 0">
-          {{ portfolioSummary.totalProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.totalProfitLoss.toFixed(2) }}
-          <span class="percent">({{ portfolioSummary.totalProfitLossPercent > 0 ? '+' : '' }}{{ portfolioSummary.totalProfitLossPercent.toFixed(2) }}%)</span>
-        </p>
+  <div class="portfolio-content">
+    <!-- Resumen del Portfolio -->
+    <div class="portfolio-summary">
+      <div class="summary-cards">
+        <div class="summary-card">
+          <h3>Saldo Inicial</h3>
+          <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
+        </div>
+        <div class="summary-card">
+          <h3>Saldo Actual</h3>
+          <p class="amount" [class.positive]="portfolioSummary.totalProfitLoss > 0" [class.negative]="portfolioSummary.totalProfitLoss < 0">
+            ${{ portfolioSummary.currentBalance.toFixed(2) }}
+          </p>
+        </div>
+        <div class="summary-card">
+          <h3>Ganancia/Pérdida</h3>
+          <p class="amount" [class.positive]="portfolioSummary.totalProfitLoss > 0" [class.negative]="portfolioSummary.totalProfitLoss < 0">
+            {{ portfolioSummary.totalProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.totalProfitLoss.toFixed(2) }}
+            <span class="percent">({{ portfolioSummary.totalProfitLossPercent > 0 ? '+' : '' }}{{ portfolioSummary.totalProfitLossPercent.toFixed(2) }}%)</span>
+          </p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Gráficos -->
-  <div class="charts-section">
-    <div class="chart-container">
-      <h3>Distribución de Activos</h3>
-      <canvas id="pieChart" width="400" height="200"></canvas>
-    </div>
-    <div class="chart-container">
-      <h3>Evolución del Portfolio</h3>
-      <canvas id="lineChart" width="400" height="200"></canvas>
-    </div>
-  </div>
-
-  <!-- Tabla de Operaciones -->
-  <div class="operations-section">
-    <h2>Operaciones Realizadas</h2>
-    <div class="table-container">
-      <table class="operations-table">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Cantidad</th>
-            <th>Precio Compra</th>
-            <th>Precio Actual</th>
-            <th>Variación %</th>
-            <th>Ganancia/Pérdida</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let operation of operations" [class.positive]="operation.profitLoss > 0" [class.negative]="operation.profitLoss < 0">
-            <td class="ticker-cell">{{ operation.ticker }}</td>
-            <td class="quantity-cell">{{ operation.quantity }}</td>
-            <td class="price-cell">${{ operation.buyPrice.toFixed(2) }}</td>
-            <td class="price-cell">${{ operation.currentPrice.toFixed(2) }}</td>
-            <td class="variation-cell" [class.positive]="operation.variationPercent > 0" [class.negative]="operation.variationPercent < 0">
-              {{ operation.variationPercent > 0 ? '+' : '' }}{{ operation.variationPercent.toFixed(2) }}%
-            </td>
-            <td class="profit-cell" [class.positive]="operation.profitLoss > 0" [class.negative]="operation.profitLoss < 0">
-              {{ operation.profitLoss > 0 ? '+' : '' }}${{ operation.profitLoss.toFixed(2) }}
-              <span class="percent">({{ operation.profitLossPercent > 0 ? '+' : '' }}{{ operation.profitLossPercent.toFixed(2) }}%)</span>
-            </td>
-            <td class="actions-cell">
-              <button *ngIf="operation.isOpen" (click)="sellOperation(operation.id)" class="sell-btn">Vender</button>
-              <span *ngIf="!operation.isOpen" class="closed-label">Cerrada</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      
-      <div *ngIf="operations.length === 0" class="empty-state">
-        <p>No tienes operaciones realizadas</p>
-        <p>Comienza comprando tu primer activo</p>
+    <!-- Gráficos -->
+    <div class="charts-section">
+      <div class="chart-container">
+        <h3>Distribución de Activos</h3>
+        <canvas id="pieChart" width="400" height="200"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>Evolución del Portfolio</h3>
+        <canvas id="lineChart" width="400" height="200"></canvas>
       </div>
     </div>
-  </div>
 
-  <!-- Formulario de Compra -->
-  <div class="buy-section">
-    <h2>Nueva Operación</h2>
-    <div class="buy-form">
-      <input 
-        type="text" 
-        placeholder="Ticker..." 
-        [(ngModel)]="newTicker"
-        class="form-input"
-      >
-      <input 
-        type="number" 
-        placeholder="Cantidad..." 
-        [(ngModel)]="newQuantity"
-        class="form-input"
-        min="1"
-      >
-      <input 
-        type="number" 
-        placeholder="Precio..." 
-        [(ngModel)]="newPrice"
-        class="form-input"
-        min="0.01"
-        step="0.01"
-      >
-      <button (click)="buyAsset()" class="buy-btn" [disabled]="!canBuy()">
-        Comprar
-      </button>
+    <!-- Tabla de Operaciones -->
+    <div class="operations-section">
+      <h2>Operaciones Realizadas</h2>
+      <div class="table-container">
+        <table class="operations-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Cantidad</th>
+              <th>Precio Compra</th>
+              <th>Precio Actual</th>
+              <th>Variación %</th>
+              <th>Ganancia/Pérdida</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let operation of operations" [class.positive]="operation.profitLoss > 0" [class.negative]="operation.profitLoss < 0">
+              <td class="ticker-cell">{{ operation.ticker }}</td>
+              <td class="quantity-cell">{{ operation.quantity }}</td>
+              <td class="price-cell">${{ operation.buyPrice.toFixed(2) }}</td>
+              <td class="price-cell">${{ operation.currentPrice.toFixed(2) }}</td>
+              <td class="variation-cell" [class.positive]="operation.variationPercent > 0" [class.negative]="operation.variationPercent < 0">
+                {{ operation.variationPercent > 0 ? '+' : '' }}{{ operation.variationPercent.toFixed(2) }}%
+              </td>
+              <td class="profit-cell" [class.positive]="operation.profitLoss > 0" [class.negative]="operation.profitLoss < 0">
+                {{ operation.profitLoss > 0 ? '+' : '' }}${{ operation.profitLoss.toFixed(2) }}
+                <span class="percent">({{ operation.profitLossPercent > 0 ? '+' : '' }}{{ operation.profitLossPercent.toFixed(2) }}%)</span>
+              </td>
+              <td class="actions-cell">
+                <button *ngIf="operation.isOpen" (click)="sellOperation(operation.id)" class="sell-btn">Vender</button>
+                <span *ngIf="!operation.isOpen" class="closed-label">Cerrada</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div *ngIf="operations.length === 0" class="empty-state">
+          <p>No tienes operaciones realizadas</p>
+          <p>Comienza comprando tu primer activo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de Compra -->
+    <div class="buy-section">
+      <h2>Nueva Operación</h2>
+      <div class="buy-form">
+        <input 
+          type="text" 
+          placeholder="Ticker..." 
+          [(ngModel)]="newTicker"
+          class="form-input"
+        >
+        <input 
+          type="number" 
+          placeholder="Cantidad..." 
+          [(ngModel)]="newQuantity"
+          class="form-input"
+          min="1"
+        >
+        <input 
+          type="number" 
+          placeholder="Precio..." 
+          [(ngModel)]="newPrice"
+          class="form-input"
+          min="0.01"
+          step="0.01"
+        >
+        <button (click)="buyAsset()" class="buy-btn" [disabled]="!canBuy()">
+          Comprar
+        </button>
+      </div>
     </div>
   </div>
 </div>

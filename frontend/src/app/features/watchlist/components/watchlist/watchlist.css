@@ -1,7 +1,13 @@
 .watchlist-container {
-  padding: 24px;
+  padding: 0;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: #1a1a1a;
+  min-height: calc(100vh - 76px); /* Account for header space */
+}
+
+.watchlist-content {
+  padding: 24px;
 }
 
 .watchlist-header {
@@ -14,10 +20,26 @@
 }
 
 .watchlist-header h2 {
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 28px;
   font-weight: 600;
   margin: 0;
+}
+
+.favorites-indicator {
+  background-color: #2d2d2d;
+  color: #a0a0a0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #3d3d3d;
+}
+
+.favorites-indicator.limit-reached {
+  color: #ef4444;
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 .add-symbol {
@@ -28,16 +50,22 @@
 
 .ticker-input {
   padding: 10px 16px;
-  border: 2px solid #e1e8ed;
+  border: 2px solid #3d3d3d;
   border-radius: 8px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease;
   min-width: 200px;
+  background-color: #2d2d2d;
+  color: #ffffff;
 }
 
 .ticker-input:focus {
   border-color: #1da1f2;
+}
+
+.ticker-input::placeholder {
+  color: #6b7280;
 }
 
 .add-btn {
@@ -56,11 +84,17 @@
   background-color: #1a91da;
 }
 
+.add-btn:disabled {
+  background-color: #4b5563;
+  cursor: not-allowed;
+}
+
 .watchlist-table-container {
-  background: white;
+  background: #2d2d2d;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  border: 1px solid #3d3d3d;
 }
 
 .watchlist-table {
@@ -69,40 +103,83 @@
 }
 
 .watchlist-table th {
-  background-color: #f8fafc;
+  background-color: #1f1f1f;
   padding: 16px;
   text-align: left;
   font-weight: 600;
-  color: #475569;
-  border-bottom: 1px solid #e2e8f0;
-  font-size: 14px;
+  color: #a0a0a0;
+  border-bottom: 1px solid #3d3d3d;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .watchlist-table td {
   padding: 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #3d3d3d;
   font-size: 14px;
+  color: #e0e0e0;
 }
 
 .watchlist-table tr:last-child td {
   border-bottom: none;
 }
 
-.watchlist-table tr:hover {
-  background-color: #f8fafc;
+.watchlist-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.watchlist-table tbody tr:hover {
+  background-color: #3a3a3a;
 }
 
 .ticker-cell {
   font-weight: 600;
-  color: #1e293b;
+  color: #ffffff;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.ticker-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ticker-symbol {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sparkline-container {
+  margin-top: 2px;
+}
+
+.sparkline {
+  width: 60px;
+  height: 20px;
 }
 
 .price-cell {
   font-weight: 500;
-  color: #334155;
+  color: #ffffff;
 }
 
 .variation-cell {
@@ -139,7 +216,7 @@
 .empty-state {
   text-align: center;
   padding: 48px 24px;
-  color: #64748b;
+  color: #6b7280;
 }
 
 .empty-state p {
@@ -150,7 +227,73 @@
 .empty-state p:first-child {
   font-size: 18px;
   font-weight: 500;
-  color: #475569;
+  color: #9ca3af;
+}
+
+/* Search section */
+.search-section {
+  margin-top: 24px;
+  background: #2d2d2d;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #3d3d3d;
+}
+
+.search-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 2px solid #3d3d3d;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+.search-input:focus {
+  border-color: #1da1f2;
+}
+
+.search-input::placeholder {
+  color: #6b7280;
+}
+
+.search-btn {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  background-color: #1a91da;
 }
 
 /* Responsive design */
@@ -162,6 +305,7 @@
   .watchlist-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
   
   .add-symbol {
@@ -180,5 +324,30 @@
   .watchlist-table th,
   .watchlist-table td {
     padding: 12px 8px;
+  }
+  
+  .ticker-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .company-logo {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  .sparkline {
+    width: 50px;
+    height: 16px;
+  }
+  
+  .search-container {
+    flex-direction: column;
+  }
+  
+  .search-btn {
+    width: 100%;
   }
 }

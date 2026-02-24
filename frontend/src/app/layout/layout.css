@@ -29,7 +29,7 @@
 .content-area {
   flex-grow: 1;
   padding: 20px;
-  margin-top: 0; /* Remove header margin since header is inside main-content */
+  margin-top: 76px; /* Header height (64px) + spacing (12px) */
   background-color: var(--primary-bg);
   overflow-y: auto;
 }
@@ -42,5 +42,9 @@
   
   .main-content.collapsed {
     margin-left: 0;
+  }
+  
+  .content-area {
+    margin-top: 76px; /* Keep header spacing on mobile */
   }
 }

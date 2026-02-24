@@ -1,45 +1,86 @@
 <div class="watchlist-container">
-  <div class="watchlist-header">
-    <h2>Lista de Seguimiento</h2>
-    <div class="add-symbol">
-      <input 
-        type="text" 
-        placeholder="Agregar ticker..." 
-        [(ngModel)]="newTicker"
-        (keyup.enter)="addToWatchlist()"
-        class="ticker-input"
-      >
-      <button (click)="addToWatchlist()" class="add-btn">Agregar</button>
+  <div class="watchlist-content">
+    <div class="watchlist-header">
+      <h2>Lista de Seguimiento</h2>
+      <div class="favorites-indicator" [class.limit-reached]="isLimitReached()">
+        {{ watchlistItems.length }} de {{ maxFavorites }} favoritos usados
+      </div>
+      <div class="add-symbol">
+        <input 
+          type="text" 
+          placeholder="Agregar ticker..." 
+          [(ngModel)]="newTicker"
+          (keyup.enter)="addToWatchlist()"
+          class="ticker-input"
+          [disabled]="isLimitReached()"
+        >
+        <button (click)="addToWatchlist()" class="add-btn" [disabled]="isLimitReached()">Agregar</button>
+      </div>
     </div>
-  </div>
 
-  <div class="watchlist-table-container">
-    <table class="watchlist-table">
-      <thead>
-        <tr>
-          <th>Ticker</th>
-          <th>Precio Actual</th>
-          <th>Variación %</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of watchlistItems" [class.positive]="item.isPositive" [class.negative]="!item.isPositive">
-          <td class="ticker-cell">{{ item.ticker }}</td>
-          <td class="price-cell">${{ item.currentPrice.toFixed(2) }}</td>
-          <td class="variation-cell" [class.positive]="item.isPositive" [class.negative]="!item.isPositive">
-            {{ item.isPositive ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
-          </td>
-          <td class="actions-cell">
-            <button (click)="removeFromWatchlist(item.ticker)" class="remove-btn">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    
-    <div *ngIf="watchlistItems.length === 0" class="empty-state">
-      <p>No tienes tickers en tu lista de seguimiento</p>
-      <p>Agrega un ticker para comenzar a seguir su precio</p>
+    <div class="watchlist-table-container">
+      <table class="watchlist-table">
+        <thead>
+          <tr>
+            <th>TICKER</th>
+            <th>PRECIO ACTUAL</th>
+            <th>VARIACIÓN %</th>
+            <th>ACCIONES</th>
+            <th>ACCIÓN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of watchlistItems" 
+              [class.positive]="item.isPositive" 
+              [class.negative]="!item.isPositive"
+              (click)="goToMarket(item.ticker)"
+              class="clickable-row">
+            <td class="ticker-cell">
+              <div class="company-logo">{{ item.ticker.charAt(0) }}</div>
+              <div class="ticker-info">
+                <span class="ticker-symbol">{{ item.ticker }}</span>
+                <div class="sparkline-container">
+                  <canvas class="sparkline" 
+                          [id]="'sparkline-' + item.ticker"
+                          width="60" 
+                          height="20"></canvas>
+                </div>
+              </div>
+            </td>
+            <td class="price-cell">${{ item.currentPrice.toFixed(2) }}</td>
+            <td class="variation-cell" [class.positive]="item.isPositive" [class.negative]="!item.isPositive">
+              {{ item.isPositive ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
+            </td>
+            <td class="actions-cell">
+              <!-- Columna vacía para ACCIONES -->
+            </td>
+            <td class="actions-cell">
+              <button (click)="removeFromWatchlist(item.ticker); $event.stopPropagation()" class="remove-btn">Eliminar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="watchlistItems.length === 0" class="empty-state">
+        <p>No tienes tickers en tu lista de seguimiento</p>
+        <p>Agrega un ticker para comenzar a seguir su precio</p>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            placeholder="Buscar ticker..." 
+            [(ngModel)]="searchQuery"
+            class="search-input"
+          >
+        </div>
+        <button (click)="searchTicker()" class="search-btn">Buscar Ticker</button>
+      </div>
     </div>
   </div>
 </div>
