@@ -1,4 +1,4 @@
-/* Modern Professional Modal - Force Styles with ::ng-deep */
+/* Modern Professional Modal - Simplified Design */
 
 /* Global styles to override Material */
 ::ng-deep .mat-dialog-container {
@@ -32,17 +32,6 @@
 .header-content {
   display: flex !important;
   align-items: center !important;
-  gap: 16px !important;
-}
-
-.modal-icon {
-  font-size: 32px !important;
-  background: rgba(255, 255, 255, 0.2) !important;
-  width: 56px !important;
-  height: 56px !important;
-  border-radius: 12px !important;
-  display: flex !important;
-  align-items: center !important;
   justify-content: center !important;
 }
 
@@ -51,12 +40,14 @@
   color: #ffffff !important;
   font-size: 24px !important;
   font-weight: 700 !important;
+  text-align: center !important;
 }
 
 .header-text p {
   margin: 4px 0 0 0 !important;
   color: rgba(255, 255, 255, 0.9) !important;
   font-size: 14px !important;
+  text-align: center !important;
 }
 
 /* Body */
@@ -68,10 +59,10 @@
 .alert-form {
   display: flex !important;
   flex-direction: column !important;
-  gap: 28px !important;
+  gap: 20px !important;
 }
 
-/* Form Sections */
+/* Form Sections - Simplified */
 .form-section {
   background: rgba(255, 255, 255, 0.03) !important;
   border-radius: 12px !important;
@@ -89,19 +80,7 @@
 .section-header {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
   margin-bottom: 16px !important;
-}
-
-.section-icon {
-  font-size: 20px !important;
-  background: rgba(176, 201, 86, 0.15) !important;
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
 }
 
 .section-header h3 {
@@ -113,7 +92,7 @@
   letter-spacing: 0.5px !important;
 }
 
-/* Force Material Form Fields */
+/* Force Material Form Fields - Clean */
 ::ng-deep .mat-form-field-appearance-outline {
   background: rgba(255, 255, 255, 0.02) !important;
   border-radius: 8px !important;
@@ -160,17 +139,7 @@
   color: #B0C956 !important;
 }
 
-/* Icons */
-::ng-deep mat-icon {
-  color: rgba(255, 255, 255, 0.6) !important;
-  font-size: 20px !important;
-}
-
-::ng-deep .mat-focused mat-icon {
-  color: #B0C956 !important;
-}
-
-/* Select Panel */
+/* Select Panel - Clean */
 ::ng-deep .mat-select-panel {
   background: #2a2a2a !important;
   border-radius: 8px !important;
@@ -198,12 +167,7 @@
   color: #B0C956 !important;
 }
 
-.option-icon {
-  margin-right: 8px !important;
-  font-size: 16px !important;
-}
-
-/* Toggle */
+/* Toggle - Simplified */
 .status-toggle {
   padding: 8px 0 !important;
 }
@@ -223,7 +187,6 @@
   color: rgba(255, 255, 255, 0.6) !important;
   font-size: 13px !important;
   line-height: 1.4 !important;
-  margin-left: 48px !important;
 }
 
 ::ng-deep .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
@@ -248,10 +211,11 @@
   align-items: center !important;
 }
 
-/* Buttons */
+/* Buttons - Clean */
 .cancel-btn, .submit-btn {
   display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 8px !important;
   padding: 12px 24px !important;
   border-radius: 8px !important;

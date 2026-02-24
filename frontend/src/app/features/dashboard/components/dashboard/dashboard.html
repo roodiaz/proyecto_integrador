@@ -1,1 +1,136 @@
-<p>dashboard</p>
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Dashboard de Mercado</h1>
+    <div class="header-stats">
+      <div class="stat-card">
+        <div class="stat-value">$125,430</div>
+        <div class="stat-label">Valor Total</div>
+      </div>
+      <div class="stat-card positive">
+        <div class="stat-value">+12.5%</div>
+        <div class="stat-label">Ganancia Hoy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">8</div>
+        <div class="stat-label">Activos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Chart Section -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title-section">
+        <h2 class="chart-title">Evolución del Portfolio</h2>
+        <div class="chart-subtitle">
+          <span class="current-value">$125,430</span>
+          <span class="change positive">+12.5%</span>
+          <span class="period">vs. mes anterior</span>
+        </div>
+      </div>
+      <div class="chart-controls">
+        <div class="time-selector">
+          <button class="time-btn" [class.active]="selectedPeriod === '1d'" (click)="selectedPeriod = '1d'; onPeriodChange()">1D</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1w'" (click)="selectedPeriod = '1w'; onPeriodChange()">1W</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1m'" (click)="selectedPeriod = '1m'; onPeriodChange()">1M</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '3m'" (click)="selectedPeriod = '3m'; onPeriodChange()">3M</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1y'" (click)="selectedPeriod = '1y'; onPeriodChange()">1Y</button>
+        </div>
+        <div class="chart-type-selector">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="selectedChartType = 'line'; onChartTypeChange()" title="Gráfico de líneas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+          </button>
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="selectedChartType = 'bar'; onChartTypeChange()" title="Gráfico de barras">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H17"/>
+            </svg>
+          </button>
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'" (click)="selectedChartType = 'candlestick'; onChartTypeChange()" title="Gráfico de velas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v18h18"/>
+              <path d="M7 12l4-4 4 4"/>
+              <path d="M11 8v8"/>
+            </svg>
+          </button>
+        </div>
+        <div class="chart-actions">
+          <button class="action-btn" title="Descargar datos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+          </button>
+          <button class="action-btn" title="Configurar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v6m4.22-13.22l4.24 4.24M1.54 1.54l4.24 4.24M20.46 20.46l-4.24-4.24M1.54 20.46l4.24-4.24"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="mainChart" class="main-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Secondary Cards -->
+  <div class="dashboard-grid">
+    <div class="dashboard-card">
+      <h3>Activos Principales</h3>
+      <div class="asset-list">
+        <div class="asset-item">
+          <span class="asset-name">AAPL</span>
+          <span class="asset-value positive">+$2,450</span>
+        </div>
+        <div class="asset-item">
+          <span class="asset-name">GOOGL</span>
+          <span class="asset-value negative">-$1,230</span>
+        </div>
+        <div class="asset-item">
+          <span class="asset-name">MSFT</span>
+          <span class="asset-value positive">+$3,100</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Alertas Activas</h3>
+      <div class="alert-list">
+        <div class="alert-item">
+          <span class="alert-condition">AAPL > $190</span>
+          <span class="alert-status active">Activa</span>
+        </div>
+        <div class="alert-item">
+          <span class="alert-condition">GOOGL < $140</span>
+          <span class="alert-status active">Activa</span>
+        </div>
+        <div class="alert-item">
+          <span class="alert-condition">MSFT > $400</span>
+          <span class="alert-status pending">Pendiente</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Últimas Operaciones</h3>
+      <div class="transaction-list">
+        <div class="transaction-item">
+          <span class="transaction-info">Compra AAPL</span>
+          <span class="transaction-amount">+$5,000</span>
+        </div>
+        <div class="transaction-item">
+          <span class="transaction-info">Venta GOOGL</span>
+          <span class="transaction-amount">+$2,300</span>
+        </div>
+        <div class="transaction-item">
+          <span class="transaction-info">Compra MSFT</span>
+          <span class="transaction-amount">-$3,500</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
