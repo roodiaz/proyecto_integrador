@@ -9,6 +9,7 @@ import { UserProfile } from './features/settings/components/user-profile/user-pr
 import { Alerts } from './features/alerts/components/alerts/alerts';
 import { Portfolio } from './features/portfolio/components/portfolio/portfolio';
 import { Watchlist } from './features/watchlist/components/watchlist/watchlist';
+import { Market } from './features/market/components/market/market';
 import { LayoutComponent } from './layout/layout';
 
 export const routes: Routes = [
@@ -35,6 +36,7 @@ export const routes: Routes = [
       { path: 'alerts', component: Alerts },
       { path: 'portfolio', component: Portfolio },
       { path: 'watchlist', component: Watchlist },
+      { path: 'market', component: Market },
     ]
   },
   

@@ -1,0 +1,286 @@
+<div class="market-container">
+  <!-- Hero Section con Market Overview -->
+  <div class="market-hero">
+    <div class="hero-content">
+      <div class="hero-header">
+        <h1 class="market-title">Market Overview</h1>
+        <div class="market-status">
+          <div class="status-indicator open"></div>
+          <span class="status-text">Market Open</span>
+          <span class="status-time">{{ getCurrentTime() }}</span>
+        </div>
+      </div>
+      
+      <!-- Market Indices Cards -->
+      <div class="indices-showcase">
+        <div class="index-card featured" *ngFor="let index of marketIndices.slice(0, 1)">
+          <div class="index-header">
+            <div class="index-info">
+              <span class="index-name">{{ index.name }}</span>
+              <span class="index-trend" [class.up]="index.trend === 'up'" [class.down]="index.trend === 'down'">
+                {{ index.trend === 'up' ? '▲' : '▼' }}
+              </span>
+            </div>
+            <div class="index-value-large">{{ index.value.toLocaleString() }}</div>
+          </div>
+          <div class="index-change-large" [class.positive]="index.change > 0" [class.negative]="index.change < 0">
+            {{ index.change > 0 ? '+' : '' }}{{ index.change.toFixed(2) }} ({{ index.changePercent > 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%)
+          </div>
+        </div>
+        
+        <div class="indices-row">
+          <div class="index-card small" *ngFor="let index of marketIndices.slice(1, 4)">
+            <div class="index-name-small">{{ index.name }}</div>
+            <div class="index-value-small">{{ index.value.toLocaleString() }}</div>
+            <div class="index-change-small" [class.positive]="index.change > 0" [class.negative]="index.change < 0">
+              {{ index.change > 0 ? '+' : '' }}{{ index.change.toFixed(2) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="market-content">
+    <!-- Left Column -->
+    <div class="market-left">
+      <!-- Market Chart -->
+      <div class="chart-card">
+        <div class="card-header">
+          <h2 class="card-title">Market Performance</h2>
+          <div class="chart-controls">
+            <mat-button-toggle-group [(ngModel)]="selectedTimeframe" class="timeframe-toggle">
+              <mat-button-toggle value="1d">1D</mat-button-toggle>
+              <mat-button-toggle value="1w">1W</mat-button-toggle>
+              <mat-button-toggle value="1m">1M</mat-button-toggle>
+              <mat-button-toggle value="3m">3M</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="marketOverviewChart" class="market-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Sector Performance -->
+      <div class="sectors-card">
+        <div class="card-header">
+          <h2 class="card-title">Sector Performance</h2>
+          <button class="view-all-btn">View All</button>
+        </div>
+        <div class="sectors-grid">
+          <div class="sector-item" *ngFor="let sector of sectors" [class.positive]="sector.change > 0" [class.negative]="sector.change < 0">
+            <div class="sector-info">
+              <span class="sector-name">{{ sector.name }}</span>
+              <span class="sector-stocks">{{ sector.stocks }} stocks</span>
+            </div>
+            <div class="sector-metrics">
+              <div class="sector-change">{{ sector.change > 0 ? '+' : '' }}{{ sector.changePercent.toFixed(2) }}%</div>
+              <div class="sector-bar">
+                <div class="sector-progress" [class.positive]="sector.change > 0" [class.negative]="sector.change < 0"
+                     [style.width.px]="getSectorProgressWidth(sector.changePercent)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="market-right">
+      <!-- Trending Stocks -->
+      <div class="trending-card">
+        <div class="card-header">
+          <h2 class="card-title">🔥 Trending Now</h2>
+          <button class="refresh-btn">⟳</button>
+        </div>
+        <div class="trending-list">
+          <div class="trending-item" *ngFor="let stock of trendingStocks" (click)="goToStock(stock.symbol)">
+            <div class="trending-rank">{{ trendingStocks.indexOf(stock) + 1 }}</div>
+            <div class="trending-info">
+              <div class="stock-header">
+                <span class="stock-symbol">{{ stock.symbol }}</span>
+                <span class="stock-change-badge" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
+                  {{ stock.change > 0 ? '+' : '' }}{{ stock.changePercent.toFixed(2) }}%
+                </span>
+              </div>
+              <div class="stock-details">
+                <span class="stock-name">{{ stock.name }}</span>
+                <span class="stock-price">${{ stock.price.toFixed(2) }}</span>
+              </div>
+              <div class="trending-stats">
+                <span class="mentions">💬 {{ formatVolume(stock.mentions) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Movers -->
+      <div class="movers-card">
+        <div class="card-header">
+          <h2 class="card-title">Biggest Movers</h2>
+        </div>
+        <div class="movers-tabs">
+          <button class="mover-tab active" (click)="selectedMoverType = 'gainers'">Top Gainers</button>
+          <button class="mover-tab" (click)="selectedMoverType = 'losers'">Top Losers</button>
+        </div>
+        <div class="movers-list">
+          <div class="mover-item" *ngFor="let stock of getTopMoversData()" (click)="goToStock(stock.symbol)">
+            <div class="mover-symbol">{{ stock.symbol }}</div>
+            <div class="mover-info">
+              <div class="mover-name">{{ stock.name }}</div>
+              <div class="mover-price">${{ stock.price.toFixed(2) }}</div>
+            </div>
+            <div class="mover-change" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
+              {{ stock.change > 0 ? '+' : '' }}{{ stock.changePercent.toFixed(2) }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market News -->
+      <div class="news-card">
+        <div class="card-header">
+          <h2 class="card-title">Market News</h2>
+          <button class="view-all-btn">View All</button>
+        </div>
+        <div class="news-list">
+          <div class="news-item" *ngFor="let news of marketNews">
+            <div class="news-time">{{ news.time }}</div>
+            <div class="news-content">
+              <div class="news-title">{{ news.title }}</div>
+              <div class="news-source">{{ news.source }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market Screener Section -->
+  <div class="screener-section">
+    <div class="screener-header">
+      <div class="screener-title">
+        <h2 class="section-title">Market Screener</h2>
+        <p class="screener-subtitle">Find and filter stocks based on your criteria</p>
+      </div>
+      <div class="screener-controls">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search stocks</mat-label>
+          <input matInput [(ngModel)]="searchQuery" placeholder="Search by symbol or name">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        
+        <mat-select [(ngModel)]="selectedCategory" class="category-select">
+          <mat-option value="all">All Sectors</mat-option>
+          <mat-option value="Technology">Technology</mat-option>
+          <mat-option value="Healthcare">Healthcare</mat-option>
+          <mat-option value="Financial">Financial</mat-option>
+          <mat-option value="Consumer Discretionary">Consumer Discretionary</mat-option>
+          <mat-option value="Energy">Energy</mat-option>
+          <mat-option value="Industrial">Industrial</mat-option>
+        </mat-select>
+        
+        <mat-select [(ngModel)]="selectedSort" class="sort-select">
+          <mat-option value="volume">Volume</mat-option>
+          <mat-option value="price">Price</mat-option>
+          <mat-option value="change">Change</mat-option>
+          <mat-option value="changePercent">Change %</mat-option>
+          <mat-option value="marketCap">Market Cap</mat-option>
+        </mat-select>
+
+        <button class="export-btn">
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+      </div>
+    </div>
+    
+    <!-- Advanced Filters -->
+    <div class="advanced-filters">
+      <div class="filter-group">
+        <label class="filter-label">Price Range</label>
+        <div class="range-inputs">
+          <input type="number" placeholder="Min" class="range-input">
+          <span class="range-separator">-</span>
+          <input type="number" placeholder="Max" class="range-input">
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label">Market Cap</label>
+        <div class="filter-chips">
+          <button class="filter-chip" [class.active]="selectedMarketCap === 'all'" (click)="selectedMarketCap = 'all'">All</button>
+          <button class="filter-chip" [class.active]="selectedMarketCap === 'large'" (click)="selectedMarketCap = 'large'">Large</button>
+          <button class="filter-chip" [class.active]="selectedMarketCap === 'mid'" (click)="selectedMarketCap = 'mid'">Mid</button>
+          <button class="filter-chip" [class.active]="selectedMarketCap === 'small'" (click)="selectedMarketCap = 'small'">Small</button>
+        </div>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label">Performance</label>
+        <div class="filter-chips">
+          <button class="filter-chip performance positive" [class.active]="selectedPerformance === 'gainers'" (click)="selectedPerformance = 'gainers'">Top Gainers</button>
+          <button class="filter-chip performance negative" [class.active]="selectedPerformance === 'losers'" (click)="selectedPerformance = 'losers'">Top Losers</button>
+          <button class="filter-chip performance neutral" [class.active]="selectedPerformance === 'mostactive'" (click)="selectedPerformance = 'mostactive'">Most Active</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Results Table -->
+    <div class="results-section">
+      <div class="results-header">
+        <div class="results-count">
+          <span class="count-number">{{ filteredMarketData.length }}</span>
+          <span class="count-label">stocks found</span>
+        </div>
+        <div class="results-actions">
+          <button class="action-btn">Watchlist</button>
+          <button class="action-btn">Compare</button>
+        </div>
+      </div>
+      
+      <div class="stocks-table">
+        <div class="table-header">
+          <div class="header-cell symbol-header">Symbol</div>
+          <div class="header-cell name-header">Name</div>
+          <div class="header-cell price-header">Price</div>
+          <div class="header-cell change-header">Change</div>
+          <div class="header-cell change-percent-header">Change %</div>
+          <div class="header-cell volume-header">Volume</div>
+          <div class="header-cell market-cap-header">Market Cap</div>
+          <div class="header-cell actions-header">Actions</div>
+        </div>
+        
+        <div class="table-body">
+          <div class="table-row" *ngFor="let stock of filteredMarketData" (click)="goToStock(stock.symbol)">
+            <div class="cell symbol-cell">
+              <span class="symbol">{{ stock.symbol }}</span>
+              <span class="sector">{{ stock.sector }}</span>
+            </div>
+            <div class="cell name-cell">{{ stock.name }}</div>
+            <div class="cell price-cell">${{ stock.price.toFixed(2) }}</div>
+            <div class="cell change-cell" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
+              {{ stock.change > 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}
+            </div>
+            <div class="cell change-percent-cell" [class.positive]="stock.changePercent > 0" [class.negative]="stock.changePercent < 0">
+              {{ stock.changePercent > 0 ? '+' : '' }}{{ stock.changePercent.toFixed(2) }}%
+            </div>
+            <div class="cell volume-cell">{{ formatVolume(stock.volume) }}</div>
+            <div class="cell market-cap-cell">{{ formatMarketCap(stock.marketCap) }}</div>
+            <div class="cell actions-cell">
+              <button class="action-icon" (click)="addToWatchlist(stock.symbol); $event.stopPropagation()" title="Add to Watchlist">
+                <mat-icon>star_border</mat-icon>
+              </button>
+              <button class="action-icon" (click)="createAlert(stock.symbol); $event.stopPropagation()" title="Create Alert">
+                <mat-icon>notifications</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
