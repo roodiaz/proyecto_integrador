@@ -14,21 +14,24 @@
 
 .main-content {
   flex-grow: 1;
-  margin-left: 280px; /* Same as sidebar width */
+  margin-left: 260px; /* Same as sidebar width */
   transition: margin-left 0.3s ease;
   min-height: 100vh;
   background-color: var(--primary-bg);
+  display: flex;
+  flex-direction: column;
 }
 
 .main-content.collapsed {
-  margin-left: 94px; /* Collapsed sidebar width + margins */
+  margin-left: 70px; /* Collapsed sidebar width */
 }
 
 .content-area {
+  flex-grow: 1;
   padding: 20px;
-  margin-top: 76px; /* Header height + margin */
-  min-height: calc(100vh - 76px);
+  margin-top: 0; /* Remove header margin since header is inside main-content */
   background-color: var(--primary-bg);
+  overflow-y: auto;
 }
 
 /* Responsive adjustments */

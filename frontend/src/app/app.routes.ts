@@ -7,6 +7,8 @@ import { ContactForm } from './features/home/components/contact-form/contact-for
 import { Dashboard } from './features/dashboard/components/dashboard/dashboard';
 import { UserProfile } from './features/settings/components/user-profile/user-profile';
 import { Alerts } from './features/alerts/components/alerts/alerts';
+import { Portfolio } from './features/portfolio/components/portfolio/portfolio';
+import { Watchlist } from './features/watchlist/components/watchlist/watchlist';
 import { LayoutComponent } from './layout/layout';
 
 export const routes: Routes = [
@@ -29,8 +31,10 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: 'dashboard', component: Dashboard },
-      { path: 'perfil', component: UserProfile },
-      { path: 'alertas', component: Alerts },
+      { path: 'profile', component: UserProfile },
+      { path: 'alerts', component: Alerts },
+      { path: 'portfolio', component: Portfolio },
+      { path: 'watchlist', component: Watchlist },
     ]
   },
   

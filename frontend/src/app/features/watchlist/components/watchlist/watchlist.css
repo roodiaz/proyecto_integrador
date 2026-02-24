@@ -1,0 +1,184 @@
+.watchlist-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.watchlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.watchlist-header h2 {
+  color: #2c3e50;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.add-symbol {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ticker-input {
+  padding: 10px 16px;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  min-width: 200px;
+}
+
+.ticker-input:focus {
+  border-color: #1da1f2;
+}
+
+.add-btn {
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-btn:hover {
+  background-color: #1a91da;
+}
+
+.watchlist-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.watchlist-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.watchlist-table th {
+  background-color: #f8fafc;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.watchlist-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.watchlist-table tr:last-child td {
+  border-bottom: none;
+}
+
+.watchlist-table tr:hover {
+  background-color: #f8fafc;
+}
+
+.ticker-cell {
+  font-weight: 600;
+  color: #1e293b;
+  text-transform: uppercase;
+}
+
+.price-cell {
+  font-weight: 500;
+  color: #334155;
+}
+
+.variation-cell {
+  font-weight: 600;
+}
+
+.variation-cell.positive {
+  color: #10b981;
+}
+
+.variation-cell.negative {
+  color: #ef4444;
+}
+
+.actions-cell {
+  text-align: right;
+}
+
+.remove-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.remove-btn:hover {
+  background-color: #dc2626;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #64748b;
+}
+
+.empty-state p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.empty-state p:first-child {
+  font-size: 18px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .watchlist-container {
+    padding: 16px;
+  }
+  
+  .watchlist-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .add-symbol {
+    flex-direction: column;
+  }
+  
+  .ticker-input {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .watchlist-table {
+    font-size: 12px;
+  }
+  
+  .watchlist-table th,
+  .watchlist-table td {
+    padding: 12px 8px;
+  }
+}

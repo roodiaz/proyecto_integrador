@@ -3,11 +3,13 @@ import { SidebarService } from '../core/services/sidebar.service';
 import { RouterOutlet } from '@angular/router';
 import { Header } from '../shared/components/header/header';
 import { Sidebar } from '../shared/components/sidebar/sidebar';
+import { Portfolio } from '../features/portfolio/components/portfolio/portfolio';
+import { Watchlist } from '../features/watchlist/components/watchlist/watchlist';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, Header, Sidebar],
+  imports: [RouterOutlet, Header, Sidebar, Portfolio, Watchlist],
   templateUrl: './layout.html',
   styleUrls: ['./layout.css']
 })
