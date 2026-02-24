@@ -1,6 +1,14 @@
 <div class="portfolio-container">
   <div class="portfolio-content">
-    <!-- Resumen del Portfolio -->
+    <!-- Section Header -->
+    <div class="section-header">
+      <h2>Portfolio</h2>
+      <button class="buy-action-btn" (click)="openBuyModal()">
+        <span>+</span> Nueva Operación
+      </button>
+    </div>
+
+    <!-- Portfolio Summary -->
     <div class="portfolio-summary">
       <div class="summary-cards">
         <div class="summary-card">
@@ -23,21 +31,69 @@
       </div>
     </div>
 
-    <!-- Gráficos -->
-    <div class="charts-section">
-      <div class="chart-container">
-        <h3>Distribución de Activos</h3>
-        <canvas id="pieChart" width="400" height="200"></canvas>
-      </div>
-      <div class="chart-container">
-        <h3>Evolución del Portfolio</h3>
-        <canvas id="lineChart" width="400" height="200"></canvas>
+    <!-- Charts and Details Section -->
+    <div class="charts-details-section">
+      <div class="charts-section">
+        <div class="chart-container">
+          <h3>Distribución</h3>
+          <div class="chart-with-details">
+            <canvas id="pieChart" width="400" height="200"></canvas>
+            <!-- Top 3 Assets -->
+            <div class="top-assets-section">
+              <h3>Top Activos</h3>
+              <div class="top-assets-list">
+                <div class="top-asset-item" *ngFor="let asset of topAssets; let i = index">
+                  <div class="asset-color" [style.background-color]="getAssetColor(i)"></div>
+                  <div class="asset-info">
+                    <div class="asset-ticker">{{ asset.ticker }}</div>
+                    <div class="asset-percentage">{{ asset.percentage.toFixed(1) }}%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-header">
+            <h3>Evolución</h3>
+            <div class="period-selector">
+              <select 
+                [value]="selectedPeriod" 
+                (change)="onPeriodChange($event)"
+                class="period-select">
+                <option *ngFor="let period of timePeriods" [value]="period.value">
+                  {{ period.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <canvas id="lineChart" width="400" height="200"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- Tabla de Operaciones -->
+    <!-- Operations Section -->
     <div class="operations-section">
-      <h2>Operaciones Realizadas</h2>
+      <div class="section-header">
+        <h2>Operaciones</h2>
+        <div class="filter-controls">
+          <input 
+            type="text" 
+            placeholder="Filtrar por ticker..." 
+            class="filter-input"
+            [ngModel]="filterText"
+            (ngModelChange)="onFilterChange($event)"
+          >
+          <select class="filter-select"
+                  [ngModel]="sortBy"
+                  (ngModelChange)="onSortChange($event)">
+            <option value="">Ordenar por rendimiento</option>
+            <option value="best">Mejor activo</option>
+            <option value="worst">Peor activo</option>
+          </select>
+        </div>
+      </div>
+      
       <div class="table-container">
         <table class="operations-table">
           <thead>
@@ -46,13 +102,13 @@
               <th>Cantidad</th>
               <th>Precio Compra</th>
               <th>Precio Actual</th>
-              <th>Variación %</th>
+              <th>Variación</th>
               <th>Ganancia/Pérdida</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let operation of operations" [class.positive]="operation.profitLoss > 0" [class.negative]="operation.profitLoss < 0">
+            <tr *ngFor="let operation of filteredOperations" [class.positive]="operation.profitLoss > 0" [class.negative]="operation.profitLoss < 0">
               <td class="ticker-cell">{{ operation.ticker }}</td>
               <td class="quantity-cell">{{ operation.quantity }}</td>
               <td class="price-cell">${{ operation.buyPrice.toFixed(2) }}</td>
@@ -65,49 +121,44 @@
                 <span class="percent">({{ operation.profitLossPercent > 0 ? '+' : '' }}{{ operation.profitLossPercent.toFixed(2) }}%)</span>
               </td>
               <td class="actions-cell">
-                <button *ngIf="operation.isOpen" (click)="sellOperation(operation.id)" class="sell-btn">Vender</button>
+                <button *ngIf="operation.isOpen" 
+                        (click)="openSellModal(operation)" 
+                        class="sell-action-btn">
+                  Vender
+                </button>
                 <span *ngIf="!operation.isOpen" class="closed-label">Cerrada</span>
               </td>
             </tr>
           </tbody>
         </table>
         
-        <div *ngIf="operations.length === 0" class="empty-state">
-          <p>No tienes operaciones realizadas</p>
-          <p>Comienza comprando tu primer activo</p>
+        <!-- Empty State -->
+        <div *ngIf="filteredOperations.length === 0" class="empty-state">
+          <h3>Tu portfolio está vacío</h3>
+          <p>Comienza a invertir para ver tu rendimiento</p>
+          <p>Agrega tu primera operación y empieza a construir tu futuro financiero</p>
+          <button class="cta-button" (click)="openBuyModal()">
+            Comenzar a Invertir
+          </button>
         </div>
-      </div>
-    </div>
-
-    <!-- Formulario de Compra -->
-    <div class="buy-section">
-      <h2>Nueva Operación</h2>
-      <div class="buy-form">
-        <input 
-          type="text" 
-          placeholder="Ticker..." 
-          [(ngModel)]="newTicker"
-          class="form-input"
-        >
-        <input 
-          type="number" 
-          placeholder="Cantidad..." 
-          [(ngModel)]="newQuantity"
-          class="form-input"
-          min="1"
-        >
-        <input 
-          type="number" 
-          placeholder="Precio..." 
-          [(ngModel)]="newPrice"
-          class="form-input"
-          min="0.01"
-          step="0.01"
-        >
-        <button (click)="buyAsset()" class="buy-btn" [disabled]="!canBuy()">
-          Comprar
-        </button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Buy Modal -->
+<app-portfolio-modal 
+  [isVisible]="showBuyModal"
+  [mode]="'buy'"
+  (closeModal)="closeBuyModal()"
+  (buyComplete)="onBuyComplete($event)">
+</app-portfolio-modal>
+
+<!-- Sell Modal -->
+<app-portfolio-modal 
+  [isVisible]="showSellModal"
+  [mode]="'sell'"
+  [operation]="selectedOperation"
+  (closeModal)="closeSellModal()"
+  (sellComplete)="onSellComplete($event)">
+</app-portfolio-modal>

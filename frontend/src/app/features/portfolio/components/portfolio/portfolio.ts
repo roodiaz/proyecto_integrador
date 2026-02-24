@@ -2,14 +2,16 @@ import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { Chart, ChartConfiguration, ChartType, registerables, TooltipItem } from 'chart.js';
 import { PortfolioService } from '../../services/portfolio.service';
 import { PortfolioOperation } from '../../models/portfolio-operation';
 import { PortfolioSummary } from '../../models/portfolio-summary';
+import { PortfolioModal, BuyData } from '../portfolio-modal/portfolio-modal';
 
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PortfolioModal],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css'
 })
@@ -23,13 +25,38 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     totalInvested: 0
   };
   
-  newTicker: string = '';
-  newQuantity: number = 0;
-  newPrice: number = 0;
-  
+  // Modal controls
+  showBuyModal: boolean = false;
+  showSellModal: boolean = false;
+  selectedOperation: PortfolioOperation | null = null;
+
+  // Filter controls
+  filterText: string = '';
+  sortBy: string = '';
+
+  // Top assets data
+  topAssets: Array<{ticker: string, quantity: number, percentage: number}> = [];
+
+  // Chart.js instances
+  pieChart: Chart | null = null;
+  lineChart: Chart | null = null;
+
+  // Time period selector
+  selectedPeriod: string = '1m';
+  timePeriods = [
+    { value: '7d', label: '7 días' },
+    { value: '1m', label: '1 mes' },
+    { value: '3m', label: '3 meses' },
+    { value: '6m', label: '6 meses' },
+    { value: '1y', label: '1 año' }
+  ];
+
   private subscription: Subscription | null = null;
 
-  constructor() {}
+  constructor() {
+    // Register Chart.js components
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     this.loadPortfolioData();
@@ -91,6 +118,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     ];
     
     this.updatePortfolioSummary();
+    this.updateTopAssets();
   }
 
   startLiveUpdates(): void {
@@ -120,22 +148,90 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
-  canBuy(): boolean {
-    return !!(this.newTicker.trim() && 
-           this.newQuantity > 0 && 
-           this.newPrice > 0 &&
-           (this.newQuantity * this.newPrice) <= this.portfolioSummary.currentBalance);
+  updateTopAssets(): void {
+    this.topAssets = this.getTopAssets();
   }
 
-  buyAsset(): void {
-    if (!this.canBuy()) return;
+  // Filter methods
+  get filteredOperations(): PortfolioOperation[] {
+    let filtered = this.operations.filter(op => op.isOpen);
+    
+    // Apply text filter
+    if (this.filterText) {
+      filtered = filtered.filter(op => 
+        op.ticker.toLowerCase().includes(this.filterText.toLowerCase())
+      );
+    }
+    
+    // Apply sorting
+    switch (this.sortBy) {
+      case 'best':
+        filtered.sort((a, b) => b.profitLoss - a.profitLoss);
+        break;
+      case 'worst':
+        filtered.sort((a, b) => a.profitLoss - b.profitLoss);
+        break;
+      default:
+        filtered.sort((a, b) => new Date(b.operationDate).getTime() - new Date(a.operationDate).getTime());
+        break;
+    }
+    
+    return filtered;
+  }
 
+  onFilterChange(event: Event): void {
+    this.filterText = (event.target as HTMLInputElement).value;
+  }
+
+  onSortChange(event: Event): void {
+    this.sortBy = (event.target as HTMLSelectElement).value;
+  }
+
+  onPeriodChange(event: Event): void {
+    this.selectedPeriod = (event.target as HTMLSelectElement).value;
+    this.createLineChart(); // Actualizar gráfico con nuevo período
+  }
+
+  getTopAssets(): Array<{ticker: string, quantity: number, percentage: number}> {
+    const openOperations = this.operations.filter(op => op.isOpen);
+    const totalQuantity = openOperations.reduce((sum, op) => sum + op.quantity, 0);
+    
+    return openOperations
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 3)
+      .map(op => ({
+        ticker: op.ticker,
+        quantity: op.quantity,
+        percentage: (op.quantity / totalQuantity) * 100
+      }));
+  }
+
+  // Modal methods
+  openBuyModal(): void {
+    this.showBuyModal = true;
+  }
+
+  openSellModal(operation: PortfolioOperation): void {
+    this.selectedOperation = operation;
+    this.showSellModal = true;
+  }
+
+  closeBuyModal(): void {
+    this.showBuyModal = false;
+  }
+
+  closeSellModal(): void {
+    this.showSellModal = false;
+    this.selectedOperation = null;
+  }
+
+  onBuyComplete(buyData: BuyData): void {
     const newOperation: PortfolioOperation = {
       id: Date.now().toString(),
-      ticker: this.newTicker.trim().toUpperCase(),
-      quantity: this.newQuantity,
-      buyPrice: this.newPrice,
-      currentPrice: this.newPrice,
+      ticker: buyData.ticker,
+      quantity: buyData.quantity,
+      buyPrice: buyData.price,
+      currentPrice: buyData.price,
       variationPercent: 0,
       profitLoss: 0,
       profitLossPercent: 0,
@@ -145,14 +241,15 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
     this.operations.push(newOperation);
     this.updatePortfolioSummary();
+    this.closeBuyModal();
     
-    // Limpiar formulario
-    this.newTicker = '';
-    this.newQuantity = 0;
-    this.newPrice = 0;
+    // Redibujar gráficos
+    setTimeout(() => {
+      this.initializeCharts();
+    }, 100);
   }
 
-  sellOperation(operationId: string): void {
+  onSellComplete(operationId: string): void {
     const operation = this.operations.find(op => op.id === operationId);
     if (operation) {
       operation.isOpen = false;
@@ -160,124 +257,248 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       operation.profitLossPercent = ((operation.currentPrice - operation.buyPrice) / operation.buyPrice) * 100;
       this.updatePortfolioSummary();
     }
+    this.closeSellModal();
+    
+    // Redibujar gráficos
+    setTimeout(() => {
+      this.initializeCharts();
+    }, 100);
   }
 
   initializeCharts(): void {
-    this.drawPieChart();
-    this.drawLineChart();
+    this.createPieChart();
+    this.createLineChart();
   }
 
-  drawPieChart(): void {
+  createPieChart(): void {
     const canvas = document.getElementById('pieChart') as HTMLCanvasElement;
     if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+
+    // Destroy existing chart if it exists
+    if (this.pieChart) {
+      this.pieChart.destroy();
+    }
 
     const openOperations = this.operations.filter(op => op.isOpen);
-    const data = openOperations.map(op => ({
-      label: op.ticker,
-      value: op.quantity * op.currentPrice,
-      color: this.getRandomColor()
-    }));
-
-    // Dibujar gráfico de torta simple
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(centerX, centerY) - 20;
+    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
     
-    let currentAngle = -Math.PI / 2;
-    const total = data.reduce((sum, item) => sum + item.value, 0);
+    const data = {
+      labels: openOperations.map(op => op.ticker),
+      datasets: [{
+        data: openOperations.map(op => op.quantity * op.currentPrice),
+        backgroundColor: colors.slice(0, openOperations.length),
+        borderColor: '#1E1E1E',
+        borderWidth: 2,
+        hoverOffset: 4
+      }]
+    };
 
-    data.forEach(item => {
-      const sliceAngle = (item.value / total) * 2 * Math.PI;
-      
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
-      ctx.lineTo(centerX, centerY);
-      ctx.fillStyle = item.color;
-      ctx.fill();
-      
-      // Etiqueta
-      const labelAngle = currentAngle + sliceAngle / 2;
-      const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
-      const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
-      
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(item.label, labelX, labelY);
-      
-      currentAngle += sliceAngle;
-    });
+    const config: ChartConfiguration = {
+      type: 'doughnut' as ChartType,
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#FFFFFF',
+            bodyColor: '#FFFFFF',
+            borderColor: '#4ECDC4',
+            borderWidth: 2,
+            padding: 16,
+            displayColors: true,
+            callbacks: {
+              label: (context: any) => {
+                const label = context.label || '';
+                const value = context.parsed || 0;
+                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    this.pieChart = new Chart(canvas, config);
   }
 
-  drawLineChart(): void {
+  createLineChart(): void {
     const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
     if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
-    // Datos de ejemplo para la evolución
-    const data = [
-      { day: 1, value: 10000 },
-      { day: 5, value: 10200 },
-      { day: 10, value: 10150 },
-      { day: 15, value: 10350 },
-      { day: 20, value: 10500 },
-      { day: 25, value: 10400 },
-      { day: 30, value: 10600 }
-    ];
+    // Destroy existing chart if it exists
+    if (this.lineChart) {
+      this.lineChart.destroy();
+    }
 
-    const padding = 40;
-    const width = canvas.width - 2 * padding;
-    const height = canvas.height - 2 * padding;
-    
-    const maxValue = Math.max(...data.map(d => d.value));
-    const minValue = Math.min(...data.map(d => d.value));
-    const valueRange = maxValue - minValue;
+    // Generar datos según el período seleccionado
+    const data = this.generateDataForPeriod(this.selectedPeriod);
 
-    // Dibujar ejes
-    ctx.strokeStyle = '#ccc';
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, canvas.height - padding);
-    ctx.lineTo(canvas.width - padding, canvas.height - padding);
-    ctx.stroke();
-
-    // Dibujar línea
-    ctx.strokeStyle = '#1da1f2';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    
-    data.forEach((point, index) => {
-      const x = padding + (index / (data.length - 1)) * width;
-      const y = canvas.height - padding - ((point.value - minValue) / valueRange) * height;
-      
-      if (index === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+    const config: ChartConfiguration = {
+      type: 'line' as ChartType,
+      data: {
+        labels: data.map(d => d.date),
+        datasets: [{
+          label: 'Portfolio Value',
+          data: data.map(d => d.value),
+          borderColor: '#4ECDC4',
+          backgroundColor: 'rgba(78, 205, 196, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: '#4ECDC4',
+          pointBorderColor: '#FFFFFF',
+          pointBorderWidth: 3,
+          pointRadius: 6,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#FFFFFF',
+            bodyColor: '#FFFFFF',
+            borderColor: '#4ECDC4',
+            borderWidth: 2,
+            padding: 16,
+            displayColors: false,
+            callbacks: {
+              title: (context: any) => {
+                const date = new Date(context[0].label);
+                return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' });
+              },
+              label: (context: any) => {
+                const value = context.parsed as number;
+                return `Valor: $${value.toLocaleString('es-ES')}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#FFFFFF',
+              font: {
+                size: 11
+              },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 4,
+              callback: (value: any, index: any) => {
+                const date = new Date(data[index].date);
+                return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+              }
+            }
+          },
+          y: {
+            display: true,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: '#FFFFFF',
+              font: {
+                size: 11
+              },
+              callback: (value: any) => {
+                return `$${(value as number / 1000).toFixed(1)}k`;
+              }
+            }
+          }
+        },
+        elements: {
+          point: {
+            hitRadius: 10,
+            hoverRadius: 8
+          },
+          line: {
+            borderCapStyle: 'round',
+            borderJoinStyle: 'round'
+          }
+        }
       }
-    });
-    
-    ctx.stroke();
+    };
 
-    // Dibujar puntos
-    ctx.fillStyle = '#1da1f2';
-    data.forEach((point, index) => {
-      const x = padding + (index / (data.length - 1)) * width;
-      const y = canvas.height - padding - ((point.value - minValue) / valueRange) * height;
+    this.lineChart = new Chart(canvas, config);
+  }
+
+  generateDataForPeriod(period: string): Array<{date: string, value: number}> {
+    const baseValue = 10000;
+    const today = new Date();
+    let startDate = new Date();
+    let dataPoints = 0;
+
+    switch (period) {
+      case '7d':
+        startDate.setDate(today.getDate() - 7);
+        dataPoints = 7;
+        break;
+      case '1m':
+        startDate.setDate(today.getDate() - 30);
+        dataPoints = 6;
+        break;
+      case '3m':
+        startDate.setMonth(today.getMonth() - 3);
+        dataPoints = 12;
+        break;
+      case '6m':
+        startDate.setMonth(today.getMonth() - 6);
+        dataPoints = 12;
+        break;
+      case '1y':
+        startDate.setFullYear(today.getFullYear() - 1);
+        dataPoints = 12;
+        break;
+      default:
+        startDate.setDate(today.getDate() - 30);
+        dataPoints = 6;
+    }
+
+    const data: Array<{date: string, value: number}> = [];
+    const timeDiff = today.getTime() - startDate.getTime();
+    
+    for (let i = 0; i < dataPoints; i++) {
+      const date = new Date(startDate.getTime() + (timeDiff / dataPoints) * i);
+      const randomVariation = (Math.random() - 0.3) * 500; // Tendencia a subir
+      const trend = i * 30; // Tendencia de crecimiento
+      const value = baseValue + trend + randomVariation + (Math.sin(i / 2) * 100);
       
-      ctx.beginPath();
-      ctx.arc(x, y, 4, 0, 2 * Math.PI);
-      ctx.fill();
-    });
+      data.push({
+        date: date.toISOString().split('T')[0],
+        value: Math.round(value)
+      });
+    }
+
+    return data;
   }
 
   private getRandomColor(): string {
     const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
     return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  getAssetColor(index: number): string {
+    const colors = ['#FF6384', '#36A2EB', '#FFCE56'];
+    return colors[index % colors.length];
   }
 }
