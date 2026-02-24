@@ -137,3 +137,58 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# =========================
+# .NET / Visual Studio
+# =========================
+
+# Build results
+bin/
+obj/
+
+# Rider
+.idea/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Visual Studio
+.vs/
+
+# VS Code
+.vscode/
+
+# Dotnet CLI
+*.dotnet.cli.toolsettings.json
+
+# Test Results
+TestResults/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Publish output
+publish/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# EF Core migrations snapshot temp files
+*.dbmdl
+
+# Local DB files
+*.mdf
+*.ldf
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+

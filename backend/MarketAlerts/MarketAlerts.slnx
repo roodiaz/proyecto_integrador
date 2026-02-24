@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="MarketAlerts.Api/MarketAlerts.Api.csproj" />
+  <Project Path="MarketAlerts.Business/MarketAlerts.Business.csproj" Id="164220d7-daf4-4dfd-a727-5ceca9c79ad5" />
+  <Project Path="MarketAlerts.Data/MarketAlerts.Data.csproj" Id="47b0ed48-577c-4b0f-aa9c-a34023b49052" />
+  <Project Path="MarketAlerts.Models/MarketAlerts.Models.csproj" Id="4120bb2c-3efa-4aa1-ade2-d49d2cd2e8c0" />
+  <Project Path="MarketAlerts.Tests/MarketAlerts.Tests.csproj" Id="5a9ad2c7-7b4f-49a8-b4b7-98ed9479a74c" />
+  <Project Path="MarketAlerts.Workers/MarketAlerts.Workers.csproj" Id="7558b3b5-db88-4995-8abd-fd6b351f8f33" />
+</Solution>
