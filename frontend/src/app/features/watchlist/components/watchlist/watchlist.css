@@ -1,9 +1,21 @@
+/* Watchlist Container */
+:host {
+  --primary-bg: #111B20;
+  --card-bg: #1E1E1E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #b0bec5;
+  --accent-green: #B0C956;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
 .watchlist-container {
-  padding: 0;
-  max-width: 1200px;
-  margin: 0 auto;
-  background-color: #1a1a1a;
-  min-height: calc(100vh - 76px); /* Account for header space */
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 64px);
+  box-sizing: border-box;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  padding: 2rem;
 }
 
 .watchlist-content {
@@ -20,20 +32,20 @@
 }
 
 .watchlist-header h2 {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 500;
   margin: 0;
 }
 
 .favorites-indicator {
-  background-color: #2d2d2d;
-  color: #a0a0a0;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--border-color);
 }
 
 .favorites-indicator.limit-reached {
@@ -50,27 +62,27 @@
 
 .ticker-input {
   padding: 10px 16px;
-  border: 2px solid #3d3d3d;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease;
   min-width: 200px;
-  background-color: #2d2d2d;
-  color: #ffffff;
+  background-color: transparent;
+  color: var(--text-primary);
 }
 
 .ticker-input:focus {
-  border-color: #1da1f2;
+  border-color: var(--accent-green);
 }
 
 .ticker-input::placeholder {
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .add-btn {
-  background-color: #1da1f2;
-  color: white;
+  background-color: var(--accent-green);
+  color: #121418;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
@@ -81,7 +93,7 @@
 }
 
 .add-btn:hover {
-  background-color: #1a91da;
+  background-color: #9fb54a;
 }
 
 .add-btn:disabled {
@@ -90,11 +102,11 @@
 }
 
 .watchlist-table-container {
-  background: #2d2d2d;
+  background: transparent;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   overflow: hidden;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--border-color);
 }
 
 .watchlist-table {
@@ -103,12 +115,12 @@
 }
 
 .watchlist-table th {
-  background-color: #1f1f1f;
+  background-color: rgba(255, 255, 255, 0.05);
   padding: 16px;
   text-align: left;
   font-weight: 600;
-  color: #a0a0a0;
-  border-bottom: 1px solid #3d3d3d;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -116,9 +128,9 @@
 
 .watchlist-table td {
   padding: 16px;
-  border-bottom: 1px solid #3d3d3d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 14px;
-  color: #e0e0e0;
+  color: var(--text-primary);
 }
 
 .watchlist-table tr:last-child td {
@@ -131,12 +143,12 @@
 }
 
 .watchlist-table tbody tr:hover {
-  background-color: #3a3a3a;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .ticker-cell {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   text-transform: uppercase;
   display: flex;
   align-items: center;
@@ -147,11 +159,11 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--accent-green);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #121418;
   font-weight: 700;
   font-size: 12px;
   text-transform: uppercase;
@@ -179,7 +191,7 @@
 
 .price-cell {
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .variation-cell {
@@ -187,7 +199,7 @@
 }
 
 .variation-cell.positive {
-  color: #10b981;
+  color: var(--accent-green);
 }
 
 .variation-cell.negative {
@@ -216,7 +228,7 @@
 .empty-state {
   text-align: center;
   padding: 48px 24px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .empty-state p {
@@ -227,16 +239,16 @@
 .empty-state p:first-child {
   font-size: 18px;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--text-primary);
 }
 
 /* Search section */
 .search-section {
   margin-top: 24px;
-  background: #2d2d2d;
+  background: transparent;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--border-color);
 }
 
 .search-container {
@@ -255,33 +267,33 @@
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  color: var(--text-secondary);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
   padding: 12px 16px 12px 44px;
-  border: 2px solid #3d3d3d;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease;
-  background-color: #1f1f1f;
-  color: #ffffff;
+  background-color: transparent;
+  color: var(--text-primary);
 }
 
 .search-input:focus {
-  border-color: #1da1f2;
+  border-color: var(--accent-green);
 }
 
 .search-input::placeholder {
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .search-btn {
-  background-color: #1da1f2;
-  color: white;
+  background-color: var(--accent-green);
+  color: #121418;
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
@@ -293,7 +305,7 @@
 }
 
 .search-btn:hover {
-  background-color: #1a91da;
+  background-color: #9fb54a;
 }
 
 /* Responsive design */
