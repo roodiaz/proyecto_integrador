@@ -12,21 +12,23 @@
 
 /* Main Modal Container */
 .create-alert-modal {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
-  border-radius: 16px !important;
+  background: var(--primary-bg) !important;
+  border-radius: 12px !important;
   overflow: hidden !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: none !important;
   min-width: 500px !important;
   max-width: 600px !important;
   margin: 0 !important;
   padding: 0 !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 /* Header */
 .modal-header {
-  background: linear-gradient(135deg, #B0C956 0%, #8a9f44 100%) !important;
+  background: var(--primary-bg) !important;
   padding: 24px 32px !important;
   position: relative !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 .header-content {
@@ -37,7 +39,7 @@
 
 .header-text h2 {
   margin: 0 !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   font-size: 24px !important;
   font-weight: 700 !important;
   text-align: center !important;
@@ -53,7 +55,7 @@
 /* Body */
 .modal-body {
   padding: 32px !important;
-  background: #1a1a1a !important;
+  background: var(--primary-bg) !important;
 }
 
 .alert-form {
@@ -64,17 +66,18 @@
 
 /* Form Sections - Simplified */
 .form-section {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   border-radius: 12px !important;
   padding: 20px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--border-color) !important;
   transition: all 0.3s ease !important;
 }
 
 .form-section:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(176, 201, 86, 0.3) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
   transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
 }
 
 .section-header {
@@ -85,7 +88,7 @@
 
 .section-header h3 {
   margin: 0 !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   font-size: 16px !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
@@ -102,18 +105,18 @@
 }
 
 ::ng-deep .mat-form-field-appearance-outline:hover {
-  border-color: rgba(176, 201, 86, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
   background: rgba(255, 255, 255, 0.04) !important;
 }
 
 ::ng-deep .mat-form-field-appearance-outline.mat-focused {
-  border-color: #B0C956 !important;
-  background: rgba(176, 201, 86, 0.05) !important;
+  border-color: var(--accent-green) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   box-shadow: 0 0 0 2px rgba(176, 201, 86, 0.2) !important;
 }
 
 ::ng-deep .mat-input-element {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   font-size: 16px !important;
   font-weight: 500 !important;
 }
@@ -124,7 +127,7 @@
 }
 
 ::ng-deep .mat-focused .mat-form-field-label {
-  color: #B0C956 !important;
+  color: var(--accent-green) !important;
 }
 
 ::ng-deep .mat-form-field-outline {
@@ -136,19 +139,19 @@
 }
 
 ::ng-deep .mat-focused .mat-form-field-outline-thick {
-  color: #B0C956 !important;
+  color: var(--accent-green) !important;
 }
 
 /* Select Panel - Clean */
 ::ng-deep .mat-select-panel {
-  background: #2a2a2a !important;
+  background: var(--primary-bg) !important;
   border-radius: 8px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 ::ng-deep .mat-option {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   font-weight: 500 !important;
   padding: 12px 16px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
@@ -164,7 +167,7 @@
 
 ::ng-deep .mat-option.mat-selected:not(.mat-option-disabled) {
   background: rgba(176, 201, 86, 0.2) !important;
-  color: #B0C956 !important;
+  color: var(--accent-green) !important;
 }
 
 /* Toggle - Simplified */
@@ -178,7 +181,7 @@
 
 .toggle-label {
   font-weight: 600 !important;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   font-size: 14px !important;
 }
 
@@ -190,7 +193,7 @@
 }
 
 ::ng-deep .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
-  background-color: #B0C956 !important;
+  background-color: var(--accent-green) !important;
 }
 
 ::ng-deep .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
@@ -199,9 +202,9 @@
 
 /* Footer */
 .modal-footer {
-  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+  background: var(--primary-bg) !important;
   padding: 24px 32px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-top: 1px solid var(--border-color) !important;
 }
 
 .footer-content {
@@ -228,27 +231,28 @@
 }
 
 .cancel-btn {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 .cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #B0C956 0%, #8a9f44 100%) !important;
-  color: #1a1a1a !important;
+  background: var(--accent-green) !important;
+  color: #121418 !important;
   border: none !important;
-  box-shadow: 0 4px 15px rgba(176, 201, 86, 0.3) !important;
+  box-shadow: none !important;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #9fb34b 0%, #7a8f3a 100%) !important;
+  background: #9fb54a !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(176, 201, 86, 0.4) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
 }
 
 .submit-btn:disabled {

@@ -238,7 +238,7 @@
 
 /* Alerts Table */
 .alerts-table-container {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
@@ -248,7 +248,7 @@
 .alerts-table {
   width: 100%;
   border-collapse: collapse;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .alerts-table th {
@@ -354,7 +354,7 @@
 }
 
 .summary-card {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 20px;
@@ -368,7 +368,7 @@
 
 .summary-card:hover {
   transform: translateY(-2px);
-  box-shadow: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .summary-card.active {

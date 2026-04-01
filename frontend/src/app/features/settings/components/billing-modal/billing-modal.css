@@ -7,6 +7,21 @@
   --border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
 .billing-modal-container {
   min-width: 500px;
   max-width: 600px;
@@ -14,6 +29,7 @@
   color: var(--text-primary);
   border-radius: 12px;
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .billing-form {
@@ -149,11 +165,24 @@
   color: #f44336;
 }
 
+/* Overlay oscuro como el portfolio-modal */
+::ng-deep .cdk-overlay-dark-backdrop {
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+::ng-deep .cdk-overlay-pane {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 /* Estilos para el diálogo */
 ::ng-deep .mat-mdc-dialog-container {
   background: var(--primary-bg) !important;
   color: var(--text-primary) !important;
   border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 ::ng-deep .mat-mdc-dialog-title {
