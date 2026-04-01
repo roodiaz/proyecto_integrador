@@ -14,23 +14,23 @@
   box-sizing: border-box;
   background-color: var(--primary-bg);
   color: var(--text-primary);
+  padding: 2rem;
 }
 
 .profile-card {
-  background-color: #121418;
-  border-radius: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
   overflow: hidden;
-  border: none;
+  border: 1px solid var(--border-color);
   height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: none !important;
-  border-radius: 12px;
+  box-shadow: none;
 }
 
 .profile-header {
   padding: 2rem;
-  background-color: #121418; 
+  background: rgba(255, 255, 255, 0.05);
   border-bottom: 2px solid var(--accent-green);
   display: flex;
   align-items: center;
