@@ -72,8 +72,8 @@ export class PlanSelection implements OnInit {
         { text: 'Alertas de Precio', free: '1 alerta activa – intervalo fijo (5 min) – solo en UI', premium: 'Ilimitadas – intervalo configurable (1 a 5 min) – UI + Email' },
         { text: 'Lista de Seguimiento', free: 'Máx. 3 tickers favoritos', premium: 'Ilimitados' },
         { text: 'Portafolio Virtual', free: 'Tabla simple con precios actuales y variación %', premium: 'Tabla completa + gráficos (torta y evolución del portafolio)' },
-        { text: 'Configuraciones', free: 'Tema claro – moneda fija (USD)', premium: 'Tema claro/oscuro – moneda preferida (USD, ARS, etc.) – edición completa de datos' },
-        { text: 'Notificaciones', free: 'Solo dentro de la app', premium: 'App + Email (y futuras push notifications)' }
+        { text: 'Configuraciones', free: 'Moneda fija (USD)', premium: 'Moneda preferida (USD, ARS, etc.)' },
+        { text: 'Notificaciones', free: 'Solo dentro de la app', premium: 'App + Email' }
       ]
     },
     {
@@ -89,9 +89,8 @@ export class PlanSelection implements OnInit {
         { text: 'Alertas de Precio', free: '1 alerta activa – intervalo fijo (5 min) – solo en UI', premium: 'Ilimitadas – intervalo configurable (1 a 5 min) – UI + Email' },
         { text: 'Lista de Seguimiento', free: 'Máx. 3 tickers favoritos', premium: 'Ilimitados' },
         { text: 'Portafolio Virtual', free: 'Tabla simple con precios actuales y variación %', premium: 'Tabla completa + gráficos (torta y evolución del portafolio)' },
-        { text: 'Configuraciones', free: 'Tema claro – moneda fija (USD)', premium: 'Tema claro/oscuro – moneda preferida (USD, ARS, etc.) – edición completa de datos' },
-        { text: 'Notificaciones', free: 'Solo dentro de la app', premium: 'App + Email (y futuras push notifications)' },
-        { text: 'Soporte', free: 'Básico', premium: 'Prioritario' }
+        { text: 'Configuraciones', free: 'Moneda fija (USD)', premium: 'Moneda preferida (USD, ARS, etc.)' },
+        { text: 'Notificaciones', free: 'Solo dentro de la app', premium: 'App + Email' }
       ]
     }
   ];

@@ -2,13 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../../../shared/material.module';
+import { MatDialog } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { 
-  UserProfileData, 
-  UserProfileFormData, 
   mockUserProfileData, 
   userProfileSelectOptions 
 } from '../../models/user-profile.model';
+import { BillingModalComponent, BillingData } from '../billing-modal';
 
 @Component({
   selector: 'app-user-profile',
@@ -16,7 +25,16 @@ import {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MaterialModule
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatDividerModule,
+    MatSlideToggleModule
   ],
   templateUrl: './user-profile.html',
   styleUrls: ['./user-profile.css']
@@ -27,12 +45,18 @@ export class UserProfile implements OnInit {
   
   // Opciones para los selects
   currencies = userProfileSelectOptions.currencies;
-  themes = userProfileSelectOptions.themes;
-  updateIntervals = userProfileSelectOptions.updateIntervals;
+  plans = userProfileSelectOptions.plans;
+
+  // Datos de facturación (separados del formulario)
+  currentPlan = mockUserProfileData.currentPlan;
+  cardLastFour = mockUserProfileData.cardLastFour;
+  cardBrand = mockUserProfileData.cardBrand;
+  nextBillingDate = mockUserProfileData.nextBillingDate;
 
   constructor(
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {
     this.profileForm = this.fb.group({
       // Información Personal
@@ -43,12 +67,12 @@ export class UserProfile implements OnInit {
       
       // Preferencias
       currency: ['USD', [Validators.required]],
-      theme: ['system', [Validators.required]],
-      updateInterval: [5, [Validators.required, Validators.min(1)]],
       
       // Notificaciones
       emailNotifications: [true],
-      pushNotifications: [true],
+      
+      // Plan y Facturación
+      currentPlan: ['premium', [Validators.required]],
       
       // Seguridad
       currentPassword: [''],
@@ -127,5 +151,46 @@ export class UserProfile implements OnInit {
   triggerFileInput(): void {
     const fileInput = document.getElementById('profileImage') as HTMLInputElement;
     fileInput.click();
+  }
+
+  openBillingModal(): void {
+    const dialogRef = this.dialog.open(BillingModalComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: {
+        cardNumber: '',
+        cardName: '',
+        expiryDate: '',
+        cvv: '',
+        address: '',
+        city: '',
+        country: 'AR',
+        postalCode: ''
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: BillingData) => {
+      if (result) {
+        // Aquí iría la lógica para guardar los datos de facturación
+        console.log('Datos de facturación guardados:', result);
+        
+        // Actualizar los datos mostrados en la tarjeta
+        this.cardLastFour = result.cardNumber.slice(-4);
+        this.cardBrand = this.getCardBrand(result.cardNumber);
+        
+        this.snackBar.open('Datos de facturación actualizados correctamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+      }
+    });
+  }
+
+  private getCardBrand(cardNumber: string): string {
+    // Lógica simple para determinar la marca de la tarjeta
+    if (cardNumber.startsWith('4')) return 'visa';
+    if (cardNumber.startsWith('5')) return 'mastercard';
+    if (cardNumber.startsWith('3')) return 'amex';
+    return 'unknown';
   }
 }

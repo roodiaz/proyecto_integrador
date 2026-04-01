@@ -5,10 +5,15 @@ export interface UserProfileData {
   birthDate?: Date | null;
   phone?: string;
   currency: string;
-  theme: string;
-  updateInterval: number;
   emailNotifications: boolean;
-  pushNotifications: boolean;
+}
+
+// Interface para el perfil de usuario
+export interface UserPlans extends UserProfileData {
+  currentPlan: string;
+  cardLastFour: string;
+  cardBrand: string;
+  nextBillingDate: Date;
 }
 
 // Interface para el formulario de perfil (incluye campos de contraseña)
@@ -19,16 +24,17 @@ export interface UserProfileFormData extends Omit<UserProfileData, 'emailNotific
 }
 
 // Datos de ejemplo para el perfil de usuario
-export const mockUserProfileData: UserProfileData = {
+export const mockUserProfileData: UserPlans = {
   fullName: 'Juan Pérez',
   email: 'juan.perez@ejemplo.com',
   birthDate: new Date(1990, 0, 1),
   phone: '+54 11 1234-5678',
   currency: 'USD',
-  theme: 'system',
-  updateInterval: 5,
   emailNotifications: true,
-  pushNotifications: true
+  currentPlan: 'premium',
+  cardLastFour: '4242',
+  cardBrand: 'visa',
+  nextBillingDate: new Date(2026, 3, 15)
 };
 
 // Opciones para los selects
@@ -38,15 +44,8 @@ export const userProfileSelectOptions = {
     { value: 'ARS', viewValue: 'Peso Argentino (ARS)' }
   ],
   
-  themes: [
-    { value: 'light', viewValue: 'Claro' },
-    { value: 'dark', viewValue: 'Oscuro' },
-    { value: 'system', viewValue: 'Sistema' }
-  ],
-  
-  updateIntervals: [
-    { value: 1, viewValue: 'Cada minuto' },
-    { value: 5, viewValue: 'Cada 5 minutos' },
-    { value: 15, viewValue: 'Cada 15 minutos' }
+  plans: [
+    { value: 'free', viewValue: 'Plan Gratuito' },
+    { value: 'premium', viewValue: 'Plan Premium ($19.99/mes)' },
   ]
 };

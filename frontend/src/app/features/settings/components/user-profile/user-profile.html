@@ -73,28 +73,6 @@
                 </mat-select>
                 <mat-icon matSuffix>attach_money</mat-icon>
               </mat-form-field>
-  
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Tema de la Aplicación</mat-label>
-                <mat-select formControlName="theme">
-                  <mat-option *ngFor="let theme of themes" [value]="theme.value">
-                    {{ theme.viewValue }}
-                  </mat-option>
-                </mat-select>
-                <mat-icon matSuffix>palette</mat-icon>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Actualización de Datos</mat-label>
-                <mat-select formControlName="updateInterval">
-                  <mat-option *ngFor="let interval of updateIntervals" [value]="interval.value">
-                    {{ interval.viewValue }}
-                  </mat-option>
-                </mat-select>
-                <mat-icon matSuffix>update</mat-icon>
-              </mat-form-field>
             </div>
           </div>
   
@@ -106,9 +84,6 @@
             <div class="notification-options">
               <mat-slide-toggle formControlName="emailNotifications" color="primary">
                 Notificaciones por Correo Electrónico
-              </mat-slide-toggle>
-              <mat-slide-toggle formControlName="pushNotifications" color="primary">
-                Notificaciones en la Aplicación
               </mat-slide-toggle>
             </div>
           </div>
@@ -144,6 +119,53 @@
                   Las contraseñas no coinciden
                 </mat-error>
               </mat-form-field>
+            </div>
+          </div>
+  
+          <mat-divider></mat-divider>
+  
+          <!-- Plan y Facturación -->
+          <div class="form-section">
+            <h2 class="section-title">Plan y Facturación</h2>
+            <div class="billing-info">
+              <div class="current-plan-card">
+                <h3>Plan Actual</h3>
+                <mat-form-field appearance="outline" class="form-field full-width">
+                  <mat-label>Seleccionar Plan</mat-label>
+                  <mat-select formControlName="currentPlan">
+                    <mat-option *ngFor="let plan of plans" [value]="plan.value">
+                      {{ plan.viewValue }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>workspace_premium</mat-icon>
+                </mat-form-field>
+              </div>
+  
+              <div class="payment-method-card">
+                <h3>Método de Pago</h3>
+                <div class="payment-info">
+                  <mat-icon class="card-icon">credit_card</mat-icon>
+                  <div class="card-details">
+                    <p class="card-brand">{{ cardBrand.toUpperCase() }}</p>
+                    <p class="card-number">•••• •••• •••• {{ cardLastFour }}</p>
+                  </div>
+                  <button mat-stroked-button color="primary" class="update-card-btn" (click)="openBillingModal()">
+                    <mat-icon>edit</mat-icon>
+                    Actualizar
+                  </button>
+                </div>
+              </div>
+  
+              <div class="billing-date-card">
+                <h3>Próximo Cobro</h3>
+                <div class="billing-date-info">
+                  <mat-icon class="calendar-icon">event</mat-icon>
+                  <div class="date-details">
+                    <p class="billing-date">{{ nextBillingDate | date:'longDate' }}</p>
+                    <p class="billing-amount">$19.99 USD</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
   

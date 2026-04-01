@@ -1,0 +1,131 @@
+<div class="billing-modal-container">
+  <h2 mat-dialog-title>Datos de Facturación</h2>
+  
+  <mat-dialog-content>
+    <form [formGroup]="billingForm" class="billing-form">
+      <!-- Información de la Tarjeta -->
+      <div class="form-section">
+        <h3>Información de la Tarjeta</h3>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Número de Tarjeta</mat-label>
+          <input matInput 
+                 formControlName="cardNumber" 
+                 (input)="formatCardNumber($event)"
+                 maxlength="19">
+          <mat-icon matSuffix>credit_card</mat-icon>
+          <mat-error *ngIf="billingForm.get('cardNumber')?.hasError('required')">
+            El número de tarjeta es requerido
+          </mat-error>
+          <mat-error *ngIf="billingForm.get('cardNumber')?.hasError('pattern')">
+            Ingresa un número de tarjeta válido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nombre en la Tarjeta</mat-label>
+          <input matInput formControlName="cardName">
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="billingForm.get('cardName')?.hasError('required')">
+            El nombre es requerido
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="expiry-field">
+            <mat-label>Fecha de Vencimiento</mat-label>
+            <input matInput 
+                   formControlName="expiryDate" 
+                   (input)="formatExpiryDate($event)"
+                   maxlength="5">
+            <mat-error *ngIf="billingForm.get('expiryDate')?.hasError('required')">
+              La fecha es requerida
+            </mat-error>
+            <mat-error *ngIf="billingForm.get('expiryDate')?.hasError('pattern')">
+              Formato inválido (MM/AA)
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="cvv-field">
+            <mat-label>CVV</mat-label>
+            <input matInput 
+                   formControlName="cvv" 
+                   type="password"
+                   maxlength="4">
+            <mat-icon matSuffix>security</mat-icon>
+            <mat-error *ngIf="billingForm.get('cvv')?.hasError('required')">
+              El CVV es requerido
+            </mat-error>
+            <mat-error *ngIf="billingForm.get('cvv')?.hasError('pattern')">
+              CVV inválido
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Dirección de Facturación -->
+      <div class="form-section">
+        <h3>Dirección de Facturación</h3>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Dirección</mat-label>
+          <input matInput formControlName="address">
+          <mat-icon matSuffix>home</mat-icon>
+          <mat-error *ngIf="billingForm.get('address')?.hasError('required')">
+            La dirección es requerida
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="city-field">
+            <mat-label>Ciudad</mat-label>
+            <input matInput formControlName="city">
+            <mat-error *ngIf="billingForm.get('city')?.hasError('required')">
+              La ciudad es requerida
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="country-field">
+            <mat-label>País</mat-label>
+            <mat-select formControlName="country">
+              <mat-option value="AR">Argentina</mat-option>
+              <mat-option value="BO">Bolivia</mat-option>
+              <mat-option value="BR">Brasil</mat-option>
+              <mat-option value="CL">Chile</mat-option>
+              <mat-option value="CO">Colombia</mat-option>
+              <mat-option value="EC">Ecuador</mat-option>
+              <mat-option value="PY">Paraguay</mat-option>
+              <mat-option value="PE">Perú</mat-option>
+              <mat-option value="UY">Uruguay</mat-option>
+              <mat-option value="VE">Venezuela</mat-option>
+              <mat-option value="MX">México</mat-option>
+              <mat-option value="ES">España</mat-option>
+              <mat-option value="US">Estados Unidos</mat-option>
+            </mat-select>
+            <mat-error *ngIf="billingForm.get('country')?.hasError('required')">
+              El país es requerido
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="postal-field">
+          <mat-label>Código Postal</mat-label>
+          <input matInput formControlName="postalCode">
+          <mat-error *ngIf="billingForm.get('postalCode')?.hasError('required')">
+              El código postal es requerido
+            </mat-error>
+        </mat-form-field>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancelar</button>
+    <button mat-raised-button 
+            color="primary" 
+            (click)="onSubmit()"
+            [disabled]="!billingForm.valid">
+      Guardar Datos
+    </button>
+  </mat-dialog-actions>
+</div>

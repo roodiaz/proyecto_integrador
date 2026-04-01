@@ -230,3 +230,120 @@
 ::ng-deep .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
     background-color: var(--accent-green) !important;
 }
+
+/* Estilos para la sección de Plan y Facturación */
+.billing-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.current-plan-card,
+.payment-method-card,
+.billing-date-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.current-plan-card:hover,
+.payment-method-card:hover,
+.billing-date-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.current-plan-card h3,
+.payment-method-card h3,
+.billing-date-card h3 {
+  color: var(--accent-green);
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.payment-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.card-icon,
+.calendar-icon {
+  color: var(--text-secondary);
+  font-size: 2rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.card-details,
+.date-details {
+  flex: 1;
+  min-width: 150px;
+}
+
+.card-brand {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.card-number {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.update-card-btn {
+  min-width: 100px;
+}
+
+.billing-date-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.billing-date {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.billing-amount {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+/* Responsive para la sección de facturación */
+@media (max-width: 768px) {
+  .billing-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .payment-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .update-card-btn {
+    width: 100%;
+    margin-top: 1rem;
+  }
+}
