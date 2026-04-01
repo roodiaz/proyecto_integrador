@@ -21,9 +21,6 @@ export class Market implements OnInit, AfterViewInit {
   searchQuery: string = '';
   selectedTimeframe: string = '1d';
   selectedSort: string = 'volume';
-  selectedMoverType: string = 'gainers';
-  selectedMarketCap: string = 'all';
-  selectedPerformance: string = 'all';
   marketData: any[] = [];
   trendingStocks: any[] = [];
   marketIndices: any[] = [];
@@ -95,10 +92,10 @@ export class Market implements OnInit, AfterViewInit {
 
   private loadMarketNews() {
     this.marketNews = [
-      { title: 'Fed Signals Potential Rate Pause Amid Economic Uncertainty', source: 'Reuters', time: '2 hours ago' },
-      { title: 'Tech Stocks Rally as AI Optimism Grows', source: 'Bloomberg', time: '3 hours ago' },
-      { title: 'Oil Prices Surge on Supply Concerns', source: 'CNBC', time: '4 hours ago' },
-      { title: 'Bitcoin Reaches New Monthly High', source: 'CoinDesk', time: '5 hours ago' }
+      { title: 'Fed señala posible pausa en tasas ante incertidumbre económica', source: 'Reuters', time: 'hace 2 horas' },
+      { title: 'Acciones tecnológicas suben con optimismo en IA', source: 'Bloomberg', time: 'hace 3 horas' },
+      { title: 'Precios del petróleo disparados por preocupaciones de oferta', source: 'CNBC', time: 'hace 4 horas' },
+      { title: 'Bitcoin alcanza máximo mensual', source: 'CoinDesk', time: 'hace 5 horas' }
     ];
   }
 
@@ -214,11 +211,6 @@ export class Market implements OnInit, AfterViewInit {
     return filtered;
   }
 
-  getTopMoversData() {
-    const sorted = [...this.marketData].sort((a, b) => b.changePercent - a.changePercent);
-    return this.selectedMoverType === 'gainers' ? sorted.slice(0, 5) : sorted.slice(-5).reverse();
-  }
-
   goToStock(symbol: string) {
     this.router.navigate(['/market', symbol]);
   }
@@ -249,10 +241,6 @@ export class Market implements OnInit, AfterViewInit {
       return `${(value / 1000).toFixed(1)}K`;
     }
     return value.toString();
-  }
-
-  getSectorProgressWidth(changePercent: number): number {
-    return Math.abs(changePercent * 10);
   }
 
   getCurrentTime(): string {
