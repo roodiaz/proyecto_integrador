@@ -1,7 +1,7 @@
-CREATE DATABASE MarketAlerts;
+CREATE DATABASE InvestLab;
 GO
 
-USE MarketAlerts;
+USE InvestLab;
 GO
 
 -- Tabla que almacena los datos de los usuarios registrados,
