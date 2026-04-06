@@ -1,0 +1,6 @@
+services:
+  investlab.api:
+    image: ${DOCKER_REGISTRY-}investlabsapi
+    build:
+      context: .
+      dockerfile: InvestLab.Api/Dockerfile

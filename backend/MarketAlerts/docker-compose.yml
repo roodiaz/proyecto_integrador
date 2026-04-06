@@ -1,6 +1,0 @@
-services:
-  marketalerts.api:
-    image: ${DOCKER_REGISTRY-}marketalertsapi
-    build:
-      context: .
-      dockerfile: MarketAlerts.Api/Dockerfile

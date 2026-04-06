@@ -1,4 +1,4 @@
-namespace MarketAlerts.Workers
+namespace InvestLab.Workers
 {
     public class Worker : BackgroundService
     {

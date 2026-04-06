@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+  <Project Path="InvestLab.Api/InvestLab.Api.csproj" />
+  <Project Path="InvestLab.Business/InvestLab.Business.csproj" />
+  <Project Path="InvestLab.Data/InvestLab.Data.csproj" />
+  <Project Path="InvestLab.Models/InvestLab.Models.csproj" />
+  <Project Path="InvestLab.Tests/InvestLab.Tests.csproj" />
+  <Project Path="InvestLab.Workers/InvestLab.Workers.csproj" />
+</Solution>

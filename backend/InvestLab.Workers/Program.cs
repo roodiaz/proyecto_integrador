@@ -1,4 +1,4 @@
-using MarketAlerts.Workers;
+using InvestLab.Workers;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();

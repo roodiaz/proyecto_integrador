@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "MarketAlerts.Workers": {
+    "InvestLab.Workers": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"

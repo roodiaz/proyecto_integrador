@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MarketAlerts.Api.Controllers
+namespace InvestLab.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PortfolioController : ControllerBase
+    public class DashboardController : ControllerBase
     {
     }
 }

@@ -1,4 +1,4 @@
-namespace MarketAlerts.Tests
+namespace InvestLab.Tests
 {
     public class Tests
     {
