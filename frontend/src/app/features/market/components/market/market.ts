@@ -13,8 +13,8 @@ import Chart from 'chart.js/auto';
     FormsModule,
     MaterialModule
   ],
-  templateUrl: './market-new.html',
-  styleUrl: './market-new.css'
+  templateUrl: './market.html',
+  styleUrl: './market.css'
 })
 export class Market implements OnInit, AfterViewInit {
   selectedCategory: string = 'all';

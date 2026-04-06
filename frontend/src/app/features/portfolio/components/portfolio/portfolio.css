@@ -35,8 +35,9 @@
 .section-header h2 {
   margin: 0;
   color: var(--text-primary);
-  font-size: 24px;
-  font-weight: 500;
+  font-size: 32px !important;
+  font-weight: 500 !important;
+  margin: 0 0 24px 0 !important;
 }
 
 .asset-ticker {

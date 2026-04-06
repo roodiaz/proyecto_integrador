@@ -1,6 +1,6 @@
 <div class="market-container">
-  <!-- Header -->
-  <div class="market-header">
+  <!-- Unified Header Card -->
+  <div class="card-header">
     <div class="header-left">
       <h1 class="market-title">Panorama del Mercado</h1>
       <div class="market-status">
@@ -32,7 +32,10 @@
     <!-- Top Section - Indices -->
     <div class="indices-row">
       <div class="indices-section">
-        <h3 class="sub-section-title">Índices del Mercado</h3>
+        <div class="card-header">
+          <h3 class="sub-section-title">Índices del Mercado</h3>
+          <button class="refresh-btn">⟳</button>
+        </div>
         <div class="indices-grid">
           <div class="index-card" *ngFor="let index of marketIndices">
             <div class="index-header">
@@ -53,7 +56,7 @@
     <!-- Middle Section - Full Width Chart -->
     <div class="chart-row">
       <div class="chart-section">
-        <div class="section-header">
+        <div class="card-header">
           <h2 class="section-title">Rendimiento del Mercado</h2>
           <div class="time-selector">
             <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="selectedTimeframe = '1d'">1D</button>
