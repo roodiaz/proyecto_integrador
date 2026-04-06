@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
   <Project Path="MarketAlerts.Api/MarketAlerts.Api.csproj" />
   <Project Path="MarketAlerts.Business/MarketAlerts.Business.csproj" Id="164220d7-daf4-4dfd-a727-5ceca9c79ad5" />
   <Project Path="MarketAlerts.Data/MarketAlerts.Data.csproj" Id="47b0ed48-577c-4b0f-aa9c-a34023b49052" />
