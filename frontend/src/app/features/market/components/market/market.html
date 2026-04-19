@@ -100,15 +100,15 @@
       <div class="sectors-section">
         <div class="section-header">
           <h3 class="section-title">Sectores</h3>
-          <button class="view-all-btn">Ver Todos</button>
+          <button class="view-all-btn" disabled>Ver Todos</button>
         </div>
-        <div class="sectors-list">
-          <div class="sector-item" *ngFor="let sector of sectors" [class.positive]="sector.change > 0" [class.negative]="sector.change < 0">
-            <div class="sector-info">
-              <span class="sector-name">{{ sector.name }}</span>
-              <span class="sector-stocks">{{ sector.stocks }} acciones</span>
-            </div>
-            <div class="sector-change">{{ sector.change > 0 ? '+' : '' }}{{ sector.changePercent.toFixed(2) }}%</div>
+        <div class="coming-soon-content">
+          <div class="coming-soon-icon">
+            <mat-icon>pie_chart</mat-icon>
+          </div>
+          <div class="coming-soon-text">
+            <h4>Próximamente</h4>
+            <p>El análisis por sectores estará disponible muy pronto</p>
           </div>
         </div>
       </div>
@@ -117,17 +117,15 @@
       <div class="news-section">
         <div class="section-header">
           <h3 class="section-title">Noticias</h3>
-          <button class="view-all-btn">Ver Todas</button>
+          <button class="view-all-btn" disabled>Ver Todas</button>
         </div>
-        <div class="news-list">
-          <div class="news-item" *ngFor="let news of marketNews">
-            <div class="news-content">
-              <div class="news-title">{{ news.title }}</div>
-              <div class="news-meta">
-                <span class="news-source">{{ news.source }}</span>
-                <span class="news-time">{{ news.time }}</span>
-              </div>
-            </div>
+        <div class="coming-soon-content">
+          <div class="coming-soon-icon">
+            <mat-icon>article</mat-icon>
+          </div>
+          <div class="coming-soon-text">
+            <h4>Próximamente</h4>
+            <p>Las últimas noticias financieras estarán disponibles muy pronto</p>
           </div>
         </div>
       </div>

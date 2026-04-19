@@ -34,8 +34,9 @@ export class Market implements OnInit, AfterViewInit {
     this.loadMarketData();
     this.loadTrendingStocks();
     this.loadMarketIndices();
-    this.loadSectors();
-    this.loadMarketNews();
+    // Initialize empty arrays for sections with "Próximamente"
+    this.sectors = [];
+    this.marketNews = [];
   }
 
   ngAfterViewInit() {
@@ -79,26 +80,7 @@ export class Market implements OnInit, AfterViewInit {
     ];
   }
 
-  private loadSectors() {
-    this.sectors = [
-      { name: 'Technology', change: 1.23, changePercent: 0.45, stocks: 156 },
-      { name: 'Healthcare', change: -0.34, changePercent: -0.12, stocks: 89 },
-      { name: 'Financial', change: 0.89, changePercent: 0.67, stocks: 67 },
-      { name: 'Consumer Discretionary', change: 1.56, changePercent: 0.78, stocks: 78 },
-      { name: 'Energy', change: -1.23, changePercent: -0.89, stocks: 45 },
-      { name: 'Industrial', change: 0.45, changePercent: 0.34, stocks: 56 }
-    ];
-  }
-
-  private loadMarketNews() {
-    this.marketNews = [
-      { title: 'Fed señala posible pausa en tasas ante incertidumbre económica', source: 'Reuters', time: 'hace 2 horas' },
-      { title: 'Acciones tecnológicas suben con optimismo en IA', source: 'Bloomberg', time: 'hace 3 horas' },
-      { title: 'Precios del petróleo disparados por preocupaciones de oferta', source: 'CNBC', time: 'hace 4 horas' },
-      { title: 'Bitcoin alcanza máximo mensual', source: 'CoinDesk', time: 'hace 5 horas' }
-    ];
-  }
-
+  
   private setupMarketOverviewChart() {
     const canvas = document.getElementById('marketOverviewChart') as HTMLCanvasElement;
     if (!canvas) return;

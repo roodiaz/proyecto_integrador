@@ -947,3 +947,89 @@
     width: auto;
   }
 }
+
+/* Coming Soon Content for Noticias */
+.coming-soon-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  min-height: 200px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.coming-soon-icon {
+  margin-bottom: 16px;
+}
+
+.coming-soon-icon mat-icon {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 0.7;
+}
+
+.coming-soon-text h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #B0C956;
+  margin: 0 0 8px 0;
+}
+
+.coming-soon-text p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Disable the "Ver Todas" button */
+.news-section .view-all-btn:disabled,
+.sectors-section .view-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive adjustments for coming soon content */
+@media (max-width: 768px) {
+  .coming-soon-content {
+    padding: 30px 15px;
+    min-height: 160px;
+  }
+  
+  .coming-soon-icon mat-icon {
+    font-size: 36px;
+  }
+  
+  .coming-soon-text h4 {
+    font-size: 18px;
+  }
+  
+  .coming-soon-text p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coming-soon-content {
+    padding: 25px 12px;
+    min-height: 140px;
+  }
+  
+  .coming-soon-icon mat-icon {
+    font-size: 32px;
+  }
+  
+  .coming-soon-text h4 {
+    font-size: 16px;
+  }
+  
+  .coming-soon-text p {
+    font-size: 12px;
+  }
+}
