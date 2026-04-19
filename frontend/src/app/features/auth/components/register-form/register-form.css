@@ -217,15 +217,6 @@ mat-card-subtitle {
   white-space: nowrap;
 }
 
-.step-separator {
-  flex: 1;
-  height: 2px;
-  background-color: #2D333D;
-  margin: 0 0.5rem;
-  position: relative;
-  top: -8px;
-}
-
 .step.active .step-number {
   background-color: #B0C956;
   color: #121418;
@@ -271,16 +262,6 @@ mat-card-subtitle {
   gap: 1rem;
 }
 
-/* Plan Selection */
-.plan-selection-container {
-  margin-top: 1rem;
-}
-
-/* Payment Form */
-.payment-form-container {
-  margin-top: 1rem;
-}
-
 /* Error Message */
 .error-message {
   background-color: #ffebee;
@@ -323,15 +304,6 @@ mat-card-subtitle {
   margin-top: 16px;
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
-}
-
-/* Navigation Buttons */
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Animations */

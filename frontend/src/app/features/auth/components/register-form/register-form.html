@@ -10,16 +10,6 @@
             <div class="step-number">1</div>
             <div class="step-label">Datos</div>
           </div>
-          <div class="step-separator"></div>
-          <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
-            <div class="step-number">2</div>
-            <div class="step-label">Plan</div>
-          </div>
-          <div class="step-separator"></div>
-          <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
-            <div class="step-number">3</div>
-            <div class="step-label">Pago</div>
-          </div>
         </div>
       </mat-card-subtitle>
     </mat-card-header>
@@ -134,45 +124,11 @@
             [disabled]="!registerForm.valid"
             class="full-width"
           >
-            Siguiente
+            Crear Cuenta
           </button>
         </div>
       </form>
 
-      <!-- Step 2: Plan Selection -->
-      <div *ngIf="currentStep === 2 && !isLoading" class="plan-selection-container">
-        <div class="selected-plan-container">
-          <h3>Plan seleccionado: <strong>{{ selectedPlan === PlanType.FREE ? 'Gratis' : 'Premium' }}</strong></h3>
-          <p *ngIf="selectedPlan === PlanType.PREMIUM">
-            Próximo cargo: {{ formData.paymentInfo?.nextBillingDate || '' }}
-          </p>
-          
-          <button mat-raised-button color="primary" (click)="openPlanSelection()" class="change-plan-btn">
-            <mat-icon>swap_horiz</mat-icon>
-            Cambiar plan
-          </button>
-        </div>
-        
-        <div class="navigation-buttons">
-          <button mat-stroked-button type="button" (click)="previousStep()">
-            <mat-icon>arrow_back</mat-icon>
-            Volver
-          </button>
-          <button mat-raised-button color="primary" type="button" (click)="nextStep()" [disabled]="!selectedPlan">
-            {{ selectedPlan === PlanType.PREMIUM ? 'Continuar al pago' : 'Continuar' }}
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 3: Payment Form (only for Premium) -->
-      <div *ngIf="currentStep === 3 && !isLoading" class="payment-form-container">
-        <app-payment-form 
-          (paymentSubmitted)="onPaymentSubmitted($event)"
-          (back)="onBackToPlanSelection()"
-          [isLoading]="isLoading">
-        </app-payment-form>
-      </div>
 
       <div class="register-link" *ngIf="currentStep === 1">
         Al registrarte estas de acuerdo con nuestros 

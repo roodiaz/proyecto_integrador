@@ -1,0 +1,73 @@
+<div class="success-container">
+  <mat-card class="success-card">
+    <mat-card-header class="card-header">
+      <mat-card-title class="success-title">
+        <div class="title-line">¡REGISTRO EXITOSO!</div>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Success Icon -->
+      <div class="success-icon">
+        <mat-icon class="check-icon">check_circle</mat-icon>
+      </div>
+
+      <!-- Success Message -->
+      <div class="success-message">
+        <h2>Revisa tu correo electrónico</h2>
+        <p class="main-message">
+          Hemos enviado una contraseña temporal a:<br>
+          <strong>{{ userEmail }}</strong>
+        </p>
+        <p class="instructions">
+          Utiliza esta contraseña para ingresar a tu cuenta. La contraseña es válida solo por:
+        </p>
+      </div>
+
+      <!-- Countdown Timer -->
+      <div class="countdown-container">
+        <div class="countdown-display">
+          <mat-icon class="timer-icon">timer</mat-icon>
+          <span class="time-text">{{ timeDisplay }}</span>
+        </div>
+        <p class="countdown-label">minutos restantes</p>
+      </div>
+
+      <!-- Warning Message -->
+      <div class="warning-message">
+        <mat-icon class="warning-icon">warning</mat-icon>
+        <span>La contraseña expirará en 15 minutos. Si no recibes el correo, revisa tu carpeta de spam.</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="actions">
+        <button 
+          mat-flat-button 
+          color="primary" 
+          (click)="goToLogin()"
+          class="login-button"
+        >
+          <mat-icon>login</mat-icon>
+          Ir al Inicio de Sesión
+        </button>
+        
+        <button 
+          mat-stroked-button 
+          color="primary" 
+          (click)="resendEmail()"
+          class="resend-button"
+        >
+          <mat-icon>refresh</mat-icon>
+          Reenviar Correo
+        </button>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="additional-info">
+        <p class="info-text">
+          ¿No recibiste el correo? Espera unos minutos o haz clic en "Reenviar Correo".
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
