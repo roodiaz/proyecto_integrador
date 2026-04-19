@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material.module';
 import { Router, RouterModule } from '@angular/router';
-import { PlanType, RegisterFormData } from '../../models/register.model';
+import { RegisterFormData } from '../../models/register.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
@@ -20,8 +20,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrl: './register-form.css'
 })
 export class RegisterForm {
-  // Make PlanType available in template
-  PlanType = PlanType;
   registerForm: FormGroup;
   hidePassword = true;
   hideConfirmPassword = true;
@@ -38,8 +36,7 @@ export class RegisterForm {
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    planType: PlanType.FREE
+    confirmPassword: ''
   };
 
   
@@ -83,8 +80,7 @@ export class RegisterForm {
     // Save form data and complete registration
     this.formData = {
       ...this.formData,
-      ...this.registerForm.value,
-      planType: PlanType.FREE
+      ...this.registerForm.value
     };
     
     this.completeRegistration();
@@ -96,8 +92,7 @@ export class RegisterForm {
     this.errorMessage = null;
     
     const formData: RegisterFormData = {
-      ...this.registerForm.value,
-      planType: PlanType.FREE
+      ...this.registerForm.value
     };
     
     console.log('Registration data:', formData);

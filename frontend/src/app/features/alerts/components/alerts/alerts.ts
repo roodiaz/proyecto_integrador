@@ -44,12 +44,7 @@ export class Alerts implements OnInit {
   totalNotificationPages = 1;
   paginatedNotifications: AlertHistory[] = [];
 
-  // Plan limits
-  planLimits = {
-    free: 15,
-    premium: 50
-  };
-  currentPlan = 'free';
+  // Alert management
   usedAlerts = 0;
 
   constructor(
@@ -359,13 +354,6 @@ export class Alerts implements OnInit {
     }
   }
 
-  isPlanLimitReached(): boolean {
-    const limit = this.currentPlan === 'free' ? this.planLimits.free : this.planLimits.premium;
-    return this.usedAlerts >= limit;
-  }
+  
 
-  upgradeToPremium() {
-    // Para implementar la actualización a premium
-    this.snackBar.open('Función de actualización a premium en desarrollo', 'Cerrar', { duration: 3000 });
-  }
 }

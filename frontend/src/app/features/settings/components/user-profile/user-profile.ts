@@ -17,7 +17,6 @@ import {
   mockUserProfileData, 
   userProfileSelectOptions 
 } from '../../models/user-profile.model';
-import { BillingModalComponent, BillingData } from '../billing-modal';
 
 @Component({
   selector: 'app-user-profile',
@@ -45,13 +44,6 @@ export class UserProfile implements OnInit {
   
   // Opciones para los selects
   currencies = userProfileSelectOptions.currencies;
-  plans = userProfileSelectOptions.plans;
-
-  // Datos de facturación (separados del formulario)
-  currentPlan = mockUserProfileData.currentPlan;
-  cardLastFour = mockUserProfileData.cardLastFour;
-  cardBrand = mockUserProfileData.cardBrand;
-  nextBillingDate = mockUserProfileData.nextBillingDate;
 
   constructor(
     private fb: FormBuilder,
@@ -70,9 +62,6 @@ export class UserProfile implements OnInit {
       
       // Notificaciones
       emailNotifications: [true],
-      
-      // Plan y Facturación
-      currentPlan: ['premium', [Validators.required]],
       
       // Seguridad
       currentPassword: [''],
@@ -153,44 +142,5 @@ export class UserProfile implements OnInit {
     fileInput.click();
   }
 
-  openBillingModal(): void {
-    const dialogRef = this.dialog.open(BillingModalComponent, {
-      width: '600px',
-      maxWidth: '90vw',
-      data: {
-        cardNumber: '',
-        cardName: '',
-        expiryDate: '',
-        cvv: '',
-        address: '',
-        city: '',
-        country: 'AR',
-        postalCode: ''
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result: BillingData) => {
-      if (result) {
-        // Aquí iría la lógica para guardar los datos de facturación
-        console.log('Datos de facturación guardados:', result);
-        
-        // Actualizar los datos mostrados en la tarjeta
-        this.cardLastFour = result.cardNumber.slice(-4);
-        this.cardBrand = this.getCardBrand(result.cardNumber);
-        
-        this.snackBar.open('Datos de facturación actualizados correctamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-      }
-    });
+  
   }
-
-  private getCardBrand(cardNumber: string): string {
-    // Lógica simple para determinar la marca de la tarjeta
-    if (cardNumber.startsWith('4')) return 'visa';
-    if (cardNumber.startsWith('5')) return 'mastercard';
-    if (cardNumber.startsWith('3')) return 'amex';
-    return 'unknown';
-  }
-}

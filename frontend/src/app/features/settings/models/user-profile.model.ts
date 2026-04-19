@@ -9,11 +9,7 @@ export interface UserProfileData {
 }
 
 // Interface para el perfil de usuario
-export interface UserPlans extends UserProfileData {
-  currentPlan: string;
-  cardLastFour: string;
-  cardBrand: string;
-  nextBillingDate: Date;
+export interface UserProfile extends UserProfileData {
 }
 
 // Interface para el formulario de perfil (incluye campos de contraseña)
@@ -24,17 +20,13 @@ export interface UserProfileFormData extends Omit<UserProfileData, 'emailNotific
 }
 
 // Datos de ejemplo para el perfil de usuario
-export const mockUserProfileData: UserPlans = {
+export const mockUserProfileData: UserProfile = {
   fullName: 'Juan Pérez',
   email: 'juan.perez@ejemplo.com',
   birthDate: new Date(1990, 0, 1),
   phone: '+54 11 1234-5678',
   currency: 'USD',
-  emailNotifications: true,
-  currentPlan: 'premium',
-  cardLastFour: '4242',
-  cardBrand: 'visa',
-  nextBillingDate: new Date(2026, 3, 15)
+  emailNotifications: true
 };
 
 // Opciones para los selects
@@ -44,8 +36,4 @@ export const userProfileSelectOptions = {
     { value: 'ARS', viewValue: 'Peso Argentino (ARS)' }
   ],
   
-  plans: [
-    { value: 'free', viewValue: 'Plan Gratuito' },
-    { value: 'premium', viewValue: 'Plan Premium ($19.99/mes)' },
-  ]
-};
+  };

@@ -1,10 +1,7 @@
 <div class="watchlist-container">
   <div class="watchlist-content">
     <div class="watchlist-header">
-      <h2>Lista de Seguimiento</h2>
-      <div class="favorites-indicator" [class.limit-reached]="isLimitReached()">
-        {{ watchlistItems.length }} de {{ maxFavorites }} favoritos usados
-      </div>
+      <h2>Lista de Favoritos</h2>
       <div class="add-symbol">
         <input 
           type="text" 
@@ -62,8 +59,9 @@
       </table>
       
       <div *ngIf="watchlistItems.length === 0" class="empty-state">
-        <p>No tienes tickers en tu lista de seguimiento</p>
-        <p>Agrega un ticker para comenzar a seguir su precio</p>
+        <p>No tienes tickers en tu lista de favoritos</p>
+        <p>Agrega un ticker para comenzar a seguir tus favoritos</p>
+        <button class="cta-button" (click)="addToWatchlist()" [disabled]="isLimitReached()">Agregar</button>
       </div>
     </div>
 

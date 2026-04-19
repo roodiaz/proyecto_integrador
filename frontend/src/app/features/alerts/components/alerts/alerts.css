@@ -75,33 +75,6 @@
   font-size: 16px;
 }
 
-/* Plan Indicator */
-.plan-indicator {
-  background: linear-gradient(135deg, rgba(176, 201, 86, 0.1) 0%, rgba(176, 201, 86, 0.05) 100%);
-  border: 1px solid var(--accent-green);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.plan-info .plan-title {
-  color: var(--accent-green);
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.plan-info .plan-usage {
-  color: var(--text-primary);
-  font-size: 16px;
-  font-weight: 500;
-  margin-top: 4px;
-}
-
 /* Progress Bar */
 .progress-bar {
   width: 100%;
@@ -117,22 +90,6 @@
   background: linear-gradient(90deg, var(--accent-green) 0%, #9fb54a 100%);
   border-radius: 4px;
   transition: width 0.3s ease;
-}
-
-.upgrade-btn {
-  background-color: var(--accent-green);
-  color: #121418;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.upgrade-btn:hover {
-  background-color: #9fb54a;
 }
 
 /* Tabs */
@@ -1038,9 +995,4 @@ input:checked + .slider:before {
     flex-direction: column;
   }
   
-  .plan-indicator {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
 }

@@ -18,75 +18,8 @@ html, body {
   color: var(--text-primary);
 }
 
-/* Plan Selection Modal */
-.plan-selection-dialog {
-  max-width: 100% !important;
-  width: 95% !important;
-  border-radius: 12px !important;
-  overflow: hidden;
-  background: var(--primary-bg);
-  color: var(--text-primary);
-}
-
-.plan-selection-dialog .mat-dialog-container {
-  padding: 0;
-  overflow: hidden;
-  background: var(--primary-bg);
-}
-
-.plan-selection-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.selected-plan-container {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.selected-plan-container h3 {
-  margin: 0 0 12px 0;
-  font-size: 1.5rem;
-  color: var(--accent-green);
-}
-
-.selected-plan-container p {
-  margin: 0 0 16px 0;
-  color: var(--text-secondary);
-}
-
-.change-plan-btn {
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 24px;
-  gap: 16px;
-}
-
-.navigation-buttons button {
-  min-width: 150px;
-}
-
 /* Responsive adjustments */
 @media (max-width: 767px) {
-  .plan-selection-dialog {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    border-radius: 0 !important;
-  }
-  
   .navigation-buttons {
     flex-direction: column;
   }

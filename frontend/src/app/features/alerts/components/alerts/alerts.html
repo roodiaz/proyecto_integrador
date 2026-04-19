@@ -8,7 +8,7 @@
           {{getActiveAlertsCount()}} activas • {{getTriggeredAlertsCount()}} disparada
         </p>
       </div>
-      <button class="new-alert-btn" (click)="createNewAlert()" [disabled]="isPlanLimitReached()">
+      <button class="new-alert-btn" (click)="createNewAlert()">
         <span class="icon">➕</span>
         Nueva Alerta
       </button>
@@ -58,9 +58,9 @@
           <div class="summary-icon">📊</div>
           <div class="summary-content">
             <div class="summary-title">Alertas Utilizadas</div>
-            <div class="summary-value">{{usedAlerts}}/{{planLimits.free}}</div>
+            <div class="summary-value">{{usedAlerts}}</div>
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(usedAlerts / planLimits.free) * 100"></div>
+              <div class="progress-fill" [style.width.%]="(usedAlerts / 10) * 100"></div>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@
         <div class="empty-icon">🔔</div>
         <h3>No hay alertas configuradas</h3>
         <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
-        <button class="cta-button" (click)="createNewAlert()" [disabled]="isPlanLimitReached()">
+        <button class="cta-button" (click)="createNewAlert()" >
           Crear Primera Alerta
         </button>
       </div>
@@ -224,7 +224,7 @@
           <div class="empty-icon">🔔</div>
           <h3>No hay alertas configuradas</h3>
           <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
-          <button class="cta-button" (click)="createNewAlert()" [disabled]="isPlanLimitReached()">
+          <button class="cta-button" (click)="createNewAlert()" >
             Crear Primera Alerta
           </button>
         </div>
