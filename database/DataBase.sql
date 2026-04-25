@@ -1,125 +1,184 @@
-CREATE DATABASE InvestLab;
-GO
+-- ============================================
+-- BASE DE DATOS: INVESTLAB
+-- ============================================
 
-USE InvestLab;
-GO
-
--- Tabla que almacena los datos de los usuarios registrados,
--- incluyendo credenciales, fecha de creación, último cambio de contraseña,
--- estado de cuenta activo/inactivo y saldo virtual para la simulación.
-CREATE TABLE Users (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    Username NVARCHAR(50) NOT NULL UNIQUE,
-    Email NVARCHAR(100) NOT NULL UNIQUE,
-    PasswordHash NVARCHAR(256) NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    PasswordChangedAt DATETIME NULL,   
-    IsActive BIT NOT NULL,
-    Balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00,
-	PlanId INT NOT NULL
+-- ============================================
+-- USERS
+-- ============================================
+-- Almacena la información de los usuarios registrados,
+-- incluyendo credenciales, estado de cuenta, balance virtual
+-- y fecha del último inicio de sesión.
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(256) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    password_changed_at TIMESTAMP WITH TIME ZONE,
+    last_login_at TIMESTAMP WITH TIME ZONE, -- Último login del usuario
+    is_active BOOLEAN DEFAULT TRUE,
+    balance DECIMAL(18,2) DEFAULT 10000.00
 );
 
--- Tabla que guarda las reglas de alertas configuradas por cada usuario,
--- con el ticker, operador de comparación y valor umbral.
--- Se usa para notificar al usuario cuando se cumple la condición.
-CREATE TABLE Alerts (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,
-    Ticker NVARCHAR(20) NOT NULL,
-    Operator NVARCHAR(2) NOT NULL,
-    Value DECIMAL(18,4) NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    IsActive BIT NOT NULL DEFAULT 1,
-    CONSTRAINT FK_Alerts_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+-- ============================================
+-- USER TEMP CREDENTIALS
+-- ============================================
+-- Guarda contraseñas temporales para:
+-- ✔ recuperación de contraseña
+-- ✔ activación de cuenta
+-- Incluye expiración (ej: 15 minutos) y control de uso.
+CREATE TABLE user_temp_credentials (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    temp_password_hash VARCHAR(256) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL ,
+    is_used BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_temp_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Tabla que almacena las notificaciones generadas cuando una alerta se dispara,
--- guardando el mensaje, el usuario destino, fecha de creación y si fue leída.
-CREATE TABLE Notifications (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    AlertId INT NOT NULL,
-    UserId INT NOT NULL,
-    Message NVARCHAR(500) NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    IsRead BIT NOT NULL DEFAULT 0,
-    CONSTRAINT FK_Notifications_Alerts FOREIGN KEY (AlertId) REFERENCES Alerts(Id),
-    CONSTRAINT FK_Notifications_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+-- ============================================
+-- ASSETS
+-- ============================================
+-- Catálogo de activos financieros (acciones, ETFs, etc.).
+-- Evita duplicar tickers en múltiples tablas.
+CREATE TABLE assets (
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(20) UNIQUE NOT NULL, -- Ej: AAPL
+    name VARCHAR(100),
+    sector VARCHAR(50)
 );
 
--- Tabla que registra las operaciones de compra y venta simuladas del usuario,
--- con cantidad, precio y fechas de compra y venta, y un indicador si la posición está abierta.
-CREATE TABLE Portfolio (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,
-    Ticker NVARCHAR(20) NOT NULL,
-    Quantity DECIMAL(18,6) NOT NULL,
-    BuyPrice DECIMAL(18,4) NOT NULL,
-    BuyDate DATETIME NOT NULL DEFAULT GETDATE(),
-    SellPrice DECIMAL(18,4) NULL,
-    SellDate DATETIME NULL,
-    IsOpen BIT NOT NULL DEFAULT 1,
-    CONSTRAINT FK_Portfolio_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+-- ============================================
+-- PORTFOLIO
+-- ============================================
+-- Representa la posición actual del usuario en cada activo,
+-- incluyendo cantidad y precio promedio de compra.
+CREATE TABLE portfolio (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    asset_id INT NOT NULL,
+    quantity DECIMAL(18,6) NOT NULL,
+    avg_price DECIMAL(18,4) NOT NULL,
+
+    CONSTRAINT fk_portfolio_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_portfolio_asset FOREIGN KEY (asset_id) REFERENCES assets(id),
+    CONSTRAINT uq_user_asset UNIQUE (user_id, asset_id)
 );
 
--- Tabla que almacena los datos históricos de precios (OHLC + volumen)
--- para cada ticker en diferentes timestamps, usada para graficar evolución y cálculos.
-CREATE TABLE PriceHistory (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    Ticker NVARCHAR(20) NOT NULL,
-    Timestamp DATETIME NOT NULL,
-    [Open] DECIMAL(18,4) NOT NULL,
-    High DECIMAL(18,4) NOT NULL,
-    Low DECIMAL(18,4) NOT NULL,
-    [Close] DECIMAL(18,4) NOT NULL,
-    Volume BIGINT NOT NULL
+-- ============================================
+-- TRANSACTIONS
+-- ============================================
+-- Registra el historial completo de operaciones de compra y venta
+-- realizadas por los usuarios.
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    asset_id INT NOT NULL,
+    type SMALLINT NOT NULL,  -- 1 = BUY / 2 = SELL
+    quantity DECIMAL(18,6) NOT NULL,
+    price DECIMAL(18,4) NOT NULL,
+    total DECIMAL(18,2) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_transactions_asset FOREIGN KEY (asset_id) REFERENCES assets(id),
+
+    CONSTRAINT chk_transactions_type CHECK (type IN (1, 2))
 );
 
--- Tabla que lleva el registro de todas las transacciones del usuario,
--- incluyendo compras, ventas y disparo de alertas, con balance actualizado.
-CREATE TABLE TransactionsLog (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,
-    Type NVARCHAR(10) NOT NULL CHECK (Type IN ('buy', 'sell', 'alert-trigger')),
-    Ticker NVARCHAR(20) NOT NULL,
-    Amount DECIMAL(18,4) NOT NULL,
-    BalanceAfter DECIMAL(18,4) NOT NULL,
-    Date DATETIME NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT FK_TransactionsLog_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+-- ============================================
+-- FAVORITES
+-- ============================================
+-- Lista de activos marcados como favoritos por el usuario
+-- para seguimiento rápido (watchlist).
+CREATE TABLE favorites (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    asset_id INT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_fav_asset FOREIGN KEY (asset_id) REFERENCES assets(id),
+    CONSTRAINT uq_fav UNIQUE (user_id, asset_id)
 );
 
--- Tabla que guarda los tickers favoritos que el usuario desea seguir,
--- para mostrar en la lista de seguimiento con actualización en vivo.
-CREATE TABLE Favorites (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,
-    Ticker NVARCHAR(20) NOT NULL,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    CONSTRAINT FK_Favorites_Users FOREIGN KEY (UserId) REFERENCES Users(Id),
-    CONSTRAINT UQ_Favorites_User_Ticker UNIQUE (UserId, Ticker)
+-- ============================================
+-- ALERTS
+-- ============================================
+-- Define las reglas de alertas configuradas por el usuario,
+-- por ejemplo:
+-- ✔ Precio menor a X
+-- ✔ Subida mayor a %
+CREATE TABLE alerts (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    asset_id INT NOT NULL,
+    condition_type SMALLINT NOT NULL, -- 1 = PRICE / 2 = PERCENTAGE
+    operator SMALLINT NOT NULL, -- 1 = > /  = < / 3 = >= / 4 = <=
+    value DECIMAL(18,4) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_triggered TIMESTAMP WITH TIME ZONE,
+
+    CONSTRAINT fk_alert_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_alert_asset FOREIGN KEY (asset_id) REFERENCES assets(id)
 );
 
--- Tabla para almacenar configuraciones y preferencias personalizadas
--- de cada usuario, tales como intervalo de actualización, tipo de notificación,
--- tema de la UI y moneda preferida.
-CREATE TABLE UserSettings (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    UserId INT NOT NULL,
-    SettingKey NVARCHAR(100) NOT NULL,
-    SettingValue NVARCHAR(500) NOT NULL,
-    CONSTRAINT FK_UserSettings_Users FOREIGN KEY (UserId) REFERENCES Users(Id),
-    CONSTRAINT UQ_UserSettings_User_SettingKey UNIQUE (UserId, SettingKey)
+-- ============================================
+-- NOTIFICATIONS
+-- ============================================
+-- Almacena las notificaciones generadas cuando una alerta se dispara,
+-- incluyendo mensaje, precio al momento del disparo y estado de lectura.
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    alert_id INT NOT NULL,
+    user_id INT NOT NULL,
+    message VARCHAR(500),
+    price DECIMAL(18,4),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE,
+
+    CONSTRAINT fk_notif_alert FOREIGN KEY (alert_id) REFERENCES alerts(id),
+    CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-
-CREATE TABLE Plans (
-    Id INT IDENTITY(1,1) PRIMARY KEY,
-    Name NVARCHAR(50) NOT NULL,
-    MaxDailySearch INT NULL,
-    MaxAlerts INT NULL,
-    MaxFavorites INT NULL,
-    MaxMonthlyOperations INT NULL,
-    HistoricalLimitDays INT NULL,
-    HasAdvancedCharts BIT NOT NULL,
-    HasEmailNotifications BIT NOT NULL,
-    InitialBalance DECIMAL(18,2) NOT NULL
+-- ============================================
+-- USER SETTINGS
+-- ============================================
+-- Contiene las preferencias del usuario, como:
+-- ✔ moneda principal
+-- ✔ activación de notificaciones por email
+CREATE TABLE user_settings (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    currency VARCHAR(10) DEFAULT 'USD',
+    email_notifications BOOLEAN DEFAULT TRUE,
+	max_alerts INT NOT NULL,
+    max_favorites INT NOT NULL,
+    max_operations_per_day INT NOT NULL,
+    max_daily_searches INT NOT NULL,
+	
+    CONSTRAINT fk_settings_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- ============================================
+-- CONTACT MESSAGES
+-- ============================================
+-- Guarda los mensajes enviados desde la sección de contacto del sistema.
+CREATE TABLE contact_messages (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    phone VARCHAR(30),
+    message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_portfolio_user ON portfolio(user_id);
+CREATE INDEX idx_transactions_user ON transactions(user_id);
+CREATE INDEX idx_alerts_user ON alerts(user_id);
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_favorites_user ON favorites(user_id);
+CREATE UNIQUE INDEX uq_temp_active ON user_temp_credentials(user_id) WHERE is_used = FALSE;

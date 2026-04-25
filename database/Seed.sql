@@ -1,88 +1,93 @@
-USE InvestLab;
-GO
+-- ============================================
+-- SEED DATA - INVESTLAB
+-- ============================================
 
-/* =========================================
-   SEED DATA - MARKET ALERTS
-========================================= */
+-- ============================================
+-- USERS
+-- ============================================
+INSERT INTO users (username, email, password_hash, balance, last_login_at)
+VALUES 
+('rocio', 'rocio@test.com', 'HASH123', 10000, NOW()),
+('juan', 'juan@test.com', 'HASH123', 15000, NOW());
 
--- =========================
--- 1. Plans
--- =========================
-INSERT INTO Plans
-(Name, MaxDailySearch, MaxAlerts, MaxFavorites, MaxMonthlyOperations, HistoricalLimitDays, HasAdvancedCharts, HasEmailNotifications, InitialBalance)
+-- ============================================
+-- USER SETTINGS
+-- ============================================
+INSERT INTO user_settings (user_id, currency, email_notifications, max_alerts, max_favorites, max_operations_per_day, max_daily_searches)
 VALUES
-('Free', 5, 1, 3, 10, 30, 0, 0, 1000),
-('Premium', NULL, NULL, NULL, NULL, NULL, 1, 1, 10000);
+(1, 'USD', TRUE, 0, 0, 0, 0),
+(2, 'USD', TRUE, 0, 0, 0, 0);
 
-
--- =========================
--- 2. Users
--- =========================
-INSERT INTO Users (Username, Email, PasswordHash, IsActive, Balance, PlanId)
+-- ============================================
+-- ASSETS
+-- ============================================
+INSERT INTO assets (symbol, name, sector)
 VALUES
-('rocio_free', 'rocio.free@mail.com', 'HASH123', 1, 1000,1),
-('rocio_premium', 'rocio.premium@mail.com', 'HASH456', 1, 10000,2);
+('AAPL', 'Apple Inc.', 'Technology'),
+('TSLA', 'Tesla Inc.', 'Automotive'),
+('GOOGL', 'Alphabet Inc.', 'Technology'),
+('AMZN', 'Amazon.com Inc.', 'E-commerce'),
+('MSFT', 'Microsoft Corp.', 'Technology');
 
-
--- =========================
--- 3. User Settings
--- =========================
-INSERT INTO UserSettings (UserId, SettingKey, SettingValue)
+-- ============================================
+-- FAVORITES (WATCHLIST)
+-- ============================================
+INSERT INTO favorites (user_id, asset_id)
 VALUES
-(1, 'theme', 'light'),
-(1, 'currency', 'USD'),
-(1, 'alert_interval', '5'),
+(1, 1),
+(1, 2),
+(1, 3),
+(2, 4),
+(2, 5);
 
-(2, 'theme', 'dark'),
-(2, 'currency', 'USD'),
-(2, 'alert_interval', '1');
-
-
--- =========================
--- 4. Favorites
--- =========================
-INSERT INTO Favorites (UserId, Ticker)
+-- ============================================
+-- PORTFOLIO (posición actual)
+-- ============================================
+INSERT INTO portfolio (user_id, asset_id, quantity, avg_price)
 VALUES
-(1, 'AAPL'),
-(1, 'MSFT'),
-(2, 'AAPL'),
-(2, 'TSLA'),
-(2, 'BTC-USD');
+(1, 1, 10, 170.00), -- AAPL
+(1, 2, 5, 220.00),  -- TSLA
+(2, 3, 8, 2800.00); -- GOOGL
 
-
--- =========================
--- 5. Portfolio (posiciones abiertas)
--- =========================
-INSERT INTO Portfolio (UserId, Ticker, Quantity, BuyPrice)
+-- ============================================
+-- TRANSACTIONS (histórico)
+-- ============================================
+INSERT INTO transactions (user_id, asset_id, type, quantity, price, total)
 VALUES
-(1, 'AAPL', 2, 150.00),
-(2, 'TSLA', 5, 200.00),
-(2, 'BTC-USD', 0.25, 30000.00);
+(1, 1, 1, 10, 170.00, 1700.00), -- BUY
+(1, 2, 1, 5, 220.00, 1100.00),  -- BUY
+(2, 3, 1, 8, 2800.00, 22400.00),
+(1, 1, 2, 2, 180.00, 360.00);   -- SELL
 
-
--- =========================
--- 6. TransactionsLog
--- =========================
-INSERT INTO TransactionsLog (UserId, Type, Ticker, Amount, BalanceAfter)
+-- ============================================
+-- ALERTS
+-- ============================================
+INSERT INTO alerts (user_id, asset_id, condition_type, operator, value)
 VALUES
-(1, 'buy', 'AAPL', 300.00, 700.00),
-(2, 'buy', 'TSLA', 1000.00, 9000.00),
-(2, 'buy', 'BTC-USD', 7500.00, 1500.00);
+(1, 1, 1, 2, 160.00), -- PRICE (1), < (2) → AAPL baja
+(1, 2, 1, 1, 250.00), -- PRICE (1), > (1) → TSLA sube
+(2, 3, 1, 1, 3000.00); -- PRICE (1), > (1)
 
-
--- =========================
--- 7. Alerts
--- =========================
-INSERT INTO Alerts (UserId, Ticker, Operator, Value)
+-- ============================================
+-- NOTIFICATIONS
+-- ============================================
+INSERT INTO notifications (alert_id, user_id, message, price)
 VALUES
-(1, 'AAPL', '<', 140.00),
-(2, 'TSLA', '>', 250.00);
+(1, 1, 'AAPL bajó de 160 USD', 158.00),
+(2, 1, 'TSLA superó 250 USD', 255.00);
 
-
--- =========================
--- 8. Notifications (simular alerta disparada)
--- =========================
-INSERT INTO Notifications (AlertId, UserId, Message)
+-- ============================================
+-- CONTACT MESSAGES
+-- ============================================
+INSERT INTO contact_messages (name, email, phone, message)
 VALUES
-(1, 1, 'AAPL bajó por debajo de 140 USD'),
-(2, 2, 'TSLA superó los 250 USD');
+('Juan Perez', 'juan@test.com', '123456789', 'Consulta sobre la plataforma'),
+('Ana Lopez', 'ana@test.com', '987654321', 'Quiero saber más sobre las alertas');
+
+-- ============================================
+-- TEMP CREDENTIALS (reset password)
+-- ============================================
+INSERT INTO user_temp_credentials (user_id, temp_password_hash, expires_at)
+VALUES
+(1, 'TEMP_HASH_123', NOW() + INTERVAL '15 minutes'),
+(2, 'TEMP_HASH_456', NOW() + INTERVAL '15 minutes');
