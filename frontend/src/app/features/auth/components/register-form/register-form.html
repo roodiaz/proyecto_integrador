@@ -66,6 +66,22 @@
           </mat-form-field>
         </div>
 
+        <!-- Phone Field -->
+        <div class="field-container">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Teléfono</mat-label>
+            <input matInput 
+                  type="tel" 
+                  formControlName="phone" 
+                  placeholder="+54 11 1234-5678"
+                  autocomplete="tel">
+            <mat-icon matSuffix>phone</mat-icon>
+            <mat-error *ngIf="phone?.hasError('pattern')">
+              Ingresa un número de teléfono válido
+            </mat-error>
+          </mat-form-field>
+        </div>
+
         <!-- Password Field -->
         <div class="field-container">
           <mat-form-field appearance="outline" class="full-width">

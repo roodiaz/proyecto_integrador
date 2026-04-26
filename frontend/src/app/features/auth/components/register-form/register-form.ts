@@ -35,6 +35,7 @@ export class RegisterForm {
   formData: RegisterFormData = {
     fullName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   };
@@ -47,6 +48,7 @@ export class RegisterForm {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.pattern(/^[+]?[\d\s\-\(\)]+$/)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validator: this.passwordMatchValidator });
@@ -56,6 +58,7 @@ export class RegisterForm {
   get f() { return this.registerForm.controls; }
   get fullName() { return this.registerForm.get('fullName'); }
   get email() { return this.registerForm.get('email'); }
+  get phone() { return this.registerForm.get('phone'); }
   get password() { return this.registerForm.get('password'); }
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
 
