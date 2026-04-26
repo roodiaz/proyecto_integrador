@@ -1,0 +1,1 @@
+﻿dotnet ef dbcontext scaffold "Host=localhost;Database=investlab;Username=postgres;Password=Pass.001" Npgsql.EntityFrameworkCore.PostgreSQL --output-dir ../InvestLab.Models/Entities --context-dir Context --context InvestLabDbContext --no-onconfiguring --data-annotations --force
