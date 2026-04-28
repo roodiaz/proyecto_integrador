@@ -11,14 +11,14 @@ namespace InvestLab.Api.Extensions
                 .AddNpgSql(
                     config.GetConnectionString("DefaultConnection")!,
                     name: "postgres",
-                    failureStatus: HealthStatus.Unhealthy);
-                //.AddMongoDb(sp =>
-                //{
-                //    var connectionString = config["Mongo:ConnectionString"];
-                //    return new MongoClient(connectionString);
-                //},
-                //name: "mongo",
-                //failureStatus: HealthStatus.Unhealthy);
+                    failureStatus: HealthStatus.Unhealthy)
+                .AddMongoDb(sp =>
+                {
+                    var connectionString = config["Mongo:ConnectionString"];
+                    return new MongoClient(connectionString);
+                },
+                name: "mongo",
+                failureStatus: HealthStatus.Unhealthy);
 
             return services;
         }

@@ -176,9 +176,28 @@ CREATE TABLE contact_messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ============================================
+-- REFRESH TOKENS
+-- ============================================
+-- Almacena los refresh tokens emitidos por usuario
+-- para renovar el access token sin necesidad de login.
+-- Se invalidan al usarse, revocarse o expirar.
+CREATE TABLE refresh_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(512) NOT NULL UNIQUE,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    is_revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 CREATE INDEX idx_portfolio_user ON portfolio(user_id);
 CREATE INDEX idx_transactions_user ON transactions(user_id);
 CREATE INDEX idx_alerts_user ON alerts(user_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_favorites_user ON favorites(user_id);
 CREATE UNIQUE INDEX uq_temp_active ON user_temp_credentials(user_id) WHERE is_used = FALSE;
+CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);

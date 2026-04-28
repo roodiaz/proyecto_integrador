@@ -1,5 +1,7 @@
-using InvestLab.Api.Middleware;
 using InvestLab.Api.Extensions;
+using InvestLab.Api.Middleware;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ builder.Services.AddCustomSwagger();
 builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomHealthChecks(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.AddMongoServices(builder.Configuration);
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
@@ -48,7 +51,26 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // ─── ENDPOINTS ─────────────────────────────────────────────────────────────
-app.MapHealthChecks("/health");
-app.MapControllers();
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
 
+        var result = JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                service = e.Key,
+                status = e.Value.Status.ToString(),
+                error = e.Value.Exception?.Message
+            })
+        });
+
+        await context.Response.WriteAsync(result);
+    }
+}); 
+
+app.MapControllers();
 app.Run();

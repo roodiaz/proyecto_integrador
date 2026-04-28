@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace InvestLab.Api.Extensions
 {
@@ -10,6 +11,8 @@ namespace InvestLab.Api.Extensions
 
             services.AddSwaggerGen(options =>
             {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "InvestLab.Api", Version = "v1" });
+
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -34,6 +37,10 @@ namespace InvestLab.Api.Extensions
                         Array.Empty<string>()
                     }
                 });
+
+                //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                //options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
             });
 
             return services;

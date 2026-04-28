@@ -33,11 +33,12 @@ public class JwtService : IJwtService
         };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var expiration = DateTime.UtcNow.AddMinutes(60);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(15),
+            Expires = expiration,
             Issuer = issuer,
             Audience = audience,
             SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature)
@@ -50,7 +51,7 @@ public class JwtService : IJwtService
         {
             AccessToken = tokenHandler.WriteToken(token),
             RefreshToken = GenerateRefreshToken(),
-            ExpiresIn = DateTime.UtcNow.AddMinutes(15)
+            ExpiresIn = expiration
         };
     }
 
