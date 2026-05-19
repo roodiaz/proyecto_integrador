@@ -5,7 +5,7 @@ namespace InvestLab.Business.Interfaces;
 
 public interface IFavoriteService
 {
-    Task<Response> GetAsync(int userId);
+    Task<Response> GetAsync(int userId, FavoriteFilterDto filter);
 
     Task<Response> AddAsync(int userId, AddFavoriteDto dto);
 

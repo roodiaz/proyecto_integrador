@@ -48,5 +48,22 @@ namespace InvestLab.Data.Repositories
         {
             _context.Favorites.Remove(favorite);
         }
+
+        public async Task<(List<Favorite> data, int total)> GetPagedAsync(int userId, int page, int pageSize)
+        {
+            var query = _context.Favorites
+                .Include(x => x.Asset)
+                .Where(x => x.UserId == userId);
+
+            var total = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (data, total);
+        }
     }
 }

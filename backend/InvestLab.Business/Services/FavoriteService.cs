@@ -1,6 +1,7 @@
 ﻿using InvestLab.Business.Interfaces;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
+using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Favorite;
 using Microsoft.Extensions.Logging;
@@ -9,32 +10,49 @@ namespace InvestLab.Business.Services
 {
     public class FavoriteService : IFavoriteService
     {
+        private readonly IExternalProvider _externalProvider;
         private readonly LimitsOptions _limits;
         private readonly IFavoriteRepository _repo;
         private readonly IAssetRepository _assetRepo;
         private readonly IUnitOfWork _uow;
         private readonly ILogger<FavoriteService> _logger;
 
-        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, LimitsOptions limits)
+        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, LimitsOptions limits, IExternalProvider externalProvider)
         {
             _repo = repo;
             _assetRepo = assetRepo;
             _uow = uow;
             _logger = logger;
             _limits = limits;
+            _externalProvider = externalProvider;
         }
 
-        public async Task<Response> GetAsync(int userId)
+        public async Task<Response> GetAsync(int userId, FavoriteFilterDto filter)
         {
-            var list = await _repo.GetByUserAsync(userId);
+            var (list, total) = await _repo.GetPagedAsync(userId, filter.Page, filter.PageSize);
 
-            var result = list.Select(x => new FavoriteDto
+            var symbols = list.Select(x => x.Asset.Symbol).ToList();
+
+            var marketData = await _externalProvider.GetPricesAsync(symbols);
+
+            var result = list.Select(fav =>
             {
-                Id = x.Id,
-                Symbol = x.Asset.Symbol
+                var market = marketData.FirstOrDefault(x => x.Symbol == fav.Asset.Symbol);
+
+                return new
+                {
+                    Id = fav.Id,
+                    Symbol = fav.Asset.Symbol,
+                    Price = market?.Price ?? 0,
+                    VariationPercent = market?.VariationPercent ?? 0
+                };
             });
 
-            return Response.Ok(result);
+            return Response.Ok(new
+            {
+                data = result,
+                total
+            });
         }
 
         public async Task<Response> AddAsync(int userId, AddFavoriteDto dto)

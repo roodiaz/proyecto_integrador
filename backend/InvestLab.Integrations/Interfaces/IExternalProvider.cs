@@ -5,4 +5,5 @@ namespace InvestLab.Integrations.Interfaces;
 public interface IExternalProvider
 {
     Task<MarketPriceDto?> GetPriceAsync(string symbol);
+    Task<List<MarketPriceDto>> GetPricesAsync(List<string> symbols);
 }

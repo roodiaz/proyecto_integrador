@@ -49,5 +49,50 @@ namespace InvestLab.Integrations.Providers
                 VariationPercent = Math.Round(variation, 2)
             };
         }
+
+        public async Task<List<MarketPriceDto>> GetPricesAsync(List<string> symbols)
+        {
+            var resultList = new List<MarketPriceDto>();
+
+            if (symbols == null || !symbols.Any())
+                return resultList;
+
+            var symbolsQuery = string.Join(",", symbols);
+
+            var url = $"{_options.BaseUrl}/v7/finance/quote?symbols={symbolsQuery}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return resultList;
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var data = JsonDocument.Parse(json);
+
+            var results = data.RootElement
+                .GetProperty("quoteResponse")
+                .GetProperty("result");
+
+            foreach (var item in results.EnumerateArray())
+            {
+                var symbol = item.GetProperty("symbol").GetString();
+
+                var price = item.GetProperty("regularMarketPrice").GetDecimal();
+                var previousClose = item.GetProperty("regularMarketPreviousClose").GetDecimal();
+
+                var variation = ((price - previousClose) / previousClose) * 100;
+
+                resultList.Add(new MarketPriceDto
+                {
+                    Symbol = symbol,
+                    Price = price,
+                    PreviousClose = previousClose,
+                    VariationPercent = Math.Round(variation, 2)
+                });
+            }
+
+            return resultList;
+        }
     }
 }
