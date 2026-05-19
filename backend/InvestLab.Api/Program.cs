@@ -1,9 +1,12 @@
 using InvestLab.Api.Extensions;
 using InvestLab.Api.Middleware;
 using InvestLab.Business;
+using InvestLab.Integrations.Configuration;
+using InvestLab.Integrations.Interfaces;
+using InvestLab.Integrations.Providers;
+using InvestLab.Models;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Text.Json;
-using InvestLab.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,8 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMongoServices(builder.Configuration);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
+builder.Services.AddHttpClient<IExternalProvider, YahooMarketProvider>();
+builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

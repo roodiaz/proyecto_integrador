@@ -5,6 +5,7 @@
   <Project Path="InvestLab.Api/InvestLab.Api.csproj" />
   <Project Path="InvestLab.Business/InvestLab.Business.csproj" />
   <Project Path="InvestLab.Data/InvestLab.Data.csproj" />
+  <Project Path="InvestLab.Integrations/InvestLab.Integrations.csproj" Id="2d955426-e422-4bd7-941d-818b57d413ff" />
   <Project Path="InvestLab.Models/InvestLab.Models.csproj" />
   <Project Path="InvestLab.Tests/InvestLab.Tests.csproj" />
   <Project Path="InvestLab.Workers/InvestLab.Workers.csproj" />
