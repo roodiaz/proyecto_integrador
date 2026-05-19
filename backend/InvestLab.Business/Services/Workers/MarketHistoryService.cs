@@ -1,7 +1,6 @@
 ﻿using InvestLab.Business.Interfaces.Workers;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
-using InvestLab.Models.Documents;
 
 namespace InvestLab.Business.Services.Workers;
 
@@ -27,9 +26,7 @@ public class MarketHistoryService : IMarketHistoryService
         "NVDA"
     ];
 
-    public MarketHistoryService(
-        IPriceHistoryRepository repository,
-        IExternalProvider externalProvider)
+    public MarketHistoryService(      IPriceHistoryRepository repository, IExternalProvider externalProvider)
     {
         _repository = repository;
         _externalProvider = externalProvider;

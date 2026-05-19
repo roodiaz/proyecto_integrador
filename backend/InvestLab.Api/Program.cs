@@ -1,12 +1,12 @@
 using InvestLab.Api.Extensions;
 using InvestLab.Api.Middleware;
-using InvestLab.Business;
 using InvestLab.Integrations.Configuration;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Integrations.Providers;
 using InvestLab.Models;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Text.Json;
+using InvestLab.Models.DTOs.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 

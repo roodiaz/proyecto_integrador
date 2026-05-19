@@ -1,5 +1,4 @@
-﻿namespace InvestLab.Business;
-
+﻿namespace InvestLab.Models.DTOs.Auth;
 public class JwtSettings
 {
     public string SecretKey { get; set; } = default!;
