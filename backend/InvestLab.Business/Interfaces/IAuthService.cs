@@ -1,8 +1,12 @@
-﻿public interface IAuthService
+﻿using InvestLab.Models;
+
+public interface IAuthService
 {
-    //Task<AuthResponseDto> RegisterAsync(RegisterRequestDto registerDto);
-    //Task<AuthResponseDto> LoginAsync(LoginRequestDto loginDto);
-    //Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
-    //Task<bool> LogoutAsync(int userId);
-    //Task<UserDto> GetUserByIdAsync(int userId);
+    Task<Response> RegisterAsync(RegisterDto registerDto);
+    Task<Response> VerifyAsync(VerifyDto dto);
+    Task<Response> ResendCodeAsync(ResendCodeDto dto);
+    Task<Response> LoginAsync(LoginDto dto);
+    Task<Response> RefreshTokenAsync(string refreshToken);
+    Task<Response> LogoutAsync(string refreshToken);
+
 }

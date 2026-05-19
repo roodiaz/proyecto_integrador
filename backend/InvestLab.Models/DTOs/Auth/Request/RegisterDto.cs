@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-public class RegisterRequestDto
+public class RegisterDto
 {
     [Required(ErrorMessage = "El nombre es requerido")]
     [MinLength(2, ErrorMessage = "El nombre debe tener al menos 2 caracteres")]

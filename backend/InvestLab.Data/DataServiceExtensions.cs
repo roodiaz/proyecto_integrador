@@ -13,7 +13,6 @@ public static class DataServiceExtensions
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPortfolioRepository, PortfolioRepository>();
-        services.AddScoped<ITradeRepository, TradeRepository>();
         services.AddScoped<IAlertRepository, AlertRepository>();
 
         return services;

@@ -1,27 +1,23 @@
 ﻿using InvestLab.Data;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
+namespace InvestLab.Business.Services;
+
 public class JwtService : IJwtService
 {
-    private readonly IConfiguration _configuration;
+    private readonly JwtSettings _jwtSettings;
 
-    public JwtService(IConfiguration configuration)
+    public JwtService(IOptions<JwtSettings> jwtSettings)
     {
-        _configuration = configuration;
+        _jwtSettings = jwtSettings.Value;
     }
 
-    public async Task<TokenDto> GenerateTokensAsync(User user)
+    public Task<TokenDto> GenerateTokensAsync(User user)
     {
-        var jwtSettings = _configuration.GetSection("Jwt");
-
-        var secretKey = jwtSettings["SecretKey"]!;
-        var issuer = jwtSettings["Issuer"]!;
-        var audience = jwtSettings["Audience"]!;
-
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -32,30 +28,30 @@ public class JwtService : IJwtService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var expiration = DateTime.UtcNow.AddMinutes(60);
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
+        var expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationMinutes);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             Expires = expiration,
-            Issuer = issuer,
-            Audience = audience,
+            Issuer = _jwtSettings.Issuer,
+            Audience = _jwtSettings.Audience,
             SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        return new TokenDto
+        return Task.FromResult(new TokenDto
         {
             AccessToken = tokenHandler.WriteToken(token),
             RefreshToken = GenerateRefreshToken(),
             ExpiresIn = expiration
-        };
+        });
     }
 
-    private string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
         using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();

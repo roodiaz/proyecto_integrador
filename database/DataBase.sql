@@ -14,12 +14,12 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
 	phone VARCHAR(20) NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	update_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     password_changed_at TIMESTAMP WITH TIME ZONE,
     last_login_at TIMESTAMP WITH TIME ZONE, -- Último login del usuario
-    is_active BOOLEAN DEFAULT TRUE,
-    balance DECIMAL(18,2) DEFAULT 10000.00
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00
 );
 
 -- ============================================
@@ -34,7 +34,7 @@ CREATE TABLE user_temp_credentials (
     user_id INT NOT NULL,
     temp_password_hash VARCHAR(256) NOT NULL,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL ,
-    is_used BOOLEAN DEFAULT FALSE,
+    is_used BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_temp_user FOREIGN KEY (user_id) REFERENCES users(id)
@@ -189,8 +189,8 @@ CREATE TABLE refresh_tokens (
     user_id INT NOT NULL,
     token VARCHAR(512) NOT NULL UNIQUE,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    is_revoked BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

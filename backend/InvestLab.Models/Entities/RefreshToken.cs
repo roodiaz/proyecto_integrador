@@ -27,10 +27,10 @@ public partial class RefreshToken
     public DateTime ExpiresAt { get; set; }
 
     [Column("is_revoked")]
-    public bool? IsRevoked { get; set; }
+    public bool IsRevoked { get; set; }
 
     [Column("created_at")]
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     [ForeignKey("UserId")]
     [InverseProperty("RefreshTokens")]

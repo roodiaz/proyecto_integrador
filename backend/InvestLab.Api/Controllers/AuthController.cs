@@ -1,10 +1,10 @@
-﻿using InvestLab.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using ApiResponse = InvestLab.Models.Response;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
+[Authorize]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -16,126 +16,161 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    //[HttpPost("register")]
-    //public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto registerDto)
-    //{
-    //    try
-    //    {
-    //        var result = await _authService.RegisterAsync(registerDto);
+    // Endpoint para registrar un nuevo usuario
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+    {
+        try
+        {
+            var result = await _authService.RegisterAsync(registerDto);
 
-    //        if (!result.Success)
-    //        {
-    //            return BadRequest(result);
-    //        }
+            if (!result.Success)
+            {
+                _logger.LogWarning("Register fallido para {Email}: {Message}", registerDto.Email, result.Message);
+                return BadRequest(result);
+            }
 
-    //        return Ok(result);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Error en el registro de usuario");
-    //        return StatusCode(500, new AuthResponseDto
-    //        {
-    //            Success = false,
-    //            Message = "Error interno del servidor"
-    //        });
-    //    }
-    //}
+            _logger.LogInformation("Register exitoso para {Email}", registerDto.Email);
 
-    //[HttpPost("login")]
-    //public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto loginDto)
-    //{
-    //    try
-    //    {
-    //        var result = await _authService.LoginAsync(loginDto);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en endpoint Register para {Email}", registerDto.Email);
 
-    //        if (!result.Success)
-    //        {
-    //            return BadRequest(result);
-    //        }
+            return StatusCode(500, ApiResponse.Fail("Error interno del servidor"));
+        }
+    }
 
-    //        return Ok(result);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Error en el login de usuario");
-    //        return StatusCode(500, new AuthResponseDto
-    //        {
-    //            Success = false,
-    //            Message = "Error interno del servidor"
-    //        });
-    //    }
-    //}
+    // Endpoint para verificar el correo electrónico del usuario
+    [AllowAnonymous]
+    [HttpPost("verify")]
+    public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
+    {
+        try
+        {
+            var result = await _authService.VerifyAsync(verifyDto);
 
-    ////[HttpPost("refresh")]
-    ////public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
-    ////{
-    ////    try
-    ////    {
-    ////        var result = await _authService.RefreshTokenAsync(refreshTokenDto.RefreshToken);
+            if (!result.Success)
+            {
+                _logger.LogWarning("Verify fallido para {Email}: {Message}", verifyDto.Email, result.Message);
+                return BadRequest(result);
+            }
 
-    ////        if (!result.Success)
-    ////        {
-    ////            return BadRequest(result);
-    ////        }
+            _logger.LogInformation("Usuario verificado correctamente: {Email}", verifyDto.Email);
 
-    ////        return Ok(result);
-    ////    }
-    ////    catch (Exception ex)
-    ////    {
-    ////        _logger.LogError(ex, "Error al refrescar token");
-    ////        return StatusCode(500, new AuthResponseDto
-    ////        {
-    ////            Success = false,
-    ////            Message = "Error interno del servidor"
-    ////        });
-    ////    }
-    ////}
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en endpoint Verify para {Email}", verifyDto.Email);
 
-    //[HttpPost("logout")]
-    //[Authorize]
-    //public async Task<ActionResult> Logout()
-    //{
-    //    try
-    //    {
-    //        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    //        if (int.TryParse(userId, out int userIdInt))
-    //        {
-    //            await _authService.LogoutAsync(userIdInt);
-    //        }
+            return StatusCode(500, ApiResponse.Fail("Error interno del servidor"));
+        }
+    }
 
-    //        return Ok(new { message = "Logout exitoso" });
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Error en el logout");
-    //        return StatusCode(500, new { message = "Error interno del servidor" });
-    //    }
-    //}
+    // Endpoint para reenviar el código de verificación
+    [AllowAnonymous]
+    [HttpPost("resend-code")]
+    public async Task<IActionResult> ResendCode([FromBody] ResendCodeDto dto)
+    {
+        try
+        {
+            var result = await _authService.ResendCodeAsync(dto);
 
-    //[HttpGet("me")]
-    //[Authorize]
-    //public async Task<ActionResult<UserDto>> GetCurrentUser()
-    //{
-    //    try
-    //    {
-    //        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    //        if (int.TryParse(userId, out int userIdInt))
-    //        {
-    //            var user = await _authService.GetUserByIdAsync(userIdInt);
-    //            if (user == null)
-    //            {
-    //                return NotFound(new { message = "Usuario no encontrado" });
-    //            }
+            if (!result.Success)
+            {
+                _logger.LogWarning("ResendCode fallido para {Email}: {Message}", dto.Email, result.Message);
+                return BadRequest(result);
+            }
 
-    //            return Ok(user);
-    //        }
+            _logger.LogInformation("Código reenviado correctamente a {Email}", dto.Email);
 
-    //        return BadRequest(new { message = "Token inválido" });
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Error al obtener usuario actual");
-    //        return StatusCode(500, new { message = "Error interno del servidor" });
-    //    }
-    //}
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en endpoint ResendCode para {Email}", dto.Email);
+            return StatusCode(500, ApiResponse.Fail("Error interno del servidor"));
+        }
+    }
+
+    // Endpoint para iniciar sesión
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        try
+        {
+            var result = await _authService.LoginAsync(dto);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Login fallido para {Email}: {Message}", dto.Email, result.Message);
+                return BadRequest(result);
+            }
+
+            _logger.LogInformation("Login exitoso para {Email}", dto.Email);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en endpoint Login para {Email}", dto.Email);
+            return StatusCode(500, ApiResponse.Fail("Error interno del servidor"));
+        }
+    }
+
+    // Endpoint para refrescar el token
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+    {
+        try
+        {
+            var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Refresh fallido: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            _logger.LogInformation("Refresh exitoso");
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en endpoint Refresh");
+            return StatusCode(500, ApiResponse.Fail("Error interno del servidor"));
+        }
+    }
+
+    // Endpoint para cerrar sesión
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenDto dto)
+    {
+        try
+        {
+            var result = await _authService.LogoutAsync(dto.RefreshToken);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Logout fallido: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            _logger.LogInformation("Logout exitoso");
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en endpoint Logout");
+            return StatusCode(500, ApiResponse.Fail("Error interno del servidor"));
+        }
+    }
+
 }

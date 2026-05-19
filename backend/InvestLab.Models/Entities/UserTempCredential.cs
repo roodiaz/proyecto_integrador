@@ -24,7 +24,7 @@ public partial class UserTempCredential
     public DateTime ExpiresAt { get; set; }
 
     [Column("is_used")]
-    public bool? IsUsed { get; set; }
+    public bool IsUsed { get; set; }
 
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }

@@ -1,5 +1,6 @@
 using InvestLab.Api.Extensions;
 using InvestLab.Api.Middleware;
+using InvestLab.Business;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Text.Json;
 
@@ -16,6 +17,7 @@ builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomHealthChecks(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMongoServices(builder.Configuration);
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

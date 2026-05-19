@@ -32,7 +32,7 @@ public partial class User
     public string PasswordHash { get; set; } = null!;
 
     [Column("created_at")]
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     [Column("update_at")]
     public DateTime? UpdatedAt { get; set; }
@@ -44,11 +44,11 @@ public partial class User
     public DateTime? LastLoginAt { get; set; }
 
     [Column("is_active")]
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     [Column("balance")]
     [Precision(18, 2)]
-    public decimal? Balance { get; set; }
+    public decimal Balance { get; set; }
 
     [InverseProperty("User")]
     public virtual ICollection<Alert> Alerts { get; set; } = new List<Alert>();

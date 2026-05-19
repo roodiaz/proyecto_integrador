@@ -4,7 +4,7 @@ using System.Text;
 
 namespace InvestLab.Business.Interfaces
 {
-    internal class IUserService
+    internal interface IAlertService
     {
     }
 }

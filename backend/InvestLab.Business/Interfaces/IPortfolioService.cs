@@ -1,6 +1,6 @@
 ﻿namespace InvestLab.Business.Interfaces;
 
-internal class IPortfolioService
+internal interface IPortfolioService
 {
 }
 
