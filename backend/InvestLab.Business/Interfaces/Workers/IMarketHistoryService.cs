@@ -3,4 +3,5 @@
 public interface IMarketHistoryService
 {
     Task SeedDefaultAssetsAsync();
+    Task SaveDailyMarketHistoryAsync();
 }

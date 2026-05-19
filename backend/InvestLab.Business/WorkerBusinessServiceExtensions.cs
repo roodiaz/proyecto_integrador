@@ -7,6 +7,7 @@ public static class WorkerBusinessServiceExtensions
     public static IServiceCollection AddWorkerBusinessServices(this IServiceCollection services)
     {
         services.AddScoped<IMarketHistoryService, MarketHistoryService>();
+        services.AddScoped<IMarketHistoryService, MarketHistoryService>();
 
         return services;
     }

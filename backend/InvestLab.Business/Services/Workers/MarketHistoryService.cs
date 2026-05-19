@@ -1,9 +1,14 @@
 ﻿using InvestLab.Business.Interfaces.Workers;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
+using InvestLab.Models.Documents;
 
 namespace InvestLab.Business.Services.Workers;
 
+/// <summary>
+/// Servicio encargado de almacenar históricos
+/// diarios de mercado en MongoDB.
+/// </summary>
 public class MarketHistoryService : IMarketHistoryService
 {
     private readonly IPriceHistoryRepository _repository;
@@ -22,7 +27,9 @@ public class MarketHistoryService : IMarketHistoryService
         "NVDA"
     ];
 
-    public MarketHistoryService( IPriceHistoryRepository repository, IExternalProvider externalProvider)
+    public MarketHistoryService(
+        IPriceHistoryRepository repository,
+        IExternalProvider externalProvider)
     {
         _repository = repository;
         _externalProvider = externalProvider;
@@ -32,7 +39,8 @@ public class MarketHistoryService : IMarketHistoryService
     {
         foreach (var symbol in _defaultSymbols)
         {
-            var exists = await _repository.ExistsAsync(symbol);
+            var exists = await _repository
+                .ExistsAsync(symbol);
 
             if (exists)
                 continue;
@@ -58,6 +66,46 @@ public class MarketHistoryService : IMarketHistoryService
             }).ToList();
 
             await _repository.InsertManyAsync(history);
+        }
+    }
+
+    /// <summary>
+    /// Guarda un snapshot diario de mercado
+    /// luego del cierre bursátil.
+    /// </summary>
+    public async Task SaveDailyMarketHistoryAsync()
+    {
+        foreach (var symbol in _defaultSymbols)
+        {
+            var alreadyExists = await _repository
+                .ExistsByDateAsync(
+                    symbol,
+                    DateTime.UtcNow);
+
+            if (alreadyExists)
+                continue;
+
+            var market = await _externalProvider
+                .GetPriceAsync(symbol);
+
+            if (market == null)
+                continue;
+
+            var history = new PriceHistory
+            {
+                Symbol = symbol,
+
+                Date = DateTime.UtcNow.Date,
+
+                Open = market.PreviousClose,
+                High = market.Price,
+                Low = market.PreviousClose,
+                Close = market.Price,
+
+                Volume = 0
+            };
+
+            await _repository.InsertAsync(history);
         }
     }
 }
