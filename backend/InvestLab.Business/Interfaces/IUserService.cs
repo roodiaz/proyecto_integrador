@@ -1,5 +1,6 @@
 ﻿using InvestLab.Models;
-using InvestLab.Models.DTOs.User.Request;
+using InvestLab.Models.DTOs.Auth;
+using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Http;
 
 namespace InvestLab.Business.Interfaces

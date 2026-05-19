@@ -1,5 +1,6 @@
 ﻿using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data.Repositories
 {
@@ -15,6 +16,12 @@ namespace InvestLab.Data.Repositories
         public async Task AddAsync(UserSetting setting)
         {
             await _context.UserSettings.AddAsync(setting);
+        }
+
+        public async Task<UserSetting?> GetByUserIdAsync(int userId)
+        {
+            return await _context.UserSettings
+                .FirstOrDefaultAsync(x => x.UserId == userId);
         }
     }
 }

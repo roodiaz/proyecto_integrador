@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace InvestLab.Models.DTOs.User.Request;
+namespace InvestLab.Models.DTOs.User;
 
 public class UpdateProfileDto
 {

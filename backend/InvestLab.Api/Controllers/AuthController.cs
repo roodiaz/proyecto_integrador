@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ApiResponse = InvestLab.Models.Response;
 
+/// <summary>
+/// Controlador encargado de la autenticación y gestión de acceso de usuarios.
+/// Permite registro, login, verificación, renovación de tokens y logout.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -16,7 +19,13 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    // Endpoint para registrar un nuevo usuario
+    /// <summary>
+    /// Registra un nuevo usuario en el sistema.
+    /// </summary>
+    /// <param name="registerDto">Datos de registro del usuario</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Usuario registrado correctamente</response>
+    /// <response code="400">Datos inválidos o email ya registrado</response>
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
@@ -34,7 +43,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // Endpoint para verificar el correo electrónico del usuario
+    /// <summary>
+    /// Verifica la cuenta del usuario mediante un código enviado por email.
+    /// </summary>
+    /// <param name="verifyDto">Email y código de verificación</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Cuenta verificada correctamente</response>
+    /// <response code="400">Código inválido o expirado</response>
     [AllowAnonymous]
     [HttpPost("verify")]
     public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
@@ -52,7 +67,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // Endpoint para reenviar el código de verificación
+    /// <summary>
+    /// Reenvía el código de verificación al usuario.
+    /// </summary>
+    /// <param name="dto">Email del usuario</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Código reenviado correctamente</response>
+    /// <response code="400">Error en el envío o usuario inválido</response>
     [AllowAnonymous]
     [HttpPost("resend-code")]
     public async Task<IActionResult> ResendCode([FromBody] ResendCodeDto dto)
@@ -70,7 +91,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // Endpoint para iniciar sesión
+    /// <summary>
+    /// Inicia sesión de un usuario y devuelve tokens de autenticación.
+    /// </summary>
+    /// <param name="dto">Credenciales del usuario</param>
+    /// <returns>Access token y refresh token</returns>
+    /// <response code="200">Login exitoso</response>
+    /// <response code="400">Credenciales inválidas</response>
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
@@ -88,7 +115,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // Endpoint para refrescar el token
+    /// <summary>
+    /// Renueva el access token utilizando un refresh token válido.
+    /// </summary>
+    /// <param name="dto">Refresh token</param>
+    /// <returns>Nuevos tokens de autenticación</returns>
+    /// <response code="200">Token renovado correctamente</response>
+    /// <response code="400">Refresh token inválido o expirado</response>
     [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
@@ -106,7 +139,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // Endpoint para cerrar sesión
+    /// <summary>
+    /// Cierra la sesión del usuario invalidando el refresh token.
+    /// </summary>
+    /// <param name="dto">Refresh token a invalidar</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Logout exitoso</response>
+    /// <response code="400">Error en la operación</response>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenDto dto)
     {
@@ -122,5 +161,4 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
-
 }

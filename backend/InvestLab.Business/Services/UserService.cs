@@ -2,7 +2,8 @@
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
-using InvestLab.Models.DTOs.User.Request;
+using InvestLab.Models.DTOs.Auth;
+using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;

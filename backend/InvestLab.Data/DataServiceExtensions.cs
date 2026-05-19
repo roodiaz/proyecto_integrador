@@ -16,6 +16,8 @@ public static class DataServiceExtensions
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserTempCredentialRepository, UserTempCredentialRepository>();
         services.AddScoped<IUserSettingRepository, UserSettingRepository>();
+        services.AddScoped<IAlertRepository, AlertRepository>();
+        services.AddScoped<IAssetRepository, AssetRepository>();
 
         return services;
     }

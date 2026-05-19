@@ -5,7 +5,7 @@ namespace InvestLab.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MarketController : ControllerBase
+    public class MarketController : BaseController
     {
     }
 }
