@@ -140,6 +140,7 @@ public partial class InvestLabDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("users_pkey");
 
             entity.Property(e => e.Balance).HasDefaultValue(10000.00m);
+            entity.Property(e => e.BirthDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.IsActive).HasDefaultValue(true);

@@ -4,7 +4,10 @@ using System.Text;
 
 namespace InvestLab.Data.Interfaces
 {
-    internal class IUserRepository
+    public interface IUserRepository
     {
+        Task<User?> GetByIdWithSettingsAsync(int userId);
+        Task<User?> GetByIdAsync(int userId);
+        Task UpdateAsync(User user);
     }
 }

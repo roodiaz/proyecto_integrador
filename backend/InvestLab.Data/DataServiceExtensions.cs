@@ -12,8 +12,6 @@ public static class DataServiceExtensions
             options.UseNpgsql(connectionString));
 
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IPortfolioRepository, PortfolioRepository>();
-        services.AddScoped<IAlertRepository, AlertRepository>();
 
         return services;
     }

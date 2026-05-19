@@ -27,6 +27,12 @@ public partial class User
     [StringLength(20)]
     public string Phone { get; set; } = null!;
 
+    [Column("birth_date")]
+    public DateTime? BirthDate { get; set; }
+
+    [Column("profile_image_url")]
+    public string? ProfileImageUrl { get; set; }
+
     [Column("password_hash")]
     [StringLength(256)]
     public string PasswordHash { get; set; } = null!;
