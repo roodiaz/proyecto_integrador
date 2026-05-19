@@ -142,7 +142,7 @@ CREATE TABLE notifications (
     message VARCHAR(500),
     price DECIMAL(18,4),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    is_read BOOLEAN DEFAULT FALSE,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
 
     CONSTRAINT fk_notif_alert FOREIGN KEY (alert_id) REFERENCES alerts(id),
     CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users(id)

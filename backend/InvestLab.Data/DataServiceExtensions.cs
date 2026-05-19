@@ -18,6 +18,7 @@ public static class DataServiceExtensions
         services.AddScoped<IUserSettingRepository, UserSettingRepository>();
         services.AddScoped<IAlertRepository, AlertRepository>();
         services.AddScoped<IAssetRepository, AssetRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
     }

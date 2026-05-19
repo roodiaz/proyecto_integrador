@@ -32,7 +32,7 @@ public partial class Notification
     public DateTime? CreatedAt { get; set; }
 
     [Column("is_read")]
-    public bool? IsRead { get; set; }
+    public bool IsRead { get; set; }
 
     [ForeignKey("AlertId")]
     [InverseProperty("Notifications")]
