@@ -147,7 +147,7 @@ public class UserService : IUserService
             user.ProfileImageUrl = $"/images/{fileName}";
 
             await _userRepository.UpdateAsync(user);
-
+            
             _logger.LogInformation("Imagen actualizada {UserId}", userId);
 
             return Response.Ok(new { user.ProfileImageUrl }, "Imagen actualizada");

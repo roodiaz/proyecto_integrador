@@ -13,6 +13,17 @@ namespace InvestLab.Data.Repositories
             _context = context;
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(x => x.Email == email);
+        }
+
+        public async Task AddAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
+        }
+
         public async Task<User?> GetByIdWithSettingsAsync(int userId)
         {
             return await _context.Users
@@ -29,7 +40,6 @@ namespace InvestLab.Data.Repositories
         public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
         }
     }
 }

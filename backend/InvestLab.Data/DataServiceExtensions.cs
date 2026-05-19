@@ -11,7 +11,11 @@ public static class DataServiceExtensions
         services.AddDbContext<InvestLabDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IUserTempCredentialRepository, UserTempCredentialRepository>();
+        services.AddScoped<IUserSettingRepository, UserSettingRepository>();
 
         return services;
     }

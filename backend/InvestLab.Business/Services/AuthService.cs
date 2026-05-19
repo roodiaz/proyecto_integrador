@@ -1,9 +1,10 @@
 ﻿using InvestLab.Data;
 using InvestLab.Data.Context;
+using InvestLab.Data.Interfaces;
+using InvestLab.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using InvestLab.Models;
 
 public class AuthService : IAuthService
 {
@@ -12,10 +13,19 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher<InvestLab.Data.User> _passwordHasher;
     private readonly ILogger<AuthService> _logger;
     private readonly IEmailService _emailService;
+    private readonly IUserRepository _userRepository;
+    private readonly IUserTempCredentialRepository _tempRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUserSettingRepository _userSettingRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AuthService(InvestLabDbContext context, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailService emailService)
+    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailService emailService)
     {
-        _context = context;
+        _userRepository = userRepository;
+        _tempRepository = tempRepository;
+        _refreshTokenRepository = refreshTokenRepository;
+        _userSettingRepository = userSettingRepository;
+        _unitOfWork = unitOfWork;
         _jwtService = jwtService;
         _passwordHasher = passwordHasher;
         _logger = logger;
@@ -27,31 +37,23 @@ public class AuthService : IAuthService
         try
         {
             if (registerDto.Password != registerDto.ConfirmPassword)
-            {
-                _logger.LogWarning("Passwords no coinciden para {Email}", registerDto.Email);
                 return Response.Fail("Las contraseñas no coinciden");
-            }
 
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
+            var existingUser = await _userRepository.GetByEmailAsync(registerDto.Email);
 
             if (existingUser != null)
             {
                 if (!existingUser.IsActive)
                 {
-                    _logger.LogInformation("Usuario no verificado intenta registrarse nuevamente: {Email}", existingUser.Email);
-
                     await ResendCodeInternal(existingUser);
 
                     return Response.Ok(new
                     {
                         requiresVerification = true,
                         email = existingUser.Email
-                    },
-                    "Ya existe una cuenta sin verificar. Te enviamos un nuevo código.");
+                    }, "Ya existe una cuenta sin verificar.");
                 }
 
-                _logger.LogWarning("Intento de registro con email existente: {Email}", registerDto.Email);
                 return Response.Fail("El email ya está registrado");
             }
 
@@ -67,7 +69,17 @@ public class AuthService : IAuthService
 
             user.PasswordHash = _passwordHasher.HashPassword(user, registerDto.Password);
 
-            // OTP
+            await _userRepository.AddAsync(user);
+
+            var userProfile = new UserSetting
+            {
+                UserId = user.Id,
+                Currency = "USD",
+                EmailNotifications = true
+            };
+
+            await _userSettingRepository.AddAsync(userProfile);
+
             var code = new Random().Next(100000, 999999).ToString();
             var codeHash = _passwordHasher.HashPassword(user, code);
 
@@ -79,42 +91,27 @@ public class AuthService : IAuthService
                 IsUsed = false
             };
 
-            var userProfile = new UserSetting
-            {
-                UserId = user.Id,
-                Currency = "USD",
-                EmailNotifications = true
-            };
+            await _tempRepository.AddAsync(tempCredential);
 
-            _context.Users.Add(user);
-            _context.UserSettings.Add(userProfile);
-            _context.UserTempCredentials.Add(tempCredential);
-
-            await _context.SaveChangesAsync();
+            // 💥 UN SOLO SAVE
+            await _unitOfWork.SaveChangesAsync();
 
             await _emailService.SendAsync(
-                    user.Email,
-                    "Código de verificación",
-                    $@"
-                <h2>Verificación de cuenta</h2>
-                <p>Tu código es:</p>
-                <h1>{code}</h1>
-                <p>Válido por 15 minutos</p>"
+                user.Email,
+                "Código de verificación",
+                $"Tu código es: {code}"
             );
-
-            _logger.LogInformation("Usuario registrado: {Email}", user.Email);
 
             return Response.Ok(new
             {
                 requiresVerification = true,
                 email = user.Email
-            },
-            "Usuario registrado. Revisá tu email para verificar la cuenta.");
+            });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error en RegisterAsync para {Email}", registerDto.Email);
-            return Response.Fail("Error interno del servidor");
+            _logger.LogError(ex, "Error en Register");
+            return Response.Fail("Error interno");
         }
     }
 
@@ -122,34 +119,42 @@ public class AuthService : IAuthService
     {
         try
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user == null)
+            {
+                _logger.LogWarning("Verify: usuario no encontrado {Email}", dto.Email);
                 return Response.Fail("Usuario no encontrado");
+            }
 
-            var temp = await _context.UserTempCredentials
-                .Where(x => x.UserId == user.Id && !x.IsUsed)
-                .OrderByDescending(x => x.CreatedAt)
-                .FirstOrDefaultAsync();
+            var temp = await _tempRepository.GetLatestAsync(user.Id);
 
             if (temp == null)
+            {
+                _logger.LogWarning("Verify: código no encontrado {UserId}", user.Id);
                 return Response.Fail("Código no encontrado");
+            }
 
             if (temp.ExpiresAt < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Verify: código expirado {UserId}", user.Id);
                 return Response.Fail("Código expirado");
+            }
 
             var result = _passwordHasher.VerifyHashedPassword(user, temp.TempPasswordHash, dto.Code);
 
             if (result == PasswordVerificationResult.Failed)
+            {
+                _logger.LogWarning("Verify: código inválido {UserId}", user.Id);
                 return Response.Fail("Código inválido");
+            }
 
             temp.IsUsed = true;
             user.IsActive = true;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Usuario verificado: {Email}", user.Email);
+            _logger.LogInformation("Usuario verificado correctamente {Email}", user.Email);
 
             return Response.Ok(null, "Cuenta verificada correctamente");
         }
@@ -164,18 +169,23 @@ public class AuthService : IAuthService
     {
         try
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user == null)
+            {
+                _logger.LogWarning("Resend: usuario no encontrado {Email}", dto.Email);
                 return Response.Fail("Usuario no encontrado");
+            }
 
             if (user.IsActive)
+            {
+                _logger.LogWarning("Resend: usuario ya verificado {Email}", dto.Email);
                 return Response.Fail("La cuenta ya está verificada");
+            }
 
             await ResendCodeInternal(user);
 
-            _logger.LogInformation("Código reenviado a {Email}", user.Email);
+            _logger.LogInformation("Código reenviado {Email}", user.Email);
 
             return Response.Ok(null, "Se envió un nuevo código");
         }
@@ -190,8 +200,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user == null)
                 return Response.Fail("Email o contraseña incorrectos");
@@ -202,9 +211,10 @@ public class AuthService : IAuthService
                 return Response.Fail("Email o contraseña incorrectos");
 
             if (!user.IsActive)
-                return Response.Fail("Debes verificar tu cuenta antes de iniciar sesión");
+                return Response.Fail("Debes verificar tu cuenta");
 
             var tokens = await _jwtService.GenerateTokensAsync(user);
+
             var refreshToken = new RefreshToken
             {
                 UserId = user.Id,
@@ -213,27 +223,18 @@ public class AuthService : IAuthService
                 IsRevoked = false
             };
 
-            _context.RefreshTokens.Add(refreshToken);
+            await _refreshTokenRepository.AddAsync(refreshToken);
+
             user.LastLoginAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Login exitoso: {Email}", user.Email);
+            await _unitOfWork.SaveChangesAsync();
 
-            return Response.Ok(new
-            {
-                user = new
-                {
-                    user.Id,
-                    user.Username,
-                    user.Email
-                },
-                tokens
-            }, "Login exitoso");
+            return Response.Ok(new { tokens });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error en LoginAsync para {Email}", dto.Email);
-            return Response.Fail("Error interno del servidor");
+            _logger.LogError(ex, "Error en Login");
+            return Response.Fail("Error interno");
         }
     }
 
@@ -241,78 +242,70 @@ public class AuthService : IAuthService
     {
         try
         {
-            var storedToken = await _context.RefreshTokens
-                .Include(x => x.User)
-                .FirstOrDefaultAsync(x => x.Token == refreshToken);
+            var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
 
-            if (storedToken == null)
-            {
-                _logger.LogWarning("Refresh token no encontrado");
+            if (storedToken == null || storedToken.IsRevoked)
                 return Response.Fail("Token inválido");
-            }
-
-            if (storedToken.IsRevoked)
-            {
-                _logger.LogWarning("Refresh token revocado para usuario {UserId}", storedToken.UserId);
-                return Response.Fail("Token inválido");
-            }
 
             if (storedToken.ExpiresAt < DateTime.UtcNow)
-            {
-                _logger.LogWarning("Refresh token expirado para usuario {UserId}", storedToken.UserId);
                 return Response.Fail("Token expirado");
-            }
 
             var user = storedToken.User;
+
             storedToken.IsRevoked = true;
 
             var tokens = await _jwtService.GenerateTokensAsync(user);
-            var newRefreshToken = new RefreshToken
+
+            var newToken = new RefreshToken
             {
                 UserId = user.Id,
                 Token = tokens.RefreshToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
             };
 
-            _context.RefreshTokens.Add(newRefreshToken);
+            await _refreshTokenRepository.AddAsync(newToken);
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Refresh exitoso para usuario {UserId}", user.Id);
-
-            return Response.Ok(new
-            {
-                tokens
-            }, "Token renovado correctamente");
+            return Response.Ok(new { tokens });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error en RefreshTokenAsync");
-            return Response.Fail("Error interno del servidor");
+            _logger.LogError(ex, "Error en Refresh");
+            return Response.Fail("Error interno");
         }
     }
 
     public async Task<Response> LogoutAsync(string refreshToken)
     {
-        var storedToken = await _context.RefreshTokens
-            .FirstOrDefaultAsync(x => x.Token == refreshToken);
+        try
+        {
+            var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
 
-        if (storedToken == null)
-            return Response.Ok(null);
+            if (storedToken == null)
+            {
+                _logger.LogWarning("Logout: token no encontrado");
+                return Response.Ok(null);
+            }
 
-        storedToken.IsRevoked = true;
+            storedToken.IsRevoked = true;
 
-        await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
-        return Response.Ok(null, "Logout exitoso");
+            _logger.LogInformation("Logout exitoso para usuario {UserId}", storedToken.UserId);
+
+            return Response.Ok(null, "Logout exitoso");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en LogoutAsync");
+            return Response.Fail("Error interno del servidor");
+        }
     }
 
     private async Task ResendCodeInternal(User user)
     {
-        var oldCodes = await _context.UserTempCredentials
-            .Where(x => x.UserId == user.Id && !x.IsUsed)
-            .ToListAsync();
+        var oldCodes = await _tempRepository.GetActiveByUserIdAsync(user.Id);
 
         foreach (var item in oldCodes)
             item.IsUsed = true;
@@ -328,12 +321,12 @@ public class AuthService : IAuthService
             IsUsed = false
         };
 
-        _context.UserTempCredentials.Add(tempCredential);
+        await _tempRepository.AddAsync(tempCredential);
 
-        await _context.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         await _emailService.SendAsync(
-                user.Email,
+            user.Email,
                 "Código de verificación",
                 $@"
             <h2>Verificación de cuenta</h2>
