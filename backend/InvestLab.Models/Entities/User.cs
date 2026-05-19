@@ -23,12 +23,19 @@ public partial class User
     [StringLength(100)]
     public string Email { get; set; } = null!;
 
+    [Column("phone")]
+    [StringLength(20)]
+    public string Phone { get; set; } = null!;
+
     [Column("password_hash")]
     [StringLength(256)]
     public string PasswordHash { get; set; } = null!;
 
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
+
+    [Column("update_at")]
+    public DateTime? UpdatedAt { get; set; }
 
     [Column("password_changed_at")]
     public DateTime? PasswordChangedAt { get; set; }
@@ -54,6 +61,9 @@ public partial class User
 
     [InverseProperty("User")]
     public virtual ICollection<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     [InverseProperty("User")]
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();

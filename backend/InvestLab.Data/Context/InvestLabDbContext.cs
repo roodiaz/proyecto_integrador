@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using InvestLab.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data.Context;
 
@@ -20,6 +23,8 @@ public partial class InvestLabDbContext : DbContext
     public virtual DbSet<Notification> Notifications { get; set; }
 
     public virtual DbSet<Portfolio> Portfolios { get; set; }
+
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<Transaction> Transactions { get; set; }
 
@@ -103,6 +108,18 @@ public partial class InvestLabDbContext : DbContext
                 .HasConstraintName("fk_portfolio_user");
         });
 
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("refresh_tokens_pkey");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.IsRevoked).HasDefaultValue(false);
+
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_refresh_user");
+        });
+
         modelBuilder.Entity<Transaction>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("transactions_pkey");
@@ -124,6 +141,7 @@ public partial class InvestLabDbContext : DbContext
 
             entity.Property(e => e.Balance).HasDefaultValue(10000.00m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
