@@ -1,9 +1,9 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Notifications;
 
-namespace InvestLab.Business.Services;
+namespace InvestLab.Business.Services.Api;
 
 public class NotificationService : INotificationService
 {

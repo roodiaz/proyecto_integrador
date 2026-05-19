@@ -11,6 +11,7 @@ public static class DataServiceExtensions
         services.AddDbContext<InvestLabDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        // postgreSQL specific configuration
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -20,6 +21,9 @@ public static class DataServiceExtensions
         services.AddScoped<IAssetRepository, AssetRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+
+        // mongo specific configuration
+        services.AddScoped<IPriceHistoryRepository,PriceHistoryRepository>();
 
         return services;
     }

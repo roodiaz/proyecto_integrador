@@ -1,7 +1,7 @@
 ﻿using InvestLab.Models;
 using InvestLab.Models.DTOs.Notifications;
 
-namespace InvestLab.Business.Interfaces;
+namespace InvestLab.Business.Interfaces.Api;
 
 public interface INotificationService
 {

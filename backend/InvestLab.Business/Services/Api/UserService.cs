@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;

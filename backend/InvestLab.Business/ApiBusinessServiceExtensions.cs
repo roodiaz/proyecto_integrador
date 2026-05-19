@@ -1,14 +1,12 @@
-﻿using InvestLab.Business;
-using InvestLab.Business.Interfaces;
-using InvestLab.Business.Services;
+﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Services.Api;
 using InvestLab.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-public static class BusinessServiceExtensions
+public static class ApiBusinessServiceExtensions
 {
-    public static IServiceCollection AddBusinessServices(this IServiceCollection services)
+    public static IServiceCollection AddApiBusinessServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAlertService, AlertService>();

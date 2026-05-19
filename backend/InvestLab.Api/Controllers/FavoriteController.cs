@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Favorite;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

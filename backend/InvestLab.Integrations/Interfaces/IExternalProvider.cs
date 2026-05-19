@@ -6,4 +6,5 @@ public interface IExternalProvider
 {
     Task<MarketPriceDto?> GetPriceAsync(string symbol);
     Task<List<MarketPriceDto>> GetPricesAsync(List<string> symbols);
+    Task<List<HistoricalPriceDto>> GetHistoricalAsync( string symbol,DateTime from,DateTime to);
 }

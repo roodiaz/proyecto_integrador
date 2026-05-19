@@ -3,7 +3,7 @@ using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Http;
 
-namespace InvestLab.Business.Interfaces
+namespace InvestLab.Business.Interfaces.Api
 {
     public interface IUserService
     {

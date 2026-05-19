@@ -94,5 +94,95 @@ namespace InvestLab.Integrations.Providers
 
             return resultList;
         }
+
+        public async Task<List<HistoricalPriceDto>> GetHistoricalAsync(string symbol, DateTime from, DateTime to)
+        {
+            var period1 = ((DateTimeOffset)from).ToUnixTimeSeconds();
+            var period2 = ((DateTimeOffset)to).ToUnixTimeSeconds();
+
+            var url =
+                $"{_options.BaseUrl}/v8/finance/chart/{symbol}" +
+                $"?period1={period1}" +
+                $"&period2={period2}" +
+                $"&interval=1d";
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                return [];
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var data = JsonDocument.Parse(json);
+
+            var result = data.RootElement
+                .GetProperty("chart")
+                .GetProperty("result")[0];
+
+            var timestamps = result
+                .GetProperty("timestamp")
+                .EnumerateArray()
+                .Select(x => x.GetInt64())
+                .ToList();
+
+            var quote = result
+                .GetProperty("indicators")
+                .GetProperty("quote")[0];
+
+            var opens = quote.GetProperty("open")
+                .EnumerateArray()
+                .ToList();
+
+            var highs = quote.GetProperty("high")
+                .EnumerateArray()
+                .ToList();
+
+            var lows = quote.GetProperty("low")
+                .EnumerateArray()
+                .ToList();
+
+            var closes = quote.GetProperty("close")
+                .EnumerateArray()
+                .ToList();
+
+            var volumes = quote.GetProperty("volume")
+                .EnumerateArray()
+                .ToList();
+
+            var history = new List<HistoricalPriceDto>();
+
+            for (int i = 0; i < timestamps.Count; i++)
+            {
+                if (closes[i].ValueKind == JsonValueKind.Null)
+                    continue;
+
+                history.Add(new HistoricalPriceDto
+                {
+                    Date = DateTimeOffset
+                        .FromUnixTimeSeconds(timestamps[i])
+                        .UtcDateTime,
+
+                    Open = opens[i].ValueKind == JsonValueKind.Null
+                        ? 0
+                        : opens[i].GetDecimal(),
+
+                    High = highs[i].ValueKind == JsonValueKind.Null
+                        ? 0
+                        : highs[i].GetDecimal(),
+
+                    Low = lows[i].ValueKind == JsonValueKind.Null
+                        ? 0
+                        : lows[i].GetDecimal(),
+
+                    Close = closes[i].GetDecimal(),
+
+                    Volume = volumes[i].ValueKind == JsonValueKind.Null
+                        ? 0
+                        : volumes[i].GetInt64()
+                });
+            }
+
+            return history;
+        }
     }
 }

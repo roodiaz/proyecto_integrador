@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
@@ -7,7 +7,7 @@ using InvestLab.Models.DTOs.Favorite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InvestLab.Business.Services
+namespace InvestLab.Business.Services.Api
 {
     public class FavoriteService : IFavoriteService
     {

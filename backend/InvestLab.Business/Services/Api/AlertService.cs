@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using static InvestLab.Models.Enums;
 
-namespace InvestLab.Business.Services
+namespace InvestLab.Business.Services.Api
 {
     public class AlertService : IAlertService
     {

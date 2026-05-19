@@ -1,7 +1,13 @@
-using InvestLab.Workers;
+using InvestLab.Api.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHostedService<Worker>();
+
+// Application services
+builder.Services.AddWorkerApplicationServices(builder.Configuration);
+
+// Workers
+builder.Services.AddHostedService<MarketSeederWorker>();
 
 var host = builder.Build();
+
 host.Run();

@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace InvestLab.Business.Services;
+namespace InvestLab.Business.Services.Api;
 
 public class JwtService : IJwtService
 {

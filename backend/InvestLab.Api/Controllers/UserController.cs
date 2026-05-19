@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Authorization;

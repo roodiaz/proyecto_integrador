@@ -10,27 +10,21 @@ public class PriceHistory
     [BsonElement("symbol")]
     public string Symbol { get; set; } = default!;
 
-    [BsonElement("data")]
-    public List<PriceEntry> Data { get; set; } = [];
+    [BsonElement("date")]
+    public DateTime Date { get; set; }
 
-    public class PriceEntry
-    {
-        [BsonElement("date")]
-        public DateTime Date { get; set; }
+    [BsonElement("open")]
+    public decimal Open { get; set; }
 
-        [BsonElement("open")]
-        public decimal Open { get; set; }
+    [BsonElement("high")]
+    public decimal High { get; set; }
 
-        [BsonElement("high")]
-        public decimal High { get; set; }
+    [BsonElement("low")]
+    public decimal Low { get; set; }
 
-        [BsonElement("low")]
-        public decimal Low { get; set; }
+    [BsonElement("close")]
+    public decimal Close { get; set; }
 
-        [BsonElement("close")]
-        public decimal Close { get; set; }
-
-        [BsonElement("volume")]
-        public long Volume { get; set; }
-    }
+    [BsonElement("volume")]
+    public long Volume { get; set; }
 }
