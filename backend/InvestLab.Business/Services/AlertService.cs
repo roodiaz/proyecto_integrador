@@ -13,19 +13,21 @@ namespace InvestLab.Business.Services
 {
     public class AlertService : IAlertService
     {
+        private readonly LimitsOptions _limits;
         private readonly IAlertRepository _alertRepository;
         private readonly IAssetRepository _assetRepository;
         private readonly IUserSettingRepository _userSettingRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AlertService> _logger;
 
-        public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger)
+        public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger, LimitsOptions limits)
         {
             _alertRepository = alertRepository;
             _assetRepository = assetRepository;
             _userSettingRepository = userSettingRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _limits = limits;
         }
 
         public async Task<Response> CreateAlertAsync(int userId, CreateAlertDto dto)
@@ -40,11 +42,9 @@ namespace InvestLab.Business.Services
                 if (asset == null)
                     return Response.Fail("Activo no encontrado");
 
-                var settings = await _userSettingRepository.GetByUserIdAsync(userId);
-
                 var count = await _alertRepository.CountByUserAsync(userId);
 
-                if (count >= settings.MaxAlerts)
+                if (count >= _limits.MaxAlerts)
                     return Response.Fail("Límite de alertas alcanzado");
 
                 var (type, op, value) = MapCondition(dto);
