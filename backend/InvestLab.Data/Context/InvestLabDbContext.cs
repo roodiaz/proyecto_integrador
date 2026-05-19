@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using InvestLab.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data.Context;
 

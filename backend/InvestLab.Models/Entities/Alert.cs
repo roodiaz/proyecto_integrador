@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using static InvestLab.Models.Enums;
 
 namespace InvestLab.Data;
 
@@ -21,10 +22,10 @@ public partial class Alert
     public int AssetId { get; set; }
 
     [Column("condition_type")]
-    public short ConditionType { get; set; }
+    public ConditionType ConditionType { get; set; }
 
     [Column("operator")]
-    public short Operator { get; set; }
+    public AlertOperator Operator { get; set; }
 
     [Column("value")]
     [Precision(18, 4)]

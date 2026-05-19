@@ -59,8 +59,8 @@ namespace InvestLab.Business.Services.Api
                 {
                     UserId = userId,
                     AssetId = asset.Id,
-                    ConditionType = (short)type,
-                    Operator = (short)op,
+                    ConditionType = type,
+                    Operator = op,
                     Value = value,
                     IsActive = dto.IsActive,
                     CreatedAt = DateTime.UtcNow
@@ -146,16 +146,16 @@ namespace InvestLab.Business.Services.Api
 
                 if (exists && (
                     alert.AssetId != asset.Id ||
-                    alert.ConditionType != (short)type ||
-                    alert.Operator != (short)op ||
+                    alert.ConditionType != type ||
+                    alert.Operator != op ||
                     alert.Value != value))
                 {
                     return Response.Fail("Ya existe una alerta igual");
                 }
 
                 alert.AssetId = asset.Id;
-                alert.ConditionType = (short)type;
-                alert.Operator = (short)op;
+                alert.ConditionType = type;
+                alert.Operator = op;
                 alert.Value = value;
                 alert.IsActive = dto.IsActive;
 
@@ -205,15 +205,18 @@ namespace InvestLab.Business.Services.Api
             };
         }
 
-        private (ConditionType, OperatorType, decimal) MapCondition(CreateAlertDto dto)
+        private (ConditionType, AlertOperator, decimal) MapCondition(CreateAlertDto dto)
         {
             return dto.Condition switch
             {
-                ">" => (ConditionType.Price, OperatorType.GreaterThan, dto.Price!.Value),
-                "<" => (ConditionType.Price, OperatorType.LessThan, dto.Price!.Value),
-                "%>" => (ConditionType.Percentage, OperatorType.GreaterThan, dto.PercentChange!.Value),
-                "%<" => (ConditionType.Percentage, OperatorType.LessThan, dto.PercentChange!.Value),
-                _ => throw new ArgumentException()
+                ">" => (ConditionType.Price, AlertOperator.GreaterThan, dto.Price!.Value),
+                "<" => (ConditionType.Price, AlertOperator.LessThan, dto.Price!.Value),
+                ">=" => (ConditionType.Price, AlertOperator.GreaterThanOrEqual, dto.Price!.Value),
+                "<=" => (ConditionType.Price, AlertOperator.LessThanOrEqual, dto.Price!.Value),
+                "=" => (ConditionType.Price, AlertOperator.Equal, dto.Price!.Value),
+                "%>" => (ConditionType.Percentage, AlertOperator.GreaterThan, dto.PercentChange!.Value),
+                "%<" => (ConditionType.Percentage, AlertOperator.LessThan, dto.PercentChange!.Value),
+                _ => throw new ArgumentException("Condición inválida")
             };
         }
     }

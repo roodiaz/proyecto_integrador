@@ -13,4 +13,6 @@ public interface INotificationRepository
     Task MarkAllAsReadAsync(int userId);
 
     void Remove(Notification notification);
+
+    Task InsertAsync(Notification notification);
 }

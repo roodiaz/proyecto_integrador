@@ -12,7 +12,6 @@ public class MarketHistoryService : IMarketHistoryService
 {
     private readonly IPriceHistoryRepository _repository;
     private readonly IExternalProvider _externalProvider;
-
     private readonly string[] _defaultSymbols =
     [
         "^GSPC",
@@ -26,7 +25,7 @@ public class MarketHistoryService : IMarketHistoryService
         "NVDA"
     ];
 
-    public MarketHistoryService(      IPriceHistoryRepository repository, IExternalProvider externalProvider)
+    public MarketHistoryService(IPriceHistoryRepository repository, IExternalProvider externalProvider)
     {
         _repository = repository;
         _externalProvider = externalProvider;
@@ -36,24 +35,16 @@ public class MarketHistoryService : IMarketHistoryService
     {
         foreach (var symbol in _defaultSymbols)
         {
-            var exists = await _repository
-                .ExistsAsync(symbol);
-
+            var exists = await _repository.ExistsAsync(symbol);
             if (exists)
                 continue;
 
-            var candles = await _externalProvider
-                .GetHistoricalAsync(
-                    symbol,
-                    DateTime.UtcNow.AddYears(-1),
-                    DateTime.UtcNow);
+            var assets = await _externalProvider.GetHistoricalAsync(symbol, DateTime.UtcNow.AddYears(-1), DateTime.UtcNow);
 
-            var history = candles.Select(c => new PriceHistory
+            var history = assets.Select(c => new PriceHistory
             {
                 Symbol = symbol,
-
                 Date = c.Date,
-
                 Open = c.Open,
                 High = c.High,
                 Low = c.Low,
@@ -74,31 +65,22 @@ public class MarketHistoryService : IMarketHistoryService
     {
         foreach (var symbol in _defaultSymbols)
         {
-            var alreadyExists = await _repository
-                .ExistsByDateAsync(
-                    symbol,
-                    DateTime.UtcNow);
-
+            var alreadyExists = await _repository.ExistsByDateAsync(symbol, DateTime.UtcNow);
             if (alreadyExists)
                 continue;
 
-            var market = await _externalProvider
-                .GetPriceAsync(symbol);
-
+            var market = await _externalProvider.GetPriceAsync(symbol);
             if (market == null)
                 continue;
 
             var history = new PriceHistory
             {
                 Symbol = symbol,
-
                 Date = DateTime.UtcNow.Date,
-
                 Open = market.PreviousClose,
                 High = market.Price,
                 Low = market.PreviousClose,
                 Close = market.Price,
-
                 Volume = 0
             };
 

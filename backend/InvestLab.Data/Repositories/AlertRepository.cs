@@ -38,7 +38,7 @@ namespace InvestLab.Data.Repositories
             return await _context.Alerts.CountAsync(x => x.UserId == userId);
         }
 
-        public async Task<bool> ExistsAsync(int userId, int assetId, ConditionType type, OperatorType op, decimal value)
+        public async Task<bool> ExistsAsync(int userId, int assetId, ConditionType type, AlertOperator op, decimal value)
         {
             return await _context.Alerts.AnyAsync(x =>
                 x.UserId == userId &&

@@ -10,8 +10,7 @@ public class MarketDailySnapshotWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public MarketDailySnapshotWorker(
-        IServiceProvider serviceProvider)
+    public MarketDailySnapshotWorker(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }

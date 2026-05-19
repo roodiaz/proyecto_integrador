@@ -12,10 +12,13 @@ namespace InvestLab.Models
             Percentage = 2
         }
 
-        public enum OperatorType
+        public enum AlertOperator
         {
             GreaterThan = 1,
-            LessThan = 2
+            LessThan = 2,
+            GreaterThanOrEqual = 3,
+            LessThanOrEqual = 4,
+            Equal = 5
         }
     }
 }
