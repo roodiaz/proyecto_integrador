@@ -21,9 +21,9 @@ builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomHealthChecks(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddMongoServices(builder.Configuration);
+builder.Services.AddHttpClient<IExternalProvider, YahooMarketProvider>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
-builder.Services.AddHttpClient<IExternalProvider, YahooMarketProvider>();
 builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
 
 // ─── CORS ─────────────────────────────────────────────────────────────────

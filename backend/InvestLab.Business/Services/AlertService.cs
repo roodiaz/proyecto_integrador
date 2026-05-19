@@ -4,6 +4,7 @@ using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Alerts;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,14 +21,14 @@ namespace InvestLab.Business.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AlertService> _logger;
 
-        public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger, LimitsOptions limits)
+        public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger, IOptions<LimitsOptions> options)
         {
             _alertRepository = alertRepository;
             _assetRepository = assetRepository;
             _userSettingRepository = userSettingRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
-            _limits = limits;
+            _limits = options.Value;
         }
 
         public async Task<Response> CreateAlertAsync(int userId, CreateAlertDto dto)

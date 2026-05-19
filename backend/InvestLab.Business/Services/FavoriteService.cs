@@ -5,6 +5,7 @@ using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Favorite;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace InvestLab.Business.Services
 {
@@ -17,13 +18,13 @@ namespace InvestLab.Business.Services
         private readonly IUnitOfWork _uow;
         private readonly ILogger<FavoriteService> _logger;
 
-        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, LimitsOptions limits, IExternalProvider externalProvider)
+        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, IOptions<LimitsOptions> options, IExternalProvider externalProvider)
         {
             _repo = repo;
             _assetRepo = assetRepo;
             _uow = uow;
             _logger = logger;
-            _limits = limits;
+            _limits = options.Value;
             _externalProvider = externalProvider;
         }
 
