@@ -21,9 +21,12 @@ public static class DataServiceExtensions
         services.AddScoped<IAssetRepository, AssetRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+        services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         // mongo specific configuration
         services.AddScoped<IPriceHistoryRepository,PriceHistoryRepository>();
+        services.AddScoped<IPortfolioHistoryRepository,PortfolioHistoryRepository>();
 
         return services;
     }

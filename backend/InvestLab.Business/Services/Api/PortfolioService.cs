@@ -22,8 +22,9 @@ public class PortfolioService : IPortfolioService
     private readonly ITransactionRepository _transactionRepository;
     private readonly IExternalProvider _externalProvider;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
 
-    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger)
+    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger)
     {
         _userRepository = userRepository;
         _userSettingRepository = userSettingRepository;
@@ -32,6 +33,7 @@ public class PortfolioService : IPortfolioService
         _transactionRepository = transactionRepository;
         _externalProvider = externalProvider;
         _unitOfWork = unitOfWork;
+        _portfolioHistoryRepository = portfolioHistoryRepository;
         _limits = limits.Value;
         _logger = logger;
     }
@@ -264,6 +266,230 @@ public class PortfolioService : IPortfolioService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener posición");
+
+            return Response.Fail("Error interno");
+        }
+    }
+
+    public async Task<Response> GetPriceAsync(string symbol)
+    {
+        try
+        {
+            var asset = await _assetRepository.GetBySymbolAsync(symbol);
+            if (asset == null)
+            {
+                _logger.LogWarning("Activo no encontrado: {Symbol}", symbol);
+                return Response.Fail("Activo no encontrado");
+            }
+
+            var market = await _externalProvider.GetPriceAsync(asset.Symbol);
+            if (market == null)
+            {
+                _logger.LogWarning("No se pudo obtener precio: {Symbol}", symbol);
+                return Response.Fail("No se pudo obtener el precio");
+            }
+
+            var response = new AssetPriceDto
+            {
+                Symbol = asset.Symbol,
+                CurrentPrice = market.Price
+            };
+
+            _logger.LogInformation("Precio obtenido: {Symbol}", symbol);
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener precio");
+
+            return Response.Fail("Error interno");
+        }
+    }
+
+    public async Task<Response> GetBalanceCardsAsync(int userId)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
+                return Response.Fail("Usuario no encontrado");
+            }
+
+            var portfolio = await _portfolioRepository.GetByUserAsync(userId);
+            decimal holdingsValue = 0;
+
+            foreach (var item in portfolio)
+            {
+                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
+
+                if (market == null)
+                    continue;
+
+                holdingsValue += item.Quantity * market.Price;
+            }
+
+            var currentBalance = user.Balance + holdingsValue;
+            var profitLoss = currentBalance - _limits.InitialBalance;
+            var profitPercent = _limits.InitialBalance == 0 ? 0 : (profitLoss / _limits.InitialBalance) * 100;
+
+            var response = new PortfolioBalanceCardsDto
+            {
+                InitialBalance = _limits.InitialBalance,
+                CurrentBalance = Math.Round(currentBalance, 2),
+                ProfitLoss = Math.Round(profitLoss, 2),
+                ProfitLossPercent = Math.Round(profitPercent, 2)
+            };
+
+            _logger.LogInformation("Resumen portfolio obtenido: UserId={UserId}", userId);
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener resumen portfolio");
+
+            return Response.Fail("Error interno");
+        }
+    }
+
+    public async Task<Response> GetPieChartAsync(int userId)
+    {
+        try
+        {
+            var portfolio = await _portfolioRepository.GetByUserAsync(userId);
+            if (!portfolio.Any())
+            {
+                _logger.LogWarning("Portfolio vacío: UserId={UserId}", userId);
+                return Response.Ok(new List<PortfolioPieChartItemDto>());
+            }
+
+            var positions = new List<(string Symbol, decimal Value)>();
+            decimal totalPortfolioValue = 0;
+
+            foreach (var item in portfolio)
+            {
+                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
+
+                if (market == null)
+                    continue;
+
+                var currentValue = item.Quantity * market.Price;
+
+                totalPortfolioValue += currentValue;
+                positions.Add((item.Asset.Symbol, currentValue));
+            }
+
+            var response = positions
+                .Select(x => new PortfolioPieChartItemDto
+                {
+                    Symbol = x.Symbol,
+                    CurrentValue = Math.Round(x.Value, 2),
+                    Percentage = totalPortfolioValue == 0 ? 0 : Math.Round((x.Value / totalPortfolioValue) * 100, 2)
+                })
+                .OrderByDescending(x => x.Percentage)
+                .ToList();
+
+            _logger.LogInformation("Pie chart portfolio obtenido: UserId={UserId}", userId);
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener pie chart portfolio");
+
+            return Response.Fail("Error interno");
+        }
+    }
+
+    public async Task<Response> GetOpenPositionsAsync(int userId, PortfolioOpenPositionsFilterDto filter)
+    {
+        try
+        {
+            var portfolio = await _portfolioRepository.GetPagedByUserAsync(userId);
+            var positions = new List<PortfolioOpenPositionDto>();
+
+            foreach (var item in portfolio)
+            {
+                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
+                if (market == null)
+                    continue;
+
+                var variationPercent = ((market.Price - item.AvgPrice) / item.AvgPrice) * 100;
+                var profitLoss = (market.Price - item.AvgPrice) * item.Quantity;
+
+                positions.Add(new PortfolioOpenPositionDto
+                {
+                    Symbol = item.Asset.Symbol,
+                    Quantity = item.Quantity,
+                    BuyPrice = Math.Round(item.AvgPrice, 2),
+                    CurrentPrice = Math.Round(market.Price, 2),
+                    VariationPercent = Math.Round(variationPercent, 2),
+                    ProfitLoss = Math.Round(profitLoss, 2),
+                    ProfitLossPercent = Math.Round(variationPercent, 2),
+                    IsOpen = true
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Symbol))
+                positions = positions.Where(x => x.Symbol.Contains(filter.Symbol, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (filter.SortBy == "best")
+                positions = positions.OrderByDescending(x => x.ProfitLossPercent).ToList();
+            else if (filter.SortBy == "worst")
+                positions = positions.OrderBy(x => x.ProfitLossPercent).ToList();
+
+            var total = positions.Count;
+            positions = positions.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToList();
+
+            _logger.LogInformation("Open positions obtenidas: UserId={UserId}", userId);
+
+            return Response.Ok(new
+            {
+                Total = total,
+                Items = positions
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener open positions");
+
+            return Response.Fail("Error interno");
+        }
+    }
+
+    public async Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter)
+    {
+        try
+        {
+            var fromDate = filter.Period switch
+            {
+                "7d" => DateTime.UtcNow.AddDays(-7),
+                "1m" => DateTime.UtcNow.AddMonths(-1),
+                "3m" => DateTime.UtcNow.AddMonths(-3),
+                "1y" => DateTime.UtcNow.AddYears(-1),
+                _ => DateTime.UtcNow.AddDays(-7)
+            };
+
+            var history = await _portfolioHistoryRepository.GetByUserAndDateAsync(userId, fromDate);
+
+            var response = history
+                .OrderBy(x => x.Date)
+                .Select(x => new PortfolioLineChartItemDto
+                {
+                    Date = x.Date,
+                    TotalValue = Math.Round(x.TotalValue, 2)
+                })
+                .ToList();
+
+            _logger.LogInformation("Line chart portfolio obtenido: UserId={UserId}", userId);
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener line chart portfolio");
 
             return Response.Fail("Error interno");
         }

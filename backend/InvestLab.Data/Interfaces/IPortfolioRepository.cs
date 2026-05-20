@@ -9,5 +9,9 @@
         Task UpdateAsync(Portfolio portfolio);
 
         Task DeleteAsync(Portfolio portfolio);
+
+        Task<List<Portfolio>> GetByUserAsync(int userId);
+
+        Task<List<Portfolio>> GetPagedByUserAsync(int userId);
     }
 }

@@ -2,13 +2,16 @@
 using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
+using InvestLab.Models.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 public class AuthService : IAuthService
 {
     private readonly InvestLabDbContext _context;
+    private readonly LimitsOptions _limits;
     private readonly IJwtService _jwtService;
     private readonly IPasswordHasher<InvestLab.Data.User> _passwordHasher;
     private readonly ILogger<AuthService> _logger;
@@ -19,7 +22,7 @@ public class AuthService : IAuthService
     private readonly IUserSettingRepository _userSettingRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailService emailService)
+    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailService emailService, IOptions<LimitsOptions> limitsOptions)
     {
         _userRepository = userRepository;
         _tempRepository = tempRepository;
@@ -30,6 +33,7 @@ public class AuthService : IAuthService
         _passwordHasher = passwordHasher;
         _logger = logger;
         _emailService = emailService;
+        _limits = limitsOptions.Value;
     }
 
     public async Task<Response> RegisterAsync(RegisterDto registerDto)
@@ -64,6 +68,7 @@ public class AuthService : IAuthService
                 Phone = registerDto.Phone,
                 IsActive = false,
                 CreatedAt = DateTime.UtcNow,
+                Balance = _limits.InitialBalance
             };
 
             user.PasswordHash = _passwordHasher.HashPassword(user, registerDto.Password);

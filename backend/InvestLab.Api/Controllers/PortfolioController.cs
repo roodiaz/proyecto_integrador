@@ -126,4 +126,119 @@ public class PortfolioController : BaseController
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Obtiene la información de las cards principales
+    /// del portfolio del usuario autenticado.
+    /// </summary>
+    /// <returns>
+    /// Saldo inicial, saldo actual,
+    /// ganancia/pérdida y porcentaje de rendimiento.
+    /// </returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpGet("balance-cards")]
+    public async Task<IActionResult> GetBalanceCards()
+    {
+        _logger.LogInformation("Consultando resumen portfolio: UserId={UserId}", UserId);
+
+        var result = await _service.GetBalanceCardsAsync(UserId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener resumen portfolio: {Message}", result.Message);
+
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtiene la información necesaria para
+    /// construir el gráfico de torta del portfolio
+    /// del usuario autenticado.
+    /// </summary>
+    /// <returns>
+    /// Lista de activos con porcentaje de participación
+    /// y valor actual dentro del portfolio.
+    /// </returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpGet("pie-chart")]
+    public async Task<IActionResult> GetPieChart()
+    {
+        _logger.LogInformation("Consultando pie chart portfolio: UserId={UserId}", UserId);
+
+        var result = await _service.GetPieChartAsync(UserId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener pie chart portfolio: {Message}", result.Message);
+
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtiene las posiciones abiertas del portfolio
+    /// del usuario autenticado.
+    /// </summary>
+    /// <param name="filter">
+    /// Parámetros de paginación,
+    /// filtrado y ordenamiento.
+    /// </param>
+    /// <returns>
+    /// Lista paginada de posiciones abiertas.
+    /// </returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("open-positions")]
+    public async Task<IActionResult> GetOpenPositions([FromBody] PortfolioOpenPositionsFilterDto filter)
+    {
+        _logger.LogInformation("Consultando open positions: UserId={UserId}", UserId);
+
+        var result = await _service.GetOpenPositionsAsync(UserId, filter);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener open positions: {Message}", result.Message);
+
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtiene la evolución histórica del portfolio
+    /// del usuario autenticado.
+    /// </summary>
+    /// <param name="filter">
+    /// Período de tiempo del gráfico.
+    /// </param>
+    /// <returns>
+    /// Evolución histórica del valor total
+    /// del portfolio.
+    /// </returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("line-chart")]
+    public async Task<IActionResult> GetLineChart([FromBody] PortfolioLineChartFilterDto filter)
+    {
+        _logger.LogInformation("Consultando line chart portfolio: UserId={UserId}", UserId);
+
+        var result = await _service.GetLineChartAsync(UserId, filter);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener line chart portfolio: {Message}", result.Message);
+
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
 }

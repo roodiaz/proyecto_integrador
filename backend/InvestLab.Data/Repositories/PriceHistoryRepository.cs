@@ -9,8 +9,7 @@ public class PriceHistoryRepository : IPriceHistoryRepository
 
     public PriceHistoryRepository(IMongoDatabase database)
     {
-        _collection = database
-            .GetCollection<PriceHistory>("price_history");
+        _collection = database.GetCollection<PriceHistory>("price_history");
     }
 
     public async Task<bool> ExistsAsync(string symbol)

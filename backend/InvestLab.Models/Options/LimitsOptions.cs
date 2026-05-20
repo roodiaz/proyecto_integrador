@@ -6,4 +6,6 @@ public class LimitsOptions
     public int MaxFavorites { get; set; }
     public int MaxOperationsPerDay { get; set; }
     public int MaxDailySearches { get; set; }
+
+    public decimal InitialBalance { get; set; }
 }

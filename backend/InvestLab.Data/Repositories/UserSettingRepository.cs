@@ -20,8 +20,7 @@ namespace InvestLab.Data.Repositories
 
         public async Task<UserSetting?> GetByUserIdAsync(int userId)
         {
-            return await _context.UserSettings
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+            return await _context.UserSettings.FirstOrDefaultAsync(x => x.UserId == userId);
         }
 
         public async Task ResetDailyLimitsAsync()
@@ -29,8 +28,8 @@ namespace InvestLab.Data.Repositories
             await _context.UserSettings
                 .ExecuteUpdateAsync(setters =>
                     setters
-                        .SetProperty( x => x.MaxDailySearches, 0)
-                        .SetProperty( x => x.MaxOperationsPerDay, 0));
+                        .SetProperty(x => x.SearchesUsedToday, 0)
+                        .SetProperty(x => x.OperationsUsedToday, 0));
         }
     }
 }

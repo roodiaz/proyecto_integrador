@@ -12,5 +12,13 @@ namespace InvestLab.Business.Interfaces.Api
         Task<Response> GetPositionForSellAsync(int userId, string symbol);
 
         Task<Response> GetPriceAsync(string symbol);
+
+        Task<Response> GetBalanceCardsAsync(int userId);
+
+        Task<Response> GetPieChartAsync(int userId);
+
+        Task<Response> GetOpenPositionsAsync(int userId, PortfolioOpenPositionsFilterDto filter);
+
+        Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter);
     }
 }

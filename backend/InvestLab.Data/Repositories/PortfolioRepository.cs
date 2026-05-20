@@ -35,5 +35,21 @@ namespace InvestLab.Data.Repositories
 
             return Task.CompletedTask;
         }
+
+        public async Task<List<Portfolio>> GetByUserAsync(int userId)
+        {
+            return await _context.Portfolios
+                .Include(x => x.Asset)
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Portfolio>> GetPagedByUserAsync(int userId)
+        {
+            return await _context.Portfolios
+                .Include(x => x.Asset)
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+        }
     }
 }
