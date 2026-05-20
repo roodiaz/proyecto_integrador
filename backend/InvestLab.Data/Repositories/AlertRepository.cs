@@ -90,7 +90,7 @@ namespace InvestLab.Data.Repositories
             return (active, paused, triggeredToday, total);
         }
 
-        public async Task<List<Alert>>GetActiveAlertsAsync()
+        public async Task<List<Alert>> GetActiveAlertsAsync()
         {
             return await _context.Alerts.Include(x => x.Asset)
                 .Where(x => x.IsActive)
@@ -105,4 +105,4 @@ namespace InvestLab.Data.Repositories
         }
     }
 }
-}
+
