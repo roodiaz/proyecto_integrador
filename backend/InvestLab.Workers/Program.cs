@@ -14,6 +14,8 @@ builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo
 builder.Services.AddHostedService<MarketSeederWorker>();
 builder.Services.AddHostedService<MarketDailySnapshotWorker>();
 builder.Services.AddHostedService<AlertWorker>();
+builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
+builder.Services.AddHostedService <MarketHistoryCleanupWorker>();
 
 var host = builder.Build();
 

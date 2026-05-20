@@ -54,4 +54,9 @@ public class PriceHistoryRepository : IPriceHistoryRepository
 
         await _collection.InsertManyAsync(history);
     }
+
+    public async Task DeleteOlderThanAsync(DateTime date)
+    {
+        await _collection.DeleteManyAsync(x => x.Date < date);
+    }
 }

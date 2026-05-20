@@ -23,5 +23,14 @@ namespace InvestLab.Data.Repositories
             return await _context.UserSettings
                 .FirstOrDefaultAsync(x => x.UserId == userId);
         }
+
+        public async Task ResetDailyLimitsAsync()
+        {
+            await _context.UserSettings
+                .ExecuteUpdateAsync(setters =>
+                    setters
+                        .SetProperty( x => x.MaxDailySearches, 0)
+                        .SetProperty( x => x.MaxOperationsPerDay, 0));
+        }
     }
 }

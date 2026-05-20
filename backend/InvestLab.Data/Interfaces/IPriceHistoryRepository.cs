@@ -11,4 +11,6 @@ public interface IPriceHistoryRepository
     Task InsertAsync(PriceHistory history);
 
     Task InsertManyAsync(List<PriceHistory> history);
+
+    Task DeleteOlderThanAsync(DateTime date);
 }

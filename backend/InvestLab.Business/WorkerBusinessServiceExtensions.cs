@@ -8,6 +8,8 @@ public static class WorkerBusinessServiceExtensions
     {
         services.AddScoped<IMarketHistoryService, MarketHistoryService>();
         services.AddScoped<IAlertProcessingService, AlertProcessingService>();
+        services.AddScoped <IUserDailyLimitsResetService,UserDailyLimitsResetService>();
+        services.AddScoped <IMarketHistoryCleanupService, MarketHistoryCleanupService>();
 
         return services;
     }
