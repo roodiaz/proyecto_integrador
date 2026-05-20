@@ -164,10 +164,10 @@ CREATE TABLE user_settings (
     user_id INT NOT NULL UNIQUE,
     currency VARCHAR(10) DEFAULT 'USD',
     email_notifications BOOLEAN DEFAULT TRUE,
-	max_alerts INT NOT NULL,
-    max_favorites INT NOT NULL,
-    max_operations_per_day INT NOT NULL,
-    max_daily_searches INT NOT NULL,
+	alerts_used INT NOT NULL,
+    favorites_used INT NOT NULL,
+    operations_used_today INT NOT NULL,
+    searches_used_today INT NOT NULL,
 	
     CONSTRAINT fk_settings_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

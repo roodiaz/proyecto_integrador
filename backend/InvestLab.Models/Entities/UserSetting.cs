@@ -24,17 +24,17 @@ public partial class UserSetting
     [Column("email_notifications")]
     public bool? EmailNotifications { get; set; }
 
-    [Column("max_alerts")]
-    public int MaxAlerts { get; set; }
+    [Column("alerts_used")]
+    public int AlertsUsed { get; set; }
 
-    [Column("max_favorites")]
-    public int MaxFavorites { get; set; }
+    [Column("favorites_used")]
+    public int FavoritesUsed { get; set; }
 
-    [Column("max_operations_per_day")]
-    public int MaxOperationsPerDay { get; set; }
+    [Column("operations_used_today")]
+    public int OperationsUsedToday { get; set; }
 
-    [Column("max_daily_searches")]
-    public int MaxDailySearches { get; set; }
+    [Column("searches_used_today")]
+    public int SearchesUsedToday { get; set; }
 
     [ForeignKey("UserId")]
     [InverseProperty("UserSetting")]

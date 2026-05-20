@@ -34,59 +34,52 @@ namespace InvestLab.Business.Services.Api
 
         public async Task<Response> CreateAlertAsync(int userId, CreateAlertDto dto)
         {
-            try
+            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+            if (settings == null)
+                return Response.Fail("Configuración de usuario no encontrada");
+
+            if (settings.AlertsUsed >= _limits.MaxAlerts)
+                return Response.Fail("Límite de alertas alcanzado");
+
+            var asset = await _assetRepository.GetBySymbolAsync(dto.Symbol);
+            if (asset == null)
+                return Response.Fail("Activo no encontrado");
+
+            var condition = MapCondition(dto);
+
+            var alert = new Alert
             {
-                if (!IsValidCondition(dto))
-                    return Response.Fail("Datos inválidos");
+                UserId = userId,
+                AssetId = asset.Id,
+                ConditionType = condition.Item1,
+                Operator = condition.Item2,
+                Value = condition.Item3,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                var asset = await _assetRepository.GetBySymbolAsync(dto.Symbol);
+            await _alertRepository.AddAsync(alert);
 
-                if (asset == null)
-                    return Response.Fail("Activo no encontrado");
+            settings.AlertsUsed++;
 
-                var count = await _alertRepository.CountByUserAsync(userId);
+            await _unitOfWork.SaveChangesAsync();
 
-                if (count >= _limits.MaxAlerts)
-                    return Response.Fail("Límite de alertas alcanzado");
-
-                var (type, op, value) = MapCondition(dto);
-
-                var exists = await _alertRepository.ExistsAsync(userId, asset.Id, type, op, value);
-
-                if (exists)
-                    return Response.Fail("Ya existe una alerta igual");
-
-                var alert = new Alert
-                {
-                    UserId = userId,
-                    AssetId = asset.Id,
-                    ConditionType = type,
-                    Operator = op,
-                    Value = value,
-                    IsActive = dto.IsActive,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await _alertRepository.AddAsync(alert);
-                await _unitOfWork.SaveChangesAsync();
-
-                return Response.Ok(null, "Alerta creada");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error CreateAlert");
-                return Response.Fail("Error interno");
-            }
+            return Response.Ok("Alerta creada correctamente");
         }
 
         public async Task<Response> DeleteAlertAsync(int userId, int id)
         {
             var alert = await _alertRepository.GetByIdAsync(id);
-
             if (alert == null || alert.UserId != userId)
                 return Response.Fail("No encontrada");
 
+            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+
             await _alertRepository.DeleteAsync(alert);
+
+            if (settings != null && settings.AlertsUsed > 0)
+                settings.AlertsUsed--;
+
             await _unitOfWork.SaveChangesAsync();
 
             return Response.Ok(null, "Eliminada");
