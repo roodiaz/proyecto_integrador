@@ -33,13 +33,17 @@ namespace InvestLab.Data.Repositories
 
         public async Task<User?> GetByIdAsync(int userId)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(x => x.Id == userId);
+            return await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
         }
 
         public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
+        }
+
+        public async Task<List<User>> GetAllAsync()
+        {
+            return await _context.Users.Where(x => x.IsActive).ToListAsync();
         }
     }
 }

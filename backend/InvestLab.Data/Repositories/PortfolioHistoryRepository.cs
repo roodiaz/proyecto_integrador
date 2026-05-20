@@ -17,11 +17,14 @@ namespace InvestLab.Data.Repositories
         public async Task<List<PortfolioHistory>> GetByUserAndDateAsync(int userId, DateTime fromDate)
         {
             return await _collection
-                .Find(x =>
-                    x.UserId == userId &&
-                    x.Date >= fromDate)
+                .Find(x => x.UserId == userId && x.Date >= fromDate)
                 .SortBy(x => x.Date)
                 .ToListAsync();
+        }
+
+        public async Task InsertAsync(PortfolioHistory history)
+        {
+            await _collection.InsertOneAsync(history);
         }
     }
 }

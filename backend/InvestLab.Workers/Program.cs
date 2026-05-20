@@ -16,6 +16,7 @@ builder.Services.AddHostedService<MarketDailySnapshotWorker>();
 builder.Services.AddHostedService<AlertWorker>();
 builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
 builder.Services.AddHostedService <MarketHistoryCleanupWorker>();
+builder.Services.AddHostedService <PortfolioHistoryWorker>();
 
 var host = builder.Build();
 

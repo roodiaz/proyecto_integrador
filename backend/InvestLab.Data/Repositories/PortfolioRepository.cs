@@ -1,5 +1,6 @@
 ﻿using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
+using InvestLab.Models.Documents;
 using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data.Repositories

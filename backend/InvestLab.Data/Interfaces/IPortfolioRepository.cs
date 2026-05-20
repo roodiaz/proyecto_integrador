@@ -1,4 +1,6 @@
-﻿namespace InvestLab.Data.Interfaces
+﻿using InvestLab.Models.Documents;
+
+namespace InvestLab.Data.Interfaces
 {
     public interface IPortfolioRepository
     {
