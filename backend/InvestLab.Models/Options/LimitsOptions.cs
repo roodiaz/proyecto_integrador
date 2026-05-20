@@ -1,4 +1,4 @@
-﻿namespace InvestLab.Models;
+﻿namespace InvestLab.Models.Options;
 
 public class LimitsOptions
 {

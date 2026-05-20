@@ -1,6 +1,152 @@
+version: '3.9'
+
+# ======================================
+# ANCHORS
+# ======================================
+x-common-environment: &common-environment
+
+  ASPNETCORE_ENVIRONMENT: Development
+
+  # ===============================
+  # POSTGRES
+  # ===============================
+  ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection}
+
+  # ===============================
+  # MONGO
+  # ===============================
+  Mongo__ConnectionString: mongodb://mongo:27017
+  Mongo__Database: ${Mongo__Database}
+
+  # ===============================
+  # JWT
+  # ===============================
+  Jwt__SecretKey: ${Jwt__SecretKey}
+  Jwt__Issuer: ${Jwt__Issuer}
+  Jwt__Audience: ${Jwt__Audience}
+
+  # ===============================
+  # YAHOO
+  # ===============================
+  Yahoo__BaseUrl: ${Yahoo__BaseUrl}
+
+  # ===============================
+  # EMAIL
+  # ===============================
+  Email__Provider: ${Email__Provider}
+  Email__ApiKey: ${Email__ApiKey}
+  Email__From: ${Email__From}
+
+x-common-service: &common-service
+  restart: always
+
+  depends_on:
+    - postgres
+    - mongo
+
+  networks:
+    - investlab-network
+
 services:
+
+  # ======================================
+  # API
+  # ======================================
   investlab.api:
-    image: ${DOCKER_REGISTRY-}investlabsapi
+    <<: *common-service
+
+    image: ${DOCKER_REGISTRY-}investlabapi
+
     build:
       context: .
       dockerfile: InvestLab.Api/Dockerfile
+
+    container_name: investlab.api
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      <<: *common-environment
+
+      # ===============================
+      # LIMITS
+      # ===============================
+      Limits__MaxAlerts: ${Limits__MaxAlerts}
+      Limits__MaxFavorites: ${Limits__MaxFavorites}
+      Limits__MaxOperationsPerDay: ${Limits__MaxOperationsPerDay}
+      Limits__MaxDailySearches: ${Limits__MaxDailySearches}
+
+  # ======================================
+  # WORKERS
+  # ======================================
+  investlab.workers:
+    <<: *common-service
+
+    image: ${DOCKER_REGISTRY-}investlabworkers
+
+    build:
+      context: .
+      dockerfile: InvestLab.Workers/Dockerfile
+
+    container_name: investlab.workers
+
+    environment:
+      <<: *common-environment
+
+  # ======================================
+  # POSTGRES
+  # ======================================
+  postgres:
+    image: postgres:17
+
+    container_name: investlab.postgres
+
+    restart: always
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - investlab-network
+
+  # ======================================
+  # MONGO
+  # ======================================
+  mongo:
+    image: mongo:8
+
+    container_name: investlab.mongo
+
+    restart: always
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongo_data:/data/db
+
+    networks:
+      - investlab-network
+
+# ======================================
+# NETWORKS
+# ======================================
+networks:
+  investlab-network:
+    driver: bridge
+
+# ======================================
+# VOLUMES
+# ======================================
+volumes:
+  postgres_data:
+  mongo_data:

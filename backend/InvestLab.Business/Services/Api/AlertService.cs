@@ -3,6 +3,7 @@ using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Alerts;
+using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
