@@ -59,5 +59,10 @@ public class NotificationRepository : INotificationRepository
     {
         _context.Notifications.Remove(notification);
     }
+
+    public async Task InsertAsync(Notification notification)
+    {
+        await _context.Notifications.AddAsync(notification);
+    }
 }
 

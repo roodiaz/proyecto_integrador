@@ -120,9 +120,14 @@ CREATE TABLE alerts (
     user_id INT NOT NULL,
     asset_id INT NOT NULL,
     condition_type SMALLINT NOT NULL, -- 1 = PRICE / 2 = PERCENTAGE
-    operator SMALLINT NOT NULL, -- 1 = > / 2 = < / 3 = >= / 4 = <=
+    operator SMALLINT NOT NULL,
+	-- 1 = >
+	-- 2 = <
+	-- 3 = >=
+	-- 4 = <=
+	-- 5 = =
     value DECIMAL(18,4) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_triggered TIMESTAMP WITH TIME ZONE,
 

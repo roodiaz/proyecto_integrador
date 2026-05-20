@@ -32,7 +32,7 @@ public partial class Alert
     public decimal Value { get; set; }
 
     [Column("is_active")]
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }

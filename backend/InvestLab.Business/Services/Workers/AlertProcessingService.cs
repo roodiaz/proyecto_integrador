@@ -31,8 +31,7 @@ public class AlertProcessingService : IAlertProcessingService
 
     public async Task ProcessAlertsAsync()
     {
-        var alerts = await _alertRepository
-            .GetActiveAlertsAsync();
+        var alerts = await _alertRepository.GetActiveAlertsAsync();
 
         foreach (var alert in alerts)
         {

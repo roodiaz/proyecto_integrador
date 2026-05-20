@@ -43,8 +43,8 @@ namespace InvestLab.Data.Repositories
             return await _context.Alerts.AnyAsync(x =>
                 x.UserId == userId &&
                 x.AssetId == assetId &&
-                x.ConditionType == (int)type &&
-                x.Operator == (int)op &&
+                x.ConditionType == type &&
+                x.Operator == op &&
                 x.Value == value);
         }
 
@@ -89,5 +89,20 @@ namespace InvestLab.Data.Repositories
 
             return (active, paused, triggeredToday, total);
         }
+
+        public async Task<List<Alert>>GetActiveAlertsAsync()
+        {
+            return await _context.Alerts.Include(x => x.Asset)
+                .Where(x => x.IsActive)
+                .ToListAsync();
+        }
+
+        public Task UpdateAsync(Alert alert)
+        {
+            _context.Alerts.Update(alert);
+
+            return Task.CompletedTask;
+        }
     }
+}
 }

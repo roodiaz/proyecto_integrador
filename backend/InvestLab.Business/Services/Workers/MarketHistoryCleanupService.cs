@@ -7,24 +7,19 @@ namespace InvestLab.Business.Services.Workers;
 /// Servicio encargado de eliminar
 /// históricos viejos de mercado.
 /// </summary>
-public class MarketHistoryCleanupService
-    : IMarketHistoryCleanupService
+public class MarketHistoryCleanupService: IMarketHistoryCleanupService
 {
-    private readonly IPriceHistoryRepository
-        _repository;
+    private readonly IPriceHistoryRepository  _repository;
 
-    public MarketHistoryCleanupService(
-        IPriceHistoryRepository repository)
+    public MarketHistoryCleanupService(  IPriceHistoryRepository repository)
     {
         _repository = repository;
     }
 
     public async Task CleanupOldHistoryAsync()
     {
-        var limitDate =
-            DateTime.UtcNow.AddYears(-1);
+        var limitDate = DateTime.UtcNow.AddYears(-1);
 
-        await _repository
-            .DeleteOlderThanAsync(limitDate);
+        await _repository .DeleteOlderThanAsync(limitDate);
     }
 }
