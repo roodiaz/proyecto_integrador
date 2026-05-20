@@ -64,7 +64,6 @@ public class AuthService : IAuthService
                 Phone = registerDto.Phone,
                 IsActive = false,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
             };
 
             user.PasswordHash = _passwordHasher.HashPassword(user, registerDto.Password);
@@ -73,7 +72,7 @@ public class AuthService : IAuthService
 
             var userProfile = new UserSetting
             {
-                UserId = user.Id,
+                User = user,
                 Currency = "USD",
                 EmailNotifications = true
             };
@@ -85,7 +84,7 @@ public class AuthService : IAuthService
 
             var tempCredential = new UserTempCredential
             {
-                UserId = user.Id,
+                User = user,
                 TempPasswordHash = codeHash,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                 IsUsed = false
