@@ -4,6 +4,7 @@ using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Favorite;
+using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

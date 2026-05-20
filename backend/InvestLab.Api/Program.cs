@@ -3,10 +3,10 @@ using InvestLab.Api.Middleware;
 using InvestLab.Integrations.Configuration;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Integrations.Providers;
-using InvestLab.Models;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Text.Json;
 using InvestLab.Models.DTOs.Auth;
+using InvestLab.Models.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +22,7 @@ builder.Services.AddCustomHealthChecks(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddHttpClient<IExternalProvider, YahooMarketProvider>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
 builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
 
@@ -78,7 +79,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 
         await context.Response.WriteAsync(result);
     }
-}); 
+});
 
 app.MapControllers();
 app.Run();
