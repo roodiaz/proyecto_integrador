@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+using static InvestLab.Models.Enums;
 
 namespace InvestLab.Data;
 
@@ -21,7 +22,7 @@ public partial class Transaction
     public int AssetId { get; set; }
 
     [Column("type")]
-    public short Type { get; set; }
+    public TransactionType Type { get; set; }
 
     [Column("quantity")]
     [Precision(18, 6)]

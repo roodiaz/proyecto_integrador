@@ -20,5 +20,11 @@ namespace InvestLab.Models
             LessThanOrEqual = 4,
             Equal = 5
         }
+
+        public enum TransactionType
+        {
+            Buy = 1,
+            Sell = 2
+        }
     }
 }
