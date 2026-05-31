@@ -15,6 +15,7 @@ public static class ApiBusinessServiceExtensions
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPortfolioService, PortfolioService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         // interfaz externa
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

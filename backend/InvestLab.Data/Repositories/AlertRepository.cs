@@ -103,6 +103,16 @@ namespace InvestLab.Data.Repositories
 
             return Task.CompletedTask;
         }
+
+        public async Task<List<Alert>> GetLatestActiveByUserAsync(int userId, int take)
+        {
+            return await _context.Alerts
+                .Include(x => x.Asset)
+                .Where(x => x.UserId == userId && x.IsActive)
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(take)
+                .ToListAsync();
+        }
     }
 }
 

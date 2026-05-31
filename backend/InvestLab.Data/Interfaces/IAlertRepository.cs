@@ -22,5 +22,7 @@ namespace InvestLab.Data.Interfaces
         Task<List<Alert>> GetActiveAlertsAsync();
 
         Task UpdateAsync(Alert alert);
+
+        Task<List<Alert>> GetLatestActiveByUserAsync( int userId,int take);
     }
 }

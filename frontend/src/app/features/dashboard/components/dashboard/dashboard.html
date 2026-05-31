@@ -31,7 +31,6 @@
       </div>
       <div class="chart-controls">
         <div class="time-selector">
-          <button class="time-btn" [class.active]="selectedPeriod === '1d'" (click)="selectedPeriod = '1d'; onPeriodChange()">1D</button>
           <button class="time-btn" [class.active]="selectedPeriod === '1w'" (click)="selectedPeriod = '1w'; onPeriodChange()">1W</button>
           <button class="time-btn" [class.active]="selectedPeriod === '1m'" (click)="selectedPeriod = '1m'; onPeriodChange()">1M</button>
           <button class="time-btn" [class.active]="selectedPeriod === '3m'" (click)="selectedPeriod = '3m'; onPeriodChange()">3M</button>
@@ -48,24 +47,11 @@
               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H17"/>
             </svg>
           </button>
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'" (click)="selectedChartType = 'candlestick'; onChartTypeChange()" title="Gráfico de velas">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 3v18h18"/>
-              <path d="M7 12l4-4 4 4"/>
-              <path d="M11 8v8"/>
-            </svg>
-          </button>
         </div>
         <div class="chart-actions">
           <button class="action-btn" title="Descargar datos">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-            </svg>
-          </button>
-          <button class="action-btn" title="Configurar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 1v6m0 6v6m4.22-13.22l4.24 4.24M1.54 1.54l4.24 4.24M20.46 20.46l-4.24-4.24M1.54 20.46l4.24-4.24"/>
             </svg>
           </button>
         </div>

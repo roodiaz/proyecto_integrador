@@ -7,5 +7,9 @@ namespace InvestLab.Data.Interfaces
         Task InsertAsync(PortfolioHistory history);
 
         Task<List<PortfolioHistory>> GetByUserAndDateAsync(int userId, DateTime fromDate);
+
+        Task<PortfolioHistory?> GetLatestAsync(int userId);
+
+        Task<PortfolioHistory?> GetPreviousAsync(int userId);
     }
 }

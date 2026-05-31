@@ -13,4 +13,6 @@ public interface IPriceHistoryRepository
     Task InsertManyAsync(List<PriceHistory> history);
 
     Task DeleteOlderThanAsync(DateTime date);
+
+    Task<List<PriceHistory>> GetBySymbolAndDateAsync(string symbol, DateTime fromDate);
 }

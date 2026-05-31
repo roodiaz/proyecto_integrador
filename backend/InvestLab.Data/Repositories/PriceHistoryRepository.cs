@@ -24,10 +24,8 @@ public class PriceHistoryRepository : IPriceHistoryRepository
         var start = date.Date;
         var end = start.AddDays(1);
 
-        return await _collection.Find(x =>
-            x.Symbol == symbol &&
-            x.Date >= start &&
-            x.Date < end)
+        return await _collection
+            .Find(x => x.Symbol == symbol && x.Date >= start && x.Date < end)
             .AnyAsync();
     }
 
@@ -57,5 +55,13 @@ public class PriceHistoryRepository : IPriceHistoryRepository
     public async Task DeleteOlderThanAsync(DateTime date)
     {
         await _collection.DeleteManyAsync(x => x.Date < date);
+    }
+
+    public async Task<List<PriceHistory>> GetBySymbolAndDateAsync(string symbol, DateTime fromDate)
+    {
+        return await _collection
+            .Find(x => x.Symbol == symbol && x.Date >= fromDate)
+            .SortBy(x => x.Date)
+            .ToListAsync();
     }
 }

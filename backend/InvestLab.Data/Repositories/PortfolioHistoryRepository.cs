@@ -26,5 +26,22 @@ namespace InvestLab.Data.Repositories
         {
             await _collection.InsertOneAsync(history);
         }
+
+        public async Task<PortfolioHistory?> GetLatestAsync(int userId)
+        {
+            return await _collection
+                .Find(x => x.UserId == userId)
+                .SortByDescending(x => x.Date)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<PortfolioHistory?> GetPreviousAsync(int userId)
+        {
+            return await _collection
+                .Find(x => x.UserId == userId)
+                .SortByDescending(x => x.Date)
+                .Skip(1)
+                .FirstOrDefaultAsync();
+        }
     }
 }
