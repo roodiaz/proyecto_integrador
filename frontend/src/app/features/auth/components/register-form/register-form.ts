@@ -3,8 +3,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material.module';
 import { Router, RouterModule } from '@angular/router';
-import { RegisterFormData } from '../../models/register.model';
+import { RegisterRequest, RegisterResponse } from '../../models/register.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register-form',
@@ -23,16 +24,16 @@ export class RegisterForm {
   registerForm: FormGroup;
   hidePassword = true;
   hideConfirmPassword = true;
-  
+
   // Registration steps
   currentStep = 1;
   totalSteps = 1;
-  
+
   // UI states
   isLoading = false;
   errorMessage: string | null = null;
-  
-  formData: RegisterFormData = {
+
+  formData: RegisterRequest = {
     fullName: '',
     email: '',
     phone: '',
@@ -40,10 +41,11 @@ export class RegisterForm {
     confirmPassword: ''
   };
 
-  
+
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required]],
@@ -66,11 +68,11 @@ export class RegisterForm {
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');
     const confirmPassword = control.get('confirmPassword');
-    
+
     if (!password || !confirmPassword) {
       return null;
     }
-    
+
     return password.value === confirmPassword.value ? null : { mismatch: true };
   }
 
@@ -79,60 +81,54 @@ export class RegisterForm {
       this.registerForm.markAllAsTouched();
       return;
     }
-    
+
     // Save form data and complete registration
     this.formData = {
       ...this.formData,
       ...this.registerForm.value
     };
-    
+
     this.completeRegistration();
   }
 
-  
+
   private completeRegistration(): void {
+
     this.isLoading = true;
     this.errorMessage = null;
-    
-    const formData: RegisterFormData = {
+
+    const formData: RegisterRequest = {
       ...this.registerForm.value
     };
-    
-    console.log('Registration data:', formData);
-    
-    // Simulate API call
-    setTimeout(() => {
-      try {
-        // TODO: Replace with actual API call
-        // this.authService.register(formData).subscribe({
-        //   next: (response) => {
-        //     this.isLoading = false;
-        //     this.router.navigate(['/dashboard']);
-        //   },
-        //   error: (error) => {
-        //     this.isLoading = false;
-        //     this.handleRegistrationError(error);
-        //   }
-        // });
-        
-        // For demo purposes, simulate successful registration
+
+    this.authService.register(formData).subscribe({
+
+      next: (response) => {
+
         this.isLoading = false;
-        
-        // Store email in localStorage for success screen
-        localStorage.setItem('registrationEmail', formData.email);
-        
-        // Navigate to registration success screen
+        console.log('Registro exitoso', response);
+
+        localStorage.setItem('registrationEmail', response.data!.email );
+        localStorage.setItem('emailSent', response.data!.emailSent.toString());
+
         this.router.navigate(['/registration-success']);
-      } catch (error) {
+      },
+
+      error: (error) => {
+
         this.isLoading = false;
-        this.handleRegistrationError(error);
+        console.error(error);
+
+        this.errorMessage =
+          error.error?.message ??
+          'Ocurrió un error al registrarse';
       }
-    }, 1000);
+    });
   }
-  
+
   private handleRegistrationError(error: any): void {
     console.error('Registration error:', error);
-    
+
     if (error.status === 409) {
       this.errorMessage = 'El correo electrónico ya está en uso. Por favor, utiliza otro correo.';
     } else if (error.status === 400) {
@@ -140,10 +136,10 @@ export class RegisterForm {
     } else {
       this.errorMessage = 'Ocurrió un error al registrar la cuenta. Por favor, inténtalo de nuevo más tarde.';
     }
-    
+
     // Scroll to the top to show the error message
     window.scrollTo(0, 0);
   }
-  
-  
+
+
 }

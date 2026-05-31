@@ -51,7 +51,7 @@ public class AuthController : ControllerBase
     /// <response code="200">Cuenta verificada correctamente</response>
     /// <response code="400">Código inválido o expirado</response>
     [AllowAnonymous]
-    [HttpPost("verify")]
+    [HttpPost("verify-code")]
     public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
     {
         var result = await _authService.VerifyAsync(verifyDto);

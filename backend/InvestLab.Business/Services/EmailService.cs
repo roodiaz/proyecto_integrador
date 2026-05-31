@@ -1,26 +1,30 @@
-﻿using System.Net;
-using System.Net.Mail;
+﻿using InvestLab.Business.Interfaces;
+using InvestLab.Models.Options;
+using Microsoft.Extensions.Options;
+using Resend;
 
 public class EmailService : IEmailService
 {
-    public async Task SendAsync(string to, string subject, string body)
+    private readonly IResend _resend;
+    private readonly EmailOptions _options;
+
+    public EmailService(IResend resend, IOptions<EmailOptions> options)
     {
-        var smtp = new SmtpClient("smtp.gmail.com", 587)
-        {
-            Credentials = new NetworkCredential("TU_MAIL", "TU_PASSWORD_APP"),
-            EnableSsl = true
-        };
+        _resend = resend;
+        _options = options.Value;
+    }
 
-        var mail = new MailMessage
+    public async Task SendAsync(   string to,  string subject,string body)
+    {
+        var message = new EmailMessage
         {
-            From = new MailAddress("TU_MAIL"),
+            From = _options.From,
             Subject = subject,
-            Body = body,
-            IsBodyHtml = true
+            HtmlBody = body
         };
 
-        mail.To.Add(to);
+        message.To.Add(to);
 
-        await smtp.SendMailAsync(mail);
+        await _resend.EmailSendAsync(message);
     }
 }

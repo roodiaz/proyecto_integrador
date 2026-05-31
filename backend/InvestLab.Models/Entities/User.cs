@@ -23,25 +23,12 @@ public partial class User
     [StringLength(100)]
     public string Email { get; set; } = null!;
 
-    [Column("phone")]
-    [StringLength(20)]
-    public string Phone { get; set; } = null!;
-
-    [Column("birth_date")]
-    public DateTime? BirthDate { get; set; }
-
-    [Column("profile_image_url")]
-    public string? ProfileImageUrl { get; set; }
-
     [Column("password_hash")]
     [StringLength(256)]
     public string PasswordHash { get; set; } = null!;
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
-
-    [Column("update_at")]
-    public DateTime? UpdatedAt { get; set; }
 
     [Column("password_changed_at")]
     public DateTime? PasswordChangedAt { get; set; }
@@ -55,6 +42,19 @@ public partial class User
     [Column("balance")]
     [Precision(18, 2)]
     public decimal Balance { get; set; }
+
+    [Column("phone")]
+    [StringLength(20)]
+    public string Phone { get; set; } = null!;
+
+    [Column("update_at", TypeName = "time with time zone")]
+    public DateTimeOffset? UpdateAt { get; set; }
+
+    [Column("birth_date ", TypeName = "time with time zone")]
+    public DateTimeOffset? BirthDate { get; set; }
+
+    [Column("profile_image_url")]
+    public string? ProfileImageUrl { get; set; }
 
     [InverseProperty("User")]
     public virtual ICollection<Alert> Alerts { get; set; } = new List<Alert>();

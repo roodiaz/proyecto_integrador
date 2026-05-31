@@ -3,12 +3,15 @@ using InvestLab.Api.Middleware;
 using InvestLab.Integrations.Configuration;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Integrations.Providers;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using System.Text.Json;
 using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.Options;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Resend;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Console.WriteLine(builder.Configuration.GetDebugView());
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 builder.Configuration.AddEnvironmentVariables();
@@ -25,6 +28,10 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
 builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
+builder.Services.AddResend(options =>
+{
+    options.ApiToken = builder.Configuration["Email:ApiKey"]!;
+});
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

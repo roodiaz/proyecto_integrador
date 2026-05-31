@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using InvestLab.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data.Context;
 
@@ -81,7 +84,6 @@ public partial class InvestLabDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("notifications_pkey");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.IsRead).HasDefaultValue(false);
 
             entity.HasOne(d => d.Alert).WithMany(p => p.Notifications)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -110,7 +112,6 @@ public partial class InvestLabDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("refresh_tokens_pkey");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.IsRevoked).HasDefaultValue(false);
 
             entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -139,8 +140,8 @@ public partial class InvestLabDbContext : DbContext
             entity.Property(e => e.Balance).HasDefaultValue(10000.00m);
             entity.Property(e => e.BirthDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.UpdateAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<UserSetting>(entity =>
@@ -164,7 +165,6 @@ public partial class InvestLabDbContext : DbContext
                 .HasFilter("(is_used = false)");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.IsUsed).HasDefaultValue(false);
 
             entity.HasOne(d => d.User).WithOne(p => p.UserTempCredential)
                 .OnDelete(DeleteBehavior.ClientSetNull)

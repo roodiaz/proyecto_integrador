@@ -2,6 +2,7 @@ using InvestLab.Api.Extensions;
 using InvestLab.Integrations.Configuration;
 using InvestLab.Models.Options;
 using InvestLab.Workers.Workers;
+using Resend;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -9,6 +10,10 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddWorkerApplicationServices(builder.Configuration);
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
+builder.Services.AddResend(options =>
+{
+    options.ApiToken = builder.Configuration["Email:ApiKey"]!;
+});
 
 // Workers
 builder.Services.AddHostedService<MarketSeederWorker>();

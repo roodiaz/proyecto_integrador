@@ -2,8 +2,7 @@
 {
     public interface IUserTempCredentialRepository
     {
-        Task<List<UserTempCredential>> GetActiveByUserIdAsync(int userId);
-        Task<UserTempCredential?> GetLatestAsync(int userId);
+        Task<UserTempCredential> GetByUserIdAsync(int userId);
         Task AddAsync(UserTempCredential credential);
     }
 }

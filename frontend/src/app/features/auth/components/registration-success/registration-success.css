@@ -60,6 +60,13 @@ body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-elem
   animation: scaleIn 0.5s ease;
 }
 
+.error-icon {
+  color: #f44336;
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+}
+
 /* Success Message */
 .success-message {
   margin-bottom: 2rem;

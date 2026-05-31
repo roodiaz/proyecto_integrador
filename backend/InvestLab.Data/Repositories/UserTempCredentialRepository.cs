@@ -18,11 +18,11 @@ namespace InvestLab.Data.Repositories
             await _context.UserTempCredentials.AddAsync(credential);
         }
 
-        public async Task<List<UserTempCredential>> GetActiveByUserIdAsync(int userId)
+        public async Task<UserTempCredential?> GetByUserIdAsync(int userId)
         {
             return await _context.UserTempCredentials
-                .Where(x => x.UserId == userId && !x.IsUsed)
-                .ToListAsync();
+                .Where(x => x.UserId == userId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<UserTempCredential?> GetLatestAsync(int userId)

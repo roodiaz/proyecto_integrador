@@ -49,13 +49,17 @@ public class AuthService : IAuthService
             {
                 if (!existingUser.IsActive)
                 {
-                    await ResendCodeInternal(existingUser);
+                    var emailSent = await ResendCodeInternal(existingUser);
 
                     return Response.Ok(new
                     {
                         requiresVerification = true,
-                        email = existingUser.Email
-                    }, "Ya existe una cuenta sin verificar.");
+                        email = existingUser.Email,
+                        emailSent
+                    },
+                    emailSent
+                        ? "Ya existe una cuenta sin verificar."
+                        : "La cuenta existe pero no pudimos reenviar el código.");
                 }
 
                 return Response.Fail("El email ya está registrado");
@@ -97,20 +101,35 @@ public class AuthService : IAuthService
 
             await _tempRepository.AddAsync(tempCredential);
 
-            // 💥 UN SOLO SAVE
             await _unitOfWork.SaveChangesAsync();
 
-            await _emailService.SendAsync(
-                user.Email,
-                "Código de verificación",
-                $"Tu código es: {code}"
-            );
-
-            return Response.Ok(new
+            try
             {
-                requiresVerification = true,
-                email = user.Email
-            });
+                await _emailService.SendAsync(
+                   user.Email,
+                   "Verificación de cuenta",
+                   EmailTemplates.VerificationCode(code)
+                );
+
+                return Response.Ok(new
+                {
+                    requiresVerification = true,
+                    email = user.Email,
+                    emailSent = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "No se pudo enviar email de verificación");
+
+                return Response.Ok(new
+                {
+                    requiresVerification = true,
+                    email = user.Email,
+                    emailSent = false
+                },
+                "La cuenta fue creada correctamente, pero no pudimos enviar el correo de verificación. Intente reenviar el código.");
+            }
         }
         catch (Exception ex)
         {
@@ -124,25 +143,31 @@ public class AuthService : IAuthService
         try
         {
             var user = await _userRepository.GetByEmailAsync(dto.Email);
-
             if (user == null)
             {
                 _logger.LogWarning("Verify: usuario no encontrado {Email}", dto.Email);
                 return Response.Fail("Usuario no encontrado");
             }
+            if (user.IsActive)
+            {
+                return Response.Ok(null, "La cuenta ya se encuentra verificada");
+            }
 
-            var temp = await _tempRepository.GetLatestAsync(user.Id);
-
+            var temp = await _tempRepository.GetByUserIdAsync(user.Id);
             if (temp == null)
             {
                 _logger.LogWarning("Verify: código no encontrado {UserId}", user.Id);
                 return Response.Fail("Código no encontrado");
             }
-
             if (temp.ExpiresAt < DateTime.UtcNow)
             {
                 _logger.LogWarning("Verify: código expirado {UserId}", user.Id);
                 return Response.Fail("Código expirado");
+            }
+            if (temp.IsUsed)
+            {
+                _logger.LogWarning("Verify: código ya utilizado {UserId}", user.Id);
+                return Response.Fail("El código ya fue utilizado");
             }
 
             var result = _passwordHasher.VerifyHashedPassword(user, temp.TempPasswordHash, dto.Code);
@@ -187,11 +212,22 @@ public class AuthService : IAuthService
                 return Response.Fail("La cuenta ya está verificada");
             }
 
-            await ResendCodeInternal(user);
+            var emailSent = await ResendCodeInternal(user);
 
-            _logger.LogInformation("Código reenviado {Email}", user.Email);
+            if (emailSent)
+                _logger.LogInformation("Código reenviado para {Email}", user.Email);
+            else
+                _logger.LogWarning("No se pudo reenviar el código para {Email}", user.Email);
 
-            return Response.Ok(null, "Se envió un nuevo código");
+            return Response.Ok(new
+            {
+                requiresVerification = true,
+                email = user.Email,
+                emailSent
+            },
+            emailSent
+                ? "Se envió un nuevo código"
+                : "No pudimos enviar el correo de verificación. Intente reenviar el código.");
         }
         catch (Exception ex)
         {
@@ -307,36 +343,48 @@ public class AuthService : IAuthService
         }
     }
 
-    private async Task ResendCodeInternal(User user)
+    private async Task<bool> ResendCodeInternal(User user)
     {
-        var oldCodes = await _tempRepository.GetActiveByUserIdAsync(user.Id);
-
-        foreach (var item in oldCodes)
-            item.IsUsed = true;
-
         var code = new Random().Next(100000, 999999).ToString();
         var codeHash = _passwordHasher.HashPassword(user, code);
 
-        var tempCredential = new UserTempCredential
-        {
-            UserId = user.Id,
-            TempPasswordHash = codeHash,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-            IsUsed = false
-        };
+        var oldCode = await _tempRepository.GetByUserIdAsync(user.Id);
 
-        await _tempRepository.AddAsync(tempCredential);
+        if (oldCode is null)
+        {
+            var tempCredential = new UserTempCredential
+            {
+                UserId = user.Id,
+                TempPasswordHash = codeHash,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false
+            };
+
+            await _tempRepository.AddAsync(tempCredential);
+        }
+        else
+        {
+            oldCode.TempPasswordHash = codeHash;
+            oldCode.ExpiresAt = DateTime.UtcNow.AddMinutes(15);
+            oldCode.IsUsed = false;
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
-        await _emailService.SendAsync(
-            user.Email,
-                "Código de verificación",
-                $@"
-            <h2>Verificación de cuenta</h2>
-            <p>Tu código es:</p>
-            <h1>{code}</h1>
-            <p>Válido por 15 minutos</p>"
-        );
+        try
+        {
+            await _emailService.SendAsync(
+                user.Email,
+                "Verificación de cuenta",
+                EmailTemplates.VerificationCode(code)
+            );
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,"No se pudo reenviar el código para {Email}",user.Email);
+            return false;
+        }
     }
 }
