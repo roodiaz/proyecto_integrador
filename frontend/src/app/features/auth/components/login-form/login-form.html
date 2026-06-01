@@ -1,104 +1,100 @@
-<div class="login-container">
-  <mat-card class="login-card">
-    <mat-card-header class="card-header">
-      <!-- <mat-card-title class="login-title">
-      <div class="title-line">INICIAR</div>
-      <div class="title-line">SESIÓN</div>
-    </mat-card-title> -->
-      <mat-card-subtitle>Ingresa tus credenciales para continuar</mat-card-subtitle>
-    </mat-card-header>
+<div class="login-layout">
+  <!-- Hero -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <span class="hero-badge"> Institutional Grade Access </span>
 
-    <mat-card-content>
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-        
-        <!-- Email Field -->
-        <div class="field-container">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Correo Electrónico</mat-label>
-            <input matInput 
-                  type="email" 
-                  formControlName="email" 
-                  placeholder="ejemplo@correo.com"
-                  autocomplete="email"
-                  style="color: white !important; -webkit-text-fill-color: white !important;">
-            <mat-icon matSuffix>email</mat-icon>
-            <mat-error *ngIf="email?.hasError('required')">
-              El correo electrónico es requerido
-            </mat-error>
-            <mat-error *ngIf="email?.hasError('email')">
-              Por favor ingresa un correo válido
-            </mat-error>
-          </mat-form-field>
+      <h1 class="hero-title">Invest without <span>risk</span>.</h1>
+
+      <p class="hero-description">
+        Experience the next generation of financial intelligence. Access real-time data,
+        institutional-grade analytics and risk-managed trading environments.
+      </p>
+
+      <div class="hero-cards">
+        <div class="hero-card">
+          <mat-icon>security</mat-icon>
+          <h4>Military Grade</h4>
+          <p>End-to-end encryption for all transactions.</p>
         </div>
 
-        <!-- Password Field -->
-        <div class="password-field-container">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Contraseña</mat-label>
-            <input matInput 
-                  [type]="hidePassword ? 'password' : 'text'" 
-                  formControlName="password"
-                  autocomplete="current-password"
-                  style="color: white !important; -webkit-text-fill-color: white !important;">
-            <button type="button" 
-                    mat-icon-button 
-                    matSuffix 
-                    (click)="hidePassword = !hidePassword" 
-                    [attr.aria-label]="'Ocultar contraseña'"
-                    [attr.aria-pressed]="hidePassword">
-              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-            </button>
-            <mat-error *ngIf="password?.hasError('required')">
-              La contraseña es requerida
-            </mat-error>
-            <mat-error *ngIf="password?.hasError('minlength')">
-              Minimo 6 caracteres
-            </mat-error>
-          </mat-form-field>
+        <div class="hero-card">
+          <mat-icon>bolt</mat-icon>
+          <h4>Ultra Low Latency</h4>
+          <p>Execute trades in milliseconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-          <!-- Mensaje de error de credenciales -->
+  <!-- Login -->
+  <section class="auth-section">
+    <div class="auth-container">
+      <div class="auth-header">
+        <h2>Bienvenido</h2>
+        <p>Ingresa tus credenciales para continuar</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Correo Electrónico</mat-label>
+
+          <input matInput type="email" formControlName="email" placeholder="name@company.com" />
+
+          <mat-icon matSuffix>mail</mat-icon>
+
+          <mat-error *ngIf="email?.hasError('required')">
+            El correo electrónico es requerido
+          </mat-error>
+
+          <mat-error *ngIf="email?.hasError('email')"> Correo inválido </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
+
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>
+              {{ hidePassword ? 'visibility_off' : 'visibility' }}
+            </mat-icon>
+          </button>
+
+          <mat-error *ngIf="password?.hasError('required')"> La contraseña es requerida </mat-error>
+
+          <mat-error *ngIf="password?.hasError('minlength')"> Minimo 6 caracteres </mat-error>
+        </mat-form-field>
+
         <div *ngIf="loginError" class="error-message">
           <mat-icon>error_outline</mat-icon>
           {{ loginError }}
         </div>
 
-          <div class="forgot-password-container">
-            <a routerLink="/recuperar-contrasena" class="forgot-password">
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
+        <div class="auth-options">
+          <mat-checkbox> Recordarme </mat-checkbox>
+
+          <a routerLink="/recuperar-contrasena" class="forgot-password">
+            ¿Olvidaste tu contraseña?
+          </a>
         </div>
 
-        <!-- Remember me -->
-        <mat-checkbox style="color: #B6B6B6 !important;">
-          <span style="color: #B6B6B6 !important;">Recordarme</span>
-        </mat-checkbox>
-
-        <!-- Submit Button -->
-        <button mat-raised-button 
-                color="primary" 
-                type="submit" 
-                class="login-button"
-                [disabled]="!loginForm.valid">
+        <button mat-raised-button type="submit" class="login-button" [disabled]="!loginForm.valid">
           Iniciar Sesión
+
+          <mat-icon> login </mat-icon>
         </button>
 
-        <!-- Divider -->
         <div class="divider">
-          <mat-divider></mat-divider>
-          <span class="divider-text">o</span>
-          <mat-divider></mat-divider>
+          <span>o continuar con</span>
         </div>
 
-        <!-- Google Sign In Button -->
-        <button mat-stroked-button 
-                type="button" 
-                class="google-button"
-                (click)="onGoogleSignIn()">
-          <img src="https://www.google.com/favicon.ico" alt="Google" class="google-icon">
-          Continuar con Google
+        <button type="button" class="google-button" (click)="onGoogleSignIn()">
+          <img src="https://www.google.com/favicon.ico" alt="Google" />
+
+          Google
         </button>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </section>
 </div>

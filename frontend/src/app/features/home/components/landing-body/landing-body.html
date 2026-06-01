@@ -1,8 +1,8 @@
 <div class="landing-container">
   <!-- Contenedor principal con imagen y sección deslizable -->
   <div class="main-content">
-    <!-- Sección de imagen (65% del ancho) -->
-    <div #imageSection class="image-section">
+
+    <div class="landing-content">
       <!-- Navbar con Angular Material -->
       <mat-toolbar class="main-toolbar">
         <div class="toolbar-content">
@@ -39,99 +39,9 @@
             Contacto
           </a>
         </div>
-      </mat-toolbar>
-      <!-- La imagen se maneja desde el CSS -->
+      </mat-toolbar>    
+      
+      
+      <router-outlet></router-outlet>
     </div>
-
-    <!-- Sección deslizable -->
-    <div class="sliding-section" [class.slide-in]="isSlidingSectionVisible">
-      <div class="sliding-content">
-        <!-- Encabezado -->
-        <div class="market-header">
-          <h2><mat-icon>trending_up</mat-icon> Mercado en Tiempo Real</h2>
-          <button mat-icon-button (click)="toggleSlidingSection()" class="close-btn">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-        
-        <!-- Pestañas -->
-        <mat-tab-group class="market-tabs" [selectedIndex]="activeTabIndex" (selectedIndexChange)="activeTabIndex = $event">
-          <!-- Acciones Principales -->
-          <mat-tab label="Principales">
-            <div class="stocks-grid">
-              <div class="stock-item" *ngFor="let stock of topStocks">
-                <div class="stock-header">
-                  <div class="stock-ticker">{{stock.symbol}}</div>
-                  <div class="stock-name">{{stock.name}}</div>
-                  <div class="stock-price" [class.positive]="stock.changePercent > 0" [class.negative]="stock.changePercent < 0">
-                    {{stock.price | currency}}
-                  </div>
-                </div>
-                <div class="stock-details">
-                  <div class="stock-change" [class.positive]="stock.changePercent > 0" [class.negative]="stock.changePercent < 0">
-                    {{stock.changePercent > 0 ? '+' : ''}}{{stock.changePercent | number:'1.2-2'}}% ({{stock.change | currency}})
-                  </div>
-                  <div class="stock-volume">Vol: {{stock.volume | number}}</div>
-                </div>
-              </div>
-            </div>
-          </mat-tab>
-          
-          <!-- Índices -->
-          <mat-tab label="Índices">
-            <div class="indices-grid">
-              <div class="index-item" *ngFor="let index of marketIndices">
-                <div class="index-name">{{index.name}}</div>
-                <div class="index-value" [class.positive]="index.change > 0" [class.negative]="index.change < 0">
-                  {{index.value | number:'1.0-0'}}
-                  <span class="index-change">
-                    {{index.change > 0 ? '+' : ''}}{{index.change | number:'1.2-2'}}% ({{index.change > 0 ? '+' : ''}}{{index.pointsChange | number:'1.2-2'}})
-                  </span>
-                </div>
-              </div>
-            </div>
-          </mat-tab>
-          
-          <!-- Noticias del Mercado -->
-          <mat-tab label="Noticias">
-            <div class="news-list">
-              <div class="news-item" *ngFor="let news of marketNews">
-                <div class="news-header">
-                  <h4 [class.positive]="news.sentiment > 0" [class.negative]="news.sentiment < 0">
-                    {{news.title}}
-                  </h4>
-                  <span class="news-time">{{news.timeAgo}}</span>
-                </div>
-                <p class="news-source">{{news.source}} · {{news.tickers ? 'Relacionado: ' + news.tickers.join(', ') : ''}}</p>
-                <p class="news-snippet">{{news.snippet}}</p>
-              </div>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
-        
-        <!-- Footer con datos del mercado -->
-        <div class="market-footer">
-          <div class="market-indicator" *ngFor="let index of marketIndices">
-            <span class="index-name">{{index.name}}</span>
-            <span class="index-value" [class.positive]="index.change > 0" [class.negative]="index.change < 0">
-              {{index.value}} ({{index.change > 0 ? '+' : ''}}{{index.change}}%)
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Botón de flecha para mostrar/ocultar la sección deslizable -->
-  <!-- <button class="slide-toggle" (click)="toggleSlidingSection()">
-    <mat-icon>{{ isSlidingSectionVisible ? 'chevron_left' : 'chevron_right' }}</mat-icon>
-  </button> -->
-  
-  <!-- Sección de contenido (35% del ancho) -->
-  <div class="content-section">
-    <router-outlet></router-outlet>
-    <mat-toolbar class="app-footer" color="primary">
-      <span class="footer-text">© 2025 Invest Lab. Todos los derechos reservados.</span>
-    </mat-toolbar>
-  </div>
 </div>
