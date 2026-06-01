@@ -115,7 +115,7 @@ public class DashboardController : BaseController
     /// <response code="400">Error en la consulta</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpPost("performance-chart")]
-    public async Task<IActionResult> GetPerformanceChart([FromBody] DashboardPerformanceChartFilterDto filter)
+    public async Task<IActionResult> GetPerformanceChart([FromBody]DashboardPerformanceChartFilterDto filter)
     {
         _logger.LogInformation("Consultando performance chart para UserId={UserId}", UserId);
 
