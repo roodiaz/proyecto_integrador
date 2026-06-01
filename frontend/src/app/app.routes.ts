@@ -12,6 +12,7 @@ import { Portfolio } from './features/portfolio/components/portfolio/portfolio';
 import { Watchlist } from './features/watchlist/components/watchlist/watchlist';
 import { Market } from './features/market/components/market/market';
 import { LayoutComponent } from './layout/layout';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // rutas publicas
@@ -33,12 +34,12 @@ export const routes: Routes = [
     path: '',
     component: LayoutComponent,
     children: [
-      { path: 'dashboard', component: Dashboard },
-      { path: 'profile', component: UserProfile },
-      { path: 'alerts', component: Alerts },
-      { path: 'portfolio', component: Portfolio },
-      { path: 'watchlist', component: Watchlist },
-      { path: 'market', component: Market },
+      { path: 'dashboard', component: Dashboard, canActivate: [authGuard] },
+      { path: 'profile', component: UserProfile, canActivate: [authGuard] },
+      { path: 'alerts', component: Alerts, canActivate: [authGuard] },
+      { path: 'portfolio', component: Portfolio, canActivate: [authGuard] },
+      { path: 'watchlist', component: Watchlist, canActivate: [authGuard] },
+      { path: 'market', component: Market, canActivate: [authGuard] },
     ]
   },
   

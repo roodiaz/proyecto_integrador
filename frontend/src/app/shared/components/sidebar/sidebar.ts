@@ -3,6 +3,7 @@ import { SidebarService } from '../../../core/services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MaterialModule } from '../../material.module';
+import { AuthSessionService } from '../../../core/services/auth-session.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -18,7 +19,11 @@ import { MaterialModule } from '../../material.module';
 export class Sidebar {
   isCollapsed = false;
 
-  constructor(private sidebarService: SidebarService, private router: Router) {
+  constructor(
+    private sidebarService: SidebarService,
+    private router: Router,
+    private authSessionService: AuthSessionService
+  ) {
     this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
       this.isCollapsed = isCollapsed;
     });
@@ -29,6 +34,6 @@ export class Sidebar {
   }
 
   logout() {
-    this.router.navigate(['/login']);
+    this.authSessionService.logout();
   }
 }

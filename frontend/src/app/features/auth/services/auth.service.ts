@@ -6,9 +6,13 @@ import { environment } from '../../../../environments/environment';
 import {
   RegisterRequest,
   RegisterResponse,
-  VerifyRequest
+  VerifyRequest,
 } from '../models/register.model';
 
+import {
+  LoginRequest,
+  LoginResponse
+} from '../models/login.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +43,21 @@ export class AuthService {
     return this.http.post<ApiResponse<null>>(
       `${this.apiUrl}/verify-code`,
       request
+    );
+  }
+
+  login(request: LoginRequest): Observable<LoginResponse> {
+
+    return this.http.post<LoginResponse>(
+      `${this.apiUrl}/login`,
+      request
+    );
+  }
+
+  logout(refreshToken: string): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(
+      `${this.apiUrl}/logout`,
+      { refreshToken }
     );
   }
 }

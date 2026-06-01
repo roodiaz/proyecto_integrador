@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
-
-// Credenciales quemadas
-const HARDCODED_CREDENTIALS = {
-  email: 'admin@gmail.com',
-  password: 'admin'
-};
+import { AuthService } from '../../services/auth.service';
+import {
+  LoginRequest,
+  LoginResponse
+} from '../../models/login.model';
 
 @Component({
   selector: 'app-login-form',
@@ -29,7 +28,8 @@ export class LoginForm {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -37,24 +37,41 @@ export class LoginForm {
     });
   }
 
-  onSubmit() {
-    if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      
-      if (email === HARDCODED_CREDENTIALS.email && password === HARDCODED_CREDENTIALS.password) {
-        console.log('Inicio de sesión exitoso');
-        this.loginError = null;
-        
-        // Guardar en localStorage (simulando autenticación)
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', email);
-        
-        // Redirigir al dashboard
-        this.router.navigate(['/dashboard']);
-      } else {
-        this.loginError = 'Email o contraseña incorrectos';
-      }
+  onSubmit(): void {
+
+    if (!this.loginForm.valid) {
+      return;
     }
+
+    this.loginError = null;
+
+    const request: LoginRequest = {
+      email: this.loginForm.value.email,
+      password: this.loginForm.value.password
+    };
+
+    this.authService.login(request)
+      .subscribe({
+        next: (response) => {
+
+          if (!response.success || !response.data) {
+            this.loginError = response.message;
+            return;
+          }
+
+          sessionStorage.setItem('accessToken', response.data.tokens.accessToken);
+          sessionStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+          sessionStorage.setItem('userEmail', request.email);
+
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+
+          this.loginError =
+            error.error?.message ??
+            'Error al iniciar sesión';
+        }
+      });
   }
 
   onGoogleSignIn() {
