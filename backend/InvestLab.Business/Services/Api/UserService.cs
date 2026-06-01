@@ -143,11 +143,22 @@ public class UserService : IUserService
                 return Response.Fail("Usuario no encontrado");
             }
 
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
             var folder = Path.Combine("wwwroot", "images");
             Directory.CreateDirectory(folder);
-            var path = Path.Combine(folder, fileName);
 
+            if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+            {
+                var oldFileName = Path.GetFileName(user.ProfileImageUrl);
+                var oldFilePath = Path.Combine(folder, oldFileName);
+
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+            }
+
+            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var path = Path.Combine(folder, fileName);
             using (var stream = new FileStream(path, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
@@ -161,7 +172,7 @@ public class UserService : IUserService
 
             _logger.LogInformation("Imagen actualizada {UserId}", userId);
 
-            return Response.Ok(new { user.ProfileImageUrl }, "Imagen actualizada");
+            return Response.Ok(null, "Imagen actualizada");
         }
         catch (Exception ex)
         {
