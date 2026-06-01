@@ -12,29 +12,35 @@ namespace InvestLab.Business.Services.Api
 {
     public class FavoriteService : IFavoriteService
     {
-        private readonly IExternalProvider _externalProvider;
+        private readonly ILogger<FavoriteService> _logger;
         private readonly LimitsOptions _limits;
-        private readonly IFavoriteRepository _repo;
+        private readonly IExternalProvider _externalProvider;
+        private readonly IAssetService _assetService;
+
+        private readonly IUserSettingRepository _userSettingRepository;
+        private readonly IFavoriteRepository _favoriteRepo;
         private readonly IAssetRepository _assetRepo;
         private readonly IUnitOfWork _uow;
-        private readonly ILogger<FavoriteService> _logger;
 
-        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, IOptions<LimitsOptions> options, IExternalProvider externalProvider)
+        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, IOptions<LimitsOptions> options, IExternalProvider externalProvider, IAssetService assetService, IUserSettingRepository userSettingRepository)
         {
-            _repo = repo;
+            _favoriteRepo = repo;
             _assetRepo = assetRepo;
             _uow = uow;
             _logger = logger;
             _limits = options.Value;
             _externalProvider = externalProvider;
+            _assetService = assetService;
+            _userSettingRepository = userSettingRepository;
         }
 
         public async Task<Response> GetAsync(int userId, FavoriteFilterDto filter)
         {
-            var (list, total) = await _repo.GetPagedAsync(userId, filter.Page, filter.PageSize);
+            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+
+            var (list, total) = await _favoriteRepo.GetPagedAsync(userId, filter);
 
             var symbols = list.Select(x => x.Asset.Symbol).ToList();
-
             var marketData = await _externalProvider.GetPricesAsync(symbols);
 
             var result = list.Select(fav =>
@@ -45,40 +51,48 @@ namespace InvestLab.Business.Services.Api
                 {
                     Id = fav.Id,
                     Symbol = fav.Asset.Symbol,
+                    Name = fav.Asset.Name,
                     Price = market?.Price ?? 0,
-                    VariationPercent = market?.VariationPercent ?? 0
+                    VariationPercent = market?.VariationPercent ?? 0,
+
                 };
             });
 
             return Response.Ok(new
             {
-                data = result,
-                total
+                Items = result,
+                Total = total,
+                Page = filter.Page,
+                PageSize = filter.PageSize,
+                CurrentFavorites = settings?.FavoritesUsed ?? 0,
+                MaxFavorites = _limits.MaxFavorites
             });
         }
 
         public async Task<Response> AddAsync(int userId, AddFavoriteDto dto)
         {
-            var asset = await _assetRepo.GetBySymbolAsync(dto.Symbol);
+            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+            if (settings == null)
+                return Response.Fail("Configuración de usuario no encontrada");
 
+            var asset = await _assetService.GetOrCreateAsync(dto.Symbol);
             if (asset == null)
                 return Response.Fail("Activo no encontrado");
 
-            var count = await _repo.CountAsync(userId);
-
-            if (count >= _limits.MaxFavorites)
+            if (settings.FavoritesUsed >= _limits.MaxFavorites)
                 return Response.Fail("Límite de favoritos alcanzado");
 
-            var exists = await _repo.ExistsAsync(userId, asset.Id);
-
+            var exists = await _favoriteRepo.ExistsAsync(userId, asset.Id);
             if (exists)
                 return Response.Fail("El activo ya está en favoritos");
 
-            await _repo.AddAsync(new Favorite
+            await _favoriteRepo.AddAsync(new Favorite
             {
                 UserId = userId,
                 AssetId = asset.Id
             });
+
+            settings.FavoritesUsed++;
 
             await _uow.SaveChangesAsync();
 
@@ -89,30 +103,30 @@ namespace InvestLab.Business.Services.Api
 
         public async Task<Response> RemoveAsync(int userId, string symbol)
         {
-            var asset = await _assetRepo.GetBySymbolAsync(symbol);
+            symbol = symbol.Trim().ToUpper();
 
+            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+            if (settings == null)
+                return Response.Fail("Configuración de usuario no encontrada");
+
+            var asset = await _assetRepo.GetBySymbolAsync(symbol);
             if (asset == null)
                 return Response.Fail("Activo no encontrado");
 
-            var fav = await _repo.GetByUserAndAssetAsync(userId, asset.Id);
-
+            var fav = await _favoriteRepo.GetByUserAndAssetAsync(userId, asset.Id);
             if (fav == null)
                 return Response.Fail("Favorito no encontrado");
 
-            _repo.Remove(fav);
+            _favoriteRepo.Remove(fav);
+
+            if (settings.FavoritesUsed > 0)
+                settings.FavoritesUsed--;
 
             await _uow.SaveChangesAsync();
 
-            _logger.LogInformation("Favorito eliminado {Symbol} para usuario {UserId}", symbol, userId);
+            _logger.LogInformation($"Favorito eliminado {symbol} para usuario {userId}");
 
             return Response.Ok(null);
-        }
-
-        public async Task<Response> GetCountAsync(int userId)
-        {
-            var count = await _repo.CountAsync(userId);
-
-            return Response.Ok(new { count });
         }
     }
 }

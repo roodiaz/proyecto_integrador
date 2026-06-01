@@ -21,7 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const authService = inject(AuthService);
     const router = inject(Router);
 
-    const token = sessionStorage.getItem('token');
+    const token = sessionStorage.getItem('accessToken');
 
     if (token) {
 
@@ -60,7 +60,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                         const accessToken = response.data.tokens.accessToken;
                         const refreshToken = response.data.tokens.refreshToken;
 
-                        sessionStorage.setItem('token', accessToken);
+                        sessionStorage.setItem('accessToken', accessToken);
                         sessionStorage.setItem('refreshToken', refreshToken);
 
                         const retryRequest = req.clone({

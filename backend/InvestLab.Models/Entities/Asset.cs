@@ -26,6 +26,12 @@ public partial class Asset
     [StringLength(50)]
     public string? Sector { get; set; }
 
+    [Column("history_loaded")]
+    public bool HistoryLoaded { get; set; }
+
+    [Column("last_market_update_at")]
+    public DateTime? LastMarketUpdateAt { get; set; }
+
     [InverseProperty("Asset")]
     public virtual ICollection<Alert> Alerts { get; set; } = new List<Alert>();
 

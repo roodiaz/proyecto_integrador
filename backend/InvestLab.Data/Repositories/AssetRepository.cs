@@ -17,4 +17,28 @@ public class AssetRepository : IAssetRepository
         return await _context.Assets
             .FirstOrDefaultAsync(x => x.Symbol == symbol.ToUpper());
     }
+
+    public async Task<List<Asset>> GetAllSymbolsAsync()
+    {
+        return await _context.Assets .ToListAsync();
+    }
+
+    public async Task AddAsync(Asset asset)
+    {
+        await _context.Assets.AddAsync(asset);
+    }
+    public async Task<List<Asset>> GetPendingHistoryAsync()
+    {
+        return await _context.Assets
+            .Where(x => !x.HistoryLoaded)
+            .ToListAsync();
+    }
+
+    public async Task UpdateAsync(Asset asset)
+    {
+        _context.Assets.Update(asset);
+
+        await Task.CompletedTask;
+    }
+
 }

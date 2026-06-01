@@ -7,8 +7,8 @@
 -- ============================================
 INSERT INTO users (username, email, password_hash, balance, last_login_at)
 VALUES 
-('rocio', 'rocio@test.com', 'HASH123', 10000, NOW()),
-('juan', 'juan@test.com', 'HASH123', 15000, NOW());
+('rocio', 'rocio@test.com', 'AQAAAAIAAYagAAAAEO3uYFTiou5DX2NopjDBfMpRYhJGXHFhD/9KFZGcOSI075QAkQQzFYqdGec9K4EB2w==', 10000, NOW()),
+('juan', 'juan@test.com', 'AQAAAAIAAYagAAAAEO3uYFTiou5DX2NopjDBfMpRYhJGXHFhD/9KFZGcOSI075QAkQQzFYqdGec9K4EB2w==', 10000, NOW());
 
 -- ============================================
 -- USER SETTINGS
@@ -24,10 +24,30 @@ VALUES
 INSERT INTO assets (symbol, name, sector)
 VALUES
 ('AAPL', 'Apple Inc.', 'Technology'),
-('TSLA', 'Tesla Inc.', 'Automotive'),
+('MSFT', 'Microsoft Corporation', 'Technology'),
+('NVDA', 'NVIDIA Corporation', 'Technology'),
 ('GOOGL', 'Alphabet Inc.', 'Technology'),
-('AMZN', 'Amazon.com Inc.', 'E-commerce'),
-('MSFT', 'Microsoft Corp.', 'Technology');
+('META', 'Meta Platforms Inc.', 'Technology'),
+('AMZN', 'Amazon.com Inc.', 'Consumer Discretionary'),
+('TSLA', 'Tesla Inc.', 'Automotive'),
+('AMD', 'Advanced Micro Devices Inc.', 'Technology'),
+('INTC', 'Intel Corporation', 'Technology'),
+('NFLX', 'Netflix Inc.', 'Communication Services'),
+('MELI', 'MercadoLibre Inc.', 'E-commerce'),
+('KO', 'The Coca-Cola Company', 'Consumer Staples'),
+('PEP', 'PepsiCo Inc.', 'Consumer Staples'),
+('JPM', 'JPMorgan Chase & Co.', 'Financial Services'),
+('V', 'Visa Inc.', 'Financial Services'),
+('WMT', 'Walmart Inc.', 'Retail'),
+('DIS', 'The Walt Disney Company', 'Entertainment'),
+('BA', 'The Boeing Company', 'Aerospace'),
+('XOM', 'Exxon Mobil Corporation', 'Energy'),
+('JNJ', 'Johnson & Johnson', 'Healthcare');
+
+INSERT INTO assets (symbol, name, sector)
+VALUES
+('^GSPC', 'S&P 500', 'Index'),
+('^IXIC', 'NASDAQ Composite', 'Index');
 
 -- ============================================
 -- FAVORITES (WATCHLIST)

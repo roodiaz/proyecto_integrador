@@ -1,4 +1,6 @@
-﻿namespace InvestLab.Data.Interfaces;
+﻿using InvestLab.Models.DTOs.Favorite;
+
+namespace InvestLab.Data.Interfaces;
 
 public interface IFavoriteRepository
 {
@@ -13,5 +15,5 @@ public interface IFavoriteRepository
     Task<Favorite?> GetByUserAndAssetAsync(int userId, int assetId);
 
     void Remove(Favorite favorite);
-    Task<(List<Favorite> data, int total)> GetPagedAsync(int userId, int page, int pageSize);
+    Task<(List<Favorite> data, int total)> GetPagedAsync(int userId, FavoriteFilterDto filter);
 }

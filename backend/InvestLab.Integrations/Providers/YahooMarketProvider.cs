@@ -3,6 +3,8 @@ using InvestLab.Integrations.Interfaces;
 using InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
+using InvestLab.Models.DTOs;
 
 namespace InvestLab.Integrations.Providers
 {
@@ -12,16 +14,16 @@ namespace InvestLab.Integrations.Providers
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
 
-        public YahooMarketProvider(HttpClient httpClient, IConfiguration config, YahooOptions options)
+        public YahooMarketProvider(HttpClient httpClient, IConfiguration config, IOptions<YahooOptions> options)
         {
             _httpClient = httpClient;
             _config = config;
-            _options = options;
+            _options = options.Value;
         }
 
         public async Task<MarketPriceDto?> GetPriceAsync(string symbol)
         {
-            var url = $"{_options.BaseUrl}/v7/finance/quote?symbols={symbol}";
+            var url = $"{_options.BaseUrl}/v8/finance/chart/{symbol}?range=1d&interval=1m";
 
             var response = await _httpClient.GetAsync(url);
 
@@ -30,14 +32,15 @@ namespace InvestLab.Integrations.Providers
 
             var json = await response.Content.ReadAsStringAsync();
 
-            var data = JsonDocument.Parse(json);
+            using var data = JsonDocument.Parse(json);
 
             var result = data.RootElement
-                .GetProperty("quoteResponse")
+                .GetProperty("chart")
                 .GetProperty("result")[0];
 
-            var price = result.GetProperty("regularMarketPrice").GetDecimal();
-            var previousClose = result.GetProperty("regularMarketPreviousClose").GetDecimal();
+            var meta = result.GetProperty("meta");
+            var price = meta.GetProperty("regularMarketPrice").GetDecimal();
+            var previousClose = meta.GetProperty("previousClose").GetDecimal();
 
             var variation = ((price - previousClose) / previousClose) * 100;
 
@@ -52,47 +55,17 @@ namespace InvestLab.Integrations.Providers
 
         public async Task<List<MarketPriceDto>> GetPricesAsync(List<string> symbols)
         {
-            var resultList = new List<MarketPriceDto>();
-
             if (symbols == null || !symbols.Any())
-                return resultList;
+                return [];
 
-            var symbolsQuery = string.Join(",", symbols);
+            var tasks = symbols.Select(GetPriceAsync);
 
-            var url = $"{_options.BaseUrl}/v7/finance/quote?symbols={symbolsQuery}";
+            var results = await Task.WhenAll(tasks);
 
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-                return resultList;
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            using var data = JsonDocument.Parse(json);
-
-            var results = data.RootElement
-                .GetProperty("quoteResponse")
-                .GetProperty("result");
-
-            foreach (var item in results.EnumerateArray())
-            {
-                var symbol = item.GetProperty("symbol").GetString();
-
-                var price = item.GetProperty("regularMarketPrice").GetDecimal();
-                var previousClose = item.GetProperty("regularMarketPreviousClose").GetDecimal();
-
-                var variation = ((price - previousClose) / previousClose) * 100;
-
-                resultList.Add(new MarketPriceDto
-                {
-                    Symbol = symbol,
-                    Price = price,
-                    PreviousClose = previousClose,
-                    VariationPercent = Math.Round(variation, 2)
-                });
-            }
-
-            return resultList;
+            return results
+                .Where(x => x != null)
+                .Cast<MarketPriceDto>()
+                .ToList();
         }
 
         public async Task<List<HistoricalPriceDto>> GetHistoricalAsync(string symbol, DateTime from, DateTime to)
@@ -183,6 +156,11 @@ namespace InvestLab.Integrations.Providers
             }
 
             return history;
+        }
+
+        public Task<AssetProfileDto?> GetProfileAsync(string symbol)
+        {
+            throw new NotImplementedException();
         }
     }
 }

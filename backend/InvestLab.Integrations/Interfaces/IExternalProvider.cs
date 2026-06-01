@@ -1,10 +1,15 @@
-﻿using InvestLab.Models.DTOs.Market;
+﻿using InvestLab.Models.DTOs;
+using InvestLab.Models.DTOs.Market;
 
 namespace InvestLab.Integrations.Interfaces;
 
 public interface IExternalProvider
 {
     Task<MarketPriceDto?> GetPriceAsync(string symbol);
+
     Task<List<MarketPriceDto>> GetPricesAsync(List<string> symbols);
+
     Task<List<HistoricalPriceDto>> GetHistoricalAsync( string symbol,DateTime from,DateTime to);
+
+    Task<AssetProfileDto?> GetProfileAsync(string symbol);
 }

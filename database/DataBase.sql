@@ -51,7 +51,8 @@ CREATE TABLE assets (
     id SERIAL PRIMARY KEY,
     symbol VARCHAR(20) UNIQUE NOT NULL, -- Ej: AAPL
     name VARCHAR(100),
-    sector VARCHAR(50)
+    sector VARCHAR(50),
+	history_loaded BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- ============================================

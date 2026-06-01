@@ -32,7 +32,7 @@ namespace InvestLab.Api.Controllers
         /// <response code="200">Listado obtenido correctamente</response>
         /// <response code="400">Error en la consulta</response>
         /// <response code="401">Usuario no autenticado</response>
-        [HttpPost("search")]
+        [HttpPost("list")]
         public async Task<IActionResult> Get([FromBody] FavoriteFilterDto filter)
         {
             _logger.LogInformation("Listando favoritos para usuario {UserId}", UserId);
@@ -57,7 +57,7 @@ namespace InvestLab.Api.Controllers
         /// <response code="200">Activo agregado correctamente</response>
         /// <response code="400">Error de validación (activo inexistente, duplicado o límite alcanzado)</response>
         /// <response code="401">Usuario no autenticado</response>
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] AddFavoriteDto dto)
         {
             _logger.LogInformation("Agregando favorito {Symbol} para usuario {UserId}", dto.Symbol, UserId);
@@ -93,22 +93,6 @@ namespace InvestLab.Api.Controllers
                 _logger.LogWarning("Error al eliminar favorito: {Message}", result.Message);
                 return BadRequest(result);
             }
-
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Obtiene la cantidad total de favoritos del usuario autenticado.
-        /// </summary>
-        /// <returns>Cantidad de favoritos registrados</returns>
-        /// <response code="200">Cantidad obtenida correctamente</response>
-        /// <response code="401">Usuario no autenticado</response>
-        [HttpGet("count")]
-        public async Task<IActionResult> Count()
-        {
-            _logger.LogInformation("Obteniendo cantidad de favoritos para usuario {UserId}", UserId);
-
-            var result = await _service.GetCountAsync(UserId);
 
             return Ok(result);
         }

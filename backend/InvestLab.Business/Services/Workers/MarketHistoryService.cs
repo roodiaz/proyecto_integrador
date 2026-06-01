@@ -12,79 +12,85 @@ public class MarketHistoryService : IMarketHistoryService
 {
     private readonly IPriceHistoryRepository _repository;
     private readonly IExternalProvider _externalProvider;
-    private readonly string[] _defaultSymbols =
-    [
-        "^GSPC",
-        "^IXIC",
-        "AAPL",
-        "MSFT",
-        "AMZN",
-        "GOOGL",
-        "META",
-        "TSLA",
-        "NVDA"
-    ];
+    private readonly IAssetRepository _assetRepository;
 
-    public MarketHistoryService(IPriceHistoryRepository repository, IExternalProvider externalProvider)
+    public MarketHistoryService(IPriceHistoryRepository repository, IExternalProvider externalProvider, IAssetRepository assetRepository)
     {
         _repository = repository;
         _externalProvider = externalProvider;
+        _assetRepository = assetRepository;
     }
 
-    public async Task SeedDefaultAssetsAsync()
+    public async Task SeedMissingHistoryAsync()
     {
-        foreach (var symbol in _defaultSymbols)
+        var assets = await _assetRepository.GetPendingHistoryAsync();
+
+        foreach (var asset in assets)
         {
-            var exists = await _repository.ExistsAsync(symbol);
-            if (exists)
+            var historical =
+                await _externalProvider.GetHistoricalAsync(
+                    asset.Symbol,
+                    DateTime.UtcNow.AddYears(-1),
+                    DateTime.UtcNow);
+
+            var history =
+                historical.Select(c => new PriceHistory
+                {
+                    Symbol = asset.Symbol,
+                    Date = c.Date,
+                    Open = c.Open,
+                    High = c.High,
+                    Low = c.Low,
+                    Close = c.Close,
+                    Volume = c.Volume
+                })
+                .ToList();
+
+            if (!history.Any())
                 continue;
 
-            var assets = await _externalProvider.GetHistoricalAsync(symbol, DateTime.UtcNow.AddYears(-1), DateTime.UtcNow);
-
-            var history = assets.Select(c => new PriceHistory
-            {
-                Symbol = symbol,
-                Date = c.Date,
-                Open = c.Open,
-                High = c.High,
-                Low = c.Low,
-                Close = c.Close,
-
-                Volume = c.Volume
-            }).ToList();
-
             await _repository.InsertManyAsync(history);
+
+            asset.HistoryLoaded = true;
+            asset.LastMarketUpdateAt = DateTime.UtcNow;
+
+            await _assetRepository.UpdateAsync(asset);
         }
     }
-
     /// <summary>
     /// Guarda un snapshot diario de mercado
     /// luego del cierre bursátil.
     /// </summary>
     public async Task SaveDailyMarketHistoryAsync()
     {
-        foreach (var symbol in _defaultSymbols)
+        var assets = await _assetRepository.GetAllSymbolsAsync();
+
+        foreach (var asset in assets)
         {
-            var alreadyExists = await _repository.ExistsByDateAsync(symbol, DateTime.UtcNow);
+            var alreadyExists = await _repository.ExistsByDateAsync(asset.Symbol, DateTime.UtcNow.Date);
+
             if (alreadyExists)
                 continue;
 
-            var market = await _externalProvider.GetPriceAsync(symbol);
+            var market = await _externalProvider.GetPriceAsync(asset.Symbol);
             if (market == null)
                 continue;
 
-            var history = new PriceHistory
-            {
-                Symbol = symbol,
-                Date = DateTime.UtcNow.Date,
-                Open = market.PreviousClose,
-                High = market.Price,
-                Low = market.PreviousClose,
-                Close = market.Price,
-                Volume = 0
-            };
+            await _repository.InsertAsync(
+                new PriceHistory
+                {
+                    Symbol = asset.Symbol,
+                    Date = DateTime.UtcNow.Date,
+                    Open = market.PreviousClose,
+                    High = market.Price,
+                    Low = market.PreviousClose,
+                    Close = market.Price,
+                    Volume = 0
+                });
 
-            await _repository.InsertAsync(history);
+            asset.LastMarketUpdateAt =DateTime.UtcNow;
+
+            await _assetRepository.UpdateAsync(asset);
         }
     }
 }

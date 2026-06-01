@@ -1,5 +1,6 @@
 ﻿using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
+using InvestLab.Models.DTOs.Favorite;
 using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data.Repositories
@@ -49,21 +50,28 @@ namespace InvestLab.Data.Repositories
             _context.Favorites.Remove(favorite);
         }
 
-        public async Task<(List<Favorite> data, int total)> GetPagedAsync(int userId, int page, int pageSize)
+        public async Task<(List<Favorite>, int)> GetPagedAsync(int userId, FavoriteFilterDto filter)
         {
-            var query = _context.Favorites
-                .Include(x => x.Asset)
-                .Where(x => x.UserId == userId);
+            var query = _context.Favorites.Include(x => x.Asset).Where(x => x.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                var search = filter.Search.Trim().ToUpper();
+
+                query = query.Where(x =>
+                    x.Asset.Symbol.Contains(search) ||
+                    x.Asset.Name.Contains(search));
+            }
 
             var total = await query.CountAsync();
 
-            var data = await query
-                .OrderByDescending(x => x.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+            var items = await query
+                .OrderBy(x => x.Asset.Symbol)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
                 .ToListAsync();
 
-            return (data, total);
+            return (items, total);
         }
     }
 }

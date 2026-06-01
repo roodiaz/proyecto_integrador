@@ -3,24 +3,41 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { MaterialModule } from '../../../../shared/material.module';
 import { WatchlistService } from '../../services/watchlist.service';
-import { WatchlistItem } from '../../models/watchlist-item';
+import { FavoriteItem } from '../../models/watchlist-item';
+import { MatDialog } from '@angular/material/dialog';
+import { AddFavoriteDialog } from '../add-favorite-dialog/add-favorite-dialog';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-watchlist',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MaterialModule
+  ],
   templateUrl: './watchlist.html',
   styleUrl: './watchlist.css'
 })
 export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
-  watchlistItems: WatchlistItem[] = [];
-  newTicker: string = '';
-  searchQuery: string = '';
-  maxFavorites: number = 3;
+
+  watchlistItems: FavoriteItem[] = [];
+  searchTerm = '';
+  pageSize = 10;
+  currentPage = 1;
+  totalRecords = 0;
+  currentFavorites: number = 0;
+  maxFavorites: number = 0;
   private subscription: Subscription | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private watchlistService: WatchlistService,
+    private dialog: MatDialog,
+    private notificationService: NotificationService
+  ) { }
 
   ngOnInit(): void {
     this.loadWatchlist();
@@ -28,138 +45,232 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+    this.subscription?.unsubscribe();
   }
 
   ngAfterViewInit(): void {
-    // Dibujar sparklines después de que la vista se renderice
+
     setTimeout(() => {
       this.drawSparklines();
     }, 100);
+
+  }
+
+  loadFavoritesCount(): void {
+
+    this.currentFavorites =
+      this.watchlistItems.length;
+
   }
 
   loadWatchlist(): void {
-    // Datos de ejemplo para mostrar mientras el backend no está disponible
-    this.watchlistItems = [
-      { ticker: 'AAPL', currentPrice: 185.50, variationPercent: 2.5, isPositive: true },
-      { ticker: 'GOOGL', currentPrice: 142.30, variationPercent: -1.2, isPositive: false },
-      { ticker: 'MSFT', currentPrice: 380.75, variationPercent: 0.8, isPositive: true }
-    ];
+
+    const filter = {
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      search: this.searchTerm
+    };
+
+    this.watchlistService
+      .getFavorites(filter)
+      .subscribe({
+
+        next: (response) => {
+
+          if (!response.success || !response.data)
+            return;
+
+          this.watchlistItems = response.data.items;
+          this.totalRecords = response.data.total;
+          this.currentFavorites = response.data.currentFavorites;
+          this.maxFavorites = response.data.maxFavorites;
+
+          setTimeout(() => {
+            this.drawSparklines();
+          });
+        },
+
+        error: (error) => {
+          console.error(error);
+        }
+
+      });
+
   }
 
   startLiveUpdates(): void {
-    // Simulación de actualización en vivo
     this.subscription = new Subscription();
   }
 
-  isLimitReached(): boolean {
-    return this.watchlistItems.length >= this.maxFavorites;
+  onSearch(): void {
+    this.currentPage = 1;
+    this.loadWatchlist();
   }
 
-  addToWatchlist(): void {
-    if (this.newTicker.trim() && !this.isLimitReached()) {
-      // Simulación de agregar a la lista
-      const newItem: WatchlistItem = {
-        ticker: this.newTicker.trim().toUpperCase(),
-        currentPrice: Math.random() * 200 + 50,
-        variationPercent: (Math.random() - 0.5) * 10,
-        isPositive: Math.random() > 0.5
-      };
-      this.watchlistItems.push(newItem);
-      this.newTicker = '';
-      
-      // Redibujar sparklines después de agregar
-      setTimeout(() => {
-        this.drawSparklines();
-      }, 100);
-    }
+  removeFromWatchlist(symbol: string): void {
+
+    this.watchlistService
+      .removeFavorite(symbol)
+      .subscribe({
+        next: () => this.loadWatchlist(),
+        error: err => console.error(err)
+      });
+
   }
 
-  removeFromWatchlist(ticker: string): void {
-    this.watchlistItems = this.watchlistItems.filter(item => item.ticker !== ticker);
+  goToMarket(symbol: string): void {
+
+    this.router.navigate(
+      ['/market'],
+      {
+        queryParams: { ticker: symbol }
+      }
+    );
+
   }
 
-  goToMarket(ticker: string): void {
-    // Navegar a la página de mercado con el ticker pre-cargado
-    this.router.navigate(['/market'], { queryParams: { ticker: ticker } });
-  }
+  goToAlerts(symbol: string): void {
 
-  searchTicker(): void {
-    if (this.searchQuery.trim()) {
-      // Navegar a la página de mercado con el ticker de búsqueda
-      this.router.navigate(['/market'], { queryParams: { ticker: this.searchQuery.trim().toUpperCase() } });
-    }
+    this.router.navigate(
+      ['/alerts'],
+      {
+        queryParams: { ticker: symbol }
+      }
+    );
+
   }
 
   drawSparklines(): void {
+
     this.watchlistItems.forEach(item => {
-      const canvas = document.getElementById(`sparkline-${item.ticker}`) as HTMLCanvasElement;
-      if (canvas) {
-        this.drawSparkline(canvas, item.isPositive);
-      }
+
+      const canvas =
+        document.getElementById(
+          `sparkline-${item.symbol}`
+        ) as HTMLCanvasElement;
+
+      if (!canvas)
+        return;
+
     });
+
   }
 
-  drawSparkline(canvas: HTMLCanvasElement, isPositive: boolean): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  openAddFavoriteDialog(): void {
 
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Generar datos de ejemplo para el sparkline
-    const points = 20;
-    const data: number[] = [];
-    let currentValue = 50;
-    
-    for (let i = 0; i < points; i++) {
-      currentValue += (Math.random() - 0.5) * 10;
-      currentValue = Math.max(10, Math.min(90, currentValue));
-      data.push(currentValue);
-    }
-
-    // Limpiar canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Encontrar min y max para escalar
-    const minValue = Math.min(...data);
-    const maxValue = Math.max(...data);
-    const range = maxValue - minValue || 1;
-
-    // Dibujar la línea
-    ctx.strokeStyle = isPositive ? '#10b981' : '#ef4444';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-
-    data.forEach((value, index) => {
-      const x = (index / (data.length - 1)) * width;
-      const y = height - ((value - minValue) / range) * height;
-      
-      if (index === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+    const dialogRef = this.dialog.open(
+      AddFavoriteDialog,
+      {
+        width: '600px',
+        maxWidth: '95vw'
       }
-    });
+    );
 
-    ctx.stroke();
+    dialogRef.afterClosed()
+      .subscribe(symbol => {
 
-    // Agregar gradiente sutil
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    if (isPositive) {
-      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
-      gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
-    } else {
-      gradient.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
-      gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
-    }
+        if (!symbol)
+          return;
 
-    ctx.fillStyle = gradient;
-    ctx.lineTo(width, height);
-    ctx.lineTo(0, height);
-    ctx.closePath();
-    ctx.fill();
+        this.watchlistService
+          .addFavorite(symbol)
+          .subscribe({
+
+            next: (response) => {
+              this.notificationService.success(response.message || 'Favorito agregado correctamente');
+              this.loadWatchlist();
+            },
+
+            error: (error) => {
+              this.notificationService.error(error.error?.message ?? 'Error al agregar favorito');
+            }
+          });
+      });
+  }
+
+  sortBySymbol(): void {
+
+    this.watchlistItems.sort(
+      (a, b) =>
+        a.symbol.localeCompare(b.symbol)
+    );
+
+  }
+
+  sortByPriceDesc(): void {
+    this.watchlistItems.sort(
+      (a, b) =>
+        b.price - a.price
+    );
+  }
+
+  sortByPriceAsc(): void {
+    this.watchlistItems.sort(
+      (a, b) =>
+        a.price - b.price
+    );
+  }
+
+  sortByVariationDesc(): void {
+    this.watchlistItems.sort(
+      (a, b) =>
+        b.variationPercent -
+        a.variationPercent
+    );
+  }
+
+  sortByVariationAsc(): void {
+    this.watchlistItems.sort(
+      (a, b) =>
+        a.variationPercent -
+        b.variationPercent
+    );
+  }
+
+  getStartRecord(): number {
+
+    if (this.totalRecords === 0)
+      return 0;
+
+    return (
+      (this.currentPage - 1) *
+      this.pageSize
+    ) + 1;
+
+  }
+
+  getEndRecord(): number {
+
+    return Math.min(
+      this.currentPage *
+      this.pageSize,
+      this.totalRecords
+    );
+
+  }
+
+  previousPage(): void {
+
+    if (this.currentPage <= 1)
+      return;
+
+    this.currentPage--;
+    this.loadWatchlist();
+
+  }
+
+  nextPage(): void {
+
+    const totalPages =
+      Math.ceil(
+        this.totalRecords /
+        this.pageSize
+      );
+
+    if (this.currentPage >= totalPages)
+      return;
+
+    this.currentPage++;
+    this.loadWatchlist();
   }
 }

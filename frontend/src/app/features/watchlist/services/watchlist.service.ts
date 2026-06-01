@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, map, switchMap, startWith } from 'rxjs';
-import { WatchlistItem } from '../models/watchlist-item';
+import { FavoriteFilter, FavoriteListResponse } from '../models/watchlist-item';
+import { environment } from '../../../../environments/environment';
+import { ApiResponse } from '../../../core/models/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,24 +10,28 @@ import { WatchlistItem } from '../models/watchlist-item';
 export class WatchlistService {
   private apiUrl = 'api/watchlist'; // Reemplazar con la URL real del backend
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  getWatchlist(): Observable<WatchlistItem[]> {
-    return this.http.get<WatchlistItem[]>(`${this.apiUrl}/favorites`);
+  getFavorites(filter: FavoriteFilter) {
+
+    return this.http.post<FavoriteListResponse>(
+      `${environment.apiUrl}/favorite/list`,
+      filter
+    );
   }
 
-  addToWatchlist(ticker: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/favorites`, { ticker });
+  addFavorite(symbol: string) {
+    return this.http.post<ApiResponse>(
+      `${environment.apiUrl}/favorite/add`,
+      {
+        symbol
+      }
+    );
   }
 
-  removeFromWatchlist(ticker: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/favorites/${ticker}`);
-  }
-
-  getLivePrices(): Observable<WatchlistItem[]> {
-    return interval(5000).pipe(
-      startWith(0),
-      switchMap(() => this.getWatchlist())
+  removeFavorite(symbol: string) {
+    return this.http.delete(
+      `${environment.apiUrl}/favorite/${symbol}`
     );
   }
 }

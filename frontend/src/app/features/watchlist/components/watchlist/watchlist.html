@@ -1,84 +1,214 @@
 <div class="watchlist-container">
+
   <div class="watchlist-content">
+
     <div class="watchlist-header">
-      <h2>Lista de Favoritos</h2>
-      <div class="add-symbol">
-        <input 
-          type="text" 
-          placeholder="Agregar ticker..." 
-          [(ngModel)]="newTicker"
-          (keyup.enter)="addToWatchlist()"
-          class="ticker-input"
-          [disabled]="isLimitReached()"
-        >
-        <button (click)="addToWatchlist()" class="add-btn" [disabled]="isLimitReached()">Agregar</button>
+
+      <div class="header-title">
+        <h2>Lista de Favoritos</h2>
+        <p>Gestiona los activos que sigues con mayor frecuencia</p>
       </div>
+
+      <div class="header-actions">
+
+        <button mat-stroked-button [matMenuTriggerFor]="sortMenu">
+
+          <mat-icon>filter_list</mat-icon>
+          Ordenar
+
+        </button>
+
+        <div class="favorites-counter">
+
+          <span class="counter-label">
+            Favoritos
+          </span>
+
+          <span class="counter-value">
+            {{ currentFavorites }} / {{ maxFavorites }}
+          </span>
+
+        </div>
+
+        <button mat-raised-button color="primary" (click)="openAddFavoriteDialog()">
+
+          <mat-icon>add</mat-icon>
+          Agregar Activo
+
+        </button>
+
+      </div>
+
     </div>
 
+    <mat-menu #sortMenu="matMenu">
+
+      <button mat-menu-item (click)="sortBySymbol()">
+        <mat-icon>sort_by_alpha</mat-icon>
+        <span>Símbolo (A-Z)</span>
+      </button>
+
+      <button mat-menu-item (click)="sortByPriceDesc()">
+        <mat-icon>trending_up</mat-icon>
+        <span>Precio (Mayor a Menor)</span>
+      </button>
+
+      <button mat-menu-item (click)="sortByPriceAsc()">
+        <mat-icon>trending_down</mat-icon>
+        <span>Precio (Menor a Mayor)</span>
+      </button>
+
+      <button mat-menu-item (click)="sortByVariationDesc()">
+        <mat-icon>arrow_upward</mat-icon>
+        <span>Variación (+ a -)</span>
+      </button>
+
+      <button mat-menu-item (click)="sortByVariationAsc()">
+        <mat-icon>arrow_downward</mat-icon>
+        <span>Variación (- a +)</span>
+      </button>
+
+    </mat-menu>
+
     <div class="watchlist-table-container">
+
       <table class="watchlist-table">
+
         <thead>
           <tr>
-            <th>TICKER</th>
+            <th>SÍMBOLO</th>
+            <th>EMPRESA</th>
             <th>PRECIO ACTUAL</th>
             <th>VARIACIÓN %</th>
             <th>ACCIONES</th>
-            <th>ACCIÓN</th>
           </tr>
         </thead>
+
         <tbody>
-          <tr *ngFor="let item of watchlistItems" 
-              [class.positive]="item.isPositive" 
-              [class.negative]="!item.isPositive"
-              (click)="goToMarket(item.ticker)"
-              class="clickable-row">
+
+          <tr *ngFor="let item of watchlistItems" class="clickable-row">
+
             <td class="ticker-cell">
-              <div class="company-logo">{{ item.ticker.charAt(0) }}</div>
-              <div class="ticker-info">
-                <span class="ticker-symbol">{{ item.ticker }}</span>
-                <div class="sparkline-container">
-                  <canvas class="sparkline" 
-                          [id]="'sparkline-' + item.ticker"
-                          width="60" 
-                          height="20"></canvas>
-                </div>
+
+              <div class="company-logo">
+                {{ item.symbol.charAt(0) }}
               </div>
+
+              <div class="ticker-info">
+
+                <span class="ticker-symbol">
+                  {{ item.symbol }}
+                </span>
+
+                <div class="sparkline-container">
+                  <canvas class="sparkline" [id]="'sparkline-' + item.symbol" width="60" height="20">
+                  </canvas>
+                </div>
+
+              </div>
+
             </td>
-            <td class="price-cell">${{ item.currentPrice.toFixed(2) }}</td>
-            <td class="variation-cell" [class.positive]="item.isPositive" [class.negative]="!item.isPositive">
-              {{ item.isPositive ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
+
+            <td class="company-cell">
+              {{ item.name }}
             </td>
+
+            <td class="price-cell">
+              ${{ item.price.toFixed(2) }}
+            </td>
+
+            <td class="variation-cell" [class.positive]="item.variationPercent > 0"
+              [class.negative]="item.variationPercent < 0">
+
+              {{ item.variationPercent > 0 ? '+' : '' }}
+              {{ item.variationPercent.toFixed(2) }}%
+
+            </td>
+
             <td class="actions-cell">
-              <!-- Columna vacía para ACCIONES -->
+
+              <button mat-icon-button class="market-btn" (click)="goToMarket(item.symbol); $event.stopPropagation()"
+                title="Ver mercado">
+
+                <mat-icon>show_chart</mat-icon>
+
+              </button>
+
+              <button mat-icon-button class="alert-btn" (click)="goToAlerts(item.symbol); $event.stopPropagation()"
+                title="Crear alerta">
+
+                <mat-icon>notifications</mat-icon>
+
+              </button>
+
+              <button mat-icon-button class="delete-btn"
+                (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" title="Eliminar">
+
+                <mat-icon>delete</mat-icon>
+
+              </button>
+
             </td>
-            <td class="actions-cell">
-              <button (click)="removeFromWatchlist(item.ticker); $event.stopPropagation()" class="remove-btn">Eliminar</button>
-            </td>
+
           </tr>
+
         </tbody>
+
       </table>
-      
-      <div *ngIf="watchlistItems.length === 0" class="empty-state">
-        <p>No tienes tickers en tu lista de favoritos</p>
-        <p>Agrega un ticker para comenzar a seguir tus favoritos</p>
-        <button class="cta-button" (click)="addToWatchlist()" [disabled]="isLimitReached()">Agregar</button>
+
+      <div class="pagination-container" *ngIf="watchlistItems.length > 0">
+
+        <div class="pagination-info">
+
+          {{ getStartRecord() }}
+          -
+          {{ getEndRecord() }}
+
+          de
+
+          {{ totalRecords }}
+
+        </div>
+
+        <div class="pagination-actions">
+
+          <button mat-icon-button (click)="previousPage()" [disabled]="currentPage === 1">
+            <mat-icon>
+              chevron_left
+            </mat-icon>
+          </button>
+
+          <button mat-icon-button (click)="nextPage()" [disabled]="getEndRecord() >= totalRecords">
+            <mat-icon>
+              chevron_right
+            </mat-icon>
+          </button>
+        </div>
       </div>
+
+      <div *ngIf="watchlistItems.length === 0" class="empty-state">
+
+        <mat-icon class="empty-icon">
+          star_border
+        </mat-icon>
+
+        <h3>No tienes favoritos</h3>
+
+        <p>
+          Agrega activos para comenzar a seguirlos.
+        </p>
+
+        <button mat-raised-button color="primary" (click)="openAddFavoriteDialog()">
+
+          <mat-icon>add</mat-icon>
+          Agregar Activo
+
+        </button>
+
+      </div>
+
     </div>
 
-    <!-- Search Section -->
-    <div class="search-section">
-      <div class="search-container">
-        <div class="search-input-wrapper">
-          <span class="search-icon">🔍</span>
-          <input 
-            type="text" 
-            placeholder="Buscar ticker..." 
-            [(ngModel)]="searchQuery"
-            class="search-input"
-          >
-        </div>
-        <button (click)="searchTicker()" class="search-btn">Buscar Ticker</button>
-      </div>
-    </div>
   </div>
+
 </div>
