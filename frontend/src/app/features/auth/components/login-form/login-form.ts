@@ -4,10 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { AuthService } from '../../services/auth.service';
-import {
-  LoginRequest,
-  LoginResponse
-} from '../../models/login.model';
+import { LoginRequest } from '../../models/login.model';
 
 @Component({
   selector: 'app-login-form',

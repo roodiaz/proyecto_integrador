@@ -1,11 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material.module';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
-import { VerifyRequest } from '../../models/register.model';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-registration-success',
@@ -30,7 +29,7 @@ export class RegistrationSuccess implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -120,28 +119,24 @@ export class RegistrationSuccess implements OnInit, OnDestroy {
 
           if (response.success) {
 
-            this.snackBar.open(
-              response.message,
-              'Cerrar',
-              { duration: 4000 }
-            );
+            this.notificationService.success(response.message);
 
             setTimeout(() => {
               this.router.navigate(['/login']);
             }, 1500);
 
-            this.router.navigate(['/login']);
           }
         },
+
         error: (error) => {
-          this.snackBar.open(
-            error.error?.message ?? 'Ocurrió un error',
-            'Cerrar',
-            {
-              duration: 4000
-            }
+
+          this.notificationService.error(
+            error.error?.message ?? 'Ocurrió un error'
           );
+
         }
       });
   }
 }
+
+

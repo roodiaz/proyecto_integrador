@@ -12,13 +12,15 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserService> _logger;
 
-    public UserService(IUserRepository userRepository,IPasswordHasher<User> passwordHasher, ILogger<UserService> logger)
+    public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _logger = logger;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Response> GetProfileAsync(int userId)
@@ -67,14 +69,16 @@ public class UserService : IUserService
                 return Response.Fail("Usuario no encontrado");
             }
 
-            user.Username = dto.FullName;
+            user.Username = dto.UserName;
             user.Phone = dto.Phone;
             user.BirthDate = dto.BirthDate;
+            user.UpdateAt = DateTime.UtcNow;
 
             user.UserSetting.Currency = dto.Currency;
             user.UserSetting.EmailNotifications = dto.EmailNotifications;
 
             await _userRepository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Perfil actualizado {UserId}", userId);
 
@@ -108,8 +112,10 @@ public class UserService : IUserService
             }
 
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
+            user.PasswordChangedAt = DateTime.UtcNow;
 
             await _userRepository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Password actualizado {UserId}", userId);
 
@@ -138,7 +144,9 @@ public class UserService : IUserService
             }
 
             var fileName = $"{Guid.NewGuid()}_{file.FileName}";
-            var path = Path.Combine("wwwroot/images", fileName);
+            var folder = Path.Combine("wwwroot", "images");
+            Directory.CreateDirectory(folder);
+            var path = Path.Combine(folder, fileName);
 
             using (var stream = new FileStream(path, FileMode.Create))
             {
@@ -146,9 +154,11 @@ public class UserService : IUserService
             }
 
             user.ProfileImageUrl = $"/images/{fileName}";
+            user.UpdateAt = DateTime.UtcNow;
 
             await _userRepository.UpdateAsync(user);
-            
+            await _unitOfWork.SaveChangesAsync();
+
             _logger.LogInformation("Imagen actualizada {UserId}", userId);
 
             return Response.Ok(new { user.ProfileImageUrl }, "Imagen actualizada");

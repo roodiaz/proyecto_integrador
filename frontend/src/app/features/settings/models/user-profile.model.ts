@@ -1,33 +1,33 @@
-// Interface para los datos del perfil de usuario
-export interface UserProfileData {
-  fullName: string;
-  email: string;
-  birthDate?: Date | null;
+import { ApiResponse } from '../../../core/models/api-response.model';
+
+//REQUEST
+export interface UpdateProfileRequest {
+  userName: string;
   phone?: string;
+  birthDate?: Date | null;
   currency: string;
   emailNotifications: boolean;
 }
 
-// Interface para el perfil de usuario
-export interface UserProfile extends UserProfileData {
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
-// Interface para el formulario de perfil (incluye campos de contraseña)
-export interface UserProfileFormData extends Omit<UserProfileData, 'emailNotifications' | 'pushNotifications'> {
-  currentPassword?: string;
-  newPassword?: string;
-  confirmPassword?: string;
-}
+export interface ProfileData {
+  id: number;
+  username: string;
+  email: string;
+  phone?: string;
+  birthDate?: string | null;
+  profileImageUrl?: string | null;
 
-// Datos de ejemplo para el perfil de usuario
-export const mockUserProfileData: UserProfile = {
-  fullName: 'Juan Pérez',
-  email: 'juan.perez@ejemplo.com',
-  birthDate: new Date(1990, 0, 1),
-  phone: '+54 11 1234-5678',
-  currency: 'USD',
-  emailNotifications: true
-};
+  settings: {
+    currency: string;
+    emailNotifications: boolean;
+  };
+}
+export type ProfileResponse = ApiResponse<ProfileData>;
 
 // Opciones para los selects
 export const userProfileSelectOptions = {

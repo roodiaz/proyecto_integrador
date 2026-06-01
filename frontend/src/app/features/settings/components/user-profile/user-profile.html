@@ -1,141 +1,142 @@
 <div class="profile-container">
-    <mat-card class="profile-card">
-      <mat-card-header class="profile-header">
-        <div class="avatar-container" (click)="triggerFileInput()">
-          <img src="assets/default-avatar.png" alt="Profile" class="profile-avatar">
-          <div class="avatar-overlay">
-            <mat-icon>camera_alt</mat-icon>
-          </div>
-          <input type="file" id="profileImage" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+  <mat-card class="profile-card">
+    <mat-card-header class="profile-header">
+      <div class="avatar-container" (click)="triggerFileInput()">
+        <img [src]="profileImageUrl || 'assets/images/default-avatar.png'" alt="Foto perfil" class="profile-avatar">
+        <div class="avatar-overlay">
+          <mat-icon>camera_alt</mat-icon>
         </div>
-        <div class="header-text">
-          <h1>Perfil de Usuario</h1>
-          <p>Administra tu información personal y preferencias</p>
+        <input type="file" id="profileImage" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+      </div>
+      <div class="header-text">
+        <h1>Perfil de Usuario</h1>
+        <p>Administra tu información personal y preferencias</p>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="profileForm">
+        <!-- Sección de Información Personal -->
+        <div class="form-section">
+          <h2 class="section-title">Información Personal</h2>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Nombre de Usuario</mat-label>
+              <input matInput formControlName="userName" placeholder="Ingresa tu nombre de usuario">
+              <mat-icon matSuffix>person</mat-icon>
+              <mat-error *ngIf="profileForm.get('userName')?.hasError('required')">
+                El nombre es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Correo Electrónico</mat-label>
+              <input matInput formControlName="email" type="email" placeholder="ejemplo@dominio.com">
+              <mat-icon matSuffix>email</mat-icon>
+              <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+                Por favor ingresa un correo válido
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Fecha de Nacimiento</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="birthDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="phone" placeholder="+54 11 1234-5678">
+              <mat-icon matSuffix>phone</mat-icon>
+              <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">
+                Formato de teléfono inválido
+              </mat-error>
+            </mat-form-field>
+          </div>
         </div>
-      </mat-card-header>
-  
-      <mat-card-content>
-        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-          <!-- Sección de Información Personal -->
-          <div class="form-section">
-            <h2 class="section-title">Información Personal</h2>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Nombre Completo</mat-label>
-                <input matInput formControlName="fullName" placeholder="Ingresa tu nombre completo">
-                <mat-icon matSuffix>person</mat-icon>
-                <mat-error *ngIf="profileForm.get('fullName')?.hasError('required')">
-                  El nombre es requerido
-                </mat-error>
-              </mat-form-field>
-  
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Correo Electrónico</mat-label>
-                <input matInput formControlName="email" type="email" placeholder="ejemplo@dominio.com">
-                <mat-icon matSuffix>email</mat-icon>
-                <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
-                  Por favor ingresa un correo válido
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Fecha de Nacimiento</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="birthDate">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
-  
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Teléfono</mat-label>
-                <input matInput formControlName="phone" placeholder="+54 11 1234-5678">
-                <mat-icon matSuffix>phone</mat-icon>
-                <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">
-                  Formato de teléfono inválido
-                </mat-error>
-              </mat-form-field>
-            </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Preferencias de la Aplicación -->
+        <div class="form-section">
+          <h2 class="section-title">Preferencias</h2>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Moneda Principal</mat-label>
+              <mat-select formControlName="currency">
+                <mat-option *ngFor="let currency of currencies" [value]="currency.value">
+                  {{ currency.viewValue }}
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>attach_money</mat-icon>
+            </mat-form-field>
           </div>
-  
-          <mat-divider></mat-divider>
-  
-          <!-- Preferencias de la Aplicación -->
-          <div class="form-section">
-            <h2 class="section-title">Preferencias</h2>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Moneda Principal</mat-label>
-                <mat-select formControlName="currency">
-                  <mat-option *ngFor="let currency of currencies" [value]="currency.value">
-                    {{ currency.viewValue }}
-                  </mat-option>
-                </mat-select>
-                <mat-icon matSuffix>attach_money</mat-icon>
-              </mat-form-field>
-            </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Configuración de Notificaciones -->
+        <div class="form-section">
+          <h2 class="section-title">Notificaciones</h2>
+          <div class="notification-options">
+            <mat-slide-toggle formControlName="emailNotifications" color="primary">
+              Notificaciones por Correo Electrónico
+            </mat-slide-toggle>
           </div>
-  
-          <mat-divider></mat-divider>
-  
-          <!-- Configuración de Notificaciones -->
-          <div class="form-section">
-            <h2 class="section-title">Notificaciones</h2>
-            <div class="notification-options">
-              <mat-slide-toggle formControlName="emailNotifications" color="primary">
-                Notificaciones por Correo Electrónico
-              </mat-slide-toggle>
-            </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="form-actions">
+          <button mat-raised-button type="submit" (click)="onSaveProfile()">
+            <mat-icon>save</mat-icon>
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+
+      <mat-divider></mat-divider>
+
+      <!-- Cambio de Contraseña -->
+      <form [formGroup]="passwordForm">
+        <div class="form-section">
+          <h2 class="section-title">Seguridad</h2>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Contraseña Actual</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="currentPassword">
+              <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+            </mat-form-field>
           </div>
-  
-          <mat-divider></mat-divider>
-  
-          <!-- Cambio de Contraseña -->
-          <div class="form-section">
-            <h2 class="section-title">Seguridad</h2>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Contraseña Actual</mat-label>
-                <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="currentPassword">
-                <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
-                  <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                </button>
-              </mat-form-field>
-            </div>
-  
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Nueva Contraseña</mat-label>
-                <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="newPassword">
-                <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
-                  <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                </button>
-              </mat-form-field>
-  
-              <mat-form-field appearance="outline" class="form-field">
-                <mat-label>Confirmar Nueva Contraseña</mat-label>
-                <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="confirmPassword">
-                <mat-error *ngIf="profileForm.hasError('passwordMismatch')">
-                  Las contraseñas no coinciden
-                </mat-error>
-              </mat-form-field>
-            </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Nueva Contraseña</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="newPassword">
+              <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Confirmar Nueva Contraseña</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="confirmPassword">
+              <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('passwordMismatch')">
+                Las contraseñas no coinciden
+              </mat-error>
+            </mat-form-field>
           </div>
-  
-          <mat-divider></mat-divider>
-  
-          <div class="form-actions">
-            <button mat-raised-button type="submit">
-              <mat-icon>save</mat-icon>
-              Guardar Cambios
-            </button>
-            <button mat-stroked-button type="button" (click)="profileForm.reset()">
-              <mat-icon>refresh</mat-icon>
-              Restablecer
-            </button>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  </div>
-  
+        </div>
+
+        <button mat-raised-button type="button" (click)="onChangePassword()">
+          Cambiar contraseña
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

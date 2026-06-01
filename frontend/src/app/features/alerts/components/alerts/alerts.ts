@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -48,7 +47,6 @@ export class Alerts implements OnInit {
   usedAlerts = 0;
 
   constructor(
-    private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) { }
 
@@ -286,17 +284,14 @@ export class Alerts implements OnInit {
         this.alerts.push(result);
         this.applyFilter();
         this.updateUsedAlerts();
-        this.snackBar.open('Alerta creada exitosamente', 'Cerrar', { duration: 3000 });
       }
     } catch (error) {
       console.error('Error al abrir el modal de crear alerta:', error);
-      this.snackBar.open('No se pudo abrir el modal de crear alerta', 'Cerrar', { duration: 3000 });
     }
   }
 
   async editAlert(alert: Alert) {
     // Para implementar el modal de editar alerta
-    this.snackBar.open('Función de editar alerta en desarrollo', 'Cerrar', { duration: 3000 });
   }
 
   async deleteAlert(alert: Alert) {
@@ -315,7 +310,6 @@ export class Alerts implements OnInit {
       this.alerts = this.alerts.filter(a => a.id !== alert.id);
       this.filteredAlerts = this.filteredAlerts.filter(a => a.id !== alert.id);
       this.updateUsedAlerts();
-      this.snackBar.open('Alerta eliminada correctamente', 'Cerrar', { duration: 3000 });
     }
   }
 

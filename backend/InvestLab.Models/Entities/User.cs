@@ -47,10 +47,10 @@ public partial class User
     [StringLength(20)]
     public string Phone { get; set; } = null!;
 
-    [Column("update_at", TypeName = "time with time zone")]
+    [Column("update_at")]
     public DateTimeOffset? UpdateAt { get; set; }
 
-    [Column("birth_date ", TypeName = "time with time zone")]
+    [Column("birth_date")]
     public DateTimeOffset? BirthDate { get; set; }
 
     [Column("profile_image_url")]

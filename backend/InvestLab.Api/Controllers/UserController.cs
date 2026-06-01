@@ -29,7 +29,7 @@ public class UserController : BaseController
     /// <response code="200">Perfil obtenido correctamente</response>
     /// <response code="400">Error al obtener el perfil</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("profile")]
+    [HttpGet("get-profile")]
     public async Task<IActionResult> GetProfile()
     {
         _logger.LogInformation("Obteniendo perfil para usuario {UserId}", UserId);
@@ -53,7 +53,7 @@ public class UserController : BaseController
     /// <response code="200">Perfil actualizado correctamente</response>
     /// <response code="400">Datos inválidos o error de negocio</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpPut("profile")]
+    [HttpPut("update-profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
     {
         if (!ModelState.IsValid)
