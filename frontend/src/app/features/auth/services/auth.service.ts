@@ -11,7 +11,8 @@ import {
 
 import {
   LoginRequest,
-  LoginResponse
+  LoginResponse,
+  LoginData
 } from '../models/login.model';
 
 @Injectable({
@@ -57,6 +58,15 @@ export class AuthService {
   logout(refreshToken: string): Observable<ApiResponse<null>> {
     return this.http.post<ApiResponse<null>>(
       `${this.apiUrl}/logout`,
+      { refreshToken }
+    );
+  }
+
+  refreshToken() {
+    const refreshToken = sessionStorage.getItem('refreshToken');
+
+    return this.http.post<ApiResponse<LoginData>>(
+      `${environment.apiUrl}/auth/refresh`,
       { refreshToken }
     );
   }

@@ -322,7 +322,7 @@ public class AuthService : IAuthService
         {
             var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
 
-            if (storedToken == null)
+            if (storedToken == null || storedToken.IsRevoked)
             {
                 _logger.LogWarning("Logout: token no encontrado");
                 return Response.Ok(null);

@@ -61,7 +61,6 @@ export class LoginForm {
 
           sessionStorage.setItem('accessToken', response.data.tokens.accessToken);
           sessionStorage.setItem('refreshToken', response.data.tokens.refreshToken);
-          sessionStorage.setItem('userEmail', request.email);
 
           this.router.navigate(['/dashboard']);
         },

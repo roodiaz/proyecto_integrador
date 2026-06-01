@@ -23,10 +23,7 @@ public class JwtService : IJwtService
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email!),
-            new Claim(ClaimTypes.Name, user.Username!),
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(ClaimTypes.Name, user.Username!)
         };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
@@ -48,7 +45,7 @@ public class JwtService : IJwtService
         {
             AccessToken = tokenHandler.WriteToken(token),
             RefreshToken = GenerateRefreshToken(),
-            ExpiresIn = expiration
+            ExpiresAt = expiration
         });
     }
 
