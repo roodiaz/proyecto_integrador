@@ -173,19 +173,6 @@ CREATE TABLE user_settings (
 );
 
 -- ============================================
--- CONTACT MESSAGES
--- ============================================
--- Guarda los mensajes enviados desde la sección de contacto del sistema.
-CREATE TABLE contact_messages (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    email VARCHAR(100),
-    phone VARCHAR(30),
-    message TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- ============================================
 -- REFRESH TOKENS
 -- ============================================
 -- Almacena los refresh tokens emitidos por usuario

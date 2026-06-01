@@ -1,6 +1,6 @@
-export interface ContactFormData {
-  fullName: string;
+export interface ContactRequest {
+  name: string;
   email: string;
   phone: string;
-  consulta: string;
+  message: string;
 }

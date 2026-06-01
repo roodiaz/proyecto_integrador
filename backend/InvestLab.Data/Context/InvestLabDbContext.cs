@@ -16,8 +16,6 @@ public partial class InvestLabDbContext : DbContext
 
     public virtual DbSet<Asset> Assets { get; set; }
 
-    public virtual DbSet<ContactMessage> ContactMessages { get; set; }
-
     public virtual DbSet<Favorite> Favorites { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
@@ -55,13 +53,6 @@ public partial class InvestLabDbContext : DbContext
         modelBuilder.Entity<Asset>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("assets_pkey");
-        });
-
-        modelBuilder.Entity<ContactMessage>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("contact_messages_pkey");
-
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<Favorite>(entity =>

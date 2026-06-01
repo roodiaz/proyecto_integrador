@@ -28,6 +28,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
 builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
+builder.Services.Configure<ContactOptions>(builder.Configuration.GetSection("Contact"));
 builder.Services.AddResend(options =>
 {
     options.ApiToken = builder.Configuration["Email:ApiKey"]!;

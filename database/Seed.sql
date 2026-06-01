@@ -77,14 +77,6 @@ VALUES
 (2, 1, 'TSLA superó 250 USD', 255.00);
 
 -- ============================================
--- CONTACT MESSAGES
--- ============================================
-INSERT INTO contact_messages (name, email, phone, message)
-VALUES
-('Juan Perez', 'juan@test.com', '123456789', 'Consulta sobre la plataforma'),
-('Ana Lopez', 'ana@test.com', '987654321', 'Quiero saber más sobre las alertas');
-
--- ============================================
 -- TEMP CREDENTIALS (reset password)
 -- ============================================
 INSERT INTO user_temp_credentials (user_id, temp_password_hash, expires_at)
