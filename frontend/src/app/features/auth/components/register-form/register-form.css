@@ -1,346 +1,314 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-body, button, input, mat-label, mat-form-field, .mat-form-field, .mat-input-element {
-  font-family: 'Poppins', sans-serif !important;
-  box-sizing: border-box;
+:host {
+  display: block;
+  min-height: 100vh;
 }
 
-.register-container {
+.register-layout {
+  min-height: 100vh;
+  display: flex;
+  background: #0e1117;
+  color: white;
+}
+
+/* HERO */
+
+.hero-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 80px;
+
+  background:
+    radial-gradient(circle at top right,
+      rgba(0,185,84,.15),
+      transparent 40%),
+    radial-gradient(circle at bottom left,
+      rgba(77,142,255,.15),
+      transparent 40%);
+}
+
+.hero-content {
+  max-width: 700px;
+}
+
+
+.hero-title {
+  font-size: 72px;
+  line-height: 1.05;
+  max-width: 650px;
+}
+
+.hero-title span {
+  color: #4ae176;
+}
+
+.hero-description {
+  color: #a6adbb;
+  font-size: 18px;
+  line-height: 1.8;
+  margin-bottom: 40px;
+}
+
+.hero-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 50px;
+}
+
+.hero-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  backdrop-filter: none;
+}
+
+.hero-card-icon {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background: rgba(255,255,255,.03);
+
+  border: 1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 10px 30px rgba(0,0,0,.25);
+}
+
+.hero-card mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+}
+
+.hero-card-content {
+  flex: 1;
+}
+
+.hero-card h4 {
+  margin: 0 0 8px;
+
+  font-size: 28px;
+  font-weight: 600;
+
+  color: white;
+}
+
+.hero-card p {
+  margin: 0;
+
+  color: #a6adbb;
+  font-size: 16px;
+  line-height: 1.7;
+
+  max-width: 520px;
+}
+/* FORM */
+
+.register-section {
+  width: 520px;
+  flex-shrink: 0;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 120px);
-  padding: 1rem 0;
-  background-color: #121418;
-  color: white;
-  box-sizing: border-box;
-  margin: 0 auto;
+
+  background: #090c12;
+
+  border-left: 1px solid rgba(255,255,255,.05);
+
+  padding: 40px;
 }
 
-.register-card {
+.register-wrapper {
   width: 100%;
-  max-width: 420px;
-  padding: 1.5rem 2rem;
-  box-shadow: none;
-  background-color: transparent;
-  color: white;
+  max-width: 430px;
 }
 
-.card-header {
-  text-align: left;
-  margin-bottom: 1rem;
-  padding-left: 0.25rem;
+.register-header {
+  margin-bottom: 32px;
 }
 
-.register-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: 2.5rem;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-  color: white;
-  line-height: 1;
+.register-header h2 {
+  font-size: 38px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
-.title-line {
-  display: block;
-  line-height: 1;
-}
-
-mat-card-subtitle {
-  color: white !important;
-  opacity: 0.8;
-  margin-bottom: 0.5rem;
-  font-size: 1.3rem;
+.register-header p {
+  color: #9ca3af;
 }
 
 .register-form {
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
 .full-width {
   width: 100%;
 }
 
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
-  margin: 0 !important;
-  padding: 0 !important;
-  margin-bottom: -1.25em !important;
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
-  padding: 0.5em 0 0.5em 0 !important;
-}
+/* BUTTON */
 
 .register-button {
-  width: 100%;
-  height: 40px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin: 0.75rem 0;
-  background-color: #B0C956;
-  color: #121418;
-  transition: all 0.2s ease;
+  height: 52px !important;
+
+  border-radius: 12px !important;
+
+  background: #4D8EFF !important;
+  color: white !important;
+
+  margin-top: 16px;
 }
 
 .register-button:hover {
-  background-color: #9bb44d;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 0 20px rgba(77,142,255,.4);
 }
 
-.register-button:disabled {
-  background-color: #6c7a3e;
-  color: rgba(255, 255, 255, 0.5);
+/* TERMS */
+
+.terms-text {
+  margin-top: 10px;
+
+  color: #9ca3af;
+
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.register-link {
+.terms-text a {
+  color: #4D8EFF;
+  text-decoration: none;
+}
+
+.terms-text a:hover {
+  text-decoration: underline;
+}
+
+/* LOGIN LINK */
+
+.login-link {
+  margin-top: 24px;
+
   text-align: center;
-  margin-top: 0.5rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.8rem;
+
+  color: #9ca3af;
 }
 
-.register-text {
-  color: #B0C956;
-  font-weight: 500;
+.login-link a {
+  color: #4D8EFF;
   text-decoration: none;
-  margin-left: 0.25rem;
-  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
-.register-text:hover {
-  color: #9bb44d;
+.login-link a:hover {
   text-decoration: underline;
 }
 
-.link {
-  color: #B0C956;
-  font-weight: 500;
-  text-decoration: none;
-  margin-left: 0.25rem;
-  transition: all 0.3s ease;
-}
+/* ERROR */
 
-.link:hover {
-  color: #9bb44d;
-  text-decoration: underline;
-}
-
-/* Estilos para los campos del formulario */
-::ng-deep .mat-form-field {
-  color: white;
-}
-
-::ng-deep .mat-form-field-outline {
-  background-color: #1D2129;
-  border-radius: 4px;
-  color: #2f3640;
-}
-
-::ng-deep .mat-form-field-label {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-wrapper {
-  margin: 0 !important;
-  padding: 0;
-  margin-bottom: -0.5em !important;
-}
-
-::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-  color: #B0C956;
-}
-
-::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
-  color: #B0C956;
-}
-
-::ng-deep .mat-input-element {
-  color: white !important;
-  caret-color: #B0C956;
-}
-
-::ng-deep .mat-checkbox-frame {
-  border-color: rgba(255, 255, 255, 0.7);
-}
-
-::ng-deep .mat-checkbox-checked .mat-checkbox-background {
-  background-color: #B0C956;
-}
-
-::ng-deep .mat-checkbox-checkmark {
-  color: #121418;
-}
-
-/* Step Indicator */
-.step-indicator {
+.error-message {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 1.5rem 0 2rem;
+  gap: 8px;
+
+  color: #ff6b6b;
+
+  background: rgba(255,0,0,.08);
+
+  padding: 12px;
+  border-radius: 12px;
+
+  margin-bottom: 16px;
+}
+
+/* LOADING */
+
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  padding: 40px;
+
+  border-radius: 16px;
+
+  background: rgba(255,255,255,.03);
+}
+
+/* MATERIAL */
+
+::ng-deep .mat-mdc-form-field {
   width: 100%;
 }
 
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-  color: rgba(255, 255, 255, 0.5);
-  transition: all 0.3s ease;
+::ng-deep .mdc-text-field--outlined {
+  background: #151922 !important;
+  border-radius: 12px !important;
 }
 
-.step-number {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #2D333D;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
+::ng-deep .mat-mdc-input-element {
+  color: white !important;
 }
 
-.step-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+::ng-deep .mdc-floating-label {
+  color: #9ca3af !important;
 }
 
-.step.active .step-number {
-  background-color: #B0C956;
-  color: #121418;
-  border-color: #B0C956;
+::ng-deep .mat-mdc-form-field-icon-suffix {
+  color: #9ca3af;
 }
 
-.step.completed .step-number {
-  background-color: #B0C956;
-  color: #121418;
-  border-color: #B0C956;
+::ng-deep .mat-mdc-form-field-error {
+  color: #ff6b6b;
 }
 
-.step.completed .step-number::after {
-  content: '✓';
-  display: block;
-  color: #121418;
-  font-weight: bold;
+/* MOBILE */
+
+@media (max-width: 1024px) {
+
+  .register-layout {
+    flex-direction: column;
+  }
+
+  .hero-section {
+    display: none;
+  }
+
+  .register-section {
+    width: 100%;
+    min-height: 100vh;
+    border-left: none;
+  }
+
 }
 
-.step.active .step-label,
-.step.completed .step-label {
-  color: #B0C956;
-}
-
-/* Form Steps */
-.step-content {
-  margin-top: 1.5rem;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.subtitle {
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-}
-
-.actions {
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
-}
-
-/* Error Message */
-.error-message {
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 12px 16px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  animation: fadeIn 0.3s ease;
-}
-
-.error-message mat-icon {
-  color: #c62828;
-  margin-top: 2px;
-}
-
-/* Loading Overlay */
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(18, 20, 24, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  border-radius: 8px;
-  color: white;
-  padding: 20px;
-  text-align: center;
-  animation: fadeIn 0.3s ease;
-}
-
-.loading-overlay p {
-  margin-top: 16px;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive */
 @media (max-width: 600px) {
-  .register-card {
-    padding: 1.25rem;
-    margin: 0.5rem;
+
+  .register-section {
+    padding: 24px;
   }
-  
-  .register-title {
-    font-size: 1.75rem;
-    margin-bottom: 0.5rem;
+
+  .register-header h2 {
+    font-size: 32px;
   }
-  
-  .register-button {
-    height: 44px;
-    margin: 0.5rem 0;
-    font-size: 1rem;
-  }
-  
-  .step-indicator {
-    margin: 1rem 0 1.5rem;
-  }
-  
-  .step-number {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
-  }
-  
-  .step-label {
-    font-size: 0.65rem;
-  }
+
 }
