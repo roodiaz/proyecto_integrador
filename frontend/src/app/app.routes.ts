@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { LandingBody } from './features/home/components/landing-body/landing-body';
+import { PublicLayout } from './features/home/components/public-layout/public-layout';
 import { LoginForm } from './features/auth/components/login-form/login-form';
 import { RegisterForm } from './features/auth/components/register-form/register-form';
 import { RegistrationSuccess } from './features/auth/components/registration-success/registration-success';
@@ -10,24 +10,32 @@ import { Alerts } from './features/alerts/components/alerts/alerts';
 import { Portfolio } from './features/portfolio/components/portfolio/portfolio';
 import { Watchlist } from './features/watchlist/components/watchlist/watchlist';
 import { Market } from './features/market/components/market/market';
-import { LayoutComponent } from './layout/layout';
+import { LayoutComponent } from './layout/layout-sidebar';
 import { authGuard } from './core/guards/auth.guard';
+import { Landing } from './features/home/components/landing/landing';
 
 export const routes: Routes = [
-  // rutas publicas
+
+  // Landing
   {
     path: '',
-    component: LandingBody,
+    component: Landing,
+    pathMatch: 'full'
+  },
+
+  // Públicas
+  {
+    path: '',
+    component: PublicLayout,
     children: [
-      { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'login', component: LoginForm },
       { path: 'registro', component: RegisterForm },
       { path: 'registration-success', component: RegistrationSuccess },
       { path: 'contacto', component: ContactForm },
     ],
   },
-  
-  // rutas del privadas
+
+  // Privadas
   {
     path: '',
     component: LayoutComponent,
@@ -40,7 +48,6 @@ export const routes: Routes = [
       { path: 'market', component: Market, canActivate: [authGuard] },
     ]
   },
-  
-  // redireccion de rutas desconocidas
-  { path: '**', redirectTo: '' },
+
+  { path: '**', redirectTo: '' }
 ];

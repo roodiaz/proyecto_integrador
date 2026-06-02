@@ -7,8 +7,8 @@ import { Sidebar } from '../shared/components/sidebar/sidebar';
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, Sidebar],
-  templateUrl: './layout.html',
-  styleUrls: ['./layout.css']
+  templateUrl: './layout-sidebar.html',
+  styleUrls: ['./layout-sidebar.css']
 })
 export class LayoutComponent {
   isSidebarCollapsed = false;

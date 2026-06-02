@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LandingBody } from './landing-body';
+import { PublicLayout } from './public-layout';
 
-describe('LandingBody', () => {
-  let component: LandingBody;
-  let fixture: ComponentFixture<LandingBody>;
+describe('PublicLayout', () => {
+  let component: PublicLayout;
+  let fixture: ComponentFixture<PublicLayout>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LandingBody]
+      imports: [PublicLayout]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LandingBody);
+    fixture = TestBed.createComponent(PublicLayout);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

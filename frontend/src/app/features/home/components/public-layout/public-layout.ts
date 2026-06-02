@@ -13,7 +13,7 @@ import {
 } from '../../models/landing.models';
 
 @Component({
-  selector: 'app-landing-body',
+  selector: 'app-public-layout',
   standalone: true,
   imports: [
     CommonModule,
@@ -23,10 +23,10 @@ import {
     CurrencyPipe,
     MaterialModule
   ],
-  templateUrl: './landing-body.html',
-  styleUrls: ['./landing-body.css']
+  templateUrl: './public-layout.html',
+  styleUrls: ['./public-layout.css']
 })
-export class LandingBody implements OnInit, AfterViewInit {
+export class PublicLayout implements OnInit, AfterViewInit {
   @ViewChild('imageSection') imageSection!: ElementRef;
   activeButton: string | null = null;
   activeSection: string = '';
