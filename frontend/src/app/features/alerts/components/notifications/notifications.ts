@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationHistory, mockNotificationHistory } from '../../models/notifications.model';
+import { NotificationList } from '../../models/notifications.model';
 import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
     selector: 'app-notifications',
@@ -14,15 +15,16 @@ import { FormsModule } from '@angular/forms';
 export class Notifications {
 
     constructor(
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private notificationService: NotificationService
     ) { }
 
-    notificationHistory: NotificationHistory[] = [];
+    notificationList: NotificationList[] = [];
 
     notificationsPerPage = 8;
     currentNotificationPage = 1;
     totalNotificationPages = 1;
-    paginatedNotifications: NotificationHistory[] = [];
+    paginatedNotifications: NotificationList[] = [];
 
     notificationSearch = '';
     notificationStatusFilter = '';
@@ -31,27 +33,47 @@ export class Notifications {
     showNotificationFilters = false;
 
     ngOnInit(): void {
-        this.loadAlertHistory();
+        this.loadNotificationList();
     }
 
     getUnreadHistoryCount(): number {
-        return this.notificationHistory.filter(history => !history.isRead).length;
+        return this.notificationList.filter(list => !list.isRead).length;
     }
 
-    loadAlertHistory() {
-        this.notificationHistory = mockNotificationHistory.map(history => ({
-            ...history,
-            priceChange: history.priceChange || 0,
-            triggered: history.triggered || false
-        }));
-        this.updateNotificationPagination();
+    loadNotificationList() {
+
+        const filter = {
+            page: this.currentNotificationPage,
+            pageSize: this.notificationsPerPage,
+            search: this.notificationSearch,
+            isRead:
+                this.notificationStatusFilter === 'read'
+                    ? true
+                    : this.notificationStatusFilter === 'unread'
+                        ? false
+                        : null
+        };
+
+        this.notificationService.search(filter)
+            .subscribe({
+                next: (response) => {
+
+                    this.notificationList = response.data.data;
+
+                    this.totalNotificationPages = Math.ceil(
+                        response.data.total / this.notificationsPerPage
+                    );
+
+                    this.paginatedNotifications = this.notificationList;
+                }
+            });
     }
 
     updateNotificationPagination() {
-        this.totalNotificationPages = Math.ceil(this.notificationHistory.length / this.notificationsPerPage);
+        this.totalNotificationPages = Math.ceil(this.notificationList.length / this.notificationsPerPage);
         const startIndex = (this.currentNotificationPage - 1) * this.notificationsPerPage;
         const endIndex = startIndex + this.notificationsPerPage;
-        this.paginatedNotifications = this.notificationHistory.slice(startIndex, endIndex);
+        this.paginatedNotifications = this.notificationList.slice(startIndex, endIndex);
     }
 
     goToNotificationPage(page: number) {
@@ -90,26 +112,40 @@ export class Notifications {
     }
 
     getTriggeredAlertsCount(): number {
-        return this.notificationHistory.filter(history => history.triggered && !history.isRead).length;
+        return this.notificationList.filter(list => list.triggered && !list.isRead).length;
     }
 
-    async markAllAsRead() {
-        this.notificationHistory.forEach(history => {
-            if (!history.isRead) {
-                history.isRead = true;
-                history.readAt = new Date();
-            }
-        });
+    markAllAsRead() {
+
+        this.notificationService.markAllAsRead()
+            .subscribe({
+                next: () => {
+                    this.notificationList.forEach(x => x.isRead = true);
+                },
+                error: (error) => {
+                    console.error('Error marcando todas las notificaciones', error);
+                }
+            });
     }
 
-    async markAsRead(history: NotificationHistory) {
-        if (!history.isRead) {
-            history.isRead = true;
-            history.readAt = new Date();
-        }
+    markAsRead(history: NotificationList) {
+
+        if (history.isRead)
+            return;
+
+        this.notificationService.markAsRead(history.id)
+            .subscribe({
+                next: () => {
+                    history.isRead = true;
+                },
+                error: (error) => {
+                    console.error('Error marcando notificación', error);
+                }
+            });
     }
 
-    async deleteHistory(history: NotificationHistory) {
+    async deleteNotification(history: NotificationList) {
+        console.log('ENTRO AL DELETE');
         const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
         const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
             width: '350px',
@@ -121,18 +157,24 @@ export class Notifications {
 
         const result = await dialogRef.afterClosed().toPromise();
         if (result) {
-            const index = this.notificationHistory.findIndex(h => h.id === history.id);
-            if (index > -1) {
-                this.notificationHistory.splice(index, 1);
-            }
+
+            this.notificationService.delete(history.id)
+                .subscribe({
+                    next: () => {
+                        this.loadNotificationList();
+                    },
+                    error: (error) => {
+                        console.error('Error eliminando notificación', error);
+                    }
+                });
+
         }
     }
 
     applyNotificationFilter(): void {
-        this.paginatedNotifications = this.notificationHistory.filter(history => {
-            const matchesSearch = !this.notificationSearch ||
-                history.message.toLowerCase().includes(this.notificationSearch.toLowerCase());
-        });
+
+        this.currentNotificationPage = 1;
+        this.loadNotificationList();
     }
 
     clearNotificationFilters(): void {

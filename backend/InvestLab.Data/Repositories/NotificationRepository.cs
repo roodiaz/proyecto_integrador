@@ -17,10 +17,23 @@ public class NotificationRepository : INotificationRepository
     public async Task<(List<Notification>, int)> GetAsync(int userId, NotificationFilterDto filter)
     {
         var query = _context.Notifications
-            .Where(x => x.UserId == userId);
+            .Where(x => x.UserId == userId)
+            .AsQueryable();
 
         if (filter.IsRead.HasValue)
             query = query.Where(x => x.IsRead == filter.IsRead.Value);
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var search = filter.Search.Trim().ToLower();
+            query = query.Where(x => x.Message.ToLower().Contains(search));
+        }
+
+        if (filter.FromDate.HasValue)
+            query = query.Where(x => x.CreatedAt >= filter.FromDate.Value);
+
+        if (filter.ToDate.HasValue)
+            query = query.Where(x => x.CreatedAt <= filter.ToDate.Value);
 
         var total = await query.CountAsync();
 
@@ -32,7 +45,6 @@ public class NotificationRepository : INotificationRepository
 
         return (data, total);
     }
-
     public async Task<Notification?> GetByIdAsync(int id)
     {
         return await _context.Notifications

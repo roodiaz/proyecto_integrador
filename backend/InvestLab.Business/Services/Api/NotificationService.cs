@@ -7,18 +7,18 @@ namespace InvestLab.Business.Services.Api;
 
 public class NotificationService : INotificationService
 {
-    private readonly INotificationRepository _repo;
+    private readonly INotificationRepository _notificationRepo;
     private readonly IUnitOfWork _uow;
 
     public NotificationService(INotificationRepository repo, IUnitOfWork uow)
     {
-        _repo = repo;
+        _notificationRepo = repo;
         _uow = uow;
     }
 
     public async Task<Response> GetAsync(int userId, NotificationFilterDto filter)
     {
-        var (data, total) = await _repo.GetAsync(userId, filter);
+        var (data, total) = await _notificationRepo.GetAsync(userId, filter);
 
         var result = data.Select(x => new NotificationDto
         {
@@ -34,7 +34,7 @@ public class NotificationService : INotificationService
 
     public async Task<Response> MarkAsReadAsync(int userId, int id)
     {
-        var n = await _repo.GetByIdAsync(id);
+        var n = await _notificationRepo.GetByIdAsync(id);
 
         if (n == null || n.UserId != userId)
             return Response.Fail("Notificación no encontrada");
@@ -48,7 +48,7 @@ public class NotificationService : INotificationService
 
     public async Task<Response> MarkAllAsReadAsync(int userId)
     {
-        await _repo.MarkAllAsReadAsync(userId);
+        await _notificationRepo.MarkAllAsReadAsync(userId);
 
         await _uow.SaveChangesAsync();
 
@@ -57,12 +57,12 @@ public class NotificationService : INotificationService
 
     public async Task<Response> DeleteAsync(int userId, int id)
     {
-        var n = await _repo.GetByIdAsync(id);
+        var n = await _notificationRepo.GetByIdAsync(id);
 
         if (n == null || n.UserId != userId)
             return Response.Fail("Notificación no encontrada");
 
-        _repo.Remove(n);
+        _notificationRepo.Remove(n);
 
         await _uow.SaveChangesAsync();
 
@@ -71,7 +71,7 @@ public class NotificationService : INotificationService
 
     public async Task<Response> GetUnreadCountAsync(int userId)
     {
-        var count = await _repo.GetUnreadCountAsync(userId);
+        var count = await _notificationRepo.GetUnreadCountAsync(userId);
 
         return Response.Ok(new { count });
     }

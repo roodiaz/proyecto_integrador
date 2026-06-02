@@ -1,4 +1,4 @@
-      <div class="notifications-header">
+<div class="notifications-header">
         <h3>Notificaciones de Alertas Disparadas</h3>
         <button class="mark-all-read-btn" (click)="markAllAsRead()" *ngIf="getUnreadHistoryCount() > 0">
           Marcar todo como leído
@@ -74,14 +74,14 @@
             <button class="mark-read-btn" *ngIf="!history.isRead" (click)="markAsRead(history)">
               ✅
             </button>
-            <button class="delete-notification-btn" (click)="deleteHistory(history)">
+            <button class="delete-notification-btn" (click)="deleteNotification(history)">
               🗑
             </button>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div class="empty-state" *ngIf="notificationHistory.length === 0">
+        <div class="empty-state" *ngIf="notificationList.length === 0">
           <div class="empty-icon">📋</div>
           <h3>No hay notificaciones</h3>
           <p>Las alertas disparadas aparecerán aquí como notificaciones</p>
@@ -92,7 +92,7 @@
       <div class="pagination-container" *ngIf="totalNotificationPages > 1">
         <div class="pagination-info">
           <span>Página {{currentNotificationPage}} de {{totalNotificationPages}}</span>
-          <span>({{notificationHistory.length}} notificaciones)</span>
+          <span>({{notificationList.length}} notificaciones)</span>
         </div>
         <div class="pagination-controls">
           <button class="pagination-btn" [disabled]="currentNotificationPage === 1"

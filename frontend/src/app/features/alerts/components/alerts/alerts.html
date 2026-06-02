@@ -17,12 +17,22 @@
     <!-- Tabs Principales -->
     <div class="tabs-container">
       <div class="tabs">
+
         <button class="tab" [class.active]="activeView === 'alerts'" (click)="setActiveView('alerts')">
           Mis Alertas
         </button>
-        <button class="tab" [class.active]="activeView === 'history'" (click)="setActiveView('history')">
+
+        <button class="tab notification-tab" [class.active]="activeView === 'history'"
+          (click)="setActiveView('history')">
+
           Notificaciones
+
+          <span class="notification-badge" *ngIf="unreadNotificationsCount > 0">
+            {{ unreadNotificationsCount }}
+          </span>
+
         </button>
+
       </div>
     </div>
 
@@ -218,7 +228,7 @@
 
     <!-- TAB 2 — NOTIFICACIONES (Alertas Disparadas) -->
     <div class="tab-content" [class.active]="activeView === 'history'">
-      <app-notifications></app-notifications>
+      <app-notifications *ngIf="activeView === 'history'"></app-notifications>
     </div>
   </div>
 </div>

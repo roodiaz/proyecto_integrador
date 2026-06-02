@@ -5,7 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Alert, ALERT_CONDITIONS } from '../../models/alert.model';
 import { mockAlerts } from '../../models/alert.model';
 import { Notifications } from '../notifications/notifications';
-import { NotificationHistory, mockNotificationHistory } from '../../models/notifications.model';
+import { NotificationList } from '../../models/notifications.model';
+import { NotificationService } from '../../services/notification.service';
 
 // Import the component class without importing the type
 const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/confirm-dialog.component')
@@ -27,12 +28,13 @@ export class Alerts implements OnInit {
   activeView: 'alerts' | 'history' = 'alerts';
   alerts: Alert[] = [];
   filteredAlerts: Alert[] = [];
-  notificationHistory: NotificationHistory[] = [];
+  notificationHistory: NotificationList[] = [];
   conditions = ALERT_CONDITIONS;
   searchTerm = '';
   statusFilter = '';
   isEditing = false;
   currentAlertId: string | null = null;
+  unreadNotificationsCount = 0;
 
   // Pagination
   alertsPerPage = 8;
@@ -44,16 +46,21 @@ export class Alerts implements OnInit {
   usedAlerts = 0;
 
   constructor(
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit() {
     this.loadAlerts();
     this.updateUsedAlerts();
+    this.loadUnreadNotificationsCount();
   }
 
   setActiveView(view: 'alerts' | 'history') {
     this.activeView = view;
+
+    if (view === 'history')
+      this.loadUnreadNotificationsCount();
   }
 
   getActiveAlertsCount(): number {
@@ -250,4 +257,16 @@ export class Alerts implements OnInit {
     }
   }
 
+  loadUnreadNotificationsCount() {
+
+    this.notificationService.getUnreadCount()
+      .subscribe({
+        next: (response) => {
+          this.unreadNotificationsCount = response.data!.count;
+        },
+        error: (error) => {
+          console.error('Error obteniendo notificaciones no leídas', error);
+        }
+      });
+  }
 }
