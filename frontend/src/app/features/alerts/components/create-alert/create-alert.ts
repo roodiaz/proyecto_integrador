@@ -51,13 +51,15 @@ export class CreateAlertComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.data?.alert) {
+
       this.alertForm.patchValue({
-        symbol: this.data.alert.symbol,
-        condition: this.data.alert.condition,
-        price: this.data.alert.price || null,
-        percentChange: this.data.alert.percentChange || null,
-        isActive: this.data.alert.isActive
+        symbol: this.data.alert.symbol ?? '',
+        condition: this.data.alert.condition ?? '<',
+        price: this.data.alert.price ?? null,
+        percentChange: this.data.alert.percentChange ?? null,
+        isActive: this.data.alert.isActive ?? true
       });
+
     }
 
     // Update validators when condition changes

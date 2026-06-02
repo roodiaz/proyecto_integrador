@@ -9,6 +9,7 @@ import { NotificationService } from '../../services/notification.service';
 import { AlertService } from '../../services/alert.service';
 import { AlertFilterDto, AlertDto } from '../../models/alert.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 // Import the component class without importing the type
 const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/confirm-dialog.component')
@@ -55,13 +56,34 @@ export class Alerts implements OnInit {
     private dialog: MatDialog,
     private notificationService: NotificationService,
     private alertService: AlertService,
-    private snackBarService: SnackBarService
+    private snackBarService: SnackBarService,
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.loadAlerts();
     this.loadStats();
     this.loadUnreadNotificationsCount();
+
+    this.route.queryParams.subscribe(params => {
+
+      const ticker = params['ticker'];
+      if (ticker) {
+
+        this.createNewAlert(ticker);
+
+        this.router.navigate(
+          [],
+          {
+            relativeTo: this.route,
+            queryParams: {},
+            replaceUrl: true
+          }
+        );
+      }
+
+    });
   }
 
   setActiveView(view: 'alerts' | 'history') {
@@ -194,7 +216,7 @@ export class Alerts implements OnInit {
     }
   }
 
-  async createNewAlert() {
+  async createNewAlert(symbol?: string) {
     try {
       // Abrir modal para crear nueva alerta
       this.isEditing = false;
@@ -208,7 +230,7 @@ export class Alerts implements OnInit {
         width: '600px',
         data: {
           isEditing: false,
-          alert: null
+          alert: symbol ? { symbol } : null
         }
       });
 
