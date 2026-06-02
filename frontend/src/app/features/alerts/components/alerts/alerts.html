@@ -5,7 +5,7 @@
       <div class="header-info">
         <h1>Alertas</h1>
         <p class="header-subtitle">
-          {{getActiveAlertsCount()}} activas • {{getTriggeredAlertsCount()}} disparada
+          Monitor and configure your real-time financial triggers.
         </p>
       </div>
       <button class="new-alert-btn" (click)="createNewAlert()">
@@ -37,7 +37,7 @@
             <div class="summary-value">{{getActiveAlertsCount()}}</div>
           </div>
         </div>
-        
+
         <div class="summary-card paused">
           <div class="summary-icon">⏸️</div>
           <div class="summary-content">
@@ -45,7 +45,7 @@
             <div class="summary-value">{{getPausedAlertsCount()}}</div>
           </div>
         </div>
-        
+
         <div class="summary-card triggered">
           <div class="summary-icon">🔴</div>
           <div class="summary-content">
@@ -53,7 +53,7 @@
             <div class="summary-value">{{getTodayTriggeredCount()}}</div>
           </div>
         </div>
-        
+
         <div class="summary-card usage">
           <div class="summary-icon">📊</div>
           <div class="summary-content">
@@ -69,13 +69,8 @@
       <!-- Filtros Superiores -->
       <div class="filters-section">
         <div class="filter-controls">
-          <input 
-            type="text" 
-            placeholder="Filtrar por ticker..." 
-            class="filter-input"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="applyFilter()"
-          >
+          <input type="text" placeholder="Filtrar por ticker..." class="filter-input" [(ngModel)]="searchTerm"
+            (ngModelChange)="applyFilter()">
           <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
             <option value="">Todos los estados</option>
             <option value="active">Activa</option>
@@ -95,26 +90,24 @@
           <div class="header-column actions">Acciones</div>
         </div>
         <div class="alerts-list">
-          <div class="alert-item" 
-               *ngFor="let alert of paginatedAlerts"
-               [class.active]="alert.isActive" 
-               [class.paused]="!alert.isActive">
+          <div class="alert-item" *ngFor="let alert of paginatedAlerts" [class.active]="alert.isActive"
+            [class.paused]="!alert.isActive">
             <div class="alert-column symbol">
               <div class="alert-symbol-large">{{alert.symbol}}</div>
             </div>
-            
+
             <div class="alert-column condition">
               <div class="alert-condition-text">
                 {{getConditionDisplay(alert.condition)}} {{getTargetDisplay(alert)}}
               </div>
             </div>
-            
+
             <div class="alert-column status">
               <div class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
                 {{alert.isActive ? 'Activa' : 'Pausada'}}
               </div>
             </div>
-            
+
             <div class="alert-column dates">
               <div class="alert-date">
                 Creada: {{alert.createdAt | date:'short'}}
@@ -123,7 +116,7 @@
                 Última: {{alert.lastTriggered ? (alert.lastTriggered | date:'short') : 'Nunca'}}
               </div>
             </div>
-            
+
             <div class="alert-column actions">
               <div class="alert-actions-list">
                 <div class="switch-container">
@@ -147,22 +140,16 @@
           <span>({{filteredAlerts.length}} alertas)</span>
         </div>
         <div class="pagination-controls">
-          <button class="pagination-btn" 
-                  [disabled]="currentPage === 1" 
-                  (click)="previousPage()">
+          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
             ← Anterior
           </button>
           <div class="page-numbers">
-            <button class="page-btn" 
-                    *ngFor="let page of getPageNumbers()" 
-                    [class.active]="page === currentPage"
-                    (click)="goToPage(page)">
+            <button class="page-btn" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage"
+              (click)="goToPage(page)">
               {{page}}
             </button>
           </div>
-          <button class="pagination-btn" 
-                  [disabled]="currentPage === totalPages" 
-                  (click)="nextPage()">
+          <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
             Siguiente →
           </button>
         </div>
@@ -173,7 +160,7 @@
         <div class="empty-icon">🔔</div>
         <h3>No hay alertas configuradas</h3>
         <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
-        <button class="cta-button" (click)="createNewAlert()" >
+        <button class="cta-button" (click)="createNewAlert()">
           Crear Primera Alerta
         </button>
       </div>
@@ -190,9 +177,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let alert of filteredAlerts" 
-                [class.status-active]="alert.isActive" 
-                [class.status-paused]="!alert.isActive">
+            <tr *ngFor="let alert of filteredAlerts" [class.status-active]="alert.isActive"
+              [class.status-paused]="!alert.isActive">
               <td class="ticker-cell">{{alert.symbol}}</td>
               <td class="condition-cell">
                 <span class="condition-text">
@@ -206,9 +192,8 @@
               </td>
               <td class="actions-cell">
                 <div class="action-buttons">
-                  <button class="toggle-btn" 
-                          [class.active]="alert.isActive"
-                          (click)="toggleAlert(alert, !alert.isActive)">
+                  <button class="toggle-btn" [class.active]="alert.isActive"
+                    (click)="toggleAlert(alert, !alert.isActive)">
                     {{alert.isActive ? '⏸️' : '▶️'}}
                   </button>
                   <button class="edit-btn" (click)="editAlert(alert)">✏️</button>
@@ -224,7 +209,7 @@
           <div class="empty-icon">🔔</div>
           <h3>No hay alertas configuradas</h3>
           <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
-          <button class="cta-button" (click)="createNewAlert()" >
+          <button class="cta-button" (click)="createNewAlert()">
             Crear Primera Alerta
           </button>
         </div>
@@ -233,71 +218,7 @@
 
     <!-- TAB 2 — NOTIFICACIONES (Alertas Disparadas) -->
     <div class="tab-content" [class.active]="activeView === 'history'">
-      <div class="notifications-header">
-        <h3>Notificaciones de Alertas Disparadas</h3>
-        <button class="mark-all-read-btn" (click)="markAllAsRead()" *ngIf="getUnreadHistoryCount() > 0">
-          Marcar todo como leído
-        </button>
-      </div>
-
-      <div class="notifications-container">
-        <div class="notification-item" *ngFor="let history of paginatedNotifications" [class.unread]="!history.isRead">
-          <div class="notification-content">
-            <div class="notification-message">
-              <span class="notification-icon">🔔</span>
-              <span class="message-text">{{history.message}}</span>
-              <span class="unread-indicator" *ngIf="!history.isRead">●</span>
-            </div>
-            <div class="notification-details">
-              <span class="price">${{history.price.toFixed(2)}}</span>
-              <span class="timestamp">{{history.timestamp | date:'short'}}</span>
-            </div>
-          </div>
-          <div class="notification-actions">
-            <button class="mark-read-btn" *ngIf="!history.isRead" (click)="markAsRead(history)">
-              ✅
-            </button>
-            <button class="delete-notification-btn" (click)="deleteHistory(history)">
-              🗑
-            </button>
-          </div>
-        </div>
-
-        <!-- Empty State -->
-        <div class="empty-state" *ngIf="alertHistory.length === 0">
-          <div class="empty-icon">📋</div>
-          <h3>No hay notificaciones</h3>
-          <p>Las alertas disparadas aparecerán aquí como notificaciones</p>
-        </div>
-      </div>
-
-      <!-- Notifications Pagination -->
-      <div class="pagination-container" *ngIf="totalNotificationPages > 1">
-        <div class="pagination-info">
-          <span>Página {{currentNotificationPage}} de {{totalNotificationPages}}</span>
-          <span>({{alertHistory.length}} notificaciones)</span>
-        </div>
-        <div class="pagination-controls">
-          <button class="pagination-btn" 
-                  [disabled]="currentNotificationPage === 1" 
-                  (click)="previousNotificationPage()">
-            ← Anterior
-          </button>
-          <div class="page-numbers">
-            <button class="page-btn" 
-                    *ngFor="let page of getNotificationPageNumbers()" 
-                    [class.active]="page === currentNotificationPage"
-                    (click)="goToNotificationPage(page)">
-              {{page}}
-            </button>
-          </div>
-          <button class="pagination-btn" 
-                  [disabled]="currentNotificationPage === totalNotificationPages" 
-                  (click)="nextNotificationPage()">
-            Siguiente →
-          </button>
-        </div>
-      </div>
+      <app-notifications></app-notifications>
     </div>
   </div>
 </div>
