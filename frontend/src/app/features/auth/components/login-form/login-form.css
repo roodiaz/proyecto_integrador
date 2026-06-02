@@ -18,12 +18,8 @@
   position: relative;
 
   background:
-    radial-gradient(circle at top right,
-      rgba(0,185,84,.15),
-      transparent 40%),
-    radial-gradient(circle at bottom left,
-      rgba(77,142,255,.15),
-      transparent 40%);
+    radial-gradient(circle at top right, rgba(0, 185, 84, 0.15), transparent 40%),
+    radial-gradient(circle at bottom left, rgba(77, 142, 255, 0.15), transparent 40%);
 }
 
 .hero-content {
@@ -35,7 +31,7 @@
   padding: 8px 16px;
   border-radius: 999px;
 
-  background: rgba(0,185,84,.15);
+  background: rgba(0, 185, 84, 0.15);
   color: #4ae176;
 
   font-size: 13px;
@@ -67,17 +63,17 @@
 }
 
 .hero-card {
-  background: rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(16px);
 
-  border: 1px solid rgba(255,255,255,.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   padding: 24px;
   border-radius: 16px;
 }
 
 .hero-card mat-icon {
-  color: #4D8EFF;
+  color: #4d8eff;
   margin-bottom: 10px;
 }
 
@@ -98,8 +94,8 @@
   align-items: center;
   justify-content: center;
 
-  background: #090c12;
-  border-left: 1px solid rgba(255,255,255,.05);
+  background: #131313;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
 
   padding: 40px;
 }
@@ -140,7 +136,7 @@
 }
 
 .forgot-password {
-  color: #4D8EFF;
+  color: #4d8eff;
   text-decoration: none;
 }
 
@@ -148,7 +144,7 @@
   height: 52px;
   border-radius: 12px !important;
 
-  background: #4D8EFF !important;
+  background: #4d8eff !important;
   color: white !important;
 
   display: flex;
@@ -158,8 +154,7 @@
 }
 
 .login-button:hover {
-  box-shadow:
-    0 0 20px rgba(77,142,255,.4);
+  box-shadow: 0 0 20px rgba(77, 142, 255, 0.4);
 }
 
 .divider {
@@ -175,7 +170,7 @@
   border-radius: 12px;
 
   background: #1b1f27;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   color: white;
 
@@ -198,7 +193,7 @@
 
   color: #ff6b6b;
 
-  background: rgba(255,0,0,.08);
+  background: rgba(255, 0, 0, 0.08);
 
   padding: 12px;
   border-radius: 12px;
@@ -211,7 +206,7 @@
 }
 
 ::ng-deep .mdc-text-field--outlined {
-  background: #151922 !important;
+  background: #6363631a !important;
   border-radius: 12px !important;
 }
 
@@ -226,7 +221,6 @@
 /* MOBILE */
 
 @media (max-width: 1024px) {
-
   .login-layout {
     flex-direction: column;
   }
@@ -239,5 +233,23 @@
     width: 100%;
     min-height: 100vh;
   }
+}
 
+::ng-deep .mdc-text-field--outlined {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+::ng-deep .mdc-notched-outline__leading,
+::ng-deep .mdc-notched-outline__notch,
+::ng-deep .mdc-notched-outline__trailing {
+  border-color: transparent !important;
+}
+
+::ng-deep .mdc-floating-label {
+  color: #9ca3af !important;
+}
+
+::ng-deep .mdc-text-field--outlined .mdc-floating-label--float-above {
+  transform: translateY(-30px) scale(0.75) !important;
 }

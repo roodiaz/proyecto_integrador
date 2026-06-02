@@ -1,97 +1,175 @@
-<div class="contact-container">
-    <mat-card class="contact-card">
-      <mat-card-header class="card-header">
-        <mat-card-title class="contact-title">
-    <!-- <div class="title-line">CONTACTATE</div>
-    <div class="title-line">CON NOSOTROS</div> -->
-  </mat-card-title>
-        <mat-card-subtitle class="contact-subtitle">Envianos tu consulta</mat-card-subtitle>
-      </mat-card-header>
-  
-      <mat-card-content>
-        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
-  
-            <!-- Nombre Completo -->
-            <div class="field-container">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nombre Completo</mat-label>
-                <input matInput 
-                      formControlName="fullName" 
-                      placeholder="Ej: Juan Pérez"
-                      autocomplete="name"
-                      style="color: white !important; -webkit-text-fill-color: white !important;">
-                <mat-icon matSuffix>person</mat-icon>
-                <mat-error *ngIf="fullName?.hasError('required')">
-                  El nombre es requerido
-                </mat-error>
-              </mat-form-field>
-            </div>
-  
-            <!-- Email Field -->
-            <div class="field-container">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Correo Electrónico</mat-label>
-                  <input matInput 
-                        type="email" 
-                        formControlName="email" 
-                        placeholder="ejemplo@correo.com"
-                        autocomplete="email"
-                        style="color: white !important; -webkit-text-fill-color: white !important;">
-                  <mat-icon matSuffix>email</mat-icon>
-                  <mat-error *ngIf="email?.hasError('required')">
-                    El correo es requerido
-                  </mat-error>
-                  <mat-error *ngIf="email?.hasError('email')">
-                    Por favor ingresa un correo válido
-                  </mat-error>
-                </mat-form-field>
-            </div>
-  
-            <!-- Telefono Field -->
-            <div class="field-container">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Telefono</mat-label>
-                <input matInput 
-                      type="text"
-                      formControlName="phone"
-                      autocomplete="phone"
-                      style="color: white !important; -webkit-text-fill-color: white !important;">
-                <mat-icon matSuffix>phone</mat-icon>
-                <mat-error *ngIf="phone?.hasError('required')">
-                  El telefono es requerido
-                </mat-error>
-                <mat-error *ngIf="phone?.hasError('minlength')">
-                  Minimo 6 caracteres
-                </mat-error>
-              </mat-form-field>
-            </div>
+<div class="contact-layout">
+  <!-- HERO -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Get in <span>touch.</span></h1>
 
-              <!-- Consulta Field -->
-            <div class="field-container">
-              <mat-form-field appearance="outline" class="full-width consulta-field">
-                <mat-label>Escribe tu consulta</mat-label>
-                <textarea matInput 
-                        formControlName="consulta"
-                        cdkTextareaAutosize
-                        cdkAutosizeMinRows="5"
-                        cdkAutosizeMaxRows="12"
-                        style="color: white !important; -webkit-text-fill-color: white !important; min-height: 120px; resize: vertical;">
-                </textarea>
-                <mat-error *ngIf="consulta?.hasError('required')">
-                  Por favor completa la consulta
-                </mat-error>
-              </mat-form-field>
-            </div>      
+      <p class="hero-description">
+        ¿Tenés dudas sobre la plataforma, inversiones o soporte técnico? Nuestro equipo está listo
+        para ayudarte.
+      </p>
+
+      <div class="hero-cards">
+        <div class="hero-card">
+          <div class="hero-icon">
+            <mat-icon>mail</mat-icon>
+          </div>
+
+          <div>
+            <h4>Email</h4>
+            <p>contacto@investlab.com</p>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-icon">
+            <mat-icon>share</mat-icon>
+          </div>
+
+          <div>
+            <h4>Redes Sociales</h4>
+            <p>Seguinos para novedades y análisis de mercado.</p>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-icon">
+            <mat-icon>location_on</mat-icon>
+          </div>
+
+          <div>
+            <h4>Ubicación</h4>
+            <p>Buenos Aires, Argentina</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <span class="status-dot"></span>
+        <div>
+          <h4>Sistema Operativo</h4>
+          <p>Tiempo promedio de respuesta: 4 minutos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="contact-section">
+
+    <div class="contact-wrapper">
   
-          <!-- Submit Button -->
-          <button mat-raised-button 
-                  color="primary" 
-                  type="submit" 
-                  class="contact-button"
-                  [disabled]="!contactForm.valid">
-            Enviar
-          </button>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  </div>
+      <div class="contact-header">
+        <h2>Contactanos</h2>
+        <p>Envianos tu consulta y te responderemos a la brevedad.</p>
+      </div>
+  
+      <form
+        [formGroup]="contactForm"
+        (ngSubmit)="onSubmit()"
+        class="contact-form"
+      >
+  
+        <!-- Nombre + Email -->
+        <div class="form-row">
+  
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre Completo</mat-label>
+  
+            <input
+              matInput
+              formControlName="fullName"
+              placeholder="Ej: Juan Pérez"
+              autocomplete="name"
+            />
+  
+            <mat-icon matSuffix>person</mat-icon>
+  
+            <mat-error *ngIf="fullName?.hasError('required')">
+              El nombre es requerido
+            </mat-error>
+          </mat-form-field>
+  
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Correo Electrónico</mat-label>
+  
+            <input
+              matInput
+              type="email"
+              formControlName="email"
+              placeholder="ejemplo@correo.com"
+              autocomplete="email"
+            />
+  
+            <mat-icon matSuffix>email</mat-icon>
+  
+            <mat-error *ngIf="email?.hasError('required')">
+              El correo es requerido
+            </mat-error>
+  
+            <mat-error *ngIf="email?.hasError('email')">
+              Por favor ingresa un correo válido
+            </mat-error>
+          </mat-form-field>
+  
+        </div>
+  
+        <!-- Telefono -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Teléfono</mat-label>
+  
+          <input
+            matInput
+            type="text"
+            formControlName="phone"
+            autocomplete="tel"
+          />
+  
+          <mat-icon matSuffix>phone</mat-icon>
+  
+          <mat-error *ngIf="phone?.hasError('required')">
+            El teléfono es requerido
+          </mat-error>
+  
+          <mat-error *ngIf="phone?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Consulta -->
+        <mat-form-field
+          appearance="outline"
+          class="full-width consulta-field"
+        >
+          <mat-label>Escribe tu consulta</mat-label>
+  
+          <textarea
+            matInput
+            formControlName="consulta"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="6"
+            cdkAutosizeMaxRows="12"
+          ></textarea>
+  
+          <mat-error *ngIf="consulta?.hasError('required')">
+            Por favor completa la consulta
+          </mat-error>
+        </mat-form-field>
+  
+        <!-- Botón -->
+        <button
+          mat-flat-button
+          type="submit"
+          class="contact-button"
+          [disabled]="!contactForm.valid"
+        >
+          <span>Enviar Mensaje</span>
+          <mat-icon>send</mat-icon>
+        </button>
+  
+      </form>
+  
+    </div>
+  
+  </section>
+</div>
