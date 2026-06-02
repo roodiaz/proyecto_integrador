@@ -1,34 +1,49 @@
 :host {
   display: block;
-  min-height: 100vh;
 }
 
 .register-layout {
-  min-height: 100vh;
   display: flex;
+  height: calc(100vh - 72px);
+
   background: #0e1117;
   color: white;
+
+  overflow: hidden;
 }
 
 /* HERO */
 
 .hero-section {
   flex: 1;
+
   display: flex;
+
   align-items: center;
-  padding: 80px;
+  justify-content: flex-start;
+
+  padding: 0 80px;
 
   background:
-    radial-gradient(circle at top right, rgba(0, 185, 84, 0.15), transparent 40%),
-    radial-gradient(circle at bottom left, rgba(77, 142, 255, 0.15), transparent 40%);
+    radial-gradient(
+      circle at top right,
+      rgba(0, 185, 84, 0.15),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(77, 142, 255, 0.15),
+      transparent 40%
+    );
 }
 
 .hero-content {
+  width: 100%;
   max-width: 700px;
 }
 
 .hero-title {
-  font-size: 72px;
+  font-size: 56px;
   line-height: 1.05;
   max-width: 650px;
 }
@@ -98,7 +113,7 @@
 .hero-card h4 {
   margin: 0 0 8px;
 
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
 
   color: white;
@@ -108,7 +123,7 @@
   margin: 0;
 
   color: #a6adbb;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.7;
 
   max-width: 520px;
@@ -274,8 +289,10 @@
 /* MOBILE */
 
 @media (max-width: 1024px) {
+
   .register-layout {
     flex-direction: column;
+    height: auto;
   }
 
   .hero-section {
@@ -284,7 +301,8 @@
 
   .register-section {
     width: 100%;
-    min-height: 100vh;
+    min-height: calc(100vh - 72px);
+
     border-left: none;
   }
 }

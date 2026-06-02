@@ -1,45 +1,86 @@
 <div class="login-layout">
+
   <!-- Hero -->
   <section class="hero-section">
-    <div class="hero-content">
-      <span class="hero-badge"> Institutional Grade Access </span>
 
-      <h1 class="hero-title">Invest without <span>risk</span>.</h1>
+    <div class="hero-content">
+
+      <span class="hero-badge">
+        Plataforma de Simulación Financiera
+      </span>
+
+      <h1 class="hero-title">
+        Aprendé a invertir <span>sin riesgo.</span>
+      </h1>
 
       <p class="hero-description">
-        Experience the next generation of financial intelligence. Access real-time data,
-        institutional-grade analytics and risk-managed trading environments.
+        Accedé a una experiencia de inversión educativa con datos reales del mercado,
+        alertas inteligentes y herramientas diseñadas para ayudarte a desarrollar tus
+        conocimientos financieros.
       </p>
 
       <div class="hero-cards">
+
         <div class="hero-card">
-          <mat-icon>security</mat-icon>
-          <h4>Military Grade</h4>
-          <p>End-to-end encryption for all transactions.</p>
+
+          <mat-icon>trending_up</mat-icon>
+
+          <h4>Mercado en Tiempo Real</h4>
+
+          <p>
+            Seguí la evolución de acciones y ETFs utilizando información actualizada.
+          </p>
+
         </div>
 
         <div class="hero-card">
-          <mat-icon>bolt</mat-icon>
-          <h4>Ultra Low Latency</h4>
-          <p>Execute trades in milliseconds.</p>
+
+          <mat-icon>account_balance_wallet</mat-icon>
+
+          <h4>Capital Virtual</h4>
+
+          <p>
+            Comenzá con USD 10.000 virtuales para practicar estrategias sin riesgo.
+          </p>
+
         </div>
+
       </div>
+
     </div>
+
   </section>
 
   <!-- Login -->
   <section class="auth-section">
+
     <div class="auth-container">
+
       <div class="auth-header">
+
         <h2>Bienvenido</h2>
-        <p>Ingresa tus credenciales para continuar</p>
+
+        <p>
+          Ingresa tus credenciales para continuar
+        </p>
+
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        class="auth-form">
+
         <mat-form-field appearance="outline" class="full-width">
+
           <mat-label>Correo Electrónico</mat-label>
 
-          <input matInput type="email" formControlName="email" placeholder="name@company.com" />
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            placeholder="ejemplo@correo.com"
+          />
 
           <mat-icon matSuffix>mail</mat-icon>
 
@@ -47,54 +88,86 @@
             El correo electrónico es requerido
           </mat-error>
 
-          <mat-error *ngIf="email?.hasError('email')"> Correo inválido </mat-error>
+          <mat-error *ngIf="email?.hasError('email')">
+            Correo inválido
+          </mat-error>
+
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
+
           <mat-label>Contraseña</mat-label>
 
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+          />
 
-          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="hidePassword = !hidePassword">
+
             <mat-icon>
               {{ hidePassword ? 'visibility_off' : 'visibility' }}
             </mat-icon>
+
           </button>
 
-          <mat-error *ngIf="password?.hasError('required')"> La contraseña es requerida </mat-error>
+          <mat-error *ngIf="password?.hasError('required')">
+            La contraseña es requerida
+          </mat-error>
 
-          <mat-error *ngIf="password?.hasError('minlength')"> Minimo 6 caracteres </mat-error>
+          <mat-error *ngIf="password?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </mat-error>
+
         </mat-form-field>
 
         <div *ngIf="loginError" class="error-message">
+
           <mat-icon>error_outline</mat-icon>
+
           {{ loginError }}
+
         </div>
 
         <div class="auth-options">
-          <mat-checkbox> Recordarme </mat-checkbox>
 
-          <a routerLink="/recuperar-contrasena" class="forgot-password">
+          <mat-checkbox>
+            Recordarme
+          </mat-checkbox>
+
+          <a
+            routerLink="/recuperar-contrasena"
+            class="forgot-password">
+
             ¿Olvidaste tu contraseña?
+
           </a>
+
         </div>
 
-        <button mat-raised-button type="submit" class="login-button" [disabled]="!loginForm.valid">
+        <button
+          mat-raised-button
+          type="submit"
+          class="login-button"
+          [disabled]="!loginForm.valid">
+
           Iniciar Sesión
 
-          <mat-icon> login </mat-icon>
+          <mat-icon>
+            login
+          </mat-icon>
+
         </button>
 
-        <div class="divider">
-          <span>o continuar con</span>
-        </div>
-
-        <button type="button" class="google-button" (click)="onGoogleSignIn()">
-          <img src="https://www.google.com/favicon.ico" alt="Google" />
-
-          Google
-        </button>
       </form>
+
     </div>
+
   </section>
+
 </div>
