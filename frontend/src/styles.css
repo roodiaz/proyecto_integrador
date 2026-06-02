@@ -18,6 +18,43 @@ html, body {
   color: var(--text-primary);
 }
 
+.watchlist-dialog .mat-mdc-dialog-surface {
+  background: #1b1d24 !important;
+  color: white !important;
+  border-radius: 16px !important;
+}
+
+.watchlist-dialog .mat-mdc-dialog-title {
+  color: #ffffff !important;
+}
+
+.watchlist-dialog mat-label {
+  color: #94a3b8 !important;
+}
+
+.watchlist-dialog input {
+  color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
+.watchlist-dialog .mdc-floating-label {
+  color: #94a3b8 !important;
+}
+
+.watchlist-dialog .mdc-notched-outline__leading,
+.watchlist-dialog .mdc-notched-outline__notch,
+.watchlist-dialog .mdc-notched-outline__trailing {
+  border-color: rgba(255,255,255,.2) !important;
+}
+
+.watchlist-dialog .mat-mdc-input-element::placeholder {
+  color: #64748b !important;
+}
+
+.watchlist-dialog .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 767px) {
   .navigation-buttons {

@@ -1,5 +1,5 @@
 <h2 mat-dialog-title>
-    Agregar a Favoritos
+    Agregar Activo
 </h2>
 
 <mat-dialog-content>
@@ -16,7 +16,7 @@
     <div class="search-actions">
 
         <button mat-raised-button color="primary" (click)="add(searchTerm)" [disabled]="!searchTerm">
-            Agregar Activo
+            Agregar
         </button>
 
     </div>
@@ -32,11 +32,19 @@
             <div class="asset-info">
 
                 <div class="asset-symbol">
-                    {{ asset.symbol }}
+                    {{ asset.symbol.charAt(0) }}
                 </div>
 
-                <div class="asset-name">
-                    {{ asset.name }}
+                <div>
+
+                    <div style="font-weight:600">
+                        {{ asset.symbol }}
+                    </div>
+
+                    <div class="asset-name">
+                        {{ asset.name }}
+                    </div>
+
                 </div>
 
             </div>
