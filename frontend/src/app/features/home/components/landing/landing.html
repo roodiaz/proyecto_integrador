@@ -1,65 +1,94 @@
 <div class="landing-page">
 
-    <!-- NAVBAR -->
-    <nav class="top-navbar">
+    <!-- HEADER -->
 
-        <div class="logo">
-            InvestLab
+    <header class="landing-header">
+
+        <div class="brand-section">
+
+            <span class="brand-name">
+                InvestLab
+            </span>
+
+            <span class="brand-badge">
+                TERMINAL
+            </span>
+
         </div>
 
-        <div class="nav-actions">
+        <div class="header-actions">
 
-            <a class="login-btn" routerLink="/login">
+            <a class="login-link" routerLink="/login">
+
                 Ingresar
+
+            </a>
+
+            <a class="register-btn" routerLink="/registro">
+
+                Comenzar ahora
+
             </a>
 
         </div>
 
-    </nav>
+    </header>
 
     <!-- HERO -->
+
     <section class="hero-section">
 
-        <div class="grid-pattern"></div>
+        <div class="hero-background">
+
+            <div class="grid-overlay"></div>
+
+            <div class="hero-gradient"></div>
+
+        </div>
 
         <div class="hero-content">
 
             <div class="hero-badge">
 
-                <span class="dot"></span>
+                <span class="hero-badge-icon">
+                    ⌁
+                </span>
 
-                Trading en Tiempo Real Activo
+                <span>
+                    Institutional Grade Simulator
+                </span>
 
             </div>
 
-            <h1>
+            <h1 class="hero-title">
 
-                Aprendé a invertir sin
+                Aprendé a invertir
 
-                <span class="accent">
-                    arriesgar
+                <br>
+
+                <span class="highlight">
+                    sin arriesgar dinero real.
                 </span>
-
-                dinero real
 
             </h1>
 
-            <p>
+            <p class="hero-description">
 
-                Simulá operaciones bursátiles, seguí el mercado en vivo y desarrollá
-                tus conocimientos financieros con herramientas de grado institucional.
+                Accedé a la terminal de grado institucional de InvestLab.
+                Operá en mercados reales con datos en vivo utilizando nuestro
+                simulador de alta precisión.
 
             </p>
 
-            <div class="hero-buttons">
+            <div class="hero-actions">
 
-                <a routerLink="/registro" class="primary-btn">
+                <a class="primary-action" routerLink="/registro">
 
                     Comenzar ahora →
 
                 </a>
 
-                <a routerLink="/contacto" class="secondary-btn">
+                <a class="secondary-action" routerLink="/contacto">
 
                     Conocer más
 
@@ -67,25 +96,77 @@
 
             </div>
 
-        </div>
+            <!-- STATS -->
 
-        <!-- DASHBOARD PREVIEW -->
+            <div class="stats-grid">
 
-        <div class="preview-container">
+                <div class="stat-card">
 
-            <div class="preview-window">
+                    <span class="stat-label">
+                        Activos
+                    </span>
 
-                <div class="window-header">
-
-                    <span class="circle red"></span>
-                    <span class="circle yellow"></span>
-                    <span class="circle green"></span>
-
-                    <div class="window-bar"></div>
+                    <span class="stat-value">
+                        5.000+
+                    </span>
 
                 </div>
 
-                <img src="assets/images/dashboard-preview.png" alt="Dashboard InvestLab">
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Latencia
+                    </span>
+
+                    <span class="stat-value">
+                        15ms
+                    </span>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Seguridad
+                    </span>
+
+                    <span class="stat-value">
+                        Bank-grade
+                    </span>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Precisión
+                    </span>
+
+                    <span class="stat-value">
+                        99.9%
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- HERO VISUAL -->
+
+        <div class="hero-preview">
+
+            <div class="preview-card">
+
+                <div class="preview-header">
+
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+
+                </div>
+
+                <img src="assets/images/dashboard-preview.png" alt="Dashboard Preview">
 
             </div>
 
@@ -97,145 +178,94 @@
 
     <section class="features-section">
 
-        <div class="features-header">
+        <div class="section-header">
 
-            <div>
+            <h2>
+                Diseñado para la precisión profesional
+            </h2>
 
-                <h2>
-
-                    Domina el mercado con
-                    herramientas profesionales
-
-                </h2>
-
-                <p>
-
-                    Diseñamos una plataforma integral que combina la potencia de un
-                    terminal institucional con la simplicidad necesaria para el aprendizaje.
-
-                </p>
-
-            </div>
-
-            <div class="features-navigation">
-
-                <button>
-                    ←
-                </button>
-
-                <button class="active">
-                    →
-                </button>
-
-            </div>
+            <p>
+                Nuestra plataforma no es un juego.
+                Es un entorno de entrenamiento riguroso que utiliza conceptos
+                y herramientas similares a las utilizadas en entornos financieros reales.
+            </p>
 
         </div>
 
-        <div class="features-grid">
+        <div class="features-layout">
 
-            <!-- FEATURE 1 -->
+            <div class="features-list">
 
-            <div class="feature-card large">
+                <div class="feature-item">
 
-                <div class="feature-icon">
-                    📈
-                </div>
-
-                <h3>
-                    Simulación de Inversiones
-                </h3>
-
-                <p>
-
-                    Opera en el mercado real con capital ficticio.
-                    Experimenta con acciones y ETFs sin riesgo.
-
-                </p>
-
-            </div>
-
-            <!-- FEATURE 2 -->
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-                    🔔
-                </div>
-
-                <h3>
-                    Alertas Inteligentes
-                </h3>
-
-                <p>
-
-                    Recibe notificaciones inmediatas basadas
-                    en indicadores técnicos.
-
-                </p>
-
-            </div>
-
-            <!-- FEATURE 3 -->
-
-            <div class="feature-card">
-
-                <div class="feature-icon">
-                    📊
-                </div>
-
-                <h3>
-                    Gestión de Portfolio
-                </h3>
-
-                <p>
-
-                    Analiza tu diversificación y el rendimiento
-                    de tus inversiones.
-
-                </p>
-
-            </div>
-
-            <!-- FEATURE 4 -->
-
-            <div class="feature-card education">
-
-                <div class="education-content">
+                    <div class="feature-icon">
+                        ✓
+                    </div>
 
                     <div>
 
-                        <div class="feature-icon">
-                            🎓
-                        </div>
-
                         <h3>
-                            Educación Financiera
+                            Datos en tiempo real
                         </h3>
 
                         <p>
-
-                            Accede a cursos, webinars y contenido
-                            creado por expertos certificados.
-
+                            Visualizá movimientos del mercado actualizados y tomá decisiones
+                            basadas en información relevante.
                         </p>
 
                     </div>
 
-                    <div class="education-preview">
+                </div>
 
-                        <div class="line"></div>
-                        <div class="line"></div>
-                        <div class="line short"></div>
+                <div class="feature-item">
 
-                        <div class="cards">
+                    <div class="feature-icon">
+                        ✓
+                    </div>
 
-                            <div></div>
-                            <div></div>
-                            <div></div>
+                    <div>
 
-                        </div>
+                        <h3>
+                            Alertas Inteligentes
+                        </h3>
+
+                        <p>
+                            Configurá alertas de precio y porcentaje para no perder ninguna
+                            oportunidad del mercado.
+                        </p>
 
                     </div>
+
+                </div>
+
+                <div class="feature-item">
+
+                    <div class="feature-icon">
+                        ✓
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Portafolio Simulado
+                        </h3>
+
+                        <p>
+                            Administrá inversiones virtuales y analizá tu rendimiento
+                            como si estuvieras operando en un entorno real.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="terminal-preview">
+
+                <div class="terminal-card">
+
+                    <img src="assets/images/terminal-preview.png" alt="InvestLab Terminal">
 
                 </div>
 
@@ -252,16 +282,17 @@
         <div class="cta-card">
 
             <h2>
-                ¿Listo para transformar tu futuro financiero?
+                Transformá tu aprendizaje financiero
             </h2>
 
             <p>
-                Unite a más de 50.000 inversores que ya están practicando en InvestLab.
+                Practicá estrategias, analizá mercados y adquirí experiencia sin
+                arriesgar dinero real.
             </p>
 
             <a routerLink="/registro" class="cta-button">
 
-                Crear mi cuenta gratis
+                Crear cuenta gratuita
 
             </a>
 
@@ -275,11 +306,12 @@
 
         <div class="footer-brand">
 
-            <h3>InvestLab</h3>
+            <h3>
+                InvestLab
+            </h3>
 
             <p>
-                © 2026 InvestLab Financial Education.
-                Institutional Grade Simulation.
+                © 2026 InvestLab. Todos los derechos reservados.
             </p>
 
         </div>
@@ -287,28 +319,20 @@
         <div class="footer-links">
 
             <a href="#">
-                Terms of Service
+                Privacidad
             </a>
 
             <a href="#">
-                Privacy Policy
+                Términos
             </a>
 
             <a href="#">
-                Risk Disclosure
+                Riesgos
             </a>
 
             <a href="#">
-                Contact Support
+                Soporte
             </a>
-
-        </div>
-
-        <div class="footer-actions">
-
-            <button>🌐</button>
-
-            <button>🔗</button>
 
         </div>
 
