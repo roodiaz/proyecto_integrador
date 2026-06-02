@@ -3,6 +3,7 @@
 public class NotificationDto
 {
     public int Id { get; set; }
+    public int AlertId { get; set; }
     public string? Message { get; set; }
     public decimal? Price { get; set; }
     public bool IsRead { get; set; }

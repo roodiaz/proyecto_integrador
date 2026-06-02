@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MaterialModule } from '../../../../shared/material.module';
-import { Alert, ALERT_CONDITIONS } from '../../models/alert.model';
+import { Alert, ALERT_CONDITIONS, UpdateAlertDto } from '../../models/alert.model';
+import { AlertService } from '../../services/alert.service';
+import { CreateAlertDto } from '../../models/alert.model';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 
 type AlertFormData = Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -27,6 +30,8 @@ export class CreateAlertComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private alertService: AlertService,
+    private snackBarService: SnackBarService,
     private dialogRef: MatDialogRef<CreateAlertComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { alert?: Alert }
   ) {
@@ -59,24 +64,24 @@ export class CreateAlertComponent implements OnInit {
     this.alertForm.get('condition')?.valueChanges.subscribe(condition => {
       const priceControl = this.alertForm.get('price');
       const percentControl = this.alertForm.get('percentChange');
-      
+
       if (condition === '%>' || condition === '%<') {
         priceControl?.clearValidators();
         priceControl?.setValue(null);
         percentControl?.setValidators([
-          Validators.required, 
-          Validators.min(0.01), 
+          Validators.required,
+          Validators.min(0.01),
           Validators.max(100)
         ]);
       } else {
         percentControl?.clearValidators();
         percentControl?.setValue(null);
         priceControl?.setValidators([
-          Validators.required, 
+          Validators.required,
           Validators.min(0.01)
         ]);
       }
-      
+
       priceControl?.updateValueAndValidity();
       percentControl?.updateValueAndValidity();
     });
@@ -89,18 +94,67 @@ export class CreateAlertComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.alertForm.valid) {
-      const formValue = this.alertForm.value;
-      
-      const alertData: AlertFormData = {
-        symbol: formValue.symbol.toUpperCase(),
-        condition: formValue.condition,
-        price: formValue.price,
-        percentChange: formValue.percentChange,
-        isActive: formValue.isActive
+
+    if (!this.alertForm.valid)
+      return;
+
+    const formValue = this.alertForm.value;
+
+    const dto: CreateAlertDto = {
+      symbol: formValue.symbol.toUpperCase(),
+      condition: formValue.condition,
+      price: formValue.price,
+      percentChange: formValue.percentChange,
+      isActive: formValue.isActive
+    };
+
+    if (this.isEditMode) {
+
+      const updateDto: UpdateAlertDto = {
+        id: this.data.alert!.id,
+        ...dto
       };
 
-      this.dialogRef.close(alertData);
+      this.alertService.update(updateDto)
+        .subscribe({
+          next: () => {
+
+            this.snackBarService.success(
+              'Alerta actualizada correctamente'
+            );
+
+            this.dialogRef.close(true);
+          },
+          error: (error) => {
+
+            this.snackBarService.error(
+              error?.error?.message ??
+              'Error al actualizar la alerta'
+            );
+          }
+        });
+
+      return;
+    }
+    else {
+      this.alertService.create(dto)
+        .subscribe({
+          next: () => {
+
+            this.snackBarService.success(
+              'Alerta creada correctamente'
+            );
+
+            this.dialogRef.close(true);
+          },
+          error: (error) => {
+
+            this.snackBarService.error(
+              error?.error?.message ??
+              'Error al crear la alerta'
+            );
+          }
+        });
     }
   }
 
@@ -109,7 +163,7 @@ export class CreateAlertComponent implements OnInit {
   }
 
   getConditionDisplay(condition: string): string {
-    const conditionMap: {[key: string]: string} = {
+    const conditionMap: { [key: string]: string } = {
       '>': 'Mayor que',
       '<': 'Menor que',
       '%>': 'Aumento %',

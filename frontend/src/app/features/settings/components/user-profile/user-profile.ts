@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { userProfileSelectOptions } from '../../models/user-profile.model';
 import { UserService } from '../../services/user.service';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { environment } from '../../../../../environments/environment';
 
@@ -29,7 +29,7 @@ export class UserProfile implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
-    private notificationService: NotificationService
+    private notificationService: SnackBarService
   ) {
     this.profileForm = this.fb.group({
       // Información Personal

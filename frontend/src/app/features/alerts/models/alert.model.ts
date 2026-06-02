@@ -1,5 +1,5 @@
 export interface Alert {
-  id: string;
+  id: number;
   symbol: string;         // Símbolo de la acción (ej: 'AAPL')
   condition: '>' | '>=' | '=' | '<=' | '<' | '%>' | '%<';
   price?: number;         // Precio objetivo (para condiciones >, >=, =, <=, <)
@@ -10,6 +10,14 @@ export interface Alert {
   lastTriggered?: Date;
   lastNotified?: Date;
   userId: string;         // ID del usuario que creó la alerta
+}
+
+export interface CreateAlertDto {
+  symbol: string;
+  condition: string;
+  price?: number;
+  percentChange?: number;
+  isActive: boolean;
 }
 
 // Tipos de condiciones disponibles
@@ -23,108 +31,39 @@ export const ALERT_CONDITIONS = [
   { value: '%<', label: 'Bajada mayor a %', icon: '📉' }
 ];
 
-// Ejemplo de datos de alerta para pruebas
-export const mockAlerts: Alert[] = [
-  {
-    id: '1',
-    symbol: 'AAPL',
-    condition: '<',
-    price: 150,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '2',
-    symbol: 'MSFT',
-    condition: '%>',
-    percentChange: 5,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '3',
-    symbol: 'GOOGL',
-    condition: '>=',
-    price: 2800,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '4',
-    symbol: 'TSLA',
-    condition: '>',
-    price: 800,
-    updatedAt: new Date(),
-    isActive: false,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '5',
-    symbol: 'AMZN',
-    condition: '%<',
-    percentChange: -3,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '6',
-    symbol: 'META',
-    condition: '<=',
-    price: 350,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '7',
-    symbol: 'NVDA',
-    condition: '>',
-    price: 500,
-    updatedAt: new Date(),
-    isActive: false,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '8',
-    symbol: 'NFLX',
-    condition: '%>',
-    percentChange: 4,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '9',
-    symbol: 'DIS',
-    condition: '<',
-    price: 120,
-    updatedAt: new Date(),
-    isActive: true,
-    createdAt: new Date(),
-    userId: 'user1'
-  },
-  {
-    id: '10',
-    symbol: 'BABA',
-    condition: '>=',
-    price: 100,
-    updatedAt: new Date(),
-    isActive: false,
-    createdAt: new Date(),
-    userId: 'user1'
-  }
-];
+export interface AlertDto {
+  id: number;
+  symbol: string;
+  conditionType: number; // 1: price, 2: percent change
+  operator: number; // 1: >, 2: <, 3: >=, 4: <=, 5: =
+  value: number;
+  isActive: boolean;
+  createdAt: string;
+  lastTriggered?: string;
+}
 
+export interface AlertSearchResponseDto {
+  data: AlertDto[];
+  total: number;
+}
 
+export interface AlertFilterDto {
+  search?: string;
+  isActive?: boolean;
+  createdFrom?: string;
+  createdTo?: string;
+  page: number;
+  pageSize: number;
+}
+
+export interface AlertStatsDto {
+  active: number;
+  paused: number;
+  triggeredToday: number;
+  totalUsed: number;
+  limitAlerts: number;
+}
+
+export interface UpdateAlertDto extends CreateAlertDto {
+  id: number;
+}

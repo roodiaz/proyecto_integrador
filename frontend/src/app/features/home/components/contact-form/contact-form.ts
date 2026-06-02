@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MaterialModule } from '../../../../shared/material.module';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ContactService } from '../../services/contact.service';
 
 @Component({
@@ -24,7 +24,7 @@ export class ContactForm implements OnInit {
   constructor(
     private fb: FormBuilder,
     private contactService: ContactService,
-    private notificationService: NotificationService
+    private notificationService: SnackBarService
   ) {
     this.contactForm = this.fb.group({
       fullName: ['', [Validators.required]],

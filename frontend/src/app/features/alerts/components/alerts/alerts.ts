@@ -3,10 +3,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Alert, ALERT_CONDITIONS } from '../../models/alert.model';
-import { mockAlerts } from '../../models/alert.model';
 import { Notifications } from '../notifications/notifications';
 import { Notification } from '../../models/notifications.model';
 import { NotificationService } from '../../services/notification.service';
+import { AlertService } from '../../services/alert.service';
+import { AlertFilterDto, AlertDto } from '../../models/alert.model';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 
 // Import the component class without importing the type
 const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/confirm-dialog.component')
@@ -27,32 +29,38 @@ const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/c
 export class Alerts implements OnInit {
   activeView: 'alerts' | 'history' = 'alerts';
   alerts: Alert[] = [];
-  filteredAlerts: Alert[] = [];
+  totalAlerts = 0;
   notificationHistory: Notification[] = [];
   conditions = ALERT_CONDITIONS;
   searchTerm = '';
   statusFilter = '';
+  createdFrom: string = '';
+  createdTo: string = '';
   isEditing = false;
   currentAlertId: string | null = null;
   unreadNotificationsCount = 0;
 
-  // Pagination
-  alertsPerPage = 8;
+  // Paginacion
+  alertsPerPage = 10;
   currentPage = 1;
-  totalPages = 1;
-  paginatedAlerts: Alert[] = [];
 
   // Alert management
   usedAlerts = 0;
+  activeAlerts = 0;
+  pausedAlerts = 0;
+  triggeredToday = 0;
+  limitAlerts = 10;
 
   constructor(
     private dialog: MatDialog,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private alertService: AlertService,
+    private snackBarService: SnackBarService
   ) { }
 
   ngOnInit() {
     this.loadAlerts();
-    this.updateUsedAlerts();
+    this.loadStats();
     this.loadUnreadNotificationsCount();
   }
 
@@ -63,23 +71,6 @@ export class Alerts implements OnInit {
       this.loadUnreadNotificationsCount();
   }
 
-  getActiveAlertsCount(): number {
-    return this.alerts.filter(alert => alert.isActive).length;
-  }
-
-  getTodayTriggeredCount(): number {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return this.notificationHistory.filter(history => {
-      const historyDate = new Date(history.alertId);
-      historyDate.setHours(0, 0, 0, 0);
-    }).length;
-  }
-
-  getPausedAlertsCount(): number {
-    return this.alerts.filter(alert => !alert.isActive).length;
-  }
-
   onToggleSwitch(alert: Alert, event: Event) {
     const target = event.target as HTMLInputElement;
     if (target) {
@@ -88,35 +79,17 @@ export class Alerts implements OnInit {
   }
 
   applyFilter() {
-    this.filteredAlerts = this.alerts.filter(alert => {
-      const matchesSearch = !this.searchTerm ||
-        alert.symbol.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        this.getConditionDisplay(alert.condition).toLowerCase().includes(this.searchTerm.toLowerCase());
-
-      const matchesStatus = !this.statusFilter ||
-        (this.statusFilter === 'active' && alert.isActive) ||
-        (this.statusFilter === 'paused' && !alert.isActive);
-
-      return matchesSearch && matchesStatus;
-    });
-
-    // Reset pagination when filter changes
     this.currentPage = 1;
-    this.updatePagination();
-  }
-
-  updatePagination() {
-    this.totalPages = Math.ceil(this.filteredAlerts.length / this.alertsPerPage);
-    const startIndex = (this.currentPage - 1) * this.alertsPerPage;
-    const endIndex = startIndex + this.alertsPerPage;
-    this.paginatedAlerts = this.filteredAlerts.slice(startIndex, endIndex);
+    this.loadAlerts();
   }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePagination();
-    }
+
+    if (page < 1 || page > this.totalPages)
+      return;
+
+    this.currentPage = page;
+    this.loadAlerts();
   }
 
   nextPage() {
@@ -152,20 +125,73 @@ export class Alerts implements OnInit {
   clearSearch() {
     this.searchTerm = '';
     this.statusFilter = '';
+    this.createdFrom = '';
+    this.createdTo = '';
     this.applyFilter();
   }
 
   loadAlerts() {
-    this.alerts = [...mockAlerts];
-    this.filteredAlerts = [...this.alerts];
-    this.updatePagination();
-    this.updateUsedAlerts();
-    console.log('Alerts loaded:', this.alerts.length);
-    console.log('Filtered alerts:', this.filteredAlerts.length);
+
+    const filter: AlertFilterDto = {
+      search: this.searchTerm || undefined,
+      isActive:
+        this.statusFilter === ''
+          ? undefined
+          : this.statusFilter === 'active',
+      createdFrom: this.createdFrom || undefined,
+      createdTo: this.createdTo || undefined,
+      page: this.currentPage,
+      pageSize: this.alertsPerPage
+    };
+
+    this.alertService.search(filter)
+      .subscribe({
+        next: (response) => {
+
+          this.alerts = response.data!.data.map((a: AlertDto) => ({
+            id: a.id,
+            symbol: a.symbol,
+            condition: this.mapCondition(a),
+            price: a.conditionType === 1 ? a.value : undefined,
+            percentChange: a.conditionType === 2 ? a.value : undefined,
+            isActive: a.isActive,
+            createdAt: new Date(a.createdAt),
+            updatedAt: new Date(a.createdAt),
+            lastTriggered: a.lastTriggered
+              ? new Date(a.lastTriggered)
+              : undefined,
+            userId: ''
+          }));
+
+          this.totalAlerts = response.data!.total;
+          this.usedAlerts = this.totalAlerts;
+        },
+        error: (error) => {
+          console.error('Error cargando alertas', error);
+        }
+      });
   }
 
-  updateUsedAlerts() {
-    this.usedAlerts = this.alerts.length;
+  private mapCondition(alert: AlertDto): Alert['condition'] {
+
+    if (alert.conditionType === 2) {
+      return alert.operator === 1 ? '%>' : '%<';
+    }
+
+    switch (alert.operator) {
+      case 1:
+        return '>';
+      case 2:
+        return '<';
+      case 3:
+        return '>=';
+      case 4:
+        return '<=';
+      case 5:
+        return '=';
+      default:
+        return '>';
+    }
   }
 
   async createNewAlert() {
@@ -188,18 +214,32 @@ export class Alerts implements OnInit {
 
       const result = await dialogRef.afterClosed().toPromise();
       if (result) {
-        // Si el modal retorna una nueva alerta, agregarla a la lista
-        this.alerts.push(result);
-        this.applyFilter();
-        this.updateUsedAlerts();
+        this.loadAlerts();
+        this.loadStats();
       }
+
     } catch (error) {
       console.error('Error al abrir el modal de crear alerta:', error);
     }
   }
 
   async editAlert(alert: Alert) {
-    // Para implementar el modal de editar alerta
+
+    const module = await import('../create-alert/create-alert');
+    const ModalComponent = module.CreateAlertComponent;
+
+    const dialogRef = this.dialog.open(ModalComponent, {
+      width: '600px',
+      data: {
+        alert
+      }
+    });
+
+    const result = await dialogRef.afterClosed().toPromise();
+    if (result) {
+      this.loadAlerts();
+      this.loadStats();
+    }
   }
 
   async deleteAlert(alert: Alert) {
@@ -215,19 +255,58 @@ export class Alerts implements OnInit {
 
     const result = await dialogRef.afterClosed().toPromise();
     if (result) {
-      this.alerts = this.alerts.filter(a => a.id !== alert.id);
-      this.filteredAlerts = this.filteredAlerts.filter(a => a.id !== alert.id);
-      this.updateUsedAlerts();
+
+      this.alertService.delete(alert.id)
+        .subscribe({
+          next: () => {
+
+            this.snackBarService.success(
+              'Alerta eliminada correctamente'
+            );
+
+            this.loadAlerts();
+            this.loadStats();
+          },
+          error: (error) => {
+
+            this.snackBarService.error(
+              error?.error?.message ??
+              'Error al eliminar la alerta'
+            );
+          }
+        });
     }
   }
 
-  async toggleAlert(alert: Alert, isActive: boolean) {
-    const alertToUpdate = this.alerts.find(a => a.id === alert.id);
-    if (alertToUpdate) {
-      alertToUpdate.isActive = isActive;
-      alertToUpdate.updatedAt = new Date();
-      this.filteredAlerts = [...this.alerts];
-    }
+  toggleAlert(alert: Alert, isActive: boolean) {
+
+    this.alertService.toggle(alert.id)
+      .subscribe({
+        next: () => {
+
+          this.loadAlerts();
+          this.loadStats();
+
+          this.snackBarService.success(
+            isActive
+              ? 'Alerta activada'
+              : 'Alerta pausada'
+          );
+        },
+        error: (error) => {
+
+          alert.isActive = !isActive;
+
+          this.snackBarService.error(
+            error?.error?.message ??
+            'Error al actualizar la alerta'
+          );
+        }
+      });
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalAlerts / this.alertsPerPage);
   }
 
   getConditionDisplay(condition: string): string {
@@ -238,9 +317,9 @@ export class Alerts implements OnInit {
   getTargetDisplay(alert: Alert): string {
     if (alert.condition === '%>' || alert.condition === '%<') {
       return `${alert.percentChange}%`;
-    } else {
-      return `$${alert.price?.toFixed(2)}`;
     }
+
+    return `$${alert.price?.toFixed(2)}`;
   }
 
   getStatusClass(status: string): string {
@@ -265,6 +344,24 @@ export class Alerts implements OnInit {
         },
         error: (error) => {
           console.error('Error obteniendo notificaciones no leídas', error);
+        }
+      });
+  }
+
+  loadStats() {
+
+    this.alertService.getStats()
+      .subscribe({
+        next: (response) => {
+
+          this.activeAlerts = response.data!.active;
+          this.pausedAlerts = response.data!.paused;
+          this.triggeredToday = response.data!.triggeredToday;
+          this.usedAlerts = response.data!.totalUsed;
+          this.limitAlerts = response.data!.limitAlerts;
+        },
+        error: (error) => {
+          console.error('Error cargando estadísticas', error);
         }
       });
   }

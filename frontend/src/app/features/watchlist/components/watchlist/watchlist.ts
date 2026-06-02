@@ -8,7 +8,7 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { FavoriteItem } from '../../models/watchlist-item';
 import { MatDialog } from '@angular/material/dialog';
 import { AddFavoriteDialog } from '../add-favorite-dialog/add-favorite-dialog';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-watchlist',
@@ -36,7 +36,7 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     private router: Router,
     private watchlistService: WatchlistService,
     private dialog: MatDialog,
-    private notificationService: NotificationService
+    private notificationService: SnackBarService
   ) { }
 
   ngOnInit(): void {

@@ -4,7 +4,7 @@ import { MaterialModule } from '../../../../shared/material.module';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-registration-success',
@@ -29,7 +29,7 @@ export class RegistrationSuccess implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: SnackBarService
   ) { }
 
   ngOnInit(): void {

@@ -1017,3 +1017,38 @@ input:checked + .slider:before {
   font-weight: 600;
   line-height: 1;
 }
+
+.alerts-counter {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.counter-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.counter-value {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.alerts-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.alerts-progress .progress-fill {
+  height: 100%;
+  background: var(--accent-green);
+  border-radius: 999px;
+  transition: width .3s ease;
+}

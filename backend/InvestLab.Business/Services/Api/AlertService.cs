@@ -20,9 +20,10 @@ namespace InvestLab.Business.Services.Api
         private readonly IAssetRepository _assetRepository;
         private readonly IUserSettingRepository _userSettingRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAssetService _assetService;
         private readonly ILogger<AlertService> _logger;
 
-        public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger, IOptions<LimitsOptions> options)
+        public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger, IOptions<LimitsOptions> options, IAssetService assetService)
         {
             _alertRepository = alertRepository;
             _assetRepository = assetRepository;
@@ -30,91 +31,130 @@ namespace InvestLab.Business.Services.Api
             _unitOfWork = unitOfWork;
             _logger = logger;
             _limits = options.Value;
+            _assetService = assetService;
         }
 
         public async Task<Response> CreateAlertAsync(int userId, CreateAlertDto dto)
         {
-            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
-            if (settings == null)
-                return Response.Fail("Configuración de usuario no encontrada");
-
-            if (settings.AlertsUsed >= _limits.MaxAlerts)
-                return Response.Fail("Límite de alertas alcanzado");
-
-            var asset = await _assetRepository.GetBySymbolAsync(dto.Symbol);
-            if (asset == null)
-                return Response.Fail("Activo no encontrado");
-
-            var condition = MapCondition(dto);
-
-            var alert = new Alert
+            try
             {
-                UserId = userId,
-                AssetId = asset.Id,
-                ConditionType = condition.Item1,
-                Operator = condition.Item2,
-                Value = condition.Item3,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow
-            };
+                var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+                if (settings == null)
+                    return Response.Fail("Configuración de usuario no encontrada");
 
-            await _alertRepository.AddAsync(alert);
+                if (settings.AlertsUsed >= _limits.MaxAlerts)
+                    return Response.Fail("Límite de alertas alcanzado");
 
-            settings.AlertsUsed++;
+                var asset = await _assetService.GetOrCreateAsync(dto.Symbol);
+                if (asset == null)
+                    return Response.Fail("Activo no encontrado");
 
-            await _unitOfWork.SaveChangesAsync();
+                var condition = MapCondition(dto);
 
-            return Response.Ok("Alerta creada correctamente");
+                var alert = new Alert
+                {
+                    UserId = userId,
+                    AssetId = asset.Id,
+                    ConditionType = condition.Item1,
+                    Operator = condition.Item2,
+                    Value = condition.Item3,
+                    IsActive = dto.IsActive,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _alertRepository.AddAsync(alert);
+
+                settings.AlertsUsed++;
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return Response.Ok("Alerta creada correctamente");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en CreateAlertAsync");
+                return Response.Fail("Error interno");
+            }
         }
 
         public async Task<Response> DeleteAlertAsync(int userId, int id)
         {
-            var alert = await _alertRepository.GetByIdAsync(id);
-            if (alert == null || alert.UserId != userId)
-                return Response.Fail("No encontrada");
+            try
+            {
+                var alert = await _alertRepository.GetByIdAsync(id);
+                if (alert == null || alert.UserId != userId)
+                    return Response.Fail("No encontrada");
 
-            var settings = await _userSettingRepository.GetByUserIdAsync(userId);
+                var settings = await _userSettingRepository.GetByUserIdAsync(userId);
 
-            await _alertRepository.DeleteAsync(alert);
+                await _alertRepository.DeleteAsync(alert);
 
-            if (settings != null && settings.AlertsUsed > 0)
-                settings.AlertsUsed--;
+                if (settings != null && settings.AlertsUsed > 0)
+                    settings.AlertsUsed--;
 
-            await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync();
 
-            return Response.Ok(null, "Eliminada");
+                return Response.Ok(null, "Eliminada");
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en DeleteAlertAsync");
+                return Response.Fail("Error interno");
+            }
         }
 
         public async Task<Response> ToggleAlertAsync(int userId, int id)
         {
-            var alert = await _alertRepository.GetByIdAsync(id);
+            try
+            {
+                var alert = await _alertRepository.GetByIdAsync(id);
 
-            if (alert == null || alert.UserId != userId)
-                return Response.Fail("No encontrada");
+                if (alert == null || alert.UserId != userId)
+                    return Response.Fail("No encontrada");
 
-            alert.IsActive = !alert.IsActive;
+                alert.IsActive = !alert.IsActive;
 
-            await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync();
 
-            return Response.Ok(null, "Estado actualizado");
+                return Response.Ok(null, "Estado actualizado");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en ToggleAlertAsync");
+                return Response.Fail("Error interno");
+            }
         }
 
         public async Task<Response> GetAlertsAsync(int userId, AlertFilterDto filter)
         {
-            var (alerts, total) = await _alertRepository.GetPagedAsync(userId, filter);
-
-            return Response.Ok(new
+            try
             {
-                data = alerts.Select(a => new
+                var (alerts, total) = await _alertRepository.GetPagedAsync(userId, filter);
+
+                return Response.Ok(new
                 {
-                    a.Id,
-                    symbol = a.Asset.Symbol,
-                    value = a.Value,
-                    isActive = a.IsActive,
-                    createdAt = a.CreatedAt
-                }),
-                total
-            });
+                    data = alerts.Select(a => new
+                    {
+                        a.Id,
+                        symbol = a.Asset.Symbol,
+                        conditionType = a.ConditionType,
+                        @operator = a.Operator,
+                        value = a.Value,
+                        isActive = a.IsActive,
+                        createdAt = a.CreatedAt,
+                        lastTriggered = a.LastTriggered
+                    }),
+                    total
+                });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en GetAlertsAsync");
+                return Response.Fail("Error interno");
+            }
         }
 
         public async Task<Response> UpdateAlertAsync(int userId, UpdateAlertDto dto)
@@ -170,7 +210,7 @@ namespace InvestLab.Business.Services.Api
         {
             try
             {
-                var (active, paused, triggeredToday, total) =
+                var (active, paused, triggeredToday, totalUsed) =
                     await _alertRepository.GetStatsAsync(userId);
 
                 return Response.Ok(new
@@ -178,7 +218,8 @@ namespace InvestLab.Business.Services.Api
                     active,
                     paused,
                     triggeredToday,
-                    total
+                    totalUsed,
+                    limitAlerts = _limits.MaxAlerts
                 });
             }
             catch (Exception ex)

@@ -44,7 +44,7 @@
           <div class="summary-icon">🟢</div>
           <div class="summary-content">
             <div class="summary-title">Alertas Activas</div>
-            <div class="summary-value">{{getActiveAlertsCount()}}</div>
+            <div class="summary-value">{{activeAlerts}}</div>
           </div>
         </div>
 
@@ -52,7 +52,7 @@
           <div class="summary-icon">⏸️</div>
           <div class="summary-content">
             <div class="summary-title">Alertas Pausadas</div>
-            <div class="summary-value">{{getPausedAlertsCount()}}</div>
+            <div class="summary-value">{{pausedAlerts}}</div>
           </div>
         </div>
 
@@ -60,19 +60,39 @@
           <div class="summary-icon">🔴</div>
           <div class="summary-content">
             <div class="summary-title">Disparadas Hoy</div>
-            <div class="summary-value">{{getTodayTriggeredCount()}}</div>
+            <div class="summary-value">{{triggeredToday}}</div>
           </div>
         </div>
 
         <div class="summary-card usage">
+
           <div class="summary-icon">📊</div>
+
           <div class="summary-content">
-            <div class="summary-title">Alertas Utilizadas</div>
-            <div class="summary-value">{{usedAlerts}}</div>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(usedAlerts / 10) * 100"></div>
+
+            <div class="summary-title">
+              Alertas Utilizadas
             </div>
+
+            <div class="alerts-counter">
+
+              <span class="counter-label">
+                ALERTAS
+              </span>
+
+              <span class="counter-value">
+                {{ usedAlerts }} / {{ limitAlerts }}
+              </span>
+
+              <div class="alerts-progress">
+                <div class="progress-fill" [style.width.%]="(usedAlerts / limitAlerts) * 100">
+                </div>
+              </div>
+
+            </div>
+
           </div>
+
         </div>
       </div>
 
@@ -86,6 +106,10 @@
             <option value="active">Activa</option>
             <option value="paused">Pausada</option>
           </select>
+          <input type="date" placeholder="Desde" class="filter-input" [(ngModel)]="createdFrom"
+            (ngModelChange)="applyFilter()">
+          <input type="date" placeholder="Hasta" class="filter-input" [(ngModel)]="createdTo"
+            (ngModelChange)="applyFilter()">
           <button class="clear-btn" (click)="clearSearch()">Limpiar</button>
         </div>
       </div>
@@ -100,7 +124,7 @@
           <div class="header-column actions">Acciones</div>
         </div>
         <div class="alerts-list">
-          <div class="alert-item" *ngFor="let alert of paginatedAlerts" [class.active]="alert.isActive"
+          <div class="alert-item" *ngFor="let alert of alerts" [class.active]="alert.isActive"
             [class.paused]="!alert.isActive">
             <div class="alert-column symbol">
               <div class="alert-symbol-large">{{alert.symbol}}</div>
@@ -144,10 +168,10 @@
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-container" *ngIf="totalPages > 1">
+      <div class="pagination-container">
         <div class="pagination-info">
           <span>Página {{currentPage}} de {{totalPages}}</span>
-          <span>({{filteredAlerts.length}} alertas)</span>
+          <span>({{totalAlerts}} alertas)</span>
         </div>
         <div class="pagination-controls">
           <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
@@ -166,7 +190,7 @@
       </div>
 
       <!-- Empty State para Cards -->
-      <div class="empty-state" *ngIf="filteredAlerts.length === 0">
+      <div class="empty-state" *ngIf="alerts.length === 0">
         <div class="empty-icon">🔔</div>
         <h3>No hay alertas configuradas</h3>
         <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
@@ -187,7 +211,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let alert of filteredAlerts" [class.status-active]="alert.isActive"
+            <tr *ngFor="let alert of alerts" [class.status-active]="alert.isActive"
               [class.status-paused]="!alert.isActive">
               <td class="ticker-cell">{{alert.symbol}}</td>
               <td class="condition-cell">
@@ -215,7 +239,7 @@
         </table>
 
         <!-- Empty State -->
-        <div class="empty-state" *ngIf="filteredAlerts.length === 0">
+        <div class="empty-state" *ngIf="alerts.length === 0">
           <div class="empty-icon">🔔</div>
           <h3>No hay alertas configuradas</h3>
           <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>

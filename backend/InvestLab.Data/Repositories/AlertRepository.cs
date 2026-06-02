@@ -57,14 +57,34 @@ namespace InvestLab.Data.Repositories
             if (filter.IsActive.HasValue)
                 query = query.Where(a => a.IsActive == filter.IsActive.Value);
 
-            if (!string.IsNullOrEmpty(filter.Search))
-                query = query.Where(a => a.Asset.Symbol.ToLower().Contains(filter.Search.ToLower()));
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                var search = filter.Search.Trim().ToLower();
+                query = query.Where(a =>a.Asset.Symbol.ToLower().Contains(search));
+            }
+
+            if (filter.CreatedFrom.HasValue)
+            {
+                var createdFrom = DateTime.SpecifyKind(
+                    filter.CreatedFrom.Value.Date,
+                    DateTimeKind.Utc);
+
+                query = query.Where(a => a.CreatedAt >= createdFrom);
+            }
+
+            if (filter.CreatedTo.HasValue)
+            {
+                var createdTo = DateTime.SpecifyKind(
+                    filter.CreatedTo.Value.Date.AddDays(1),
+                    DateTimeKind.Utc);
+
+                query = query.Where(a => a.CreatedAt < createdTo);
+            }
 
             var total = await query.CountAsync();
 
             var data = await query
-                .OrderByDescending(x => x.IsActive)
-                .ThenByDescending(x => x.CreatedAt)
+                .OrderByDescending(a => a.CreatedAt)
                 .Skip((filter.Page - 1) * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToListAsync();

@@ -23,7 +23,7 @@ public class NotificationService : INotificationService
         var result = data.Select(x => new NotificationDto
         {
             Id = x.Id,
-            AlertId = x.AlertId
+            AlertId = x.AlertId,
             Message = x.Message,
             Price = x.Price,
             IsRead = x.IsRead,
