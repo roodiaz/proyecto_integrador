@@ -1,186 +1,189 @@
-/* Watchlist Container */
 :host {
-  --primary-bg: #111B20;
-  --card-bg: #1E1E1E;
-  --text-primary: #FFFFFF;
-  --text-secondary: #b0bec5;
-  --accent-green: #B0C956;
-  --border-color: rgba(255, 255, 255, 0.1);
+  --primary-bg: #0f1117;
+  --card-bg: #151922;
+  --header-bg: #161b26;
+  --text-primary: #ffffff;
+  --text-secondary: #8b95a7;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --positive: #22c55e;
+  --negative: #ef4444;
+  --accent-blue: #dbeafe;
 }
 
 .watchlist-container {
   width: 100%;
-  height: 100%;
-  min-height: calc(100vh - 64px);
-  box-sizing: border-box;
-  background-color: var(--primary-bg);
+  min-height: 100vh;
+  background: var(--primary-bg);
   color: var(--text-primary);
-  padding: 2rem;
+  padding: 48px 40px;
+  box-sizing: border-box;
 }
 
 .watchlist-content {
-  padding: 24px;
+  max-width: 1320px;
+  margin: 0 auto;
 }
 
 .watchlist-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 56px;
+  gap: 32px;
 }
 
-.watchlist-header h2 {
-  color: var(--text-primary);
-  font-size: 28px;
-  font-weight: 500;
+.header-title {
+  flex: 1;
+}
+
+.header-title h2 {
   margin: 0;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: white;
 }
 
-.favorites-indicator {
-  background-color: rgba(255, 255, 255, 0.05);
+.header-title p {
+  margin-top: 10px;
   color: var(--text-secondary);
-  padding: 8px 16px;
-  border-radius: 20px;
   font-size: 14px;
-  font-weight: 500;
-  border: 1px solid var(--border-color);
 }
 
-.favorites-indicator.limit-reached {
-  color: #ef4444;
-  border-color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.1);
-}
-
-.add-symbol {
+.header-actions {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 24px;
+  margin-left: auto;
 }
 
-.ticker-input {
-  padding: 10px 16px;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s ease;
-  min-width: 200px;
-  background-color: transparent;
-  color: var(--text-primary);
+.header-actions button[mat-stroked-button] {
+  border-color: var(--border-color);
+  color: white;
+  height: 42px;
+  border-radius: 14px;
+  padding: 0 22px;
 }
 
-.ticker-input:focus {
-  border-color: var(--accent-green);
+.header-actions button[mat-raised-button] {
+  background: var(--accent-blue) !important;
+  color: #111827 !important;
+  font-weight: 700;
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 14px;
 }
 
-.ticker-input::placeholder {
+.favorites-counter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.counter-label {
+  font-size: 11px;
   color: var(--text-secondary);
+  text-transform: uppercase;
 }
 
-.add-btn {
-  background-color: var(--accent-green);
-  color: #121418;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.add-btn:hover {
-  background-color: #9fb54a;
-}
-
-.add-btn:disabled {
-  background-color: #4b5563;
-  cursor: not-allowed;
+.counter-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
 }
 
 .watchlist-table-container {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  box-shadow: none;
-  overflow: hidden;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-}
-
-.watchlist-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.watchlist-table th {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.watchlist-table td {
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.watchlist-table tr:last-child td {
-  border-bottom: none;
-}
-
-.watchlist-table tbody tr {
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.watchlist-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 400px;
+  position: relative;
 }
 
 .ticker-cell {
-  font-weight: 600;
-  color: var(--text-primary);
-  text-transform: uppercase;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.company-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--accent-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #121418;
+.watchlist-table td,
+.watchlist-table th {
+  text-align: left;
+}
+
+.price-cell,
+.variation-cell {
+  text-align: center;
+}
+
+
+.watchlist-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 80px;
+}
+
+.price-cell,
+.variation-cell {
+  text-align: center;
+}
+
+.watchlist-table th:nth-child(3),
+.watchlist-table th:nth-child(4),
+.watchlist-table th:nth-child(5) {
+  text-align: center;
+}
+
+.watchlist-table th {
+  background: var(--header-bg);
+  color: #75809a;
+  font-size: 11px;
   font-weight: 700;
-  font-size: 12px;
   text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.watchlist-table td {
+  padding: 28px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  vertical-align: middle;
+}
+
+.watchlist-table tbody tr {
+  transition: all .2s ease;
+}
+
+.watchlist-table tbody tr:hover {
+  background: rgba(255,255,255,.03);
+}
+
+.company-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #84cc16;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 
 .ticker-info {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
 }
 
 .ticker-symbol {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
 }
 
 .sparkline-container {
@@ -188,181 +191,153 @@
 }
 
 .sparkline {
-  width: 60px;
-  height: 20px;
+  width: 55px;
+  height: 16px;
+}
+
+.company-cell {
+  color: #aab3c5;
+  font-size: 13px;
 }
 
 .price-cell {
-  font-weight: 500;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: white;
+  font-size: 14px;
 }
 
 .variation-cell {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .variation-cell.positive {
-  color: var(--accent-green);
+  color: var(--positive);
 }
 
 .variation-cell.negative {
-  color: #ef4444;
+  color: var(--negative);
 }
 
 .actions-cell {
   text-align: right;
-}
-
-.remove-btn {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.remove-btn:hover {
-  background-color: #dc2626;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--text-secondary);
-}
-
-.empty-state p {
-  margin: 8px 0;
-  font-size: 16px;
-}
-
-.empty-state p:first-child {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-/* Search section */
-.search-section {
-  margin-top: 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid var(--border-color);
-}
-
-.search-container {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.search-input-wrapper {
-  flex: 1;
-  position: relative;
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: 12px 16px 12px 44px;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s ease;
-  background-color: transparent;
-  color: var(--text-primary);
-}
-
-.search-input:focus {
-  border-color: var(--accent-green);
-}
-
-.search-input::placeholder {
-  color: var(--text-secondary);
-}
-
-.search-btn {
-  background-color: var(--accent-green);
-  color: #121418;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
   white-space: nowrap;
 }
 
-.search-btn:hover {
-  background-color: #9fb54a;
+.market-btn,
+.alert-btn,
+.delete-btn {
+  width: 36px;
+  height: 36px;
+  margin-left: 4px;
+  transition: all .2s ease;
 }
 
-/* Responsive design */
+.market-btn {
+  color: #93c5fd;
+}
+
+.alert-btn {
+  color: #c4b5fd;
+}
+
+.delete-btn {
+  color: #fca5a5;
+}
+
+.market-btn:hover,
+.alert-btn:hover,
+.delete-btn:hover {
+  background: rgba(255,255,255,.05);
+}
+
+.pagination-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 18px 20px;
+  background: #131722;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+
+.pagination-info {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.pagination-actions button {
+  color: white;
+}
+
+.favorites-progress {
+  width: 120px;
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  border-radius: 999px;
+}
+
+.empty-state {
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #64748b;
+}
+
+.empty-state h3 {
+  color: white;
+  margin-top: 12px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
+
   .watchlist-container {
     padding: 16px;
   }
-  
+
   .watchlist-header {
     flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
   }
-  
-  .add-symbol {
-    flex-direction: column;
-  }
-  
-  .ticker-input {
-    min-width: auto;
+
+  .header-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
-  
-  .watchlist-table {
-    font-size: 12px;
-  }
-  
+
+
   .watchlist-table th,
   .watchlist-table td {
     padding: 12px 8px;
   }
-  
-  .ticker-cell {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
+
   .company-logo {
     width: 24px;
     height: 24px;
-    font-size: 10px;
   }
-  
-  .sparkline {
-    width: 50px;
-    height: 16px;
-  }
-  
-  .search-container {
+
+  .pagination-container {
     flex-direction: column;
-  }
-  
-  .search-btn {
-    width: 100%;
+    gap: 12px;
   }
 }

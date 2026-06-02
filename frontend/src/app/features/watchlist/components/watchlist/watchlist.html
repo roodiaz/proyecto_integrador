@@ -21,12 +21,17 @@
         <div class="favorites-counter">
 
           <span class="counter-label">
-            Favoritos
+            ★ FAVORITOS
           </span>
 
           <span class="counter-value">
             {{ currentFavorites }} / {{ maxFavorites }}
           </span>
+
+          <div class="favorites-progress">
+            <div class="progress-fill" [style.width.%]="(currentFavorites / maxFavorites) * 100">
+            </div>
+          </div>
 
         </div>
 
