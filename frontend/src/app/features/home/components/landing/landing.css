@@ -630,3 +630,9 @@
         justify-content: center;
     }
 }
+
+.logo-image {
+    height: 42px;
+    width: auto;
+    display: block;
+}
