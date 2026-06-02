@@ -1,47 +1,44 @@
 <div class="landing-container">
   <!-- Contenedor principal con imagen y sección deslizable -->
   <div class="main-content">
-
     <div class="landing-content">
       <!-- Navbar con Angular Material -->
       <mat-toolbar class="main-toolbar">
         <div class="toolbar-content">
-          <a mat-raised-button 
-             class="nav-button" 
-             [class.active]="isActive('login')"
-             (click)="setActive('login')"
-             routerLink="login"
-             routerLinkActive="active">
+          <a
+            mat-raised-button
+            class="nav-button"
+            [class.active]="isActive('login')"
+            (click)="setActive('login')"
+            routerLink="login"
+            routerLinkActive="active"
+          >
             Ingresar
           </a>
-          <a mat-raised-button 
-             class="nav-button" 
-             [class.active]="isActive('registro')"
-             (click)="setActive('registro')"
-             routerLink="registro"
-             routerLinkActive="active">
+          <a
+            mat-raised-button
+            class="nav-button"
+            [class.active]="isActive('registro')"
+            (click)="setActive('registro')"
+            routerLink="registro"
+            routerLinkActive="active"
+          >
             Registrarse
           </a>
-          <a mat-raised-button 
-             class="nav-button" 
-             [class.active]="isActive('nosotros')"
-             (click)="setActive('nosotros')"
-             routerLink="nosotros"
-             routerLinkActive="active">
-            Nosotros
-          </a>
-          <a mat-raised-button 
-             class="nav-button" 
-             [class.active]="isActive('contacto')"
-             (click)="setActive('contacto')"
-             routerLink="contacto"
-             routerLinkActive="active">
+          <a
+            mat-raised-button
+            class="nav-button"
+            [class.active]="isActive('contacto')"
+            (click)="setActive('contacto')"
+            routerLink="contacto"
+            routerLinkActive="active"
+          >
             Contacto
           </a>
         </div>
-      </mat-toolbar>    
-      
-      
+      </mat-toolbar>
+
       <router-outlet></router-outlet>
     </div>
+  </div>
 </div>

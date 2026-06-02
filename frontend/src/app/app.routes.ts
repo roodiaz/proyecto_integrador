@@ -3,7 +3,6 @@ import { LandingBody } from './features/home/components/landing-body/landing-bod
 import { LoginForm } from './features/auth/components/login-form/login-form';
 import { RegisterForm } from './features/auth/components/register-form/register-form';
 import { RegistrationSuccess } from './features/auth/components/registration-success/registration-success';
-import { AboutPage } from './features/home/components/about-page/about-page';
 import { ContactForm } from './features/home/components/contact-form/contact-form';
 import { Dashboard } from './features/dashboard/components/dashboard/dashboard';
 import { UserProfile } from './features/settings/components/user-profile/user-profile';
@@ -24,7 +23,6 @@ export const routes: Routes = [
       { path: 'login', component: LoginForm },
       { path: 'registro', component: RegisterForm },
       { path: 'registration-success', component: RegistrationSuccess },
-      { path: 'nosotros', component: AboutPage },
       { path: 'contacto', component: ContactForm },
     ],
   },
