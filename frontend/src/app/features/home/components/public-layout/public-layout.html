@@ -1,44 +1,48 @@
-<div class="landing-container">
-  <!-- Contenedor principal con imagen y sección deslizable -->
-  <div class="main-content">
-    <div class="landing-content">
-      <!-- Navbar con Angular Material -->
-      <mat-toolbar class="main-toolbar">
-        <div class="toolbar-content">
-          <a
-            mat-raised-button
-            class="nav-button"
-            [class.active]="isActive('login')"
-            (click)="setActive('login')"
-            routerLink="login"
-            routerLinkActive="active"
-          >
-            Ingresar
-          </a>
-          <a
-            mat-raised-button
-            class="nav-button"
-            [class.active]="isActive('registro')"
-            (click)="setActive('registro')"
-            routerLink="registro"
-            routerLinkActive="active"
-          >
-            Registrarse
-          </a>
-          <a
-            mat-raised-button
-            class="nav-button"
-            [class.active]="isActive('contacto')"
-            (click)="setActive('contacto')"
-            routerLink="contacto"
-            routerLinkActive="active"
-          >
-            Contacto
-          </a>
-        </div>
-      </mat-toolbar>
+<mat-toolbar class="main-toolbar">
 
-      <router-outlet></router-outlet>
-    </div>
+  <div class="toolbar-left">
+
+    <button
+      class="back-button"
+      routerLink="/">
+
+      ← Inicio
+
+    </button>
+
   </div>
-</div>
+
+  <div class="toolbar-right">
+
+    <a
+      class="nav-link"
+      routerLink="/login"
+      routerLinkActive="active">
+
+      Ingresar
+
+    </a>
+
+    <a
+      class="nav-link"
+      routerLink="/registro"
+      routerLinkActive="active">
+
+      Registrarse
+
+    </a>
+
+    <a
+      class="nav-link"
+      routerLink="/contacto"
+      routerLinkActive="active">
+
+      Contacto
+
+    </a>
+
+  </div>
+
+</mat-toolbar>
+
+<router-outlet></router-outlet>
