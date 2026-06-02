@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Alert, ALERT_CONDITIONS } from '../../models/alert.model';
 import { mockAlerts } from '../../models/alert.model';
 import { Notifications } from '../notifications/notifications';
-import { NotificationList } from '../../models/notifications.model';
+import { Notification } from '../../models/notifications.model';
 import { NotificationService } from '../../services/notification.service';
 
 // Import the component class without importing the type
@@ -28,7 +28,7 @@ export class Alerts implements OnInit {
   activeView: 'alerts' | 'history' = 'alerts';
   alerts: Alert[] = [];
   filteredAlerts: Alert[] = [];
-  notificationHistory: NotificationList[] = [];
+  notificationHistory: Notification[] = [];
   conditions = ALERT_CONDITIONS;
   searchTerm = '';
   statusFilter = '';
@@ -71,9 +71,8 @@ export class Alerts implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return this.notificationHistory.filter(history => {
-      const historyDate = new Date(history.timestamp);
+      const historyDate = new Date(history.alertId);
       historyDate.setHours(0, 0, 0, 0);
-      return history.triggered && historyDate.getTime() === today.getTime();
     }).length;
   }
 

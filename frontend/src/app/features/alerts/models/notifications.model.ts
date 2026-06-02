@@ -1,14 +1,11 @@
 
-export interface NotificationList {
+export interface Notification {
   id: number;
-  alertId: string;
+  alertId: number;
   message: string;
   price: number;
-  priceChange: number;
-  timestamp: Date;
   isRead: boolean;
-  readAt?: Date;
-  triggered: boolean;
+  createdAt: Date;
 }
 
 export interface UnreadCountResponse {

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationList } from '../../models/notifications.model';
+import { Notification } from '../../models/notifications.model';
 import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../services/notification.service';
@@ -19,17 +19,14 @@ export class Notifications {
         private notificationService: NotificationService
     ) { }
 
-    notificationList: NotificationList[] = [];
-
+    notificationList: Notification[] = [];
     notificationsPerPage = 8;
     currentNotificationPage = 1;
     totalNotificationPages = 1;
-    paginatedNotifications: NotificationList[] = [];
-
     notificationSearch = '';
     notificationStatusFilter = '';
     notificationDateFilter = '';
-
+    totalNotifications = 0;
     showNotificationFilters = false;
 
     ngOnInit(): void {
@@ -60,26 +57,19 @@ export class Notifications {
 
                     this.notificationList = response.data.data;
 
-                    this.totalNotificationPages = Math.ceil(
-                        response.data.total / this.notificationsPerPage
-                    );
+                    this.totalNotifications = response.data.total;
 
-                    this.paginatedNotifications = this.notificationList;
+                    this.totalNotificationPages =
+                        Math.ceil(response.data.total / this.notificationsPerPage);
                 }
             });
     }
 
-    updateNotificationPagination() {
-        this.totalNotificationPages = Math.ceil(this.notificationList.length / this.notificationsPerPage);
-        const startIndex = (this.currentNotificationPage - 1) * this.notificationsPerPage;
-        const endIndex = startIndex + this.notificationsPerPage;
-        this.paginatedNotifications = this.notificationList.slice(startIndex, endIndex);
-    }
-
     goToNotificationPage(page: number) {
+
         if (page >= 1 && page <= this.totalNotificationPages) {
             this.currentNotificationPage = page;
-            this.updateNotificationPagination();
+            this.loadNotificationList();
         }
     }
 
@@ -90,7 +80,6 @@ export class Notifications {
     previousNotificationPage() {
         this.goToNotificationPage(this.currentNotificationPage - 1);
     }
-
     getNotificationPageNumbers(): number[] {
         const pages: number[] = [];
         const maxVisiblePages = 5;
@@ -111,10 +100,6 @@ export class Notifications {
         return pages;
     }
 
-    getTriggeredAlertsCount(): number {
-        return this.notificationList.filter(list => list.triggered && !list.isRead).length;
-    }
-
     markAllAsRead() {
 
         this.notificationService.markAllAsRead()
@@ -128,7 +113,7 @@ export class Notifications {
             });
     }
 
-    markAsRead(history: NotificationList) {
+    markAsRead(history: Notification) {
 
         if (history.isRead)
             return;
@@ -144,7 +129,7 @@ export class Notifications {
             });
     }
 
-    async deleteNotification(history: NotificationList) {
+    async deleteNotification(history: Notification) {
         console.log('ENTRO AL DELETE');
         const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
         const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
