@@ -1,0 +1,113 @@
+      <div class="notifications-header">
+        <h3>Notificaciones de Alertas Disparadas</h3>
+        <button class="mark-all-read-btn" (click)="markAllAsRead()" *ngIf="getUnreadHistoryCount() > 0">
+          Marcar todo como leído
+        </button>
+      </div>
+
+      <div class="notifications-header">
+
+        <button class="mark-all-read-btn" (click)="markAllAsRead()" *ngIf="getUnreadHistoryCount() > 0">
+          Marcar todo como leído
+        </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters-section">
+        <div class="filter-controls">
+
+          <input type="text" placeholder="Buscar ticker (ej: AAPL)..." class="filter-input"
+            [(ngModel)]="notificationSearch" (ngModelChange)="applyNotificationFilter()">
+
+          <button class="filter-btn" (click)="showNotificationFilters = !showNotificationFilters">
+            ☰ Filtrar
+          </button>
+
+          <button class="clear-btn" (click)="clearNotificationFilters()">
+            ✕ Limpiar
+          </button>
+
+        </div>
+
+        <div class="advanced-filters" *ngIf="showNotificationFilters">
+
+          <div class="filter-group">
+            <label>Estado</label>
+            <select [(ngModel)]="notificationStatusFilter" (ngModelChange)="applyNotificationFilter()">
+
+              <option value="">Todas</option>
+              <option value="unread">No leídas</option>
+              <option value="read">Leídas</option>
+
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Período</label>
+            <select [(ngModel)]="notificationDateFilter" (ngModelChange)="applyNotificationFilter()">
+
+              <option value="">Todas las fechas</option>
+              <option value="today">Hoy</option>
+              <option value="week">Últimos 7 días</option>
+              <option value="month">Últimos 30 días</option>
+
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="notifications-container">
+        <div class="notification-item" *ngFor="let history of paginatedNotifications" [class.unread]="!history.isRead">
+          <div class="notification-content">
+            <div class="notification-message">
+              <span class="notification-icon">🔔</span>
+              <span class="message-text">{{history.message}}</span>
+              <span class="unread-indicator" *ngIf="!history.isRead">●</span>
+            </div>
+            <div class="notification-details">
+              <span class="price">${{history.price.toFixed(2)}}</span>
+              <span class="timestamp">{{history.timestamp | date:'short'}}</span>
+            </div>
+          </div>
+          <div class="notification-actions">
+            <button class="mark-read-btn" *ngIf="!history.isRead" (click)="markAsRead(history)">
+              ✅
+            </button>
+            <button class="delete-notification-btn" (click)="deleteHistory(history)">
+              🗑
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="notificationHistory.length === 0">
+          <div class="empty-icon">📋</div>
+          <h3>No hay notificaciones</h3>
+          <p>Las alertas disparadas aparecerán aquí como notificaciones</p>
+        </div>
+      </div>
+
+      <!-- Notifications Pagination -->
+      <div class="pagination-container" *ngIf="totalNotificationPages > 1">
+        <div class="pagination-info">
+          <span>Página {{currentNotificationPage}} de {{totalNotificationPages}}</span>
+          <span>({{notificationHistory.length}} notificaciones)</span>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" [disabled]="currentNotificationPage === 1"
+            (click)="previousNotificationPage()">
+            ← Anterior
+          </button>
+          <div class="page-numbers">
+            <button class="page-btn" *ngFor="let page of getNotificationPageNumbers()"
+              [class.active]="page === currentNotificationPage" (click)="goToNotificationPage(page)">
+              {{page}}
+            </button>
+          </div>
+          <button class="pagination-btn" [disabled]="currentNotificationPage === totalNotificationPages"
+            (click)="nextNotificationPage()">
+            Siguiente →
+          </button>
+        </div>
+      </div>

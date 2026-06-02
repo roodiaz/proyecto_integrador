@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Alert, AlertHistory, ALERT_CONDITIONS } from '../../models/alert.model';
-import { mockAlerts, mockAlertHistory } from '../../models/alert.model';
+import { Alert, ALERT_CONDITIONS } from '../../models/alert.model';
+import { mockAlerts } from '../../models/alert.model';
+import { Notifications } from '../notifications/notifications';
+import { NotificationHistory, mockNotificationHistory } from '../../models/notifications.model';
 
 // Import the component class without importing the type
 const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/confirm-dialog.component')
@@ -15,7 +17,8 @@ const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/c
   imports: [
     CommonModule,
     FormsModule,
-    DatePipe
+    DatePipe,
+    Notifications
   ],
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']
@@ -24,7 +27,7 @@ export class Alerts implements OnInit {
   activeView: 'alerts' | 'history' = 'alerts';
   alerts: Alert[] = [];
   filteredAlerts: Alert[] = [];
-  alertHistory: AlertHistory[] = [];
+  notificationHistory: NotificationHistory[] = [];
   conditions = ALERT_CONDITIONS;
   searchTerm = '';
   statusFilter = '';
@@ -37,12 +40,6 @@ export class Alerts implements OnInit {
   totalPages = 1;
   paginatedAlerts: Alert[] = [];
 
-  // Notifications Pagination
-  notificationsPerPage = 8;
-  currentNotificationPage = 1;
-  totalNotificationPages = 1;
-  paginatedNotifications: AlertHistory[] = [];
-
   // Alert management
   usedAlerts = 0;
 
@@ -52,7 +49,6 @@ export class Alerts implements OnInit {
 
   ngOnInit() {
     this.loadAlerts();
-    this.loadAlertHistory();
     this.updateUsedAlerts();
   }
 
@@ -64,18 +60,10 @@ export class Alerts implements OnInit {
     return this.alerts.filter(alert => alert.isActive).length;
   }
 
-  getUnreadHistoryCount(): number {
-    return this.alertHistory.filter(history => !history.isRead).length;
-  }
-
-  getTriggeredAlertsCount(): number {
-    return this.alertHistory.filter(history => history.triggered && !history.isRead).length;
-  }
-
   getTodayTriggeredCount(): number {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return this.alertHistory.filter(history => {
+    return this.notificationHistory.filter(history => {
       const historyDate = new Date(history.timestamp);
       historyDate.setHours(0, 0, 0, 0);
       return history.triggered && historyDate.getTime() === today.getTime();
@@ -95,17 +83,17 @@ export class Alerts implements OnInit {
 
   applyFilter() {
     this.filteredAlerts = this.alerts.filter(alert => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         alert.symbol.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         this.getConditionDisplay(alert.condition).toLowerCase().includes(this.searchTerm.toLowerCase());
-      
-      const matchesStatus = !this.statusFilter || 
+
+      const matchesStatus = !this.statusFilter ||
         (this.statusFilter === 'active' && alert.isActive) ||
         (this.statusFilter === 'paused' && !alert.isActive);
-      
+
       return matchesSearch && matchesStatus;
     });
-    
+
     // Reset pagination when filter changes
     this.currentPage = 1;
     this.updatePagination();
@@ -136,7 +124,7 @@ export class Alerts implements OnInit {
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisiblePages = 5;
-    
+
     if (this.totalPages <= maxVisiblePages) {
       // Show all pages if total is small
       for (let i = 1; i <= this.totalPages; i++) {
@@ -146,12 +134,12 @@ export class Alerts implements OnInit {
       // Show pages around current page
       const startPage = Math.max(1, this.currentPage - 2);
       const endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-      
+
       for (let i = startPage; i <= endPage; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   }
 
@@ -170,94 +158,8 @@ export class Alerts implements OnInit {
     console.log('Filtered alerts:', this.filteredAlerts.length);
   }
 
-  loadAlertHistory() {
-    this.alertHistory = mockAlertHistory.map(history => ({
-      ...history,
-      priceChange: history.priceChange || 0,
-      triggered: history.triggered || false
-    }));
-    this.updateNotificationPagination();
-  }
-
-  updateNotificationPagination() {
-    this.totalNotificationPages = Math.ceil(this.alertHistory.length / this.notificationsPerPage);
-    const startIndex = (this.currentNotificationPage - 1) * this.notificationsPerPage;
-    const endIndex = startIndex + this.notificationsPerPage;
-    this.paginatedNotifications = this.alertHistory.slice(startIndex, endIndex);
-  }
-
-  goToNotificationPage(page: number) {
-    if (page >= 1 && page <= this.totalNotificationPages) {
-      this.currentNotificationPage = page;
-      this.updateNotificationPagination();
-    }
-  }
-
-  nextNotificationPage() {
-    this.goToNotificationPage(this.currentNotificationPage + 1);
-  }
-
-  previousNotificationPage() {
-    this.goToNotificationPage(this.currentNotificationPage - 1);
-  }
-
-  getNotificationPageNumbers(): number[] {
-    const pages: number[] = [];
-    const maxVisiblePages = 5;
-    
-    if (this.totalNotificationPages <= maxVisiblePages) {
-      for (let i = 1; i <= this.totalNotificationPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      const startPage = Math.max(1, this.currentNotificationPage - 2);
-      const endPage = Math.min(this.totalNotificationPages, startPage + maxVisiblePages - 1);
-      
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-    }
-    
-    return pages;
-  }
-
   updateUsedAlerts() {
     this.usedAlerts = this.alerts.length;
-  }
-
-  async markAllAsRead() {
-    this.alertHistory.forEach(history => {
-      if (!history.isRead) {
-        history.isRead = true;
-        history.readAt = new Date();
-      }
-    });
-  }
-
-  async markAsRead(history: AlertHistory) {
-    if (!history.isRead) {
-      history.isRead = true;
-      history.readAt = new Date();
-    }
-  }
-
-  async deleteHistory(history: AlertHistory) {
-    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
-    const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
-      width: '350px',
-      data: {
-        title: 'Eliminar alerta',
-        message: '¿Estás seguro de que deseas eliminar este registro del historial?'
-      }
-    });
-
-    const result = await dialogRef.afterClosed().toPromise();
-    if (result) {
-      const index = this.alertHistory.findIndex(h => h.id === history.id);
-      if (index > -1) {
-        this.alertHistory.splice(index, 1);
-      }
-    }
   }
 
   async createNewAlert() {
@@ -265,11 +167,11 @@ export class Alerts implements OnInit {
       // Abrir modal para crear nueva alerta
       this.isEditing = false;
       this.currentAlertId = null;
-      
+
       // Importar dinámicamente el componente de crear alerta
       const module = await import('../create-alert/create-alert');
       const ModalComponent = module.CreateAlertComponent;
-      
+
       const dialogRef = this.dialog.open(ModalComponent, {
         width: '600px',
         data: {
@@ -277,7 +179,7 @@ export class Alerts implements OnInit {
           alert: null
         }
       });
-      
+
       const result = await dialogRef.afterClosed().toPromise();
       if (result) {
         // Si el modal retorna una nueva alerta, agregarla a la lista
@@ -296,7 +198,7 @@ export class Alerts implements OnInit {
 
   async deleteAlert(alert: Alert) {
     const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
-    
+
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',
       data: {
@@ -347,7 +249,5 @@ export class Alerts implements OnInit {
         return '';
     }
   }
-
-  
 
 }
