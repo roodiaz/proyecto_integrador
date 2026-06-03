@@ -53,23 +53,23 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="label">Ticker:</span>
-              <span class="value">AAPL</span>
+              <span class="value">{{ position?.symbol }}</span>
             </div>
             <div class="info-item">
               <span class="label">Cantidad total:</span>
-              <span class="value">9</span>
+              <span class="value">{{ position?.quantity }}</span>
             </div>
             <div class="info-item">
               <span class="label">Cantidad disponible:</span>
-              <span class="value">9</span>
+              <span class="value">{{ position?.quantity }}</span>
             </div>
             <div class="info-item">
               <span class="label">Precio compra:</span>
-              <span class="value">$99</span>
+              <span class="value">{{ position?.avgPrice | currency:'USD' }}</span>
             </div>
             <div class="info-item">
               <span class="label">Precio actual:</span>
-              <span class="value">$99</span>
+              <span class="value">{{ position?.currentPrice | currency:'USD' }}</span>
             </div>
           </div>
         </div>
@@ -77,12 +77,13 @@
         <div class="form-row">
           <div class="form-group">
             <label for="sellQuantity">Cantidad a vender</label>
-            <input id="sellQuantity" type="number" [(ngModel)]="sellQuantity" min="1" [max]="9" class="form-input">
+            <input id="sellQuantity" type="number" [(ngModel)]="sellQuantity" min="1" [max]="position?.quantity ?? 1"
+              class="form-input">
           </div>
           <div class="form-group">
             <label for="sellPrice">Precio mercado</label>
             <div class="price-display">
-              89
+              {{ position?.currentPrice | number:'1.2-2' }}
               <span class="price-label">Precio actual del mercado</span>
             </div>
           </div>
@@ -91,17 +92,18 @@
         <div class="profit-summary">
           <div class="summary-row">
             <span>Total venta:</span>
-            <span class="sell-total">9</span>
+            <span class="sell-total">{{ sellTotal | currency:'USD' }}</span>
           </div>
           <div class="summary-row">
             <span>Ganancia/Pérdida:</span>
             <span class="profit-amount">
+              {{ profitAmount | currency:'USD' }}
             </span>
           </div>
           <div class="summary-row">
             <span>Porcentaje:</span>
             <span class="profit-percent">
-
+              {{ profitPercent | number:'1.2-2' }}%
             </span>
           </div>
         </div>
@@ -113,7 +115,7 @@
       <button *ngIf="mode === 'buy'" class="confirm-btn buy-btn" (click)="onBuy()" [disabled]="!canBuy">
         Comprar
       </button>
-      <button *ngIf="mode === 'sell'" class="confirm-btn sell-btn">
+      <button *ngIf="mode === 'sell'" class="confirm-btn sell-btn" (click)="onSell()">
         Vender
       </button>
     </div>

@@ -1,8 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnChanges, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, OnChanges, OnInit, SimpleChanges } from '@angular/core'; import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PortfolioService } from '../../services/portfolio.service';
-import { BuyData } from '../../models/portfolio.modal.model';
+import { BuyData, SellData, PortfolioPosition } from '../../models/portfolio.modal.model';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
 
 @Component({
   selector: 'app-portfolio-modal',
@@ -11,12 +11,13 @@ import { BuyData } from '../../models/portfolio.modal.model';
   templateUrl: './portfolio-modal.html',
   styleUrl: './portfolio-modal.css'
 })
-export class PortfolioModal implements OnInit {
+export class PortfolioModal implements OnInit, OnChanges {
   @Input() isVisible: boolean = false;
   @Input() mode: 'buy' | 'sell' = 'buy';
+  @Input() symbol = '';
   @Output() closeModal = new EventEmitter<void>();
   @Output() buyComplete = new EventEmitter<BuyData>();
-  @Output() sellComplete = new EventEmitter<string>();
+  @Output() sellComplete = new EventEmitter<SellData>();
 
   // Buy form data
   buyTicker: string = '';
@@ -25,14 +26,36 @@ export class PortfolioModal implements OnInit {
   // Sell form data
   sellPrice: number = 0;
   sellQuantity: number = 0;
+  position?: PortfolioPosition;
 
   // Market price (simulated)
   marketPrice: number = 0;
   isLoadingPrice = false;
 
-  constructor(private portfolioService: PortfolioService) { }
+  constructor(
+    private portfolioService: PortfolioService,
+    private snackBarService: SnackBarService
+  ) { }
 
   ngOnInit() {
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isVisible'] && this.isVisible && this.mode === 'sell' && this.symbol)
+      this.loadPosition();
+  }
+
+  loadPosition(): void {
+    this.portfolioService.getPosition(this.symbol).subscribe({
+      next: (response) => {
+        this.position = response.data!;
+        this.sellQuantity = 1;
+      },
+      error: () => {
+        console.error('No se pudo obtener la posición');
+        this.onClose();
+      }
+    });
   }
 
   loadMarketPrice(): void {
@@ -91,11 +114,42 @@ export class PortfolioModal implements OnInit {
     this.resetForms();
   }
 
+  onSell(): void {
+    if (!this.position || this.sellQuantity <= 0)
+      return;
+
+    this.sellComplete.emit({
+      symbol: this.symbol,
+      quantity: this.sellQuantity
+    });
+
+    this.resetForms();
+  }
+
+  get sellTotal(): number {
+    if (!this.position) return 0;
+
+    return this.sellQuantity * this.position.currentPrice;
+  }
+
+  get profitAmount(): number {
+    if (!this.position) return 0;
+
+    return this.sellQuantity * (this.position.currentPrice - this.position.avgPrice);
+  }
+
+  get profitPercent(): number {
+    if (!this.position || this.position.avgPrice === 0) return 0;
+
+    return ((this.position.currentPrice - this.position.avgPrice) / this.position.avgPrice) * 100;
+  }
+
   private resetForms(): void {
     this.buyTicker = '';
     this.buyQuantity = 0;
     this.sellPrice = 0;
     this.sellQuantity = 0;
     this.marketPrice = 0;
+    this.position = undefined;
   }
 }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
+import { PortfolioPosition, SellData } from '../models/portfolio.modal.model';
 import {
   PortfolioBalanceCards,
   PortfolioPieChartItem,
@@ -80,6 +81,18 @@ export class PortfolioService {
         symbol,
         quantity
       }
+    );
+  }
+
+  getPosition(symbol: string): Observable<ApiResponse<PortfolioPosition>> {
+    return this.http.get<ApiResponse<PortfolioPosition>>(
+      `${environment.apiUrl}/portfolio/${symbol}`
+    );
+  }
+
+  sell(data: SellData): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(
+      `${environment.apiUrl}/portfolio/sell`, data
     );
   }
 }

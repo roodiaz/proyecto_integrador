@@ -8,7 +8,7 @@ import { PortfolioService } from '../../services/portfolio.service';
 import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
-import { BuyData } from '../../models/portfolio.modal.model';
+import { BuyData, SellData } from '../../models/portfolio.modal.model';
 
 import {
   PortfolioBalanceCards,
@@ -67,6 +67,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   // Modal controls
   showBuyModal: boolean = false;
   showSellModal: boolean = false;
+  selectedSymbol = '';
 
   // Top assets data
   topAssets: Array<{ ticker: string, percentage: number }> = [];
@@ -98,14 +99,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-
-    this.loadBalanceCards();
-    this.loadPieChart();
-    this.loadLineChart();
-    this.loadPositions();
-    this.loadOperations();
-    this.startLiveUpdates();
-
+    this.refreshPortfolioData();
   }
 
   ngOnDestroy(): void {
@@ -167,11 +161,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   }
 
-  startLiveUpdates(): void {
-    // Simulación de actualización en vivo
-    this.subscription = new Subscription();
-  }
-
   onPeriodChange(event: Event): void {
     this.selectedPeriod =
       (event.target as HTMLSelectElement).value;
@@ -184,7 +173,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.showBuyModal = true;
   }
 
-  openSellModal(): void {
+  openSellModal(symbol: string): void {
+    this.selectedSymbol = symbol;
     this.showSellModal = true;
   }
 
@@ -194,6 +184,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   closeSellModal(): void {
     this.showSellModal = false;
+    this.selectedSymbol = '';
   }
 
   initializeCharts(): void {
@@ -607,5 +598,28 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         this.snackBarService.error('Error al realizar la compra');
       }
     });
+  }
+
+  sellPosition(data: SellData): void {
+    this.portfolioService.sell(data).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.snackBarService.success('Venta realizada correctamente');
+          this.closeSellModal();
+          this.refreshPortfolioData();
+        }
+      },
+      error: (error) => {
+        this.snackBarService.error(error.error?.message ?? 'Error al vender activo');
+      }
+    });
+  }
+
+  private refreshPortfolioData(): void {
+    this.loadBalanceCards();
+    this.loadPieChart();
+    this.loadLineChart();
+    this.loadPositions();
+    this.loadOperations();
   }
 }

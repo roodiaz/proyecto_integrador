@@ -198,7 +198,7 @@
             </td>
 
             <td>
-              <button class="sell-btn">
+              <button (click)="openSellModal(item.symbol)">
                 Vender
               </button>
             </td>
@@ -330,5 +330,6 @@
     </app-portfolio-modal>
 
     <!-- Sell Modal -->
-    <!-- <app-portfolio-modal [isVisible]="showSellModal" [mode]="'sell'" (closeModal)="closeSellModal()">
-    </app-portfolio-modal> -->
+    <app-portfolio-modal [isVisible]="showSellModal" [mode]="'sell'" [symbol]="selectedSymbol"
+      (closeModal)="closeSellModal()" (sellComplete)="sellPosition($event)">
+    </app-portfolio-modal>
