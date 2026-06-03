@@ -1,9 +1,13 @@
-﻿namespace InvestLab.Data.Interfaces
+﻿using InvestLab.Models.DTOs.Transaction;
+
+namespace InvestLab.Data.Interfaces
 {
     public interface ITransactionRepository
     {
         Task InsertAsync(Transaction transaction);
 
         Task<List<Transaction>> GetLatestByUserAsync(int userId, int take);
+
+        Task<(List<TransactionDto> Data, int Total)> SearchAsync( int userId,TransactionFilterDto filter);
     }
 }

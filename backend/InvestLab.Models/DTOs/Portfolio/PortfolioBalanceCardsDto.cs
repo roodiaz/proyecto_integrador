@@ -9,4 +9,10 @@ public class PortfolioBalanceCardsDto
     public decimal ProfitLoss { get; set; }
 
     public decimal ProfitLossPercent { get; set; }
+
+    public int TotalOperations { get; set; }
+
+    public int MaxOperations { get; set; }
+
+    public DateTime? LastMarketCloseDate { get; set; } = DateTime.UtcNow;
 }

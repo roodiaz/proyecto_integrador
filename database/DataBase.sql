@@ -52,7 +52,8 @@ CREATE TABLE assets (
     symbol VARCHAR(20) UNIQUE NOT NULL, -- Ej: AAPL
     name VARCHAR(100),
     sector VARCHAR(50),
-	history_loaded BOOLEAN NOT NULL DEFAULT FALSE
+	history_loaded BOOLEAN NOT NULL DEFAULT FALSE,
+	last_market_update_at TIMESTAMP WITH TIME ZONE
 );
 
 -- ============================================
@@ -85,7 +86,7 @@ CREATE TABLE transactions (
     quantity DECIMAL(18,6) NOT NULL,
     price DECIMAL(18,4) NOT NULL,
     total DECIMAL(18,2) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_transactions_asset FOREIGN KEY (asset_id) REFERENCES assets(id),

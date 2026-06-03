@@ -408,35 +408,121 @@
 
 .chart-container canvas {
   width: 100% !important;
-  height: 200px !important;
 }
 
-.chart-with-details {
+.top-assets-section {
   display: flex;
-  flex-direction: row;
-  gap: 20px;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.chart-with-details canvas {
+.distribution-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.donut-container {
+  width: 220px;
+  height: 220px;
+  margin-bottom: 24px;
+}
+
+.donut-container canvas {
+  width: 220px !important;
+  height: 220px !important;
+}
+
+.top-assets-section {
+  width: 100%;
+}
+
+.top-assets-section h3 {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.top-assets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top-asset-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, .03);
+}
+
+.asset-ticker {
   flex: 1;
-  min-height: 200px;
-  max-width: 60%;
+  font-weight: 600;
 }
 
-.chart-with-details .top-assets-section {
-  flex: 0 0 auto;
-  width: 35%;
-  margin-top: 0;
+.asset-percentage {
+  font-weight: 700;
+  color: var(--accent-green);
+}
+
+.charts-section {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+
+#lineChart {
+  height: 400px !important;
 }
 
 /* Operations Section */
 .operations-section {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  box-shadow: none;
-  border: 1px solid var(--border-color);
+  margin-top: 2rem;
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
   overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+
+.section-title {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.section-title h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.table-wrapper {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .table-container {
@@ -446,34 +532,76 @@
 .operations-table {
   width: 100%;
   border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.05);
+}
+
+.operations-table thead {
+  background: rgba(255, 255, 255, .03);
 }
 
 .operations-table th {
-  background-color: rgba(255, 255, 255, 0.05);
   padding: 16px;
-  text-align: left;
-  font-weight: 600;
   color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: .5px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .operations-table td {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 14px;
   color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, .05);
 }
 
 .operations-table tr:last-child td {
   border-bottom: none;
 }
 
+.operations-table tbody tr {
+  transition: background .2s ease;
+}
+
+.operations-table tbody tr:hover {
+  background: rgba(255, 255, 255, .03);
+}
+
 .operations-table tr:hover {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+.operation-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mat-mdc-paginator-container {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-paginator {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-select-value {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-icon-button {
+  color: var(--text-primary) !important;
+}
+
+.operation-badge.sell {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.operation-badge.buy {
+  background: rgba(176, 201, 86, 0.15);
+  color: var(--accent-green);
 }
 
 .operations-table tr.positive:hover {
@@ -571,17 +699,17 @@
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
   }
-  
+
   .filter-controls {
     flex-wrap: wrap;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .charts-section {
     grid-template-columns: 1fr;
   }
@@ -591,48 +719,173 @@
   .portfolio-container {
     padding: 0;
   }
-  
+
   .portfolio-content {
     padding: 16px;
   }
-  
+
   .metrics-section {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .metric-card {
     padding: 16px;
   }
-  
+
   .metric-value {
     font-size: 20px;
   }
-  
+
   .filters-section {
     padding: 16px;
   }
-  
+
   .filter-controls {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .filter-input,
   .filter-select {
     margin-bottom: 8px;
   }
-  
+
   .summary-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .operations-table {
     font-size: 12px;
   }
-  
+
   .operations-table th,
   .operations-table td {
     padding: 12px 8px;
   }
+}
+
+/* TENENCIAS */
+
+.holdings-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.table-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.table-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.table-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.table-actions input,
+.table-actions select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holdings-table thead {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.holdings-table th {
+  padding: 16px;
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.holdings-table td {
+  padding: 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.holdings-table tbody tr {
+  transition: background .2s ease;
+}
+
+.holdings-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sell-btn {
+  background: #e74c3c;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sell-btn:hover {
+  background: #c0392b;
+}
+
+.operations-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.operations-progress .progress-fill {
+  height: 100%;
+  background: var(--accent-green);
+  border-radius: 999px;
+  transition: width .3s ease;
+}
+
+.empty-row td {
+  padding: 16px;
+  color: transparent;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+.empty-row:hover {
+  background: transparent !important;
+}
+
+.positive {
+  color: var(--accent-green) !important;
+}
+
+.negative {
+  color: #e74c3c !important;
+}
+
+.neutral {
+  color: var(--text-primary) !important;
 }

@@ -8,6 +8,8 @@ public interface IPriceHistoryRepository
 
     Task<DateTime?> GetLatestDateAsync(string symbol);
 
+    Task<DateTime?> GetLatestDateAsync();
+
     Task InsertAsync(PriceHistory history);
 
     Task InsertManyAsync(List<PriceHistory> history);
@@ -15,4 +17,6 @@ public interface IPriceHistoryRepository
     Task DeleteOlderThanAsync(DateTime date);
 
     Task<List<PriceHistory>> GetBySymbolAndDateAsync(string symbol, DateTime fromDate);
+
+    Task<List<PriceHistory>> GetLatestPricesAsync();
 }

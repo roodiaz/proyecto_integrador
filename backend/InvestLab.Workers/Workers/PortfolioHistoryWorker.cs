@@ -19,25 +19,28 @@ public class PortfolioHistoryWorker : BackgroundService
         _logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(
+    CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 var now = DateTime.UtcNow;
+                var nextRun = now.Date.AddHours(21).AddMinutes(45);
 
-                if (now.Hour == 21)
-                {
-                    using var scope = _scopeFactory.CreateScope();
+                if (now > nextRun)
+                    nextRun = nextRun.AddDays(1);
 
-                    var service = scope.ServiceProvider.GetRequiredService<IPortfolioHistoryWorkerService>();
+                var delay = nextRun - now;
 
-                    await service.GenerateDailySnapshotsAsync();
-                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
-                }
+                await Task.Delay(delay, stoppingToken);
 
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                using var scope = _scopeFactory.CreateScope();
+
+                var service = scope.ServiceProvider.GetRequiredService<IPortfolioHistoryWorkerService>();
+
+                await service.GenerateDailySnapshotsAsync();
             }
             catch (Exception ex)
             {

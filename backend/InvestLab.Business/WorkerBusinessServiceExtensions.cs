@@ -1,5 +1,7 @@
-﻿using InvestLab.Business.Interfaces.Api;
+﻿using InvestLab.Business.Interfaces;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Business.Interfaces.Workers;
+using InvestLab.Business.Services;
 using InvestLab.Business.Services.Workers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +15,8 @@ public static class WorkerBusinessServiceExtensions
         services.AddScoped<IMarketHistoryCleanupService, MarketHistoryCleanupService>();
         services.AddScoped<IPortfolioHistoryWorkerService, PortfolioHistoryWorkerService>();
         services.AddScoped<IAssetService, AssetService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IMarketPriceService, MarketPriceService>();
 
         return services;
     }

@@ -20,7 +20,7 @@ public class MarketDailySnapshotWorker : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             var now = DateTime.UtcNow;
-            var nextRun = now.Date.AddHours(22);
+            var nextRun = now.Date.AddHours(21).AddMinutes(30);
 
             if (now > nextRun)
                 nextRun = nextRun.AddDays(1);

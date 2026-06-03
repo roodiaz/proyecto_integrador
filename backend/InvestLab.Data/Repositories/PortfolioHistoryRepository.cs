@@ -1,6 +1,7 @@
 ﻿using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models.Documents;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
 namespace InvestLab.Data.Repositories
@@ -42,6 +43,20 @@ namespace InvestLab.Data.Repositories
                 .SortByDescending(x => x.Date)
                 .Skip(1)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> ExistsByDateAsync(int userId,DateTime date)
+        {
+            var start = date.Date;
+            var end = start.AddDays(1);
+
+            return await _collection.Find(
+                    x =>
+                        x.UserId == userId &&
+                        x.Date >= start &&
+                        x.Date < end)
+                .Limit(1)
+                .FirstOrDefaultAsync() != null;
         }
     }
 }

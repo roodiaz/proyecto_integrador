@@ -6,7 +6,7 @@
 
         public decimal Quantity { get; set; }
 
-        public decimal BuyPrice { get; set; }
+        public decimal AveragePrice { get; set; }
 
         public decimal CurrentPrice { get; set; }
 

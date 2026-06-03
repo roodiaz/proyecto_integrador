@@ -25,7 +25,11 @@ namespace InvestLab.Integrations.Providers
         {
             var url = $"{_options.BaseUrl}/v8/finance/chart/{symbol}?range=1d&interval=1m";
 
-            var response = await _httpClient.GetAsync(url);
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await _httpClient.SendAsync(request);
+            //var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
                 return null;
@@ -58,14 +62,71 @@ namespace InvestLab.Integrations.Providers
             if (symbols == null || !symbols.Any())
                 return [];
 
-            var tasks = symbols.Select(GetPriceAsync);
+            try
+            {
+                return await GetPricesFromSparkAsync(symbols);
+            }
+            catch (Exception ex)
+            {
 
-            var results = await Task.WhenAll(tasks);
+                var tasks = symbols.Select(GetPriceAsync);
 
-            return results
-                .Where(x => x != null)
-                .Cast<MarketPriceDto>()
-                .ToList();
+                var results = await Task.WhenAll(tasks);
+
+                return results
+                    .Where(x => x != null)
+                    .Cast<MarketPriceDto>()
+                    .ToList();
+            }
+        }
+
+        private async Task<List<MarketPriceDto>> GetPricesFromSparkAsync(List<string> symbols)
+        {
+            var symbolsQuery = string.Join(",", symbols);
+
+            var url = $"{_options.BaseUrl}/v7/finance/spark?symbols={symbolsQuery}&range=1d&interval=1m";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Yahoo Spark devolvió {response.StatusCode}");
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var data = JsonDocument.Parse(json);
+
+            var results = data.RootElement
+                .GetProperty("spark")
+                .GetProperty("result");
+
+            var prices = new List<MarketPriceDto>();
+
+            foreach (var item in results.EnumerateArray())
+            {
+                var symbol = item.GetProperty("symbol").GetString();
+
+                var meta = item
+                    .GetProperty("response")[0]
+                    .GetProperty("meta");
+
+                var price = meta.GetProperty("regularMarketPrice").GetDecimal();
+                var previousClose = meta.GetProperty("previousClose").GetDecimal();
+
+                var variation = ((price - previousClose) / previousClose) * 100;
+
+                prices.Add(new MarketPriceDto
+                {
+                    Symbol = symbol!,
+                    Price = price,
+                    PreviousClose = previousClose,
+                    VariationPercent = Math.Round(variation, 2)
+                });
+            }
+
+            return prices;
         }
 
         public async Task<List<HistoricalPriceDto>> GetHistoricalAsync(string symbol, DateTime from, DateTime to)
@@ -79,7 +140,12 @@ namespace InvestLab.Integrations.Providers
                 $"&period2={period2}" +
                 $"&interval=1d";
 
-            var response = await _httpClient.GetAsync(url);
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await _httpClient.SendAsync(request);
+
+            //var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
                 return [];

@@ -52,29 +52,29 @@
       </div>
 
       <!-- Sell Modal Content -->
-      <div *ngIf="mode === 'sell' && operation" class="sell-content">
+      <div *ngIf="mode === 'sell'" class="sell-content">
         <div class="operation-info">
           <h3>Información de la operación</h3>
           <div class="info-grid">
             <div class="info-item">
               <span class="label">Ticker:</span>
-              <span class="value">{{ operation.ticker }}</span>
+              <span class="value">AAPL</span>
             </div>
             <div class="info-item">
               <span class="label">Cantidad total:</span>
-              <span class="value">{{ operation.quantity }}</span>
+              <span class="value">9</span>
             </div>
             <div class="info-item">
               <span class="label">Cantidad disponible:</span>
-              <span class="value">{{ operation.quantity }}</span>
+              <span class="value">9</span>
             </div>
             <div class="info-item">
               <span class="label">Precio compra:</span>
-              <span class="value">${{ operation.buyPrice.toFixed(2) }}</span>
+              <span class="value">$99</span>
             </div>
             <div class="info-item">
               <span class="label">Precio actual:</span>
-              <span class="value">${{ operation.currentPrice.toFixed(2) }}</span>
+              <span class="value">$99</span>
             </div>
           </div>
         </div>
@@ -87,14 +87,14 @@
               type="number" 
               [(ngModel)]="sellQuantity"
               min="1"
-              [max]="operation.quantity"
+              [max]="9"
               class="form-input"
             >
           </div>
           <div class="form-group">
             <label for="sellPrice">Precio mercado</label>
             <div class="price-display">
-              ${{ operation.currentPrice.toFixed(2) }}
+              89
               <span class="price-label">Precio actual del mercado</span>
             </div>
           </div>
@@ -103,18 +103,17 @@
         <div class="profit-summary">
           <div class="summary-row">
             <span>Total venta:</span>
-            <span class="sell-total">${{ (sellQuantity * operation.currentPrice).toFixed(2) }}</span>
+            <span class="sell-total">9</span>
           </div>
           <div class="summary-row">
             <span>Ganancia/Pérdida:</span>
-            <span class="profit-amount" [class.positive]="sellProfit > 0" [class.negative]="sellProfit < 0">
-              {{ sellProfit > 0 ? '+' : '' }}${{ sellProfit.toFixed(2) }}
+            <span class="profit-amount" >
             </span>
           </div>
           <div class="summary-row">
             <span>Porcentaje:</span>
-            <span class="profit-percent" [class.positive]="sellProfitPercent > 0" [class.negative]="sellProfitPercent < 0">
-              {{ sellProfitPercent > 0 ? '+' : '' }}{{ sellProfitPercent.toFixed(2) }}%
+            <span class="profit-percent">
+
             </span>
           </div>
         </div>
@@ -133,8 +132,7 @@
       <button 
         *ngIf="mode === 'sell'" 
         class="confirm-btn sell-btn" 
-        (click)="onSell()" 
-        [disabled]="!canSell">
+       >
         Vender
       </button>
     </div>

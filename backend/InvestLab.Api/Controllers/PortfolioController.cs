@@ -1,5 +1,6 @@
 ﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Portfolio;
+using InvestLab.Models.DTOs.Transaction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +15,14 @@ namespace InvestLab.Api.Controllers;
 [Authorize]
 public class PortfolioController : BaseController
 {
-    private readonly IPortfolioService _service;
+    private readonly IPortfolioService _portfolioService;
+    private readonly ITransactionService _transactionService;
     private readonly ILogger<PortfolioController> _logger;
 
-    public PortfolioController(IPortfolioService service, ILogger<PortfolioController> logger)
+    public PortfolioController(IPortfolioService portfolioService, ILogger<PortfolioController> logger, ITransactionService transactionService)
     {
-        _service = service;
+        _portfolioService = portfolioService;
+        _transactionService = transactionService;
         _logger = logger;
     }
 
@@ -37,7 +40,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Compra solicitada por usuario {UserId}", UserId);
 
-        var result = await _service.BuyAsync(UserId, dto);
+        var result = await _portfolioService.BuyAsync(UserId, dto);
 
         if (!result.Success)
         {
@@ -63,7 +66,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Venta solicitada por usuario {UserId}", UserId);
 
-        var result = await _service.SellAsync(UserId, dto);
+        var result = await _portfolioService.SellAsync(UserId, dto);
 
         if (!result.Success)
         {
@@ -89,7 +92,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Consultando posición: UserId={UserId}, AssetId={AssetId}", UserId, symbol);
 
-        var result = await _service.GetPositionForSellAsync(UserId, symbol);
+        var result = await _portfolioService.GetPositionForSellAsync(UserId, symbol);
 
         if (!result.Success)
         {
@@ -115,7 +118,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Consultando precio actual: {Symbol}", symbol);
 
-        var result = await _service.GetPriceAsync(symbol);
+        var result = await _portfolioService.GetPriceAsync(symbol);
 
         if (!result.Success)
         {
@@ -142,7 +145,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Consultando resumen portfolio: UserId={UserId}", UserId);
 
-        var result = await _service.GetBalanceCardsAsync(UserId);
+        var result = await _portfolioService.GetBalanceCardsAsync(UserId);
 
         if (!result.Success)
         {
@@ -170,7 +173,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Consultando pie chart portfolio: UserId={UserId}", UserId);
 
-        var result = await _service.GetPieChartAsync(UserId);
+        var result = await _portfolioService.GetPieChartAsync(UserId);
 
         if (!result.Success)
         {
@@ -200,7 +203,7 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Consultando open positions: UserId={UserId}", UserId);
 
-        var result = await _service.GetOpenPositionsAsync(UserId, filter);
+        var result = await _portfolioService.GetOpenPositionsAsync(UserId, filter);
 
         if (!result.Success)
         {
@@ -230,12 +233,43 @@ public class PortfolioController : BaseController
     {
         _logger.LogInformation("Consultando line chart portfolio: UserId={UserId}", UserId);
 
-        var result = await _service.GetLineChartAsync(UserId, filter);
+        var result = await _portfolioService.GetLineChartAsync(UserId, filter);
 
         if (!result.Success)
         {
             _logger.LogWarning("Error al obtener line chart portfolio: {Message}", result.Message);
 
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtiene el historial de operaciones
+    /// (compras y ventas) del usuario autenticado.
+    /// </summary>
+    /// <param name="filter">
+    /// Parámetros de paginación,
+    /// filtrado y ordenamiento.
+    /// </param>
+    /// <returns>
+    /// Lista paginada de transacciones
+    /// realizadas por el usuario.
+    /// </returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="400">Error al obtener el historial de transacciones</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("history")]
+    public async Task<IActionResult> GetTransactionHistory( [FromBody] TransactionFilterDto filter)
+    {
+        _logger.LogInformation(  "Consultando historial de transacciones: UserId={UserId}",     UserId);
+
+        var result = await _transactionService.GetTransactionHistoryAsync( UserId, filter);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning(   "Error al obtener historial de transacciones: {Message}",      result.Message);
             return BadRequest(result);
         }
 

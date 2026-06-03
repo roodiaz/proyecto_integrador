@@ -37,7 +37,7 @@ public partial class Transaction
     public decimal Total { get; set; }
 
     [Column("created_at")]
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     [ForeignKey("AssetId")]
     [InverseProperty("Transactions")]

@@ -11,5 +11,7 @@ namespace InvestLab.Data.Interfaces
         Task<PortfolioHistory?> GetLatestAsync(int userId);
 
         Task<PortfolioHistory?> GetPreviousAsync(int userId);
+
+        Task<bool> ExistsByDateAsync(int userId, DateTime date);
     }
 }

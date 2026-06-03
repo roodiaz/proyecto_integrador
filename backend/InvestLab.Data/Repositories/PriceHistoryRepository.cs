@@ -39,6 +39,16 @@ public class PriceHistoryRepository : IPriceHistoryRepository
         return latest?.Date;
     }
 
+    public async Task<DateTime?> GetLatestDateAsync()
+    {
+        var latest = await _collection
+            .Find(_ => true)
+            .SortByDescending(x => x.Date)
+            .FirstOrDefaultAsync();
+
+        return latest?.Date;
+    }
+
     public async Task InsertAsync(PriceHistory history)
     {
         await _collection.InsertOneAsync(history);
@@ -59,9 +69,21 @@ public class PriceHistoryRepository : IPriceHistoryRepository
 
     public async Task<List<PriceHistory>> GetBySymbolAndDateAsync(string symbol, DateTime fromDate)
     {
+        // TODO: revisar fecha hay qe sacar
         return await _collection
             .Find(x => x.Symbol == symbol && x.Date >= fromDate)
             .SortBy(x => x.Date)
             .ToListAsync();
+    }
+
+    public async Task<List<PriceHistory>> GetLatestPricesAsync()
+    {
+        var pipeline = _collection.Aggregate()
+            .SortByDescending(x => x.Date)
+            .Group(
+                x => x.Symbol,
+                g => g.First());
+
+        return await pipeline.ToListAsync();
     }
 }

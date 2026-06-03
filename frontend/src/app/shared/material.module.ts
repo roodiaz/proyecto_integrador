@@ -21,6 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 export const materialModules = [
   MatBadgeModule,
@@ -44,7 +45,8 @@ export const materialModules = [
   MatTooltipModule,
   MatDialogModule,
   MatTableModule,
-  MatChipsModule
+  MatChipsModule,
+  MatPaginatorModule
 ] as const;
 
 // Este módulo ya no es necesario en la nueva versión de Angular con standalone components

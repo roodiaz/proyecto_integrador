@@ -1,4 +1,6 @@
-﻿using InvestLab.Business.Interfaces.Api;
+﻿using InvestLab.Business.Interfaces;
+using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Services;
 using InvestLab.Business.Services.Api;
 using InvestLab.Data;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +21,8 @@ public static class ApiBusinessServiceExtensions
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IFavoriteService, FavoriteService>();
         services.AddScoped<IAssetService, AssetService>();
+        services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IMarketPriceService, MarketPriceService>();
 
         // interfaz externa
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

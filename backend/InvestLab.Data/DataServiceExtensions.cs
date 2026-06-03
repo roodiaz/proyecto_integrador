@@ -27,6 +27,7 @@ public static class DataServiceExtensions
         // mongo specific configuration
         services.AddScoped<IPriceHistoryRepository,PriceHistoryRepository>();
         services.AddScoped<IPortfolioHistoryRepository,PortfolioHistoryRepository>();
+        services.AddScoped<IMarketMetadataRepository, MarketMetadataRepository>();
 
         return services;
     }

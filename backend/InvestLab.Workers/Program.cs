@@ -11,7 +11,8 @@ var builder = Host.CreateApplicationBuilder(args);
 
 // Application services
 builder.Services.AddWorkerApplicationServices(builder.Configuration);
-builder.Services.AddHttpClient<IExternalProvider, FinnhubMarketProvider>();
+//builder.Services.AddHttpClient<IExternalProvider, FinnhubMarketProvider>();
+builder.Services.AddHttpClient<IExternalProvider, YahooMarketProvider>();
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
 builder.Services.Configure<FinnhubOptions>(builder.Configuration.GetSection("Finnhub"));
@@ -21,11 +22,11 @@ builder.Services.AddResend(options =>
 });
 
 // Workers
-builder.Services.AddHostedService<MarketSeederWorker>();
-builder.Services.AddHostedService<MarketDailySnapshotWorker>();
-builder.Services.AddHostedService<AlertWorker>();
-builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
-builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
+//builder.Services.AddHostedService<MarketSeederWorker>();
+//builder.Services.AddHostedService<MarketDailySnapshotWorker>();
+//builder.Services.AddHostedService<AlertWorker>();
+//builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
+//builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
 builder.Services.AddHostedService<PortfolioHistoryWorker>();
 
 var host = builder.Build();
