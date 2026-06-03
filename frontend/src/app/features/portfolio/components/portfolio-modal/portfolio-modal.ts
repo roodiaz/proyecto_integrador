@@ -1,12 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-export interface BuyData {
-  ticker: string;
-  quantity: number;
-  price: number;
-}
+import { PortfolioService } from '../../services/portfolio.service';
+import { BuyData } from '../../models/portfolio.modal.model';
 
 @Component({
   selector: 'app-portfolio-modal',
@@ -15,7 +11,7 @@ export interface BuyData {
   templateUrl: './portfolio-modal.html',
   styleUrl: './portfolio-modal.css'
 })
-export class PortfolioModal implements OnInit, OnChanges {
+export class PortfolioModal implements OnInit {
   @Input() isVisible: boolean = false;
   @Input() mode: 'buy' | 'sell' = 'buy';
   @Output() closeModal = new EventEmitter<void>();
@@ -25,7 +21,6 @@ export class PortfolioModal implements OnInit, OnChanges {
   // Buy form data
   buyTicker: string = '';
   buyQuantity: number = 0;
-  buyPrice: number = 0;
 
   // Sell form data
   sellPrice: number = 0;
@@ -33,47 +28,26 @@ export class PortfolioModal implements OnInit, OnChanges {
 
   // Market price (simulated)
   marketPrice: number = 0;
+  isLoadingPrice = false;
 
-  constructor() { }
+  constructor(private portfolioService: PortfolioService) { }
 
   ngOnInit() {
-    // When mode changes, update market price if we have a ticker
-    this.updateMarketPrice();
   }
 
-  ngOnChanges() {
-    this.updateMarketPrice();
-  }
+  loadMarketPrice(): void {
+    if (!this.buyTicker.trim())
+      return;
 
-  private updateMarketPrice(): void {
-    if (this.mode === 'buy' && this.buyTicker.trim()) {
-      // Simulate getting market price for ticker
-      this.marketPrice = this.getSimulatedPrice(this.buyTicker);
-    } 
-    // else if (this.mode === 'sell' && this.operation) {
-    //   this.marketPrice = this.operation.currentPrice;
-    // }
-  }
-
-  onTickerChange(ticker: string): void {
-    this.buyTicker = ticker;
-    this.updateMarketPrice();
-  }
-
-  private getSimulatedPrice(ticker: string): number {
-    // Simulated prices for common tickers
-    const prices: { [key: string]: number } = {
-      'AAPL': 175.50,
-      'GOOGL': 142.30,
-      'MSFT': 380.75,
-      'TSLA': 245.80,
-      'AMZN': 145.20,
-      'META': 325.40,
-      'NVDA': 485.60
-    };
-
-    const upperTicker = ticker.toUpperCase();
-    return prices[upperTicker] || 100.00; // Default price if not found
+    this.portfolioService.getAssetPrice(this.buyTicker.trim().toUpperCase()).subscribe({
+      next: (response) => {
+        if (response.success && response.data)
+          this.marketPrice = response.data.currentPrice;
+      },
+      error: () => {
+        this.marketPrice = 0;
+      }
+    });
   }
 
   get modalTitle(): string {
@@ -91,28 +65,9 @@ export class PortfolioModal implements OnInit, OnChanges {
       (this.buyQuantity * this.marketPrice) <= this.currentBalance);
   }
 
-  // get canSell(): boolean {
-  //   return !!(this.sellQuantity > 0 &&
-  //     this.operation !== null &&
-  //     this.sellQuantity <= this.operation.quantity);
-  // }
-
   get totalCost(): number {
     return this.buyQuantity * this.marketPrice;
   }
-
-  // get sellProfit(): number {
-  //   if (!this.operation || !this.sellQuantity) return 0;
-  //   const profit = (this.operation.currentPrice - this.operation.buyPrice) * this.sellQuantity;
-  //   return profit;
-  // }
-
-  // get sellProfitPercent(): number {
-  //   if (!this.operation || !this.sellQuantity) return 0;
-  //   const costPerShare = this.operation.buyPrice;
-  //   const currentPricePerShare = this.operation.currentPrice;
-  //   return ((currentPricePerShare - costPerShare) / costPerShare) * 100;
-  // }
 
   switchMode(newMode: 'buy' | 'sell'): void {
     this.mode = newMode;
@@ -129,25 +84,16 @@ export class PortfolioModal implements OnInit, OnChanges {
 
     const buyData: BuyData = {
       ticker: this.buyTicker.trim().toUpperCase(),
-      quantity: this.buyQuantity,
-      price: this.marketPrice
+      quantity: this.buyQuantity
     };
 
     this.buyComplete.emit(buyData);
     this.resetForms();
   }
 
-  // onSell(): void {
-  //   if (!this.canSell || !this.operation) return;
-
-  //   this.sellComplete.emit(this.operation.id);
-  //   this.resetForms();
-  // }
-
   private resetForms(): void {
     this.buyTicker = '';
     this.buyQuantity = 0;
-    this.buyPrice = 0;
     this.sellPrice = 0;
     this.sellQuantity = 0;
     this.marketPrice = 0;

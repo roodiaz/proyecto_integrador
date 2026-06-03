@@ -32,7 +32,6 @@ export class PortfolioService {
     return this.http.get<ApiResponse<PortfolioPieChartItem[]>>(
       `${environment.apiUrl}/portfolio/pie-chart`
     );
-
   }
 
   getLineChart(period: string):
@@ -44,7 +43,6 @@ export class PortfolioService {
       `${environment.apiUrl}/portfolio/line-chart`,
       { period }
     );
-
   }
 
   getOpenPositions(filter: OpenPositionsFilter):
@@ -67,6 +65,21 @@ export class PortfolioService {
       `${environment.apiUrl}/portfolio/history`,
       filter
     );
+  }
 
+  getAssetPrice(symbol: string): Observable<ApiResponse<{ symbol: string; currentPrice: number }>> {
+    return this.http.get<ApiResponse<{ symbol: string; currentPrice: number }>>(
+      `${environment.apiUrl}/portfolio/price/${symbol}`
+    );
+  }
+
+  buyAsset(symbol: string, quantity: number): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(
+      `${environment.apiUrl}/portfolio/buy`,
+      {
+        symbol,
+        quantity
+      }
+    );
   }
 }

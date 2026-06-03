@@ -325,9 +325,10 @@
     </div>
 
     <!-- Buy Modal -->
-    <app-portfolio-modal [isVisible]="showBuyModal" [mode]="'buy'" (closeModal)="closeBuyModal()">
+    <app-portfolio-modal [isVisible]="showBuyModal" [mode]="'buy'" (closeModal)="closeBuyModal()"
+      (buyComplete)="onBuyComplete($event)">
     </app-portfolio-modal>
 
     <!-- Sell Modal -->
-    <app-portfolio-modal [isVisible]="showSellModal" [mode]="'sell'" (closeModal)="closeSellModal()">
-    </app-portfolio-modal>
+    <!-- <app-portfolio-modal [isVisible]="showSellModal" [mode]="'sell'" (closeModal)="closeSellModal()">
+    </app-portfolio-modal> -->

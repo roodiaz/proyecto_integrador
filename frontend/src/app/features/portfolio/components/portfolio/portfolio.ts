@@ -5,9 +5,11 @@ import { PageEvent } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioModal, BuyData } from '../portfolio-modal/portfolio-modal';
+import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
+import { BuyData } from '../../models/portfolio.modal.model';
+
 import {
   PortfolioBalanceCards,
   PortfolioPieChartItem,
@@ -19,7 +21,7 @@ import {
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, FormsModule, PortfolioModal, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, PortfolioModal],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css'
 })
@@ -135,8 +137,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       .subscribe({
 
         next: (response) => {
-
-          console.log('RESPUESTA OPERACIONES', response);
 
           this.operations = response.data?.data ?? [];
           this.totalOperations = response.data?.total ?? 0;
@@ -584,5 +584,28 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       );
 
     this.emptyOperationRows = Array(missing).fill(0);
+  }
+
+  onBuyComplete(data: BuyData): void {
+    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.snackBarService.success(response.message || 'Compra realizada correctamente');
+
+          this.closeBuyModal();
+
+          this.loadBalanceCards();
+          this.loadPieChart();
+          this.loadPositions();
+          this.loadOperations();
+        }
+        else {
+          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
+        }
+      },
+      error: () => {
+        this.snackBarService.error('Error al realizar la compra');
+      }
+    });
   }
 }
