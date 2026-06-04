@@ -17,11 +17,12 @@ public class PortfolioService : IPortfolioService
 {
     private readonly LimitsOptions _limits;
     private readonly ILogger<PortfolioService> _logger;
-    private readonly IUserRepository _userRepository;
     private readonly IExternalProvider _externalProvider;
     private readonly IMarketPriceService _marketPriceService;
+    private readonly IAssetService _assetService;
 
     // repositorios
+    private readonly IUserRepository _userRepository;
     private readonly IUserSettingRepository _userSettingRepository;
     private readonly IAssetRepository _assetRepository;
     private readonly IPortfolioRepository _portfolioRepository;
@@ -30,7 +31,7 @@ public class PortfolioService : IPortfolioService
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
     private readonly IMarketMetadataRepository _marketMetadataRepository;
 
-    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository)
+    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService)
     {
         _userRepository = userRepository;
         _userSettingRepository = userSettingRepository;
@@ -44,6 +45,7 @@ public class PortfolioService : IPortfolioService
         _logger = logger;
         _marketPriceService = marketPriceService;
         _marketMetadataRepository = marketMetadataRepository;
+        _assetService = assetService;
     }
 
     public async Task<Response> BuyAsync(int userId, BuyAssetDto dto)
@@ -70,13 +72,9 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Límite diario alcanzado");
             }
 
-            var asset = await _assetRepository.GetBySymbolAsync(dto.Symbol);
-
+            var asset = await _assetService.GetOrCreateAsync(dto.Symbol);
             if (asset == null)
-            {
-                _logger.LogWarning("Activo no encontrado: {AssetId}", dto.Symbol);
                 return Response.Fail("Activo no encontrado");
-            }
 
             var market = await _externalProvider.GetPriceAsync(asset.Symbol);
             if (market == null)

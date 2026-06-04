@@ -109,7 +109,7 @@ namespace InvestLab.Business.Services.Api
             if (settings == null)
                 return Response.Fail("Configuración de usuario no encontrada");
 
-            var asset = await _assetRepo.GetBySymbolAsync(symbol);
+            var asset = await _assetService.GetOrCreateAsync(symbol);
             if (asset == null)
                 return Response.Fail("Activo no encontrado");
 
