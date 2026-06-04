@@ -10,6 +10,7 @@ import { AlertService } from '../../services/alert.service';
 import { AlertFilterDto, AlertDto } from '../../models/alert.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MaterialModule } from '../../../../shared/material.module';
 
 // Import the component class without importing the type
 const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/confirm-dialog.component')
@@ -22,7 +23,8 @@ const ConfirmDialogComponent = () => import('../../../../shared/confirm-dialog/c
     CommonModule,
     FormsModule,
     DatePipe,
-    Notifications
+    Notifications,
+    MaterialModule
   ],
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']
