@@ -1,7 +1,9 @@
 ﻿namespace InvestLab.Business.Interfaces.Workers
 {
-    public interface IPortfolioHistoryWorkerService
+    public interface IDailySnapshotWorker
     {
         Task GenerateDailySnapshotsAsync();
+
+        Task SaveDailyMarketHistoryAsync();
     }
 }

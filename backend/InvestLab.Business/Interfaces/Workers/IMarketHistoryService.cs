@@ -3,5 +3,4 @@
 public interface IMarketHistoryService
 {
     Task SeedMissingHistoryAsync();
-    Task SaveDailyMarketHistoryAsync();
 }

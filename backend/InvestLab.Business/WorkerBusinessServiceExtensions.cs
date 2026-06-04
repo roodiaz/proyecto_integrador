@@ -13,7 +13,7 @@ public static class WorkerBusinessServiceExtensions
         services.AddScoped<IAlertProcessingService, AlertProcessingService>();
         services.AddScoped<IUserDailyLimitsResetService, UserDailyLimitsResetService>();
         services.AddScoped<IMarketHistoryCleanupService, MarketHistoryCleanupService>();
-        services.AddScoped<IPortfolioHistoryWorkerService, PortfolioHistoryWorkerService>();
+        services.AddScoped<IDailySnapshotWorker, DailySnapshotService>();
         services.AddScoped<IAssetService, AssetService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IMarketPriceService, MarketPriceService>();

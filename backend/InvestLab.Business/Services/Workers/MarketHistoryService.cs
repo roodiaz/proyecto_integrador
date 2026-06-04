@@ -130,7 +130,7 @@ public class MarketHistoryService : IMarketHistoryService
                 var fromDate = lastDate.Value.Date.AddDays(1);
 
                 // Nunca recuperamos el día actual.
-                var toDate = DateTime.UtcNow.Date.AddDays(-1);
+                var toDate = DateTime.UtcNow.Date;
 
                 if (fromDate > toDate)
                     continue;
@@ -164,82 +164,6 @@ public class MarketHistoryService : IMarketHistoryService
                 _logger.LogError(ex, "Error recuperando históricos para {Symbol}", asset.Symbol);
             }
         }
-    }
-
-
-
-    /// <summary>
-    /// Guarda el cierre diario oficial del mercado.
-    ///
-    /// Debe ejecutarse una vez por día luego del cierre bursátil.
-    ///
-    /// Responsabilidades:
-    /// - Obtener el cierre del día.
-    /// - Guardar la vela diaria.
-    /// - Actualizar la fecha global de mercado.
-    ///
-    /// NO recupera históricos faltantes.
-    /// NO carga activos nuevos.
-    /// </summary>
-    public async Task SaveDailyMarketHistoryAsync()
-    {
-        _logger.LogInformation("Iniciando snapshot diario de mercado");
-
-        var assets = await _assetRepository.GetAllSymbolsAsync();
-        var insertedCount = 0;
-
-        foreach (var asset in assets)
-        {
-            try
-            {
-                _logger.LogInformation("Procesando cierre diario de {Symbol}", asset.Symbol);
-                var today = DateTime.UtcNow.Date;
-
-                // Obtiene únicamente la información
-                // correspondiente al último día bursátil.
-                var historical = await _externalProvider.GetHistoricalAsync(asset.Symbol, today.AddDays(-1), today);
-
-                if (!historical.Any())
-                {
-                    _logger.LogWarning("Sin datos diarios para {Symbol}", asset.Symbol);
-                    continue;
-                }
-
-                var lastCandle = historical.OrderByDescending(x => x.Date).First();
-
-                // Evita insertar duplicados.
-                var latestStoredDate = await _priceHistoryRepository.GetLatestDateAsync(asset.Symbol);
-                if (latestStoredDate?.Date == lastCandle.Date.Date)
-                {
-                    _logger.LogInformation("El cierre diario ya existe para {Symbol}", asset.Symbol);
-                    continue;
-                }
-
-                await _priceHistoryRepository.InsertAsync(new PriceHistory
-                {
-                    Symbol = asset.Symbol,
-                    Date = lastCandle.Date.Date,
-                    Open = lastCandle.Open,
-                    High = lastCandle.High,
-                    Low = lastCandle.Low,
-                    Close = lastCandle.Close,
-                    Volume = lastCandle.Volume
-                });
-
-                insertedCount++;
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error guardando cierre diario para {Symbol}", asset.Symbol);
-            }
-        }
-
-        // Guarda la última fecha bursátil encontrada.
-        await UpdateMarketMetadataAsync();
-
-        await _unitOfWork.SaveChangesAsync();
-        _logger.LogInformation("Snapshot diario finalizado. Insertados={Count}", insertedCount);
     }
 
 

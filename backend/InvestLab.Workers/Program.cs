@@ -22,12 +22,11 @@ builder.Services.AddResend(options =>
 });
 
 // Workers
-//builder.Services.AddHostedService<MarketSeederWorker>();
-//builder.Services.AddHostedService<MarketDailySnapshotWorker>();
+builder.Services.AddHostedService<MarketSeederWorker>();
+//builder.Services.AddHostedService<DailySnapshotWorker>();
 //builder.Services.AddHostedService<AlertWorker>();
 //builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
 //builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
-builder.Services.AddHostedService<PortfolioHistoryWorker>();
 
 var host = builder.Build();
 
