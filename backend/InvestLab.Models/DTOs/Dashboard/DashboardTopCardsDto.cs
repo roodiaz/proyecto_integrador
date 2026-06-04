@@ -9,4 +9,6 @@ public class DashboardTopCardsDto
     public decimal TodayProfitPercent { get; set; }
 
     public int ActiveAssets { get; set; }
+
+    public int ActiveAlerts { get; set; }
 }

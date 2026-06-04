@@ -40,19 +40,18 @@ public class DashboardService : IDashboardService
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                _logger.LogWarning(
-                    "Usuario no encontrado: {UserId}",
-                    userId);
-
+                _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
                 return Response.Fail("Usuario no encontrado");
             }
 
             var portfolio = await _portfolioRepository.GetByUserAsync(userId);
-
             decimal holdingsValue = 0;
 
             foreach (var item in portfolio)
             {
+                if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol))
+                    continue;
+
                 var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
                 if (market == null)
                     continue;
@@ -61,32 +60,28 @@ public class DashboardService : IDashboardService
             }
 
             var totalValue = user.Balance + holdingsValue;
-
-            var latest = await _portfolioHistoryRepository.GetLatestAsync(userId);
-
             var previous = await _portfolioHistoryRepository.GetPreviousAsync(userId);
 
             decimal todayProfit = 0;
             decimal todayProfitPercent = 0;
 
-            if (latest != null && previous != null)
+            if (previous != null)
             {
-                todayProfit =
-                    latest.TotalValue - previous.TotalValue;
+                todayProfit = totalValue - previous.TotalValue;
 
                 if (previous.TotalValue > 0)
-                {
-                    todayProfitPercent =
-                        (todayProfit / previous.TotalValue) * 100;
-                }
+                    todayProfitPercent = (todayProfit / previous.TotalValue) * 100;
             }
+
+            var activeAlerts = await _alertRepository.CountByUserAsync(userId);
 
             var response = new DashboardTopCardsDto
             {
                 TotalValue = Math.Round(totalValue, 2),
                 TodayProfit = Math.Round(todayProfit, 2),
                 TodayProfitPercent = Math.Round(todayProfitPercent, 2),
-                ActiveAssets = portfolio.Count
+                ActiveAssets = portfolio.Count(x => x.Quantity > 0),
+                ActiveAlerts = activeAlerts
             };
 
             _logger.LogInformation("Dashboard top cards obtenidas: UserId={UserId}", userId);
@@ -95,14 +90,10 @@ public class DashboardService : IDashboardService
         }
         catch (Exception ex)
         {
-            _logger.LogError(
-                ex,
-                "Error al obtener dashboard top cards");
-
+            _logger.LogError(ex, "Error al obtener dashboard top cards");
             return Response.Fail("Error interno");
         }
     }
-
     public async Task<Response> GetTopAssetsAsync(int userId)
     {
         try

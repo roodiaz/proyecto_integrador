@@ -6,34 +6,41 @@
 
     <div class="header-stats">
 
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <div class="stat-value">$125,430</div>
-          <div class="stat-label">Valor Total</div>
-        </div>
-      </div>
-
-      <div class="stat-card positive">
-        <div class="stat-icon">📈</div>
-        <div class="stat-content">
-          <div class="stat-value">+12.5%</div>
-          <div class="stat-label">Rendimiento Total</div>
-        </div>
-      </div>
+      <div class="stat-card" [ngClass]="getBalanceClass()">
+  <div class="stat-icon">💰</div>
+  <div class="stat-content">
+    <div class="stat-value" *ngIf="!loadingTopCards">{{ formatCurrency(topCards?.totalValue) }}</div>
+    <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
+    <div class="stat-label">Valor Total</div>
+  </div>
+</div>
 
       <div class="stat-card">
         <div class="stat-icon">📊</div>
         <div class="stat-content">
-          <div class="stat-value">8</div>
+          <div class="stat-value" *ngIf="!loadingTopCards">{{ topCards?.activeAssets ?? 0 }}</div>
+          <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
           <div class="stat-label">Activos</div>
         </div>
       </div>
 
+      <div class="stat-card" [ngClass]="getProfitClass()">
+  <div class="stat-icon">📈</div>
+  <div class="stat-content">
+    <div class="stat-value" *ngIf="!loadingTopCards">
+      {{ formatCurrency(topCards?.todayProfit) }}
+      <span class="profit-percent">({{ formatPercent(topCards?.todayProfitPercent) }})</span>
+    </div>
+    <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
+    <div class="stat-label">Profit</div>
+  </div>
+</div>
+
       <div class="stat-card">
         <div class="stat-icon">🔔</div>
         <div class="stat-content">
-          <div class="stat-value">3</div>
+          <div class="stat-value" *ngIf="!loadingTopCards">{{ topCards?.activeAlerts ?? 0 }}</div>
+          <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
           <div class="stat-label">Alertas Activas</div>
         </div>
       </div>
@@ -50,8 +57,8 @@
         <h2 class="chart-title">Portfolio vs S&P500 vs NASDAQ</h2>
 
         <div class="chart-subtitle">
-          <span class="current-value">$125,430</span>
-          <span class="change positive">+12.5%</span>
+          <span class="current-value">{{ formatCurrency(topCards?.totalValue) }}</span>
+          <span class="change" [ngClass]="getProfitClass()">{{ formatPercent(topCards?.todayProfitPercent) }}</span>
           <span class="period">últimos 30 días</span>
         </div>
       </div>
@@ -59,26 +66,28 @@
       <div class="chart-controls">
 
         <div class="time-selector">
-          <button class="time-btn" [class.active]="selectedPeriod === '1w'" (click)="selectedPeriod = '1w'; onPeriodChange()">1W</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1w'"
+            (click)="selectedPeriod = '1w'; onPeriodChange()">1W</button>
 
-          <button class="time-btn" [class.active]="selectedPeriod === '1m'" (click)="selectedPeriod = '1m'; onPeriodChange()">1M</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1m'"
+            (click)="selectedPeriod = '1m'; onPeriodChange()">1M</button>
 
-          <button class="time-btn" [class.active]="selectedPeriod === '3m'" (click)="selectedPeriod = '3m'; onPeriodChange()">3M</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '3m'"
+            (click)="selectedPeriod = '3m'; onPeriodChange()">3M</button>
 
-          <button class="time-btn" [class.active]="selectedPeriod === '1y'" (click)="selectedPeriod = '1y'; onPeriodChange()">1Y</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1y'"
+            (click)="selectedPeriod = '1y'; onPeriodChange()">1Y</button>
         </div>
 
         <div class="chart-type-selector">
 
-          <button class="chart-type-btn"
-                  [class.active]="selectedChartType === 'line'"
-                  (click)="selectedChartType = 'line'; onChartTypeChange()">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'"
+            (click)="selectedChartType = 'line'; onChartTypeChange()">
             Línea
           </button>
 
-          <button class="chart-type-btn"
-                  [class.active]="selectedChartType === 'bar'"
-                  (click)="selectedChartType = 'bar'; onChartTypeChange()">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'"
+            (click)="selectedChartType = 'bar'; onChartTypeChange()">
             Barras
           </button>
 

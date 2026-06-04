@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
+import { DashboardService } from '../../services/dashboard.service';
+import { DashboardTopCards } from '../../models/dashboard.models';
 
 // Importación de Chart.js con fallback
 import Chart from 'chart.js/auto';
@@ -13,7 +15,7 @@ import Chart from 'chart.js/auto';
   imports: [
     CommonModule,
     FormsModule,
-    // RouterOutlet,
+    RouterOutlet,
     MaterialModule
   ],
   templateUrl: './dashboard.html',
@@ -21,15 +23,21 @@ import Chart from 'chart.js/auto';
 })
 export class Dashboard implements OnInit, AfterViewInit {
   selectedChartType: 'line' | 'bar' = 'line';
-  selectedPeriod: string = '1m'; private chart: Chart | null = null;
+  selectedPeriod: string = '1m';
+  topCards: DashboardTopCards | null = null;
+  loadingTopCards = false;
+
+  private chart: Chart | null = null;
   private resizeObserver: any;
-  constructor() {
-    // Chart.js auto-registra todos los componentes con la importación 'chart.js/auto'
-    console.log('Chart.js loaded:', typeof Chart !== 'undefined');
-  }
+
+  constructor(
+    private dashboardService: DashboardService
+  ) { }
 
   ngOnInit() {
     this.initializeChart();
+    this.loadTopCards();
+
   }
 
   ngAfterViewInit() {
@@ -96,9 +104,51 @@ export class Dashboard implements OnInit, AfterViewInit {
     console.log('Chart created successfully');
   }
 
+  loadTopCards() {
+    this.loadingTopCards = true;
+
+    this.dashboardService.getTopCards().subscribe({
+      next: (response) => {
+        this.loadingTopCards = false;
+
+        if (!response.success) return;
+
+        this.topCards = response.data;
+        this.setupChart();
+      },
+      error: () => {
+        this.loadingTopCards = false;
+      }
+    });
+  }
+
+  formatCurrency(value: number | null | undefined): string {
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value ?? 0);
+  }
+
+  formatPercent(value: number | null | undefined): string {
+    const number = value ?? 0;
+    const sign = number > 0 ? '+' : '';
+    return `${sign}${number.toFixed(2)}%`;
+  }
+
+  getBalanceClass(): string {
+    const value = this.topCards?.totalValue ?? 0;
+    if (value > 10000) return 'positive';
+    if (value < 10000) return 'negative';
+    return 'neutral';
+  }
+
+  getProfitClass(): string {
+    const value = this.topCards?.todayProfit ?? 0;
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'neutral';
+  }
+
   private generateChartData() {
     let points = 30;
-    let baseValue = 100000;
+    let baseValue = this.topCards?.totalValue ?? 10000;
 
     // Ajustar cantidad de puntos según el período
     switch (this.selectedPeriod) {
