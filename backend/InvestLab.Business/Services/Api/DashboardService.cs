@@ -179,8 +179,9 @@ public class DashboardService : IDashboardService
 
             var portfolioHistory = await _portfolioHistoryRepository.GetByUserAndDateAsync(userId, fromDate);
             var sp500History = await _priceHistoryRepository.GetBySymbolAndDateAsync("^GSPC", fromDate);
+            var nasdaqHistory = await _priceHistoryRepository.GetBySymbolAndDateAsync("^IXIC", fromDate);
 
-            if (!portfolioHistory.Any() || !sp500History.Any())
+            if (!portfolioHistory.Any() || !sp500History.Any() || !nasdaqHistory.Any())
                 return Response.Ok(new DashboardPerformanceChartDto());
 
             bool monthlyView = filter.Period is "3M" or "1Y";
@@ -194,6 +195,12 @@ public class DashboardService : IDashboardService
                     .ToList();
 
                 sp500History = sp500History
+                    .GroupBy(x => new { x.Date.Year, x.Date.Month })
+                    .Select(x => x.OrderByDescending(y => y.Date).First())
+                    .OrderBy(x => x.Date)
+                    .ToList();
+
+                nasdaqHistory = nasdaqHistory
                     .GroupBy(x => new { x.Date.Year, x.Date.Month })
                     .Select(x => x.OrderByDescending(y => y.Date).First())
                     .OrderBy(x => x.Date)
@@ -212,16 +219,21 @@ public class DashboardService : IDashboardService
 
             var portfolioBase = portfolioHistory.First().TotalValue;
             var sp500Base = sp500History.First().Close;
+            var nasdaqBase = nasdaqHistory.First().Close;
+
+            var sp500Dictionary = sp500History.ToDictionary(x => x.Date.Date, x => x.Close);
+            var nasdaqDictionary = nasdaqHistory.ToDictionary(x => x.Date.Date, x => x.Close);
 
             var benchmarkDictionary = sp500History.ToDictionary(x => x.Date.Date, x => x.Close);
 
             var chartData = portfolioHistory
-                .Where(x => benchmarkDictionary.ContainsKey(x.Date.Date))
+                .Where(x => sp500Dictionary.ContainsKey(x.Date.Date) && nasdaqDictionary.ContainsKey(x.Date.Date))
                 .Select(x => new DashboardPerformanceChartPointDto
                 {
                     Label = monthlyView ? x.Date.ToString("MM/yyyy") : x.Date.ToString("dd/MM"),
                     Portfolio = Math.Round((x.TotalValue / portfolioBase) * 100, 2),
-                    Sp500 = Math.Round((benchmarkDictionary[x.Date.Date] / sp500Base) * 100, 2)
+                    Sp500 = Math.Round((sp500Dictionary[x.Date.Date] / sp500Base) * 100, 2),
+                    Nasdaq = Math.Round((nasdaqDictionary[x.Date.Date] / nasdaqBase) * 100, 2)
                 })
                 .ToList();
 

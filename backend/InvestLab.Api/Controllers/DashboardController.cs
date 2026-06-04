@@ -101,7 +101,7 @@ public class DashboardController : BaseController
 
     /// <summary>
     /// Obtiene la evolución comparativa entre el portfolio
-    /// del usuario autenticado y el índice S&P 500.
+    /// del usuario autenticado, el índice S&P 500 y NASDAQ.
     /// </summary>
     /// <param name="filter">
     /// Período del gráfico:
@@ -109,11 +109,8 @@ public class DashboardController : BaseController
     /// </param>
     /// <returns>
     /// Serie temporal normalizada del portfolio
-    /// y benchmark junto con el resumen del período.
+    /// y benchmarks junto con el resumen del período.
     /// </returns>
-    /// <response code="200">Información obtenida correctamente</response>
-    /// <response code="400">Error en la consulta</response>
-    /// <response code="401">Usuario no autenticado</response>
     [HttpPost("performance-chart")]
     public async Task<IActionResult> GetPerformanceChart([FromBody]DashboardPerformanceChartFilterDto filter)
     {

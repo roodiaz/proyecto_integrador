@@ -11,3 +11,21 @@ export interface DashboardTopCards {
     activeAssets: number;
     activeAlerts: number;
 }
+
+export interface DashboardPerformanceChartFilter {
+  period: string;
+}
+
+export interface DashboardPerformanceChart {
+  currentValue: number;
+  variationPercent: number;
+  variationText: string;
+  data: DashboardPerformanceChartPoint[];
+}
+
+export interface DashboardPerformanceChartPoint {
+  label: string;
+  portfolio: number;
+  sp500: number;
+  nasdaq: number;
+}

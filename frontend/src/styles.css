@@ -9,7 +9,8 @@
   --border-color: rgba(255, 255, 255, 0.1);
 }
 
-html, body { 
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -44,7 +45,7 @@ html, body {
 .watchlist-dialog .mdc-notched-outline__leading,
 .watchlist-dialog .mdc-notched-outline__notch,
 .watchlist-dialog .mdc-notched-outline__trailing {
-  border-color: rgba(255,255,255,.2) !important;
+  border-color: rgba(255, 255, 255, .2) !important;
 }
 
 .watchlist-dialog .mat-mdc-input-element::placeholder {
@@ -60,7 +61,7 @@ html, body {
   .navigation-buttons {
     flex-direction: column;
   }
-  
+
   .navigation-buttons button {
     width: 100%;
   }

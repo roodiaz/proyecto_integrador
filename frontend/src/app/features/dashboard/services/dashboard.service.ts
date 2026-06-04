@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
-import { DashboardTopCards } from '../models/dashboard.models';
+import { DashboardPerformanceChart, DashboardPerformanceChartFilter, DashboardTopCards } from '../models/dashboard.models';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
@@ -14,6 +14,13 @@ export class DashboardService {
     getTopCards(): Observable<ApiResponse<DashboardTopCards>> {
         return this.http.get<ApiResponse<DashboardTopCards>>(
             `${environment.apiUrl}/dashboard/top-cards`
+        );
+    }
+
+    getPerformanceChart(period: string): Observable<ApiResponse<DashboardPerformanceChart>> {
+        const filter: DashboardPerformanceChartFilter = { period };
+        return this.http.post<ApiResponse<DashboardPerformanceChart>>(
+            `${this.apiUrl}/performance-chart`, filter
         );
     }
 }

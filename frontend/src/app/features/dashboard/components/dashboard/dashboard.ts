@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { DashboardService } from '../../services/dashboard.service';
-import { DashboardTopCards } from '../../models/dashboard.models';
+import { DashboardTopCards, DashboardPerformanceChart } from '../../models/dashboard.models';
 
 // Importación de Chart.js con fallback
 import Chart from 'chart.js/auto';
@@ -15,7 +15,6 @@ import Chart from 'chart.js/auto';
   imports: [
     CommonModule,
     FormsModule,
-    RouterOutlet,
     MaterialModule
   ],
   templateUrl: './dashboard.html',
@@ -23,9 +22,11 @@ import Chart from 'chart.js/auto';
 })
 export class Dashboard implements OnInit, AfterViewInit {
   selectedChartType: 'line' | 'bar' = 'line';
-  selectedPeriod: string = '1m';
+  selectedPeriod: '1W' | '1M' | '3M' | '1Y' = '1M';
   topCards: DashboardTopCards | null = null;
+  performanceChart: DashboardPerformanceChart | null = null;
   loadingTopCards = false;
+  loadingPerformanceChart = false;
 
   private chart: Chart | null = null;
   private resizeObserver: any;
@@ -35,9 +36,8 @@ export class Dashboard implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit() {
-    this.initializeChart();
     this.loadTopCards();
-
+    this.loadPerformanceChart();
   }
 
   ngAfterViewInit() {
@@ -69,10 +69,6 @@ export class Dashboard implements OnInit, AfterViewInit {
       });
       this.resizeObserver.observe(chartContainer);
     }
-  }
-
-  private initializeChart() {
-    console.log('Inicializando gráfico con Chart.js...');
   }
 
   private createChart(canvas: HTMLCanvasElement) {
@@ -122,6 +118,33 @@ export class Dashboard implements OnInit, AfterViewInit {
     });
   }
 
+  loadPerformanceChart() {
+    this.loadingPerformanceChart = true;
+
+    this.dashboardService.getPerformanceChart(this.selectedPeriod).subscribe({
+      next: (response) => {
+        this.loadingPerformanceChart = false;
+
+        if (!response.success) return;
+
+        this.performanceChart = response.data;
+
+        if (!this.hasEnoughChartData) {
+          if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+          }
+
+          return;
+        }
+
+        setTimeout(() => this.setupChart());
+      },
+      error: () => {
+        this.loadingPerformanceChart = false;
+      }
+    });
+  }
   formatCurrency(value: number | null | undefined): string {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value ?? 0);
   }
@@ -147,99 +170,41 @@ export class Dashboard implements OnInit, AfterViewInit {
   }
 
   private generateChartData() {
-    let points = 30;
-    let baseValue = this.topCards?.totalValue ?? 10000;
+    const chartPoints = this.performanceChart?.data ?? [];
 
-    // Ajustar cantidad de puntos según el período
-    switch (this.selectedPeriod) {
-      case '1w':
-        points = 7; // 7 días
-        break;
-      case '1m':
-        points = 30; // 30 días
-        break;
-      case '3m':
-        points = 90; // 90 días
-        break;
-      case '1y':
-        points = 365; // 365 días
-        break;
-    }
+    const labels = chartPoints.map(x => x.label);
 
-    const labels = this.generateLabels(points);
-    const datasets = this.generateDatasets(points, baseValue);
+    const datasets = [
+      {
+        label: 'Portfolio',
+        data: chartPoints.map(x => Number((x.portfolio - 100).toFixed(2))),
+        borderColor: '#4a90e2',
+        backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.1)' : '#4a90e2',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: this.selectedChartType === 'line'
+      },
+      {
+        label: 'S&P 500',
+        data: chartPoints.map(x => Number((x.sp500 - 100).toFixed(2))),
+        borderColor: '#10b981',
+        backgroundColor: this.selectedChartType === 'line' ? 'rgba(16, 185, 129, 0.1)' : '#10b981',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: this.selectedChartType === 'line'
+      },
+      {
+        label: 'NASDAQ',
+        data: chartPoints.map(x => Number((x.nasdaq - 100).toFixed(2))),
+        borderColor: '#f59e0b',
+        backgroundColor: this.selectedChartType === 'line' ? 'rgba(245, 158, 11, 0.1)' : '#f59e0b',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: this.selectedChartType === 'line'
+      }
+    ];
 
     return { labels, datasets };
-  }
-
-  private generateLabels(points: number): string[] {
-    const labels = [];
-    const now = new Date();
-
-    for (let i = 0; i < points; i++) {
-      const date = new Date(now);
-
-      switch (this.selectedPeriod) {
-        case '1w':
-          date.setDate(date.getDate() - (points - i));
-          labels.push(date.toLocaleDateString('es-ES', { weekday: 'short' }));
-          break;
-        case '1m':
-          date.setDate(date.getDate() - (points - i));
-          labels.push(date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
-          break;
-        case '3m':
-          date.setDate(date.getDate() - (points - i));
-          labels.push(date.toLocaleDateString('es-ES', { month: 'short' }));
-          break;
-        case '1y':
-          date.setMonth(date.getMonth() - (points - i));
-          labels.push(date.toLocaleDateString('es-ES', { month: 'short' }));
-          break;
-      }
-    }
-
-    return labels;
-  }
-
-  private generateDatasets(points: number, baseValue: number): any[] {
-    const datasets = [];
-
-    // Datos para gráfico de líneas o barras
-    const portfolioData = [];
-    const comparisonData = [];
-    let portfolioValue = baseValue;
-    let comparisonValue = baseValue * 0.8;
-
-    for (let i = 0; i < points; i++) {
-      portfolioValue += (Math.random() - 0.45) * 3000;
-      comparisonValue += (Math.random() - 0.5) * 2000;
-
-      portfolioData.push(portfolioValue);
-      comparisonData.push(comparisonValue);
-    }
-
-    datasets.push({
-      label: 'Portfolio',
-      data: portfolioData,
-      borderColor: '#4a90e2',
-      backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.1)' : '#4a90e2',
-      borderWidth: 2,
-      tension: 0.4,
-      fill: this.selectedChartType === 'line'
-    });
-
-    datasets.push({
-      label: 'S&P 500',
-      data: comparisonData,
-      borderColor: '#10b981',
-      backgroundColor: this.selectedChartType === 'line' ? 'rgba(16, 185, 129, 0.1)' : '#10b981',
-      borderWidth: 2,
-      tension: 0.4,
-      fill: this.selectedChartType === 'line'
-    });
-
-    return datasets;
   }
 
   private getChartConfiguration(data: any): any {
@@ -316,13 +281,9 @@ export class Dashboard implements OnInit, AfterViewInit {
                 size: 11
               },
               callback: (value: any) => {
-                return new Intl.NumberFormat('es-ES', {
-                  style: 'currency',
-                  currency: 'USD',
-                  notation: 'compact',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0
-                }).format(value);
+                const number = Number(value);
+                const sign = number > 0 ? '+' : '';
+                return `${sign}${number}%`;
               }
             }
           }
@@ -343,12 +304,9 @@ export class Dashboard implements OnInit, AfterViewInit {
             label += ': ';
           }
           if (context.parsed.y !== null) {
-            label += new Intl.NumberFormat('es-ES', {
-              style: 'currency',
-              currency: 'USD',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0
-            }).format(context.parsed.y);
+            const value = context.parsed.y;
+            const sign = value > 0 ? '+' : '';
+            label += `${sign}${value.toFixed(2)}%`;
           }
           return label;
         }
@@ -358,12 +316,24 @@ export class Dashboard implements OnInit, AfterViewInit {
     return baseConfig;
   }
 
+  getChartVariationClass(): string {
+    const value = this.performanceChart?.variationPercent ?? 0;
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'neutral';
+  }
+
   onChartTypeChange() {
+    if (!this.hasEnoughChartData) return;
     this.setupChart();
   }
 
   onPeriodChange() {
-    this.setupChart();
+    this.loadPerformanceChart();
+  }
+
+  get hasEnoughChartData(): boolean {
+    return (this.performanceChart?.data?.length ?? 0) >= 2;
   }
 }
 
