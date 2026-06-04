@@ -1,23 +1,36 @@
 .sidenav {
   width: 260px;
-  background-color: #121418;
-  color: #e0e0e0;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-  transition: width 0.3s ease;
+  background: #131313;
+  color: #E5E2E1;
+
+  border-right: 1px solid #424754;
+
+  transition: width .3s ease;
   overflow: hidden;
+
   height: 100vh;
+
   display: flex;
   flex-direction: column;
+
   position: fixed;
   left: 0;
   top: 0;
+
   z-index: 1000;
 }
 
 /* Estilos para el sidebar colapsado */
 .sidenav.collapsed {
-  width: 70px;
+  width: 72px;
+}
+
+.sidenav.collapsed mat-nav-list a {
+  justify-content: center;
+}
+
+.sidenav.collapsed mat-icon {
+  margin-right: 0;
 }
 
 .sidenav.collapsed .menu-text,
@@ -46,14 +59,16 @@
 }
 
 .sidenav-header {
-  padding: 14px 50px 15px 20px;
+  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #121418;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+
   height: 80px;
-  box-sizing: border-box;
+
+  background: #131313;
+
+  border-bottom: 1px solid #424754;
 }
 
 .sidenav-header .logo {
@@ -88,16 +103,20 @@ mat-nav-list {
 }
 
 mat-nav-list a {
-  color: #ffffff !important;
-  border-left: 4px solid transparent;
-  transition: all 0.3s ease;
-  margin: 4px 8px;
-  border-radius: 6px;
-  padding: 12px 16px !important;
+  color: #C2C6D6 !important;
+
+  margin: 6px 12px;
+
+  border-radius: 12px;
+
+  border-left: none;
+
+  padding: 14px 18px !important;
+
+  transition: all .25s ease;
+
   display: flex;
   align-items: center;
-  text-decoration: none;
-  min-height: 48px;
 }
 
 mat-nav-list a span {
@@ -107,28 +126,39 @@ mat-nav-list a span {
 }
 
 mat-nav-list a:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: rgba(173, 198, 255, .08);
+  color: #ADC6FF !important;
 }
 
 mat-nav-list a.active {
-  background-color: rgba(176, 201, 86, 0.15);
-  border-left: 4px solid #B0C956;
-  color: #B0C956;
-  font-weight: 500;
+  background: rgba(173, 198, 255, .12);
+
+  border: 1px solid rgba(173, 198, 255, .20);
+
+  color: #ADC6FF !important;
+
+  font-weight: 600;
 }
 
 mat-nav-list a.active mat-icon {
-  color: #B0C956;
+  color: #ADC6FF !important;
 }
 
 mat-icon {
-  margin-right: 12px;
-  color: rgba(224, 224, 224, 0.7);
-  transition: all 0.3s ease;
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+  color: #8A94A6;
+
+  margin-right: 14px;
+
+  transition: .25s;
+}
+
+.menu-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+mat-nav-list a:hover mat-icon {
+  color: #ADC6FF;
 }
 
 /* Estilos para el contenido principal */
@@ -172,6 +202,6 @@ mat-icon {
 }
 
 mat-divider {
-  margin: 16px 0;
-  border-top-color: rgba(255, 255, 255, 0.05);
+  margin: 20px 16px;
+  border-top-color: #424754;
 }

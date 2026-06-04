@@ -1,50 +1,98 @@
 :host {
-  --primary-bg: #111B20;
-  --card-bg: #1E1E1E;
-  --text-primary: #FFFFFF;
-  --text-secondary: #b0bec5;
-  --accent-green: #B0C956;
-  --border-color: rgba(255, 255, 255, 0.1);
-  
+  --primary-bg: #131313;
+  --card-bg: #1C1B1B;
+
+  --text-primary: #E5E2E1;
+  --text-secondary: #C2C6D6;
+
+  --accent-primary: #ADC6FF;
+  --accent-green: #4AE176;
+  --accent-red: #FFB4AB;
+
+  --border-color: #424754;
+
   display: flex;
   min-height: 100vh;
-  background-color: var(--primary-bg);
+
+  background: #131313;
   color: var(--text-primary);
 }
 
 .main-content {
-  flex-grow: 1;
-  margin-left: 260px; /* Same as sidebar width */
-  transition: margin-left 0.3s ease;
+  flex: 1;
+
+  margin-left: 260px;
+
   min-height: 100vh;
-  background-color: var(--primary-bg);
+
+  background: #131313;
+
+  transition: margin-left .3s ease;
+
   display: flex;
   flex-direction: column;
 }
 
 .main-content.collapsed {
-  margin-left: 70px; /* Collapsed sidebar width */
+  margin-left: 72px;
 }
 
 .content-area {
-  flex-grow: 1;
-  padding: 20px;
-  margin-top: 0; /* Eliminado el espacio del header */
-  background-color: var(--primary-bg);
+  flex: 1;
+
+  padding: 24px;
+
   overflow-y: auto;
+
+  background: linear-gradient(
+    180deg,
+    #131313 0%,
+    #171717 100%
+  );
 }
 
-/* Responsive adjustments */
+.content-area {
+  scrollbar-width: thin;
+  scrollbar-color: #424754 transparent;
+}
+
+.content-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+  background: #424754;
+  border-radius: 999px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover {
+  background: #5A6170;
+}
+
 @media (max-width: 959px) {
+
   .main-content {
     margin-left: 0;
   }
-  
+
   .main-content.collapsed {
     margin-left: 0;
   }
-  
+
   .content-area {
-    margin-top: 0; /* Eliminado el espacio del header en móvil también */
+    padding: 16px;
   }
+}
+
+.sidenav {
+  background: #131313;
+  border-right: 1px solid #424754;
+}
+
+.sidenav-header {
+  border-bottom: 1px solid #424754;
 }
