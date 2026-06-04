@@ -1,13 +1,17 @@
 :host {
-  --primary-bg: #0f1117;
-  --card-bg: #151922;
-  --header-bg: #161b26;
-  --text-primary: #ffffff;
-  --text-secondary: #8b95a7;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --positive: #22c55e;
-  --negative: #ef4444;
-  --accent-blue: #dbeafe;
+  --primary-bg: #131313;
+  --card-bg: #201F1F;
+  --header-bg: #1C1B1B;
+
+  --text-primary: #E5E2E1;
+  --text-secondary: #C2C6D6;
+
+  --border-color: #424754;
+
+  --positive: #4AE176;
+  --negative: #FFB4AB;
+
+  --accent-blue: #ADC6FF;
 }
 
 .watchlist-container {
@@ -41,7 +45,7 @@
   font-size: 42px;
   font-weight: 800;
   letter-spacing: -1px;
-  color: white;
+  color: var(--accent-blue);
 }
 
 .header-title p {
@@ -58,20 +62,24 @@
 }
 
 .header-actions button[mat-stroked-button] {
-  border-color: var(--border-color);
-  color: white;
-  height: 42px;
-  border-radius: 14px;
+  border-color: #424754;
+  color: var(--text-primary);
+  height: 44px;
+  border-radius: 12px;
   padding: 0 22px;
 }
 
 .header-actions button[mat-raised-button] {
   background: var(--accent-blue) !important;
-  color: #111827 !important;
+  color: #131313 !important;
   font-weight: 700;
-  height: 42px;
+  height: 44px;
   padding: 0 24px;
-  border-radius: 14px;
+  border-radius: 12px;
+}
+
+.header-actions button[mat-raised-button]:hover {
+  background: #C1D5FF !important;
 }
 
 .favorites-counter {
@@ -90,34 +98,32 @@
 .counter-value {
   font-size: 13px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
+}
+
+.favorites-progress {
+  width: 120px;
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--positive);
+  border-radius: 999px;
 }
 
 .watchlist-table-container {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   min-height: 400px;
   position: relative;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
 }
-
-.ticker-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.watchlist-table td,
-.watchlist-table th {
-  text-align: left;
-}
-
-.price-cell,
-.variation-cell {
-  text-align: center;
-}
-
 
 .watchlist-table {
   width: 100%;
@@ -125,20 +131,9 @@
   margin-bottom: 80px;
 }
 
-.price-cell,
-.variation-cell {
-  text-align: center;
-}
-
-.watchlist-table th:nth-child(3),
-.watchlist-table th:nth-child(4),
-.watchlist-table th:nth-child(5) {
-  text-align: center;
-}
-
 .watchlist-table th {
   background: var(--header-bg);
-  color: #75809a;
+  color: #8A94A6;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -153,25 +148,42 @@
   vertical-align: middle;
 }
 
+.watchlist-table td,
+.watchlist-table th {
+  text-align: left;
+}
+
+.watchlist-table th:nth-child(3),
+.watchlist-table th:nth-child(4),
+.watchlist-table th:nth-child(5) {
+  text-align: center;
+}
+
 .watchlist-table tbody tr {
   transition: all .2s ease;
 }
 
 .watchlist-table tbody tr:hover {
-  background: rgba(255,255,255,.03);
+  background: rgba(173,198,255,.05);
+}
+
+.ticker-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .company-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: #84cc16;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-blue);
   display: flex;
   justify-content: center;
   align-items: center;
-  color: white;
+  color: #131313;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
@@ -183,7 +195,7 @@
 .ticker-symbol {
   font-size: 13px;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
 }
 
 .sparkline-container {
@@ -201,12 +213,14 @@
 }
 
 .price-cell {
+  text-align: center;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .variation-cell {
+  text-align: center;
   font-weight: 700;
   font-size: 13px;
 }
@@ -234,21 +248,21 @@
 }
 
 .market-btn {
-  color: #93c5fd;
+  color: #ADC6FF;
 }
 
 .alert-btn {
-  color: #c4b5fd;
+  color: #B8A8FF;
 }
 
 .delete-btn {
-  color: #fca5a5;
+  color: #FFB4AB;
 }
 
 .market-btn:hover,
 .alert-btn:hover,
 .delete-btn:hover {
-  background: rgba(255,255,255,.05);
+  background: rgba(173,198,255,.08);
 }
 
 .pagination-container {
@@ -262,8 +276,10 @@
   align-items: center;
 
   padding: 18px 20px;
-  background: #131722;
-  border-top: 1px solid rgba(255,255,255,.05);
+
+  background: var(--header-bg);
+
+  border-top: 1px solid var(--border-color);
 }
 
 .pagination-info {
@@ -272,21 +288,7 @@
 }
 
 .pagination-actions button {
-  color: white;
-}
-
-.favorites-progress {
-  width: 120px;
-  height: 4px;
-  background: rgba(255,255,255,.08);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #22c55e;
-  border-radius: 999px;
+  color: var(--text-primary);
 }
 
 .empty-state {
@@ -298,11 +300,11 @@
   font-size: 64px;
   width: 64px;
   height: 64px;
-  color: #64748b;
+  color: var(--accent-blue);
 }
 
 .empty-state h3 {
-  color: white;
+  color: var(--text-primary);
   margin-top: 12px;
 }
 
@@ -324,7 +326,6 @@
     width: 100%;
     flex-wrap: wrap;
   }
-
 
   .watchlist-table th,
   .watchlist-table td {
