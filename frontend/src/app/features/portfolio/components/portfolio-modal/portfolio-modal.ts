@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { PortfolioService } from '../../services/portfolio.service';
 import { BuyData, SellData, PortfolioPosition } from '../../models/portfolio.modal.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { MaterialModule } from '../../../../shared/material.module';
 
 @Component({
   selector: 'app-portfolio-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MaterialModule],
   templateUrl: './portfolio-modal.html',
   styleUrl: './portfolio-modal.css'
 })

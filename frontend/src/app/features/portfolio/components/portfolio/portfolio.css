@@ -1,11 +1,13 @@
 /* Portfolio Container */
 :host {
-  --primary-bg: #111B20;
-  --card-bg: #1E1E1E;
-  --text-primary: #FFFFFF;
-  --text-secondary: #b0bec5;
-  --accent-green: #B0C956;
-  --border-color: rgba(255, 255, 255, 0.1);
+  --primary-bg: #131313;
+  --card-bg: #1C1B1B;
+  --text-primary: #E5E2E1;
+  --text-secondary: #C2C6D6;
+  --accent-primary: #ADC6FF;
+  --accent-green: #4AE176;
+  --accent-red: #FFB4AB;
+  --border-color: #424754;
 }
 
 .portfolio-container {
@@ -116,7 +118,7 @@
 }
 
 .buy-action-btn:hover {
-  background-color: #9fb54a;
+  background-color: #63EC8A;
   transform: translateY(-1px);
   box-shadow: none;
 }
@@ -128,7 +130,7 @@
 
 /* Filters Section */
 .filters-section {
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   padding: 20px;
   border-radius: 12px;
   box-shadow: none;
@@ -196,7 +198,7 @@
 }
 
 .metric-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   padding: 20px;
   border-radius: 12px;
   box-shadow: none;
@@ -210,7 +212,7 @@
 }
 
 .metric-card.worst {
-  border-color: #e74c3c;
+  border-color: #FFB4AB;
   background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(231, 76, 60, 0.05) 100%);
 }
 
@@ -235,7 +237,7 @@
 }
 
 .metric-card.worst .metric-value {
-  color: #e74c3c;
+  color: #FFB4AB;
 }
 
 .metric-detail {
@@ -248,14 +250,14 @@
 }
 
 .metric-card.worst .metric-detail {
-  color: #e74c3c;
+  color: #FFB4AB;
 }
 
 /* Empty State */
 .empty-state {
   text-align: center;
   padding: 60px 40px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   border-radius: 12px;
   box-shadow: none;
   border: 1px solid var(--border-color);
@@ -289,7 +291,7 @@
 }
 
 .empty-state .cta-button:hover {
-  background-color: #9fb54a;
+  background-color: #63EC8A;
   transform: translateY(-1px);
 }
 
@@ -306,7 +308,7 @@
 }
 
 .summary-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   padding: 24px;
   border-radius: 12px;
   box-shadow: none;
@@ -340,7 +342,7 @@
 }
 
 .summary-card .amount.negative {
-  color: #e74c3c;
+  color: #FFB4AB;
 }
 
 .summary-card .percent {
@@ -359,7 +361,7 @@
 }
 
 .chart-container {
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   padding: 24px;
   border-radius: 12px;
   box-shadow: none;
@@ -503,7 +505,7 @@
 }
 
 .table-wrapper {
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
@@ -567,7 +569,7 @@
 }
 
 .operations-table tr:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: #201F1F;
 }
 
 .operation-badge {
@@ -596,7 +598,7 @@
 
 .operation-badge.sell {
   background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+  color: #FFB4AB;
 }
 
 .operation-badge.buy {
@@ -629,7 +631,7 @@
 
 .operations-table td.variation-cell {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #201F1F;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
@@ -640,12 +642,12 @@
 }
 
 .operations-table td.variation-cell.negative {
-  color: #e74c3c !important;
+  color: #FFB4AB !important;
 }
 
 .operations-table td.profit-cell {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #201F1F;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
@@ -656,7 +658,7 @@
 }
 
 .operations-table td.profit-cell.negative {
-  color: #e74c3c !important;
+  color: #FFB4AB !important;
 }
 
 .profit-cell .percent {
@@ -670,7 +672,7 @@
 }
 
 .sell-action-btn {
-  background-color: #e74c3c;
+  background-color: #FFB4AB;
   color: white;
   border: none;
   padding: 6px 12px;
@@ -682,7 +684,7 @@
 }
 
 .sell-action-btn:hover {
-  background-color: #c0392b;
+  background-color: #FF8E84;
 }
 
 .closed-label {
@@ -768,7 +770,7 @@
 /* TENENCIAS */
 
 .holdings-section {
-  background: rgba(255, 255, 255, 0.05);
+  background: #201F1F;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
@@ -828,7 +830,7 @@
 .holdings-table td {
   padding: 16px;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #201F1F;
 }
 
 .holdings-table tbody tr {
@@ -840,7 +842,7 @@
 }
 
 .sell-btn {
-  background: #e74c3c;
+  background: #FFB4AB;
   border: none;
   color: white;
   padding: 8px 14px;
@@ -850,7 +852,7 @@
 }
 
 .sell-btn:hover {
-  background: #c0392b;
+  background: #FF8E84;
 }
 
 .operations-progress {
@@ -883,9 +885,15 @@
 }
 
 .negative {
-  color: #e74c3c !important;
+  color: #FFB4AB !important;
 }
 
 .neutral {
   color: var(--text-primary) !important;
 }
+
+/* Pro Terminal Theme Overrides */
+.section-header h2 { color: var(--accent-primary) !important; }
+.buy-action-btn { background: var(--accent-primary) !important; color:#131313 !important; }
+.buy-action-btn:hover { background:#C1D5FF !important; }
+.filter-input:focus,.filter-select:focus,.period-select:focus { border-color: var(--accent-primary) !important; }

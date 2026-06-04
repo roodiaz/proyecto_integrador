@@ -31,6 +31,7 @@
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -47,7 +48,7 @@
   background: var(--primary-bg);
 }
 
-.modal-header > div {
+.modal-header>div {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -380,33 +381,33 @@
     width: 95%;
     margin: 20px;
   }
-  
+
   .modal-header,
   .modal-body,
   .modal-footer {
     padding: 20px;
   }
-  
+
   .form-row {
     flex-direction: column;
     gap: 0;
   }
-  
+
   .info-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .modal-footer {
     flex-direction: column;
   }
-  
+
   .confirm-btn,
   .cancel-btn {
     width: 100%;
     order: 2;
   }
-  
+
   .cancel-btn {
     order: 1;
   }
@@ -422,8 +423,99 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.ticker-search {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ticker-search .form-input {
+  flex: 1;
+}
+
+.search-btn {
+  height: 44px;
+
+  padding: 0 18px;
+
+  border: 1px solid #424754;
+
+  border-radius: 10px;
+
+  background: #ADC6FF;
+
+  color: #131313;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all .2s ease;
+}
+
+.search-btn:hover {
+  background: #C1D5FF;
+  transform: translateY(-1px);
+}
+
+.search-btn:active {
+  transform: translateY(0);
+}
+
+.search-btn {
+  min-width: 110px;
+
+  background: linear-gradient(135deg,
+      #ADC6FF 0%,
+      #8CB4FF 100%);
+
+  box-shadow: 0 0 15px rgba(173, 198, 255, .15);
+}
+
+.ticker-search {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ticker-search .form-input {
+  flex: 1;
+}
+
+.search-btn {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #424754;
+  border-radius: 10px;
+
+  background: #ADC6FF;
+  color: #131313;
+
+  cursor: pointer;
+
+  transition: all .2s ease;
+}
+
+.search-btn:hover {
+  background: #C1D5FF;
+  transform: translateY(-1px);
+}
+
+.search-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
 }
