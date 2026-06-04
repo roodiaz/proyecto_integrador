@@ -4,11 +4,12 @@ import { Notification } from '../../models/notifications.model';
 import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { NotificationService } from '../../services/notification.service';
+import { MaterialModule } from '../../../../shared/material.module';
 
 @Component({
     selector: 'app-notifications',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, MaterialModule],
     templateUrl: './notifications.html',
     styleUrl: './notifications.css'
 })
