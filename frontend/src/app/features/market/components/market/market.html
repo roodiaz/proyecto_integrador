@@ -1,220 +1,207 @@
-<div class="market-container">
-  <!-- Unified Header Card -->
-  <div class="card-header">
-    <div class="header-left">
-      <h1 class="market-title">Panorama del Mercado</h1>
-      <div class="market-status">
-        <div class="status-dot open"></div>
-        <span class="status-text">Mercado Abierto</span>
-        <span class="status-time">{{ getCurrentTime() }}</span>
+<div class="market-terminal">
+  <section class="terminal-heading">
+  <div class="terminal-title-block">
+    <h1>Mercado</h1>
+    <p>Analisis institucional y comparacion de activos.</p>
+
+    <div class="market-state">
+      <span class="state-dot"></span>
+      <span>Market Open</span>
+      <strong>{{ currentTime }}</strong>
+    </div>
+  </div>
+</section>
+
+  <section class="indices-grid">
+    <article class="index-card" *ngFor="let index of marketIndices" [class.positive-card]="index.changePercent >= 0" [class.negative-card]="index.changePercent < 0">
+      <div>
+        <span class="index-name">{{ index.name }}</span>
+        <strong>{{ formatNumber(index.value) }}</strong>
+      </div>
+
+      <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
+        <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
+        <small>Live</small>
+      </div>
+    </article>
+  </section>
+
+  <section class="asset-panel">
+    <div class="asset-main">
+      <div class="asset-logo">{{ selectedAsset.symbol.charAt(0) }}</div>
+
+      <div>
+        <div class="asset-title-row">
+          <h2>{{ selectedAsset.name }}</h2>
+          <span class="asset-badge" [class.positive]="selectedAsset.changePercent >= 0" [class.negative]="selectedAsset.changePercent < 0">
+            {{ selectedAsset.changePercent >= 0 ? '+' : '' }}{{ selectedAsset.changePercent.toFixed(2) }}%
+          </span>
+        </div>
+
+        <p>{{ selectedAsset.exchange }}: {{ selectedAsset.symbol }}</p>
+        <strong>${{ selectedAsset.price.toFixed(2) }}</strong>
       </div>
     </div>
-    <div class="header-right">
-      <div class="market-summary">
-        <div class="summary-item">
-          <span class="summary-label">S&P 500</span>
-          <span class="summary-value positive">+0.45%</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">NASDAQ</span>
-          <span class="summary-value negative">-0.28%</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">DOW</span>
-          <span class="summary-value positive">+0.40%</span>
-        </div>
+
+    <div class="asset-stats">
+      <div class="stat-item">
+        <span>Open</span>
+        <strong>${{ selectedAsset.open.toFixed(2) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>Volume</span>
+        <strong>{{ formatVolume(selectedAsset.volume) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>Day High</span>
+        <strong class="positive">${{ selectedAsset.dayHigh.toFixed(2) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>Day Low</span>
+        <strong class="negative">${{ selectedAsset.dayLow.toFixed(2) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>Avg Vol</span>
+        <strong>{{ formatVolume(selectedAsset.avgVolume) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>Mkt Cap</span>
+        <strong>{{ formatMarketCap(selectedAsset.marketCap) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>P/E Ratio</span>
+        <strong>{{ selectedAsset.peRatio.toFixed(1) }}</strong>
+      </div>
+
+      <div class="stat-item">
+        <span>Div Yield</span>
+        <strong>{{ selectedAsset.dividendYield.toFixed(2) }}%</strong>
+      </div>
+    </div>
+
+    <div class="asset-actions">
+      <div class="icon-actions">
+        <button type="button" (click)="createAlert(selectedAsset.symbol)" title="Crear alerta">
+          <mat-icon>notifications</mat-icon>
+        </button>
+
+        <button type="button" (click)="addToWatchlist(selectedAsset.symbol)" title="Agregar a favoritos">
+          <mat-icon>star</mat-icon>
+        </button>
+      </div>
+
+      <button type="button" class="buy-btn" (click)="buyAsset(selectedAsset.symbol)">BUY</button>
+      <button type="button" class="sell-btn" (click)="sellAsset(selectedAsset.symbol)">SELL</button>
+    </div>
+  </section>
+
+  <section class="chart-panel">
+  <div class="chart-header">
+    <div class="chart-title-section">
+      <h2 class="chart-title">{{ selectedAsset.symbol }} vs S&P 500 vs NASDAQ vs Dow Jones</h2>
+
+      <div class="chart-subtitle">
+        <span class="current-value">${{ selectedAsset.price.toFixed(2) }}</span>
+        <span class="change" [ngClass]="selectedAsset.changePercent >= 0 ? 'positive' : 'negative'">
+          {{ selectedAsset.changePercent >= 0 ? '+' : '' }}{{ selectedAsset.changePercent.toFixed(2) }}%
+        </span>
+        <span class="period">vs mercado</span>
+      </div>
+    </div>
+
+    <div class="chart-controls">
+      <div class="symbol-input-wrapper">
+        <input type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" placeholder="Buscar simbolo">
+        <button type="button" (click)="searchAsset()" title="Buscar activo">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+
+      <div class="time-selector">
+        <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="changeTimeframe('1d')">1D</button>
+        <button class="time-btn" [class.active]="selectedTimeframe === '1w'" (click)="changeTimeframe('1w')">1W</button>
+        <button class="time-btn" [class.active]="selectedTimeframe === '1m'" (click)="changeTimeframe('1m')">1M</button>
+        <button class="time-btn" [class.active]="selectedTimeframe === '3m'" (click)="changeTimeframe('3m')">3M</button>
+        <button class="time-btn" [class.active]="selectedTimeframe === '6m'" (click)="changeTimeframe('6m')">6M</button>
+        <button class="time-btn" [class.active]="selectedTimeframe === '1y'" (click)="changeTimeframe('1y')">1Y</button>
+      </div>
+
+      <div class="chart-type-selector">
+        <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="changeChartType('line')">
+          <mat-icon>show_chart</mat-icon>
+        </button>
+
+        <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="changeChartType('bar')">
+          <mat-icon>bar_chart</mat-icon>
+        </button>
+
+        <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'" (click)="changeChartType('candlestick')">
+          <mat-icon>candlestick_chart</mat-icon>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Main Grid Layout -->
-  <div class="market-grid">
-    <!-- Top Section - Indices -->
-    <div class="indices-row">
-      <div class="indices-section">
-        <div class="card-header">
-          <h3 class="sub-section-title">Índices del Mercado</h3>
-          <button class="refresh-btn">⟳</button>
-        </div>
-        <div class="indices-grid">
-          <div class="index-card" *ngFor="let index of marketIndices">
-            <div class="index-header">
-              <span class="index-name">{{ index.name }}</span>
-              <span class="index-trend" [class.up]="index.trend === 'up'" [class.down]="index.trend === 'down'">
-                {{ index.trend === 'up' ? '▲' : '▼' }}
-              </span>
-            </div>
-            <div class="index-value">{{ index.value.toLocaleString() }}</div>
-            <div class="index-change" [class.positive]="index.change > 0" [class.negative]="index.change < 0">
-              {{ index.change > 0 ? '+' : '' }}{{ index.change.toFixed(2) }} ({{ index.changePercent > 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%)
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Middle Section - Full Width Chart -->
-    <div class="chart-row">
-      <div class="chart-section">
-        <div class="card-header">
-          <h2 class="section-title">Rendimiento del Mercado</h2>
-          <div class="time-selector">
-            <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="selectedTimeframe = '1d'">1D</button>
-            <button class="time-btn" [class.active]="selectedTimeframe === '1w'" (click)="selectedTimeframe = '1w'">1S</button>
-            <button class="time-btn" [class.active]="selectedTimeframe === '1m'" (click)="selectedTimeframe = '1m'">1M</button>
-            <button class="time-btn" [class.active]="selectedTimeframe === '3m'" (click)="selectedTimeframe = '3m'">3M</button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <canvas id="marketOverviewChart" class="market-chart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom Section - Side Panels -->
-    <div class="bottom-row">
-      <!-- Trending Stocks -->
-      <div class="trending-section">
-        <div class="section-header">
-          <h3 class="section-title">🔥 Tendencias Ahora</h3>
-          <button class="refresh-btn">⟳</button>
-        </div>
-        <div class="trending-list">
-          <div class="trending-item" *ngFor="let stock of trendingStocks; let i = index" (click)="goToStock(stock.symbol)">
-            <div class="trending-rank">{{ i + 1 }}</div>
-            <div class="trending-info">
-              <div class="stock-header">
-                <span class="stock-symbol">{{ stock.symbol }}</span>
-                <span class="stock-change" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
-                  {{ stock.change > 0 ? '+' : '' }}{{ stock.changePercent.toFixed(2) }}%
-                </span>
-              </div>
-              <div class="stock-price">${{ stock.price.toFixed(2) }}</div>
-              <div class="stock-mentions">💬 {{ formatVolume(stock.mentions) }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sector Performance -->
-      <div class="sectors-section">
-        <div class="section-header">
-          <h3 class="section-title">Sectores</h3>
-          <button class="view-all-btn" disabled>Ver Todos</button>
-        </div>
-        <div class="coming-soon-content">
-          <div class="coming-soon-icon">
-            <mat-icon>pie_chart</mat-icon>
-          </div>
-          <div class="coming-soon-text">
-            <h4>Próximamente</h4>
-            <p>El análisis por sectores estará disponible muy pronto</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Market News -->
-      <div class="news-section">
-        <div class="section-header">
-          <h3 class="section-title">Noticias</h3>
-          <button class="view-all-btn" disabled>Ver Todas</button>
-        </div>
-        <div class="coming-soon-content">
-          <div class="coming-soon-icon">
-            <mat-icon>article</mat-icon>
-          </div>
-          <div class="coming-soon-text">
-            <h4>Próximamente</h4>
-            <p>Las últimas noticias financieras estarán disponibles muy pronto</p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="chart-container">
+    <canvas id="marketTerminalChart" class="main-chart"></canvas>
   </div>
+</section>
 
-  <!-- Market Screener Section -->
-  <div class="screener-section">
-    <div class="screener-header">
-      <div class="screener-title">
-        <h2 class="section-title">Explorador del Mercado</h2>
-        <p class="screener-subtitle">Busca y filtra acciones según tus criterios</p>
+  <section class="bottom-grid">
+    <article class="terminal-card trending-card">
+      <div class="small-card-header">
+        <h3>Tendencias Ahora</h3>
+        <mat-icon>trending_up</mat-icon>
       </div>
-      <div class="screener-controls">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Buscar acciones</mat-label>
-          <input matInput [(ngModel)]="searchQuery" placeholder="Buscar por símbolo o nombre">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-        
-        <mat-select [(ngModel)]="selectedCategory" class="filter-select">
-          <mat-option value="all">Todos los Sectores</mat-option>
-          <mat-option value="Technology">Tecnología</mat-option>
-          <mat-option value="Healthcare">Salud</mat-option>
-          <mat-option value="Financial">Finanzas</mat-option>
-          <mat-option value="Consumer Discretionary">Consumo Discrecional</mat-option>
-        </mat-select>
-        
-        <mat-select [(ngModel)]="selectedSort" class="filter-select">
-          <mat-option value="volume">Volumen</mat-option>
-          <mat-option value="price">Precio</mat-option>
-          <mat-option value="change">Cambio</mat-option>
-          <mat-option value="changePercent">Cambio %</mat-option>
-        </mat-select>
-      </div>
-    </div>
-    
-    <!-- Results Table -->
-    <div class="results-section">
-      <div class="results-header">
-        <div class="results-count">
-          <span class="count-number">{{ filteredMarketData.length }}</span>
-          <span class="count-label">acciones encontradas</span>
-        </div>
-        <div class="results-actions">
-          <button class="action-btn">Watchlist</button>
-          <button class="action-btn">Comparar</button>
-        </div>
-      </div>
-      
-      <div class="stocks-table">
-        <div class="table-header">
-          <div class="header-cell">Símbolo</div>
-          <div class="header-cell">Nombre</div>
-          <div class="header-cell">Precio</div>
-          <div class="header-cell">Cambio</div>
-          <div class="header-cell">Cambio %</div>
-          <div class="header-cell">Volumen</div>
-          <div class="header-cell">Cap. Mercado</div>
-          <div class="header-cell">Acciones</div>
-        </div>
-        
-        <div class="table-body">
-          <div class="table-row" *ngFor="let stock of filteredMarketData" (click)="goToStock(stock.symbol)">
-            <div class="cell symbol-cell">
-              <span class="symbol">{{ stock.symbol }}</span>
-              <span class="sector">{{ stock.sector }}</span>
-            </div>
-            <div class="cell name-cell">{{ stock.name }}</div>
-            <div class="cell price-cell">${{ stock.price.toFixed(2) }}</div>
-            <div class="cell change-cell" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
-              {{ stock.change > 0 ? '+' : '' }}{{ stock.change.toFixed(2) }}
-            </div>
-            <div class="cell change-percent-cell" [class.positive]="stock.changePercent > 0" [class.negative]="stock.changePercent < 0">
-              {{ stock.changePercent > 0 ? '+' : '' }}{{ stock.changePercent.toFixed(2) }}%
-            </div>
-            <div class="cell volume-cell">{{ formatVolume(stock.volume) }}</div>
-            <div class="cell market-cap-cell">{{ formatMarketCap(stock.marketCap) }}</div>
-            <div class="cell actions-cell">
-              <button class="action-icon" (click)="addToWatchlist(stock.symbol); $event.stopPropagation()" title="Agregar a Watchlist">
-                <mat-icon>star_border</mat-icon>
-              </button>
-              <button class="action-icon" (click)="createAlert(stock.symbol); $event.stopPropagation()" title="Crear Alerta">
-                <mat-icon>notifications</mat-icon>
-              </button>
-            </div>
+
+      <div class="trending-grid">
+        <button type="button" class="trending-item" *ngFor="let stock of trendingStocks; let i = index" (click)="selectAsset(stock.symbol)">
+          <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
+
+          <div>
+            <strong>{{ stock.symbol }}</strong>
+            <small>{{ stock.name }}</small>
           </div>
+
+          <b [class.positive]="stock.changePercent >= 0" [class.negative]="stock.changePercent < 0">
+            {{ stock.changePercent >= 0 ? '+' : '' }}{{ stock.changePercent.toFixed(1) }}%
+          </b>
+        </button>
+      </div>
+    </article>
+
+    <article class="terminal-card news-card">
+      <div class="small-card-header">
+        <h3>Market Intelligence</h3>
+
+        <div class="news-arrows">
+          <button type="button" (click)="previousNews()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+
+          <button type="button" (click)="nextNews()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
         </div>
       </div>
-    </div>
-  </div>
+
+      <div class="news-content">
+        <div class="news-meta">
+          <span>{{ activeNews.source }}</span>
+          <span>{{ activeNews.time }}</span>
+        </div>
+
+        <h4>{{ activeNews.title }}</h4>
+        <p>{{ activeNews.summary }}</p>
+
+        <button type="button" class="read-more" (click)="openNews(activeNews.url)">Read Full Report</button>
+      </div>
+    </article>
+  </section>
 </div>
