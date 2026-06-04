@@ -12,25 +12,30 @@ namespace InvestLab.Business.Services.Api;
 
 public class DashboardService : IDashboardService
 {
+    private readonly IExternalProvider _externalProvider;
+    private readonly ILogger<DashboardService> _logger;
+
+    // Repositorios
     private readonly IUserRepository _userRepository;
     private readonly IPortfolioRepository _portfolioRepository;
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
-    private readonly IExternalProvider _externalProvider;
     private readonly IAlertRepository _alertRepository;
     private readonly IPriceHistoryRepository _priceHistoryRepository;
     private readonly ITransactionRepository _transactionRepository;
-    private readonly ILogger<DashboardService> _logger;
+    private readonly INotificationRepository _notificationRepository;
 
-    public DashboardService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository)
+    public DashboardService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository, INotificationRepository notificationRepository)
     {
+        _logger = logger;
+        _externalProvider = externalProvider;
+
         _userRepository = userRepository;
         _portfolioRepository = portfolioRepository;
         _portfolioHistoryRepository = portfolioHistoryRepository;
-        _externalProvider = externalProvider;
-        _logger = logger;
         _alertRepository = alertRepository;
         _priceHistoryRepository = priceHistoryRepository;
         _transactionRepository = transactionRepository;
+        _notificationRepository = notificationRepository;
     }
 
     public async Task<Response> GetTopCardsAsync(int userId)
@@ -94,68 +99,75 @@ public class DashboardService : IDashboardService
             return Response.Fail("Error interno");
         }
     }
-    public async Task<Response> GetTopAssetsAsync(int userId)
+
+    public async Task<Response> GetPortfolioDistributionAsync(int userId)
     {
         try
         {
             var portfolio = await _portfolioRepository.GetByUserAsync(userId);
-            var assets = new List<DashboardTopAssetDto>();
+            var items = new List<(string Sector, decimal Value)>();
 
             foreach (var item in portfolio)
             {
-                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
+                if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol) || item.Quantity <= 0)
+                    continue;
 
+                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
                 if (market == null)
                     continue;
 
-                var profitLoss = (market.Price - item.AvgPrice) * item.Quantity;
+                var sector = string.IsNullOrWhiteSpace(item.Asset.Sector) ? "Sin sector" : item.Asset.Sector;
+                var value = item.Quantity * market.Price;
 
-                var profitLossPercent = item.AvgPrice == 0 ? 0 : ((market.Price - item.AvgPrice) / item.AvgPrice) * 100;
-
-                assets.Add(new DashboardTopAssetDto
-                {
-                    Symbol = item.Asset.Symbol,
-                    CurrentPrice = Math.Round(market.Price, 2),
-                    ProfitLoss = Math.Round(profitLoss, 2),
-                    ProfitLossPercent = Math.Round(profitLossPercent, 2)
-                });
+                items.Add((sector, value));
             }
 
-            var response = assets.OrderByDescending(x => x.ProfitLossPercent).Take(3).ToList();
+            var total = items.Sum(x => x.Value);
 
-            _logger.LogInformation("Dashboard top assets obtenidos: UserId={UserId}", userId);
+            if (total <= 0)
+                return Response.Ok(new List<DashboardPortfolioDistributionDto>());
+
+            var response = items
+                .GroupBy(x => x.Sector)
+                .Select(x => new DashboardPortfolioDistributionDto
+                {
+                    Sector = x.Key,
+                    Value = Math.Round(x.Sum(y => y.Value), 2),
+                    Percentage = Math.Round((x.Sum(y => y.Value) / total) * 100, 2)
+                })
+                .OrderByDescending(x => x.Percentage)
+                .ToList();
+
+            _logger.LogInformation("Dashboard portfolio distribution obtenido: UserId={UserId}", userId);
 
             return Response.Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener dashboard top assets");
+            _logger.LogError(ex, "Error al obtener dashboard portfolio distribution");
             return Response.Fail("Error interno");
         }
     }
 
-    public async Task<Response> GetActiveAlertsAsync(int userId)
+    public async Task<Response> GetRecentNotificationsAsync(int userId)
     {
         try
         {
-            var alerts = await _alertRepository.GetLatestActiveByUserAsync(userId, 5);
+            var notifications = await _notificationRepository.GetLatestByUserAsync(userId, 5);
 
-            var response = alerts.Select(x => new DashboardActiveAlertDto
+            var response = notifications.Select(x => new DashboardRecentNotificationDto
             {
-                Symbol = x.Asset.Symbol,
-                Condition = BuildConditionText(x),
-                Value = x.Value,
-                IsActive = x.IsActive
-            })
-                .ToList();
-
-            _logger.LogInformation("Dashboard active alerts obtenidas: UserId={UserId}", userId);
+                Message = x.Message ?? string.Empty,
+                Price = Math.Round(x.Price, 2),
+                CreatedAt = x.CreatedAt,
+                IsRead = x.IsRead
+            }).ToList();
 
             return Response.Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener dashboard active alerts");
+            _logger.LogError(ex, "Error al obtener notificaciones recientes");
             return Response.Fail("Error interno");
         }
     }
@@ -184,7 +196,7 @@ public class DashboardService : IDashboardService
             if (!portfolioHistory.Any() || !sp500History.Any() || !nasdaqHistory.Any())
                 return Response.Ok(new DashboardPerformanceChartDto());
 
-            bool monthlyView = filter.Period is "3M" or "1Y";
+            bool monthlyView = filter.Period is "1Y";
 
             if (monthlyView)
             {
@@ -289,15 +301,14 @@ public class DashboardService : IDashboardService
     {
         try
         {
-            var transactions = await _transactionRepository.GetLatestByUserAsync(userId, 3);
+            var transactions = await _transactionRepository.GetLatestByUserAsync(userId, 5);
 
-            var response = transactions
-                    .Select(x => new DashboardLatestTransactionDto
-                    {
-                        Description = $"{BuildTransactionTypeText(x.Type)} {x.Asset.Symbol}",
-                        Total = Math.Round(x.Total, 2)
-                    })
-                    .ToList();
+            var response = transactions.Select(x => new DashboardLatestTransactionDto
+            {
+                AssetSymbol = x.Asset.Symbol,
+                Type = BuildTransactionTypeText(x.Type),
+                Total = Math.Round(x.Total, 2)
+            }).ToList();
 
             return Response.Ok(response);
         }

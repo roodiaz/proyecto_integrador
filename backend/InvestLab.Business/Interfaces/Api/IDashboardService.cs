@@ -7,9 +7,9 @@ namespace InvestLab.Business.Interfaces.Api
     {
         Task<Response> GetTopCardsAsync(int userId);
 
-        Task<Response> GetTopAssetsAsync(int userId);
+        Task<Response> GetPortfolioDistributionAsync(int userId);
 
-        Task<Response> GetActiveAlertsAsync(int userId);
+        Task<Response> GetRecentNotificationsAsync(int userId);
 
         Task<Response> GetPerformanceChartAsync(int userId, DashboardPerformanceChartFilterDto filter);
 

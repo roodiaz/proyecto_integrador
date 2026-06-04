@@ -27,7 +27,7 @@ public class NotificationService : INotificationService
             Message = x.Message,
             Price = x.Price,
             IsRead = x.IsRead,
-            CreatedAt = x.CreatedAt ?? DateTime.UtcNow
+            CreatedAt = x.CreatedAt
         });
 
         return Response.Ok(new { data = result, total });

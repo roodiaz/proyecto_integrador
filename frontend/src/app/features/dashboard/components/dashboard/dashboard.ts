@@ -4,7 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { DashboardService } from '../../services/dashboard.service';
-import { DashboardTopCards, DashboardPerformanceChart } from '../../models/dashboard.models';
+import {
+  DashboardTopCards,
+  DashboardPerformanceChart,
+  DashboardLatestTransaction,
+  DashboardRecentNotification,
+  DashboardPortfolioDistribution
+} from '../../models/dashboard.models';
 
 // Importación de Chart.js con fallback
 import Chart from 'chart.js/auto';
@@ -31,6 +37,15 @@ export class Dashboard implements OnInit, AfterViewInit {
   private chart: Chart | null = null;
   private resizeObserver: any;
 
+  latestTransactions: DashboardLatestTransaction[] = [];
+  loadingLatestTransactions = false;
+
+  recentNotifications: DashboardRecentNotification[] = [];
+  loadingRecentNotifications = false;
+
+  portfolioDistribution: DashboardPortfolioDistribution[] = [];
+  loadingPortfolioDistribution = false;
+
   constructor(
     private dashboardService: DashboardService
   ) { }
@@ -38,6 +53,9 @@ export class Dashboard implements OnInit, AfterViewInit {
   ngOnInit() {
     this.loadTopCards();
     this.loadPerformanceChart();
+    this.loadLatestTransactions();
+    this.loadRecentNotifications()
+    this.loadPortfolioDistribution();
   }
 
   ngAfterViewInit() {
@@ -84,20 +102,11 @@ export class Dashboard implements OnInit, AfterViewInit {
     canvas.width = canvas.offsetWidth;
     canvas.height = 400;
 
-    console.log('Canvas size:', canvas.width, 'x', canvas.height);
-
     // Generar datos según el período seleccionado
     const data = this.generateChartData();
-
-    console.log('Generated data:', data);
-
     const config = this.getChartConfiguration(data);
 
-    console.log('Chart config:', config);
-
     this.chart = new Chart(ctx, config);
-
-    console.log('Chart created successfully');
   }
 
   loadTopCards() {
@@ -114,6 +123,43 @@ export class Dashboard implements OnInit, AfterViewInit {
       },
       error: () => {
         this.loadingTopCards = false;
+      }
+    });
+  }
+
+  loadLatestTransactions() {
+    this.loadingLatestTransactions = true;
+
+    this.dashboardService.getLatestTransactions().subscribe({
+      next: (response) => {
+        this.loadingLatestTransactions = false;
+        if (!response.success) return;
+        this.latestTransactions = response.data ?? [];
+      },
+      error: () => {
+        this.loadingLatestTransactions = false;
+      }
+    });
+  }
+
+  getTransactionClass(type: string): string {
+    const value = type?.toUpperCase();
+    if (value.includes('COMPRA')) return 'buy';
+    if (value.includes('VENTA')) return 'sell';
+    return '';
+  }
+
+  loadPortfolioDistribution() {
+    this.loadingPortfolioDistribution = true;
+
+    this.dashboardService.getPortfolioDistribution().subscribe({
+      next: (response) => {
+        this.loadingPortfolioDistribution = false;
+        if (!response.success) return;
+        this.portfolioDistribution = response.data ?? [];
+      },
+      error: () => {
+        this.loadingPortfolioDistribution = false;
       }
     });
   }
@@ -334,6 +380,63 @@ export class Dashboard implements OnInit, AfterViewInit {
 
   get hasEnoughChartData(): boolean {
     return (this.performanceChart?.data?.length ?? 0) >= 2;
+  }
+
+  loadRecentNotifications() {
+    this.loadingRecentNotifications = true;
+
+    this.dashboardService.getRecentNotifications().subscribe({
+      next: (response) => {
+        this.loadingRecentNotifications = false;
+        if (!response.success) return;
+        this.recentNotifications = response.data ?? [];
+      },
+      error: () => {
+        this.loadingRecentNotifications = false;
+      }
+    });
+  }
+
+  getNotificationSymbol(message: string): string {
+    return message?.trim()?.split(' ')[0] ?? '';
+  }
+
+  getNotificationMessage(message: string): string {
+    const parts = message?.trim()?.split(' ') ?? [];
+    return parts.length > 1 ? parts.slice(1).join(' ') : message;
+  }
+
+  getNotificationClass(notification: DashboardRecentNotification): string {
+    const message = notification.message?.toLowerCase() ?? '';
+
+    if (message.includes('subió') || message.includes('superó') || message.includes('alcanzó')) return 'success';
+    if (message.includes('cayó') || message.includes('bajó') || message.includes('debajo')) return 'danger';
+
+    return 'warning';
+  }
+
+  formatRelativeDate(value: string): string {
+    if (!value) return '';
+
+    const date = new Date(value);
+    const now = new Date();
+
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMinutes < 1) return 'Recién';
+    if (diffMinutes < 60) return `Hace ${diffMinutes} min`;
+    if (diffHours < 24) return `Hace ${diffHours} h`;
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+
+    return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  getAllocationWidth(value: number): string {
+    return `${Math.min(Math.max(value ?? 0, 0), 100)}%`;
   }
 }
 

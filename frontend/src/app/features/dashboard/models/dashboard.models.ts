@@ -29,3 +29,22 @@ export interface DashboardPerformanceChartPoint {
   sp500: number;
   nasdaq: number;
 }
+
+export interface DashboardLatestTransaction {
+  assetSymbol: string;
+  type: string;
+  total: number;
+}
+
+export interface DashboardRecentNotification {
+  message: string;
+  price: number;
+  createdAt: string;
+  isRead: boolean;
+}
+
+export interface DashboardPortfolioDistribution {
+  sector: string;
+  value: number;
+  percentage: number;
+}

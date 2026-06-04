@@ -38,7 +38,7 @@
 
 .header-stats {
   display: grid;
-  grid-template-columns: repeat(4,1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
@@ -55,18 +55,18 @@
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
 }
 
 .stat-card.positive {
-  border-color: rgba(74,225,118,.35);
+  border-color: rgba(74, 225, 118, .35);
 }
 
 .stat-icon {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(173,198,255,.12);
+  background: rgba(173, 198, 255, .12);
   color: var(--accent-primary);
   display: flex;
   align-items: center;
@@ -132,7 +132,7 @@
 }
 
 .change.positive {
-  background: rgba(176,201,86,.15);
+  background: rgba(176, 201, 86, .15);
   color: var(--accent-green);
 }
 
@@ -180,7 +180,7 @@
 
 .time-btn:hover,
 .chart-type-btn:hover {
-  background: rgba(255,255,255,.05);
+  background: rgba(255, 255, 255, .05);
 }
 
 .time-btn.active,
@@ -247,18 +247,16 @@
 .allocation-bar {
   height: 8px;
   border-radius: 999px;
-  background: rgba(255,255,255,.08);
+  background: rgba(255, 255, 255, .08);
   overflow: hidden;
 }
 
 .allocation-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #ADC6FF 0%,
-    #7EA9FF 100%
-  );
+  background: linear-gradient(90deg,
+      #ADC6FF 0%,
+      #7EA9FF 100%);
 }
 
 /* ========================= */
@@ -272,7 +270,7 @@
 }
 
 .alert-modern-item {
-  background: rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, .03);
   padding: 14px;
   border-radius: 12px;
   border-left: 4px solid;
@@ -323,7 +321,7 @@
 
 .operations-table td {
   padding: 14px 0;
-  border-top: 1px solid rgba(255,255,255,.05);
+  border-top: 1px solid rgba(255, 255, 255, .05);
 }
 
 .operation-badge {
@@ -335,12 +333,12 @@
 }
 
 .operation-badge.buy {
-  background: rgba(74,225,118,.15);
+  background: rgba(74, 225, 118, .15);
   color: var(--accent-green);
 }
 
 .operation-badge.sell {
-  background: rgba(239,68,68,.15);
+  background: rgba(239, 68, 68, .15);
   color: #ef4444;
 }
 
@@ -470,4 +468,31 @@
   font-size: 0.95rem;
   color: rgba(245, 247, 255, 0.7);
   line-height: 1.5;
+}
+
+.card-empty {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px;
+  color: rgba(245, 247, 255, 0.75);
+}
+
+.card-empty-icon {
+  font-size: 32px;
+}
+
+.card-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f5f7ff;
+}
+
+.card-empty-text {
+  font-size: 0.9rem;
+  color: rgba(245, 247, 255, 0.65);
 }

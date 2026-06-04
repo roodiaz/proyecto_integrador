@@ -50,24 +50,24 @@ public class DashboardController : BaseController
     }
 
     /// <summary>
-    /// Obtiene los activos con mejor rendimiento
-    /// del portfolio del usuario autenticado.
+    /// Obtiene la distribución del portfolio
+    /// del usuario autenticado agrupada por sector.
     /// </summary>
     /// <returns>
-    /// Top de activos ordenados por rendimiento.
+    /// Distribución porcentual del portfolio por sector.
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("top-assets")]
-    public async Task<IActionResult> GetTopAssets()
+    [HttpGet("portfolio-distribution")]
+    public async Task<IActionResult> GetPortfolioDistribution()
     {
-        _logger.LogInformation("Consultando dashboard top assets: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando dashboard portfolio distribution: UserId={UserId}", UserId);
 
-        var result = await _service.GetTopAssetsAsync(UserId);
+        var result = await _service.GetPortfolioDistributionAsync(UserId);
 
         if (!result.Success)
         {
-            _logger.LogWarning("Error al obtener dashboard top assets: {Message}", result.Message);
+            _logger.LogWarning("Error al obtener dashboard portfolio distribution: {Message}", result.Message);
             return BadRequest(result);
         }
 
@@ -75,24 +75,24 @@ public class DashboardController : BaseController
     }
 
     /// <summary>
-    /// Obtiene las alertas activas
-    /// del usuario autenticado.
+    /// Obtiene las últimas notificaciones generadas
+    /// por alertas disparadas del usuario autenticado.
     /// </summary>
     /// <returns>
-    /// Últimas alertas activas configuradas.
+    /// Últimas notificaciones registradas.
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("active-alerts")]
-    public async Task<IActionResult> GetActiveAlerts()
+    [HttpGet("recent-notifications")]
+    public async Task<IActionResult> GetRecentNotifications()
     {
-        _logger.LogInformation("Consultando dashboard active alerts: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando dashboard recent notifications: UserId={UserId}", UserId);
 
-        var result = await _service.GetActiveAlertsAsync(UserId);
+        var result = await _service.GetRecentNotificationsAsync(UserId);
 
         if (!result.Success)
         {
-            _logger.LogWarning("Error al obtener dashboard active alerts: {Message}", result.Message);
+            _logger.LogWarning("Error al obtener dashboard recent notifications: {Message}", result.Message);
             return BadRequest(result);
         }
 
@@ -112,7 +112,7 @@ public class DashboardController : BaseController
     /// y benchmarks junto con el resumen del período.
     /// </returns>
     [HttpPost("performance-chart")]
-    public async Task<IActionResult> GetPerformanceChart([FromBody]DashboardPerformanceChartFilterDto filter)
+    public async Task<IActionResult> GetPerformanceChart([FromBody] DashboardPerformanceChartFilterDto filter)
     {
         _logger.LogInformation("Consultando performance chart para UserId={UserId}", UserId);
 

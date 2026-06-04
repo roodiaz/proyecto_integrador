@@ -76,5 +76,14 @@ public class NotificationRepository : INotificationRepository
     {
         await _context.Notifications.AddAsync(notification);
     }
+
+    public async Task<List<Notification>> GetLatestByUserAsync(int userId, int limit)
+    {
+        return await _context.Notifications
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(limit)
+            .ToListAsync();
+    }
 }
 

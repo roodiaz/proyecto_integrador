@@ -26,10 +26,10 @@ public partial class Notification
 
     [Column("price")]
     [Precision(18, 4)]
-    public decimal? Price { get; set; }
+    public decimal Price { get; set; }
 
     [Column("created_at")]
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     [Column("is_read")]
     public bool IsRead { get; set; }

@@ -128,94 +128,73 @@
 
       <h3>Distribución del Portfolio</h3>
 
-      <div class="allocation-list">
+      <div class="allocation-list" *ngIf="!loadingPortfolioDistribution && portfolioDistribution.length > 0">
 
-        <div class="allocation-item">
+        <div class="allocation-item" *ngFor="let item of portfolioDistribution">
+
           <div class="allocation-header">
-            <span>Tecnología</span>
-            <span>45%</span>
+            <span>{{ item.sector }}</span>
+            <span>{{ item.percentage.toFixed(2) }}%</span>
           </div>
 
           <div class="allocation-bar">
-            <div class="allocation-fill" style="width:45%"></div>
-          </div>
-        </div>
-
-        <div class="allocation-item">
-          <div class="allocation-header">
-            <span>Finanzas</span>
-            <span>25%</span>
+            <div class="allocation-fill" [style.width]="getAllocationWidth(item.percentage)"></div>
           </div>
 
-          <div class="allocation-bar">
-            <div class="allocation-fill" style="width:25%"></div>
-          </div>
-        </div>
-
-        <div class="allocation-item">
-          <div class="allocation-header">
-            <span>Consumo</span>
-            <span>20%</span>
-          </div>
-
-          <div class="allocation-bar">
-            <div class="allocation-fill" style="width:20%"></div>
-          </div>
-        </div>
-
-        <div class="allocation-item">
-          <div class="allocation-header">
-            <span>Salud</span>
-            <span>10%</span>
-          </div>
-
-          <div class="allocation-bar">
-            <div class="allocation-fill" style="width:10%"></div>
-          </div>
         </div>
 
       </div>
 
+      <div class="card-empty" *ngIf="!loadingPortfolioDistribution && portfolioDistribution.length === 0">
+        <div class="card-empty-icon">📊</div>
+        <div class="card-empty-title">No hay distribución disponible</div>
+        <div class="card-empty-text">Cuando tengas activos en tu portfolio, se mostrará la distribución por sector.
+        </div>
+      </div>
+
+      <div class="card-empty" *ngIf="loadingPortfolioDistribution">
+        <div class="card-empty-icon">⏳</div>
+        <div class="card-empty-title">Cargando distribución...</div>
+      </div>
+
     </div>
 
-    <!-- ALERTAS -->
+    <!-- NOTIFICACIONES -->
 
     <div class="dashboard-card">
 
-      <h3>Alertas Recientes</h3>
+      <h3>Notificaciones Recientes</h3>
 
-      <div class="alerts-modern">
+      <div class="alerts-modern" *ngIf="!loadingRecentNotifications && recentNotifications.length > 0">
 
-        <div class="alert-modern-item success">
-          <div class="alert-modern-symbol">AAPL</div>
+        <div class="alert-modern-item" *ngFor="let notification of recentNotifications"
+          [ngClass]="getNotificationClass(notification)">
+
+          <div class="alert-modern-symbol">
+            {{ getNotificationSymbol(notification.message) }}
+          </div>
+
           <div class="alert-modern-message">
-            Alcanzó USD 190
+            {{ getNotificationMessage(notification.message) }}
           </div>
+
           <div class="alert-modern-date">
-            Hace 2 horas
+            {{ formatRelativeDate(notification.createdAt) }}
           </div>
+
         </div>
 
-        <div class="alert-modern-item warning">
-          <div class="alert-modern-symbol">MSFT</div>
-          <div class="alert-modern-message">
-            Subió más de 5%
-          </div>
-          <div class="alert-modern-date">
-            Ayer
-          </div>
-        </div>
+      </div>
 
-        <div class="alert-modern-item danger">
-          <div class="alert-modern-symbol">GOOGL</div>
-          <div class="alert-modern-message">
-            Cayó debajo de USD 140
-          </div>
-          <div class="alert-modern-date">
-            Hace 3 días
-          </div>
-        </div>
+      <div class="card-empty" *ngIf="!loadingRecentNotifications && recentNotifications.length === 0">
+        <div class="card-empty-icon">🔕</div>
+        <div class="card-empty-title">No hay notificaciones recientes</div>
+        <div class="card-empty-text">Cuando una alerta se dispare, aparecerá acá.</div>
+      </div>
 
+      <div class="card-empty" *ngIf="loadingRecentNotifications">
+        <div class="card-empty-icon">⏳</div>
+        <div class="card-empty-title">Cargando notificaciones...</div>
       </div>
 
     </div>
@@ -226,7 +205,7 @@
 
       <h3>Últimas Operaciones</h3>
 
-      <table class="operations-table">
+      <table class="operations-table" *ngIf="!loadingLatestTransactions && latestTransactions.length > 0">
 
         <thead>
           <tr>
@@ -237,40 +216,31 @@
         </thead>
 
         <tbody>
+          <tr *ngFor="let transaction of latestTransactions">
+            <td>{{ transaction.assetSymbol }}</td>
 
-          <tr>
-            <td>AAPL</td>
             <td>
-              <span class="operation-badge buy">
-                COMPRA
+              <span class="operation-badge" [ngClass]="getTransactionClass(transaction.type)">
+                {{ transaction.type }}
               </span>
             </td>
-            <td>$195.50</td>
-          </tr>
 
-          <tr>
-            <td>MSFT</td>
-            <td>
-              <span class="operation-badge sell">
-                VENTA
-              </span>
-            </td>
-            <td>$420.30</td>
+            <td>{{ formatCurrency(transaction.total) }}</td>
           </tr>
-
-          <tr>
-            <td>NVDA</td>
-            <td>
-              <span class="operation-badge buy">
-                COMPRA
-              </span>
-            </td>
-            <td>$1205.20</td>
-          </tr>
-
         </tbody>
 
       </table>
+
+      <div class="card-empty" *ngIf="!loadingLatestTransactions && latestTransactions.length === 0">
+        <div class="card-empty-icon">📭</div>
+        <div class="card-empty-title">No hay operaciones recientes</div>
+        <div class="card-empty-text">Cuando compres o vendas activos, se mostrarán acá.</div>
+      </div>
+
+      <div class="card-empty" *ngIf="loadingLatestTransactions">
+        <div class="card-empty-icon">⏳</div>
+        <div class="card-empty-title">Cargando operaciones...</div>
+      </div>
 
     </div>
 
