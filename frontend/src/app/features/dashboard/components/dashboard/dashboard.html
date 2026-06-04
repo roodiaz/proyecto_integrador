@@ -1,122 +1,255 @@
 <div class="dashboard-container">
-  <!-- Header -->
+
+  <!-- HEADER -->
   <div class="dashboard-header">
     <h1 class="dashboard-title">Dashboard de Mercado</h1>
+
     <div class="header-stats">
+
       <div class="stat-card">
-        <div class="stat-value">$125,430</div>
-        <div class="stat-label">Valor Total</div>
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-value">$125,430</div>
+          <div class="stat-label">Valor Total</div>
+        </div>
       </div>
+
       <div class="stat-card positive">
-        <div class="stat-value">+12.5%</div>
-        <div class="stat-label">Ganancia Hoy</div>
+        <div class="stat-icon">📈</div>
+        <div class="stat-content">
+          <div class="stat-value">+12.5%</div>
+          <div class="stat-label">Rendimiento Total</div>
+        </div>
       </div>
+
       <div class="stat-card">
-        <div class="stat-value">8</div>
-        <div class="stat-label">Activos</div>
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">8</div>
+          <div class="stat-label">Activos</div>
+        </div>
       </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🔔</div>
+        <div class="stat-content">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Alertas Activas</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Main Chart Section -->
+  <!-- CHART -->
   <div class="chart-section">
+
     <div class="chart-header">
+
       <div class="chart-title-section">
-        <h2 class="chart-title">Evolución del Portfolio</h2>
+        <h2 class="chart-title">Portfolio vs S&P500 vs NASDAQ</h2>
+
         <div class="chart-subtitle">
           <span class="current-value">$125,430</span>
           <span class="change positive">+12.5%</span>
-          <span class="period">vs. mes anterior</span>
+          <span class="period">últimos 30 días</span>
         </div>
       </div>
+
       <div class="chart-controls">
+
         <div class="time-selector">
           <button class="time-btn" [class.active]="selectedPeriod === '1w'" (click)="selectedPeriod = '1w'; onPeriodChange()">1W</button>
+
           <button class="time-btn" [class.active]="selectedPeriod === '1m'" (click)="selectedPeriod = '1m'; onPeriodChange()">1M</button>
+
           <button class="time-btn" [class.active]="selectedPeriod === '3m'" (click)="selectedPeriod = '3m'; onPeriodChange()">3M</button>
+
           <button class="time-btn" [class.active]="selectedPeriod === '1y'" (click)="selectedPeriod = '1y'; onPeriodChange()">1Y</button>
         </div>
+
         <div class="chart-type-selector">
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="selectedChartType = 'line'; onChartTypeChange()" title="Gráfico de líneas">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
+
+          <button class="chart-type-btn"
+                  [class.active]="selectedChartType === 'line'"
+                  (click)="selectedChartType = 'line'; onChartTypeChange()">
+            Línea
           </button>
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="selectedChartType = 'bar'; onChartTypeChange()" title="Gráfico de barras">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H17"/>
-            </svg>
+
+          <button class="chart-type-btn"
+                  [class.active]="selectedChartType === 'bar'"
+                  (click)="selectedChartType = 'bar'; onChartTypeChange()">
+            Barras
           </button>
+
         </div>
-        <div class="chart-actions">
-          <button class="action-btn" title="Descargar datos">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-            </svg>
-          </button>
-        </div>
+
       </div>
+
     </div>
-    
+
     <div class="chart-container">
       <canvas id="mainChart" class="main-chart"></canvas>
     </div>
+
   </div>
 
-  <!-- Secondary Cards -->
+  <!-- BOTTOM SECTION -->
+
   <div class="dashboard-grid">
-    <div class="dashboard-card">
-      <h3>Activos Principales</h3>
-      <div class="asset-list">
-        <div class="asset-item">
-          <span class="asset-name">AAPL</span>
-          <span class="asset-value positive">+$2,450</span>
-        </div>
-        <div class="asset-item">
-          <span class="asset-name">GOOGL</span>
-          <span class="asset-value negative">-$1,230</span>
-        </div>
-        <div class="asset-item">
-          <span class="asset-name">MSFT</span>
-          <span class="asset-value positive">+$3,100</span>
-        </div>
-      </div>
-    </div>
+
+    <!-- DISTRIBUCION -->
 
     <div class="dashboard-card">
-      <h3>Alertas Activas</h3>
-      <div class="alert-list">
-        <div class="alert-item">
-          <span class="alert-condition">AAPL > $190</span>
-          <span class="alert-status active">Activa</span>
+
+      <h3>Distribución del Portfolio</h3>
+
+      <div class="allocation-list">
+
+        <div class="allocation-item">
+          <div class="allocation-header">
+            <span>Tecnología</span>
+            <span>45%</span>
+          </div>
+
+          <div class="allocation-bar">
+            <div class="allocation-fill" style="width:45%"></div>
+          </div>
         </div>
-        <div class="alert-item">
-          <span class="alert-condition">GOOGL < $140</span>
-          <span class="alert-status active">Activa</span>
+
+        <div class="allocation-item">
+          <div class="allocation-header">
+            <span>Finanzas</span>
+            <span>25%</span>
+          </div>
+
+          <div class="allocation-bar">
+            <div class="allocation-fill" style="width:25%"></div>
+          </div>
         </div>
-        <div class="alert-item">
-          <span class="alert-condition">MSFT > $400</span>
-          <span class="alert-status pending">Pendiente</span>
+
+        <div class="allocation-item">
+          <div class="allocation-header">
+            <span>Consumo</span>
+            <span>20%</span>
+          </div>
+
+          <div class="allocation-bar">
+            <div class="allocation-fill" style="width:20%"></div>
+          </div>
         </div>
+
+        <div class="allocation-item">
+          <div class="allocation-header">
+            <span>Salud</span>
+            <span>10%</span>
+          </div>
+
+          <div class="allocation-bar">
+            <div class="allocation-fill" style="width:10%"></div>
+          </div>
+        </div>
+
       </div>
+
     </div>
 
+    <!-- ALERTAS -->
+
     <div class="dashboard-card">
+
+      <h3>Alertas Recientes</h3>
+
+      <div class="alerts-modern">
+
+        <div class="alert-modern-item success">
+          <div class="alert-modern-symbol">AAPL</div>
+          <div class="alert-modern-message">
+            Alcanzó USD 190
+          </div>
+          <div class="alert-modern-date">
+            Hace 2 horas
+          </div>
+        </div>
+
+        <div class="alert-modern-item warning">
+          <div class="alert-modern-symbol">MSFT</div>
+          <div class="alert-modern-message">
+            Subió más de 5%
+          </div>
+          <div class="alert-modern-date">
+            Ayer
+          </div>
+        </div>
+
+        <div class="alert-modern-item danger">
+          <div class="alert-modern-symbol">GOOGL</div>
+          <div class="alert-modern-message">
+            Cayó debajo de USD 140
+          </div>
+          <div class="alert-modern-date">
+            Hace 3 días
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- OPERACIONES -->
+
+    <div class="dashboard-card">
+
       <h3>Últimas Operaciones</h3>
-      <div class="transaction-list">
-        <div class="transaction-item">
-          <span class="transaction-info">Compra AAPL</span>
-          <span class="transaction-amount">+$5,000</span>
-        </div>
-        <div class="transaction-item">
-          <span class="transaction-info">Venta GOOGL</span>
-          <span class="transaction-amount">+$2,300</span>
-        </div>
-        <div class="transaction-item">
-          <span class="transaction-info">Compra MSFT</span>
-          <span class="transaction-amount">-$3,500</span>
-        </div>
-      </div>
+
+      <table class="operations-table">
+
+        <thead>
+          <tr>
+            <th>Activo</th>
+            <th>Tipo</th>
+            <th>Precio</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+            <td>AAPL</td>
+            <td>
+              <span class="operation-badge buy">
+                COMPRA
+              </span>
+            </td>
+            <td>$195.50</td>
+          </tr>
+
+          <tr>
+            <td>MSFT</td>
+            <td>
+              <span class="operation-badge sell">
+                VENTA
+              </span>
+            </td>
+            <td>$420.30</td>
+          </tr>
+
+          <tr>
+            <td>NVDA</td>
+            <td>
+              <span class="operation-badge buy">
+                COMPRA
+              </span>
+            </td>
+            <td>$1205.20</td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
     </div>
+
   </div>
+
 </div>
