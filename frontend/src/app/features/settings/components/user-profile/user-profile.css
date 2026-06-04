@@ -1,56 +1,52 @@
 :host {
-  --primary-bg: #111B20;
-  --card-bg: #1E1E1E;
-  --text-primary: #FFFFFF;
-  --text-secondary: #b0bec5;
-  --accent-green: #B0C956;
-  --border-color: rgba(255, 255, 255, 0.1);
+  --bg: #131313;
+  --surface: #1e1e1e;
+  --surface-low: #0e0e0e;
+  --surface-high: #2a2a2a;
+  --border: #2d2d2d;
+  --border-focus: #424754;
+  --text: #e5e2e1;
+  --text-muted: #8c909f;
+  --text-secondary: #c2c6d6;
+  --accent: #adc6ff;
+  --accent-on: #002e6a;
+  --green: #4ae176;
+  --green-container: #00b954;
 }
 
+/* ─── Container ─── */
 .profile-container {
   width: 100%;
-  height: 100%;
   min-height: calc(100vh - 64px);
+  background: var(--bg);
+  color: var(--text);
+  padding: 2rem 2.5rem;
   box-sizing: border-box;
-  background-color: var(--primary-bg);
-  color: var(--text-primary);
-  padding: 2rem;
+  font-family: 'Inter', sans-serif;
 }
 
-.profile-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: none;
-}
-
-.profile-header {
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-bottom: 2px solid var(--accent-green);
+/* ─── Hero Header ─── */
+.profile-hero {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.avatar-container {
+.avatar-wrapper {
   position: relative;
-  cursor: pointer;
-  width: 120px;
-  height: 120px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
+  border: 3px solid var(--border);
   overflow: hidden;
-  border: 4px solid var(--border-color);
-  transition: all 0.3s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
 }
 
-.avatar-container:hover {
-  transform: scale(1.05);
-  border-color: var(--accent-green);
+.avatar-wrapper:hover {
+  border-color: var(--accent);
 }
 
 .profile-avatar {
@@ -61,172 +57,468 @@
 
 .avatar-overlay {
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.avatar-container:hover .avatar-overlay { opacity: 1; }
-
-.header-text h1 { margin: 0; font-weight: 500; }
-.header-text p { margin: 0.5rem 0 0; color: var(--text-secondary); }
-
-.form-section {
-  padding: 1.5rem 2rem;
-}
-
-.section-title {
-  color: var(--accent-green);
-  margin-bottom: 1.5rem;
-  font-weight: 500;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
   display: flex;
   align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-overlay mat-icon {
+  color: #fff;
+  font-size: 22px;
+}
+
+.hero-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.hero-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.hero-badges {
+  display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.75rem;
 }
 
-.form-row {
+.coming-soon-inline {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+::ng-deep .dark-select-panel {
+  background: #1e1e1e !important;
+  border: 1px solid #2d2d2d !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+}
+
+::ng-deep .dark-select-panel .mat-mdc-option {
+  background-color: #1e1e1e !important;
+  color: #e5e2e1 !important;
+}
+
+::ng-deep .dark-select-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background-color: #2a2a2a !important;
+}
+
+::ng-deep .dark-select-panel .mat-mdc-option.mdc-list-item--selected {
+  color: #adc6ff !important;
+}
+
+/* ─── Bento Grid ─── */
+.bento-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
 }
 
-.form-field {
-  width: 100%;
+.bento-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.notification-options {
+.bento-card:hover {
+  border-color: var(--border-focus);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+
+.span-full { grid-column: span 12; }
+.span-7    { grid-column: span 7; }
+.span-5    { grid-column: span 5; }
+
+@media (max-width: 900px) {
+  .span-7, .span-5 { grid-column: span 12; }
+  .profile-container { padding: 1.25rem; }
+}
+
+/* ─── Card Header ─── */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-icon {
+  color: var(--accent);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.card-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ─── Fields ─── */
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.fields-stack {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
-.form-actions {
+.field-group {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
-  border-top: 1px solid var(--border-color);
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* Botones */
-.form-actions button[mat-stroked-button] {
-  color: var(--text-secondary);
-  border-color: var(--border-color);
+.field-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.form-actions button[mat-stroked-button] {
-  color: var(--text-secondary);
-  border-color: var(--border-color);
+.field-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.form-actions button[mat-raised-button] {
-  background-color: var(--accent-green);
-  color: #121418; /* Texto oscuro para contraste */
+.field-input {
+  width: 100%;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 2.5rem 0.6rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  outline: none;
 }
 
-.form-actions button[mat-raised-button] mat-icon {
-  color: #121418; /* Ícono oscuro para contraste */
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(173, 198, 255, 0.1);
 }
 
-
-/* Estilos para los campos de Material con apariencia 'outline' */
-/* Estilos mejorados para los campos de formulario */
-::ng-deep .mat-mdc-form-field .mdc-floating-label {
-  color: rgba(255, 255, 255, 0.8) !important; /* Más visible */
-  font-weight: 400 !important;
+.field-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
-::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label {
-  color: var(--accent-green) !important;
+.field-icon {
+  position: absolute;
+  right: 0.75rem;
+  color: var(--text-muted);
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
 }
 
-/* Placeholder más visible */
-::ng-deep .mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control::placeholder,
-::ng-deep .mat-mdc-form-field .mat-mdc-floating-label {
-  color: rgba(255, 255, 255, 0.7) !important;
-  opacity: 1 !important;
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
 }
 
-/* Texto de entrada */
-::ng-deep .mat-mdc-input-element {
-  color: var(--text-primary) !important;
+.icon-btn mat-icon {
+  color: var(--text-muted);
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  transition: color 0.2s;
 }
 
-/* Borde y foco */
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
-  border-color: rgba(255, 255, 255, 0.2) !important;
+.icon-btn:hover mat-icon {
+  color: var(--accent);
 }
 
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
-  border-color: var(--accent-green) !important;
-  border-width: 1px !important;
+/* Mat-select custom styling */
+.field-select {
+  width: 100%;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 2.5rem 0.6rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  box-sizing: border-box;
 }
 
-/* Estilos para el botón de restablecer */
-.form-actions button[mat-stroked-button] mat-icon {
-  color: var(--text-secondary);
+/* Datepicker */
+.datepicker-wrap {
+  position: relative;
 }
 
-/* Estilos para los selects y opciones */
-::ng-deep .mat-mdc-select-value {
-  color: var(--text-primary) !important;
+.datepicker-toggle-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+::ng-deep .datepicker-toggle-btn .mat-mdc-icon-button {
+  color: var(--text-muted) !important;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+::ng-deep .datepicker-toggle-btn .mat-mdc-icon-button .mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted) !important;
+}
+
+::ng-deep .mat-datepicker-content {
+  background: #1e1e1e !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+}
+
+::ng-deep .mat-calendar-body-cell-content {
+  color: var(--text) !important;
+}
+
+::ng-deep .mat-calendar-body-selected {
+  background: var(--accent) !important;
+  color: var(--accent-on) !important;
+}
+
+/* Fix mat-select appearance */
+::ng-deep .field-select .mat-mdc-select-trigger {
+  padding: 0 !important;
+}
+
+::ng-deep .field-select .mat-mdc-select-value {
+  color: var(--text) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.875rem !important;
 }
 
 ::ng-deep .mat-mdc-select-arrow {
-  color: var(--text-secondary) !important;
+  color: var(--text-muted) !important;
+}
+
+/* Dropdown panel */
+::ng-deep .mat-mdc-select-panel {
+  background: #1e1e1e !important;
+  border: 1px solid #2d2d2d !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
 }
 
 ::ng-deep .mat-mdc-option {
-  background-color: var(--card-bg) !important;
-  color: var(--text-primary) !important;
+  background-color: #1e1e1e !important;
+  color: #e5e2e1 !important;
 }
 
-::ng-deep .mat-mdc-option:hover:not(.mdc-list-item--disabled),
-::ng-deep .mat-mdc-option:focus:not(.mdc-list-item--disabled) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+::ng-deep .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background-color: #2a2a2a !important;
 }
 
 ::ng-deep .mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
-  color: var(--accent-green) !important;
-  font-weight: 500;
+  background-color: #2a2a2a !important;
+  color: #adc6ff !important;
 }
 
-/* Estilos para los slide toggles de notificaciones */
-::ng-deep .mat-mdc-slide-toggle .mdc-form-field {
-  color: var(--text-primary) !important;
+::ng-deep .mat-mdc-option .mdc-list-item__primary-text {
+  color: inherit !important;
 }
 
-::ng-deep .mat-mdc-slide-toggle .mdc-form-field label {
-  color: var(--text-primary) !important;
-  font-size: 1rem;
+/* Checkmark color on selected */
+::ng-deep .mat-pseudo-checkbox-checked {
+  background: #adc6ff !important;
 }
 
-::ng-deep .mat-mdc-slide-toggle .mdc-switch__handle {
-  background-color: var(--text-primary) !important;
+::ng-deep .mat-mdc-option.mdc-list-item--disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+/* Wrap mat-select inside field-input-wrap properly */
+.field-input-wrap mat-select {
+  width: 100%;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.field-input-wrap mat-select:focus-within {
+  border-color: var(--accent);
+}
+
+/* Field errors */
+.field-error {
+  font-size: 0.7rem;
+  color: #ffb4ab;
+  margin-top: 2px;
+}
+
+/* ─── Notifications ─── */
+.notification-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+}
+
+.notification-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.notif-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.notif-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.notif-coming-soon {
+  margin-top: 0.875rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  opacity: 0.55;
+}
+
+::ng-deep .mat-mdc-slide-toggle .mdc-form-field label { display: none; }
+
+::ng-deep .mat-mdc-slide-toggle .mdc-switch:enabled .mdc-switch__track::after {
+  background: var(--green-container) !important;
 }
 
 ::ng-deep .mat-mdc-slide-toggle .mdc-switch__track {
-  background-color: rgba(255, 255, 255, 0.2) !important;
+  background: var(--surface-high) !important;
 }
 
-::ng-deep .mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked .mdc-switch__track {
-  background-color: var(--accent-green) !important;
-  opacity: 0.8;
+/* ─── Card Footer (Security) ─── */
+.card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
 }
 
-::ng-deep .mat-mdc-slide-toggle .mdc-switch__track::after {
-  background-color: var(--accent-green);
+@media (min-width: 640px) {
+  .card-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
-::ng-deep .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
-    background-color: var(--accent-green) !important;
+.security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  max-width: 480px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.note-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-on);
+  box-shadow: 0 4px 16px rgba(173, 198, 255, 0.2);
+}
+
+.btn-primary:hover { opacity: 0.88; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-focus);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-high);
 }
