@@ -1,157 +1,224 @@
 <div class="market-terminal">
   <section class="terminal-heading">
-  <div class="terminal-title-block">
-    <h1>Mercado</h1>
-    <p>Analisis institucional y comparacion de activos.</p>
+    <div class="terminal-title-block">
+      <h1>Mercado</h1>
+      <p>Analisis institucional y comparacion de activos.</p>
 
-    <div class="market-state">
-      <span class="state-dot"></span>
-      <span>Market Open</span>
-      <strong>{{ currentTime }}</strong>
+      <div class="market-state" [class.closed]="!isMarketOpen()">
+        <span class="state-dot"></span>
+        <span>{{ getMarketStatusText() }}</span>
+        <strong>{{ getMarketStatusTime() }}</strong>
+      </div>
     </div>
-  </div>
-</section>
-
-  <section class="indices-grid">
-    <article class="index-card" *ngFor="let index of marketIndices" [class.positive-card]="index.changePercent >= 0" [class.negative-card]="index.changePercent < 0">
-      <div>
-        <span class="index-name">{{ index.name }}</span>
-        <strong>{{ formatNumber(index.value) }}</strong>
-      </div>
-
-      <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
-        <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
-        <small>Live</small>
-      </div>
-    </article>
   </section>
 
-  <section class="asset-panel">
-    <div class="asset-main">
-      <div class="asset-logo">{{ selectedAsset.symbol.charAt(0) }}</div>
+<section class="indices-grid" *ngIf="!loadingIndices && marketIndices.length > 0">
+  <article class="index-card" *ngFor="let index of marketIndices" [class.positive-card]="index.changePercent >= 0" [class.negative-card]="index.changePercent < 0">
+    <div>
+      <span class="index-name">{{ index.name }}</span>
+      <strong>{{ formatNumber(index.value) }}</strong>
+    </div>
 
-      <div>
-        <div class="asset-title-row">
-          <h2>{{ selectedAsset.name }}</h2>
-          <span class="asset-badge" [class.positive]="selectedAsset.changePercent >= 0" [class.negative]="selectedAsset.changePercent < 0">
-            {{ selectedAsset.changePercent >= 0 ? '+' : '' }}{{ selectedAsset.changePercent.toFixed(2) }}%
-          </span>
+    <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
+      <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
+      <small>{{ getIndexChange(index) >= 0 ? '+' : '' }}{{ getIndexChange(index).toFixed(2) }}</small>
+    </div>
+  </article>
+</section>
+
+<section class="indices-grid" *ngIf="loadingIndices">
+  <article class="index-card skeleton-card" *ngFor="let item of [1, 2, 3]">
+    <div>
+      <span class="skeleton skeleton-title"></span>
+      <strong class="skeleton skeleton-value"></strong>
+    </div>
+
+    <div class="index-side">
+      <span class="skeleton skeleton-percent"></span>
+      <small class="skeleton skeleton-small"></small>
+    </div>
+  </article>
+</section>
+
+<section class="indices-grid" *ngIf="!loadingIndices && marketIndices.length === 0">
+  <article class="index-card index-empty-card" *ngFor="let item of emptyIndexCards">
+    <div>
+      <span class="index-name">{{ item.name }}</span>
+      <strong>--</strong>
+    </div>
+
+    <div class="index-side neutral">
+      <span>--%</span>
+      <small>Sin datos</small>
+    </div>
+  </article>
+</section>
+
+  <section class="asset-panel" [class.asset-panel-empty]="!selectedAsset">
+    <div class="asset-main">
+      <ng-container *ngIf="selectedAsset; else emptyAssetMain">
+        <div class="asset-logo">{{ selectedAsset.symbol.charAt(0) }}</div>
+
+        <div>
+          <div class="asset-title-row">
+            <h2>{{ selectedAsset.name }}</h2>
+            <span class="asset-badge" [class.positive]="selectedAsset.changePercent >= 0"
+              [class.negative]="selectedAsset.changePercent < 0">
+              {{ selectedAsset.changePercent >= 0 ? '+' : '' }}{{ selectedAsset.changePercent.toFixed(2) }}%
+            </span>
+          </div>
+
+          <p>{{ selectedAsset.exchange }}: {{ selectedAsset.symbol }}</p>
+          <strong>${{ selectedAsset.price.toFixed(2) }}</strong>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyAssetMain>
+        <div class="asset-logo empty-logo">
+          <mat-icon>search</mat-icon>
         </div>
 
-        <p>{{ selectedAsset.exchange }}: {{ selectedAsset.symbol }}</p>
-        <strong>${{ selectedAsset.price.toFixed(2) }}</strong>
-      </div>
+        <div class="empty-asset-text">
+          <h2>Buscá un activo</h2>
+          <p>Ingresá un símbolo para ver precio, métricas y evolución.</p>
+          <div class="empty-lines">
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </ng-template>
     </div>
 
     <div class="asset-stats">
-      <div class="stat-item">
-        <span>Open</span>
-        <strong>${{ selectedAsset.open.toFixed(2) }}</strong>
-      </div>
+      <ng-container *ngIf="selectedAsset; else emptyStats">
+        <div class="stat-item">
+          <span>Open</span>
+          <strong>${{ selectedAsset.open.toFixed(2) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>Volume</span>
-        <strong>{{ formatVolume(selectedAsset.volume) }}</strong>
-      </div>
+        <div class="stat-item">
+          <span>Volume</span>
+          <strong>{{ formatVolume(selectedAsset.volume) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>Day High</span>
-        <strong class="positive">${{ selectedAsset.dayHigh.toFixed(2) }}</strong>
-      </div>
+        <div class="stat-item">
+          <span>Day High</span>
+          <strong class="positive">${{ selectedAsset.dayHigh.toFixed(2) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>Day Low</span>
-        <strong class="negative">${{ selectedAsset.dayLow.toFixed(2) }}</strong>
-      </div>
+        <div class="stat-item">
+          <span>Day Low</span>
+          <strong class="negative">${{ selectedAsset.dayLow.toFixed(2) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>Avg Vol</span>
-        <strong>{{ formatVolume(selectedAsset.avgVolume) }}</strong>
-      </div>
+        <div class="stat-item">
+          <span>Avg Vol</span>
+          <strong>{{ formatVolume(selectedAsset.avgVolume) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>Mkt Cap</span>
-        <strong>{{ formatMarketCap(selectedAsset.marketCap) }}</strong>
-      </div>
+        <div class="stat-item">
+          <span>Mkt Cap</span>
+          <strong>{{ formatMarketCap(selectedAsset.marketCap) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>P/E Ratio</span>
-        <strong>{{ selectedAsset.peRatio.toFixed(1) }}</strong>
-      </div>
+        <div class="stat-item">
+          <span>P/E Ratio</span>
+          <strong>{{ selectedAsset.peRatio.toFixed(1) }}</strong>
+        </div>
 
-      <div class="stat-item">
-        <span>Div Yield</span>
-        <strong>{{ selectedAsset.dividendYield.toFixed(2) }}%</strong>
-      </div>
+        <div class="stat-item">
+          <span>Div Yield</span>
+          <strong>{{ selectedAsset.dividendYield.toFixed(2) }}%</strong>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyStats>
+        <div class="stat-item empty-stat" *ngFor="let item of emptyStatLabels">
+          <span>{{ item }}</span>
+          <strong class="skeleton-line"></strong>
+        </div>
+      </ng-template>
     </div>
 
-    <div class="asset-actions">
+    <div class="asset-actions" [class.disabled-actions]="!selectedAsset">
       <div class="icon-actions">
-        <button type="button" (click)="createAlert(selectedAsset.symbol)" title="Crear alerta">
+        <button type="button" [disabled]="!selectedAsset" (click)="selectedAsset && createAlert(selectedAsset.symbol)"
+          title="Crear alerta">
           <mat-icon>notifications</mat-icon>
         </button>
 
-        <button type="button" (click)="addToWatchlist(selectedAsset.symbol)" title="Agregar a favoritos">
+        <button type="button" [disabled]="!selectedAsset"
+          (click)="selectedAsset && addToWatchlist(selectedAsset.symbol)" title="Agregar a favoritos">
           <mat-icon>star</mat-icon>
         </button>
       </div>
 
-      <button type="button" class="buy-btn" (click)="buyAsset(selectedAsset.symbol)">BUY</button>
-      <button type="button" class="sell-btn" (click)="sellAsset(selectedAsset.symbol)">SELL</button>
+      <button type="button" class="buy-btn" [disabled]="!selectedAsset"
+        (click)="selectedAsset && buyAsset(selectedAsset.symbol)">BUY</button>
+      <button type="button" class="sell-btn" [disabled]="!selectedAsset"
+        (click)="selectedAsset && sellAsset(selectedAsset.symbol)">SELL</button>
     </div>
   </section>
 
   <section class="chart-panel">
-  <div class="chart-header">
-    <div class="chart-title-section">
-      <h2 class="chart-title">{{ selectedAsset.symbol }} vs S&P 500 vs NASDAQ vs Dow Jones</h2>
+    <div class="chart-header">
+      <div class="chart-title-section">
+        <h2 class="chart-title">bbb vs S&P 500 vs NASDAQ vs Dow Jones</h2>
 
-      <div class="chart-subtitle">
-        <span class="current-value">${{ selectedAsset.price.toFixed(2) }}</span>
-        <span class="change" [ngClass]="selectedAsset.changePercent >= 0 ? 'positive' : 'negative'">
-          {{ selectedAsset.changePercent >= 0 ? '+' : '' }}{{ selectedAsset.changePercent.toFixed(2) }}%
-        </span>
-        <span class="period">vs mercado</span>
+        <div class="chart-subtitle">
+          <span class="current-value">7474</span>
+          <span class="change" [ngClass]="0 >= 0 ? 'positive' : 'negative'">
+            {{ 0 >= 0 ? '+' : '' }}74747%
+          </span>
+          <span class="period">vs mercado</span>
+        </div>
+      </div>
+
+      <div class="chart-controls">
+        <div class="symbol-input-wrapper">
+          <input type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" placeholder="Buscar simbolo">
+          <button type="button" (click)="searchAsset()" title="Buscar activo">
+            <mat-icon>search</mat-icon>
+          </button>
+        </div>
+
+        <div class="time-selector">
+          <button class="time-btn" [class.active]="selectedTimeframe === '1d'"
+            (click)="changeTimeframe('1d')">1D</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1w'"
+            (click)="changeTimeframe('1w')">1W</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1m'"
+            (click)="changeTimeframe('1m')">1M</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '3m'"
+            (click)="changeTimeframe('3m')">3M</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '6m'"
+            (click)="changeTimeframe('6m')">6M</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1y'"
+            (click)="changeTimeframe('1y')">1Y</button>
+        </div>
+
+        <div class="chart-type-selector">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'"
+            (click)="changeChartType('line')">
+            <mat-icon>show_chart</mat-icon>
+          </button>
+
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="changeChartType('bar')">
+            <mat-icon>bar_chart</mat-icon>
+          </button>
+
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'"
+            (click)="changeChartType('candlestick')">
+            <mat-icon>candlestick_chart</mat-icon>
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="chart-controls">
-      <div class="symbol-input-wrapper">
-        <input type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" placeholder="Buscar simbolo">
-        <button type="button" (click)="searchAsset()" title="Buscar activo">
-          <mat-icon>search</mat-icon>
-        </button>
-      </div>
-
-      <div class="time-selector">
-        <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="changeTimeframe('1d')">1D</button>
-        <button class="time-btn" [class.active]="selectedTimeframe === '1w'" (click)="changeTimeframe('1w')">1W</button>
-        <button class="time-btn" [class.active]="selectedTimeframe === '1m'" (click)="changeTimeframe('1m')">1M</button>
-        <button class="time-btn" [class.active]="selectedTimeframe === '3m'" (click)="changeTimeframe('3m')">3M</button>
-        <button class="time-btn" [class.active]="selectedTimeframe === '6m'" (click)="changeTimeframe('6m')">6M</button>
-        <button class="time-btn" [class.active]="selectedTimeframe === '1y'" (click)="changeTimeframe('1y')">1Y</button>
-      </div>
-
-      <div class="chart-type-selector">
-        <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="changeChartType('line')">
-          <mat-icon>show_chart</mat-icon>
-        </button>
-
-        <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="changeChartType('bar')">
-          <mat-icon>bar_chart</mat-icon>
-        </button>
-
-        <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'" (click)="changeChartType('candlestick')">
-          <mat-icon>candlestick_chart</mat-icon>
-        </button>
-      </div>
+    <div class="chart-container">
+      <canvas id="marketTerminalChart" class="main-chart"></canvas>
     </div>
-  </div>
-
-  <div class="chart-container">
-    <canvas id="marketTerminalChart" class="main-chart"></canvas>
-  </div>
-</section>
+  </section>
 
   <section class="bottom-grid">
     <article class="terminal-card trending-card">
@@ -161,7 +228,8 @@
       </div>
 
       <div class="trending-grid">
-        <button type="button" class="trending-item" *ngFor="let stock of trendingStocks; let i = index" (click)="selectAsset(stock.symbol)">
+        <button type="button" class="trending-item" *ngFor="let stock of trendingStocks; let i = index"
+          (click)="selectAsset(stock.symbol)">
           <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
 
           <div>

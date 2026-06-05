@@ -199,3 +199,35 @@ CREATE INDEX idx_favorites_user ON favorites(user_id);
 CREATE UNIQUE INDEX uq_temp_active ON user_temp_credentials(user_id) WHERE is_used = FALSE;
 CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
 CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+
+-- ============================================
+-- ASSETS
+-- ============================================
+INSERT INTO assets (symbol, name, sector)
+VALUES
+('AAPL', 'Apple Inc.', 'Technology'),
+('MSFT', 'Microsoft Corporation', 'Technology'),
+('NVDA', 'NVIDIA Corporation', 'Technology'),
+('GOOGL', 'Alphabet Inc.', 'Technology'),
+('META', 'Meta Platforms Inc.', 'Technology'),
+('AMZN', 'Amazon.com Inc.', 'Consumer Discretionary'),
+('TSLA', 'Tesla Inc.', 'Automotive'),
+('AMD', 'Advanced Micro Devices Inc.', 'Technology'),
+('INTC', 'Intel Corporation', 'Technology'),
+('NFLX', 'Netflix Inc.', 'Communication Services'),
+('MELI', 'MercadoLibre Inc.', 'E-commerce'),
+('KO', 'The Coca-Cola Company', 'Consumer Staples'),
+('PEP', 'PepsiCo Inc.', 'Consumer Staples'),
+('JPM', 'JPMorgan Chase & Co.', 'Financial Services'),
+('V', 'Visa Inc.', 'Financial Services'),
+('WMT', 'Walmart Inc.', 'Retail'),
+('DIS', 'The Walt Disney Company', 'Entertainment'),
+('BA', 'The Boeing Company', 'Aerospace'),
+('XOM', 'Exxon Mobil Corporation', 'Energy'),
+('JNJ', 'Johnson & Johnson', 'Healthcare');
+
+INSERT INTO assets (symbol, name, sector)
+VALUES
+('^GSPC', 'S&P 500', 'Index'),
+('^IXIC', 'NASDAQ Composite', 'Index');
+('^DJI', 'Dow Jones Industrial Average', 'Index');

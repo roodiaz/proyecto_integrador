@@ -6,6 +6,9 @@ import { MaterialModule } from '../../../../shared/material.module';
 import Chart from 'chart.js/auto';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
+import { MarketService } from '../../services/market.service';
+import { MarketIndex, MarketStatus } from '../../models/market.model';
+
 Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcElement);
 
 interface MarketAsset {
@@ -24,12 +27,6 @@ interface MarketAsset {
   peRatio: number;
   dividendYield: number;
   sector: string;
-}
-
-interface MarketIndex {
-  name: string;
-  value: number;
-  changePercent: number;
 }
 
 interface MarketNews {
@@ -51,25 +48,36 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   selectedSymbol = 'NVDA';
   selectedTimeframe = '1m';
   selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
-  selectedAsset!: MarketAsset;
+  selectedAsset: MarketAsset | null = null;
   marketData: MarketAsset[] = [];
   trendingStocks: MarketAsset[] = [];
-  marketIndices: MarketIndex[] = [];
   marketNews: MarketNews[] = [];
   activeNewsIndex = 0;
   currentTime = '';
   private chart: Chart | null = null;
   private clockInterval: any;
 
-  constructor(private router: Router) { }
+  // cards superiores
+  marketIndices: MarketIndex[] = [];
+  marketStatus: MarketStatus | null = null;
+  loadingIndices = false;
+  loadingOverview = false;
+  emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
+  emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
+
+
+  constructor(
+    private router: Router,
+    private marketService: MarketService
+  ) { }
 
   ngOnInit(): void {
     this.loadMarketData();
-    this.loadMarketIndices();
+    this.loadMarketOverview();
     this.loadNews();
+    this.updateClock();
     this.selectedAsset = this.marketData.find(x => x.symbol === this.selectedSymbol) ?? this.marketData[0];
     this.trendingStocks = [...this.marketData].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent)).slice(0, 6);
-    this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
   }
 
@@ -87,22 +95,38 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadMarketData(): void {
-    this.marketData = [
-      { symbol: 'NVDA', name: 'NVIDIA Corp.', exchange: 'NASDAQ', price: 875.30, change: 15.67, changePercent: 1.83, open: 862.15, volume: 67900000, avgVolume: 52400000, dayHigh: 881.02, dayLow: 858.40, marketCap: 2150000000000, peRatio: 74.2, dividendYield: 0.02, sector: 'Technology' },
-      { symbol: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ', price: 185.50, change: 2.35, changePercent: 1.28, open: 183.40, volume: 52341234, avgVolume: 58900000, dayHigh: 187.10, dayLow: 182.90, marketCap: 2873000000000, peRatio: 29.8, dividendYield: 0.53, sector: 'Technology' },
-      { symbol: 'MSFT', name: 'Microsoft Corp.', exchange: 'NASDAQ', price: 380.75, change: 3.12, changePercent: 0.83, open: 376.88, volume: 23456789, avgVolume: 26800000, dayHigh: 382.25, dayLow: 375.60, marketCap: 2825000000000, peRatio: 36.1, dividendYield: 0.77, sector: 'Technology' },
-      { symbol: 'TSLA', name: 'Tesla Inc.', exchange: 'NASDAQ', price: 245.80, change: -8.23, changePercent: -3.24, open: 252.30, volume: 98765432, avgVolume: 102400000, dayHigh: 255.50, dayLow: 244.10, marketCap: 780000000000, peRatio: 61.4, dividendYield: 0.00, sector: 'Consumer Discretionary' },
-      { symbol: 'AMZN', name: 'Amazon.com Inc.', exchange: 'NASDAQ', price: 178.25, change: 4.67, changePercent: 2.69, open: 174.20, volume: 45678901, avgVolume: 49800000, dayHigh: 179.10, dayLow: 173.85, marketCap: 1850000000000, peRatio: 52.6, dividendYield: 0.00, sector: 'Consumer Discretionary' },
-      { symbol: 'META', name: 'Meta Platforms', exchange: 'NASDAQ', price: 485.20, change: 12.34, changePercent: 2.61, open: 473.10, volume: 34567890, avgVolume: 31100000, dayHigh: 488.70, dayLow: 470.90, marketCap: 1240000000000, peRatio: 28.5, dividendYield: 0.41, sector: 'Technology' }
-    ];
+    this.marketData = [];
+    this.trendingStocks = [];
+    this.selectedAsset = null;
   }
 
-  private loadMarketIndices(): void {
-    this.marketIndices = [
-      { name: 'S&P 500', value: 5241.53, changePercent: 0.45 },
-      { name: 'NASDAQ', value: 16384.47, changePercent: -0.28 },
-      { name: 'Dow Jones', value: 39475.90, changePercent: 0.12 }
-    ];
+  private loadMarketOverview(): void {
+    this.loadingOverview = true;
+    this.loadingIndices = true;
+
+    this.marketService.getMarketOverview().subscribe({
+      next: response => {
+        if (!response.success || !response.data) {
+          this.marketStatus = null;
+          this.marketIndices = [];
+          this.loadingOverview = false;
+          this.loadingIndices = false;
+          return;
+        }
+
+        this.marketStatus = response.data.marketStatus;
+        this.marketIndices = response.data.indices ?? [];
+        this.loadingOverview = false;
+        this.loadingIndices = false;
+      },
+      error: error => {
+        console.error('Error al obtener panorama de mercado', error);
+        this.marketStatus = null;
+        this.marketIndices = [];
+        this.loadingOverview = false;
+        this.loadingIndices = false;
+      }
+    });
   }
 
   private loadNews(): void {
@@ -242,7 +266,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getChartData(): { labels: string[]; asset: number[]; sp500: number[] } {
-    const base = this.selectedAsset.price;
+    const base = this.selectedAsset!.price;
     if (this.selectedTimeframe === '1d') return { labels: ['09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00'], asset: [base - 22, base - 18, base - 25, base - 10, base - 6, base - 8, base + 4, base + 1, base + 2, base + 14, base + 20, base + 27], sp500: [5200, 5204, 5198, 5205, 5208, 5210, 5213, 5216, 5220, 5225, 5230, 5241] };
     if (this.selectedTimeframe === '1w') return { labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'], asset: [base - 45, base - 20, base - 30, base + 10, base + 24], sp500: [5160, 5180, 5172, 5210, 5241] };
     if (this.selectedTimeframe === '3m') return {
@@ -328,7 +352,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const asset = this.marketData.find(x => x.symbol === symbol);
 
     if (!asset) {
-      this.selectedSymbol = this.selectedAsset.symbol;
+      this.selectedSymbol = this.selectedAsset!.symbol;
       return;
     }
 
@@ -348,7 +372,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
     const datasets = [
       {
-        label: this.selectedAsset.symbol,
+        label: this.selectedAsset!.symbol,
         data: points.map(x => x.asset),
         borderColor: '#4a90e2',
         backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.12)' : '#4a90e2',
@@ -389,7 +413,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getMarketPerformancePoints(): any[] {
-    const multiplier = this.selectedAsset.changePercent >= 0 ? 1 : -1;
+    const multiplier = this.selectedAsset!.changePercent >= 0 ? 1 : -1;
 
     if (this.selectedTimeframe === '1d') {
       return [
@@ -458,7 +482,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private generateCandlestickChartData(): any {
-    const base = this.selectedAsset.price;
+    const base = this.selectedAsset!.price;
     const candles = [
       { x: new Date('2026-06-01').getTime(), o: base - 32, h: base - 10, l: base - 42, c: base - 18 },
       { x: new Date('2026-06-02').getTime(), o: base - 18, h: base + 4, l: base - 28, c: base - 6 },
@@ -470,10 +494,26 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     return {
       datasets: [
         {
-          label: this.selectedAsset.symbol,
+          label: this.selectedAsset!.symbol,
           data: candles
         }
       ]
     };
+  }
+
+  getMarketStatusText(): string {
+    return this.marketStatus?.statusText ?? 'Estado no disponible';
+  }
+
+  getMarketStatusTime(): string {
+    return this.marketStatus?.marketTime ?? this.currentTime;
+  }
+
+  isMarketOpen(): boolean {
+    return this.marketStatus?.isOpen ?? false;
+  }
+
+  getIndexChange(index: MarketIndex): number {
+    return index.change ?? ((index.value ?? 0) - (index.previousClose ?? 0));
   }
 }

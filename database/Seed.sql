@@ -18,36 +18,7 @@ VALUES
 (1, 'USD', TRUE, 0, 0, 0, 0),
 (2, 'USD', TRUE, 0, 0, 0, 0);
 
--- ============================================
--- ASSETS
--- ============================================
-INSERT INTO assets (symbol, name, sector)
-VALUES
-('AAPL', 'Apple Inc.', 'Technology'),
-('MSFT', 'Microsoft Corporation', 'Technology'),
-('NVDA', 'NVIDIA Corporation', 'Technology'),
-('GOOGL', 'Alphabet Inc.', 'Technology'),
-('META', 'Meta Platforms Inc.', 'Technology'),
-('AMZN', 'Amazon.com Inc.', 'Consumer Discretionary'),
-('TSLA', 'Tesla Inc.', 'Automotive'),
-('AMD', 'Advanced Micro Devices Inc.', 'Technology'),
-('INTC', 'Intel Corporation', 'Technology'),
-('NFLX', 'Netflix Inc.', 'Communication Services'),
-('MELI', 'MercadoLibre Inc.', 'E-commerce'),
-('KO', 'The Coca-Cola Company', 'Consumer Staples'),
-('PEP', 'PepsiCo Inc.', 'Consumer Staples'),
-('JPM', 'JPMorgan Chase & Co.', 'Financial Services'),
-('V', 'Visa Inc.', 'Financial Services'),
-('WMT', 'Walmart Inc.', 'Retail'),
-('DIS', 'The Walt Disney Company', 'Entertainment'),
-('BA', 'The Boeing Company', 'Aerospace'),
-('XOM', 'Exxon Mobil Corporation', 'Energy'),
-('JNJ', 'Johnson & Johnson', 'Healthcare');
 
-INSERT INTO assets (symbol, name, sector)
-VALUES
-('^GSPC', 'S&P 500', 'Index'),
-('^IXIC', 'NASDAQ Composite', 'Index');
 
 -- ============================================
 -- FAVORITES (WATCHLIST)
