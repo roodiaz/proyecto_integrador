@@ -10,4 +10,6 @@ public interface IFavoriteService
     Task<Response> AddAsync(int userId, AddFavoriteDto dto);
 
     Task<Response> RemoveAsync(int userId, string symbol);
+
+    Task<Response> ExistsAsync(int userId, string symbol);
 }

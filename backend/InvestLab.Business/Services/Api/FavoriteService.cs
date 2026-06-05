@@ -128,5 +128,19 @@ namespace InvestLab.Business.Services.Api
 
             return Response.Ok(null);
         }
+
+        public async Task<Response> ExistsAsync(int userId, string symbol)
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                return Response.Fail("Debe indicar un símbolo válido");
+
+            var asset = await _assetService.GetOrCreateAsync(symbol);
+            if (asset == null)
+                return Response.Fail("Activo no encontrado");
+
+            var exists = await _favoriteRepo.ExistsAsync(userId, asset.Id);
+
+            return Response.Ok(exists, "Consulta realizada correctamente");
+        }
     }
 }

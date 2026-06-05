@@ -1204,3 +1204,23 @@
   height: 16px;
   font-size: 16px;
 }
+
+.favorite-button {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.favorite-button:hover {
+  border-color: rgba(250, 204, 21, 0.55);
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.06);
+}
+
+.favorite-button:disabled {
+  opacity: 0.65;
+}
+
+.favorite-button.is-favorite mat-icon {
+  color: #e9d77b;
+}

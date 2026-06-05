@@ -7,6 +7,9 @@ import Chart from 'chart.js/auto';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
 import { MarketService } from '../../services/market.service';
+import { WatchlistService } from '../../../watchlist/services/watchlist.service';
+import { SnackBarService } from '../../../../core/services/snackbar.service';
+
 import {
   MarketIndex,
   MarketStatus,
@@ -43,6 +46,10 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
   emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
 
+  // opciones card
+  isFavorite = false;
+  favoriteLoading = false;
+
   selectedAsset: MarketAsset | null = null;
   loadingAsset = false;
   assetErrorMessage = '';
@@ -61,7 +68,9 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private marketService: MarketService
+    private marketService: MarketService,
+    private watchlistService: WatchlistService,
+    private snackBarService: SnackBarService
   ) { }
 
   ngOnInit(): void {
@@ -71,10 +80,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadNews();
     this.updateClock();
     this.searchAsset();
-    this.searchAsset();
 
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
-    this.selectedAsset = this.marketData.find(x => x.symbol === this.selectedSymbol) ?? this.marketData[0];
   }
 
   ngAfterViewInit(): void {
@@ -103,6 +110,20 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadTrending();
     this.loadGainers();
     this.loadLosers();
+  }
+
+  loadFavoriteStatus(symbol: string): void {
+    if (!symbol) return;
+
+    this.watchlistService.existsFavorite(symbol).subscribe({
+      next: res => {
+        if (res.success) this.isFavorite = res.data!;
+      },
+      error: err => {
+        console.error('Error consultando favorito', err);
+        this.isFavorite = false;
+      }
+    });
   }
 
   private loadTrending(): void {
@@ -205,6 +226,38 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
+
+ toggleFavorite(symbol: string): void {
+  if (!symbol || this.favoriteLoading) return;
+
+  this.favoriteLoading = true;
+
+  const wasFavorite = this.isFavorite;
+  const request = wasFavorite ? this.watchlistService.removeFavorite(symbol) : this.watchlistService.addFavorite(symbol);
+
+  request.subscribe({
+    next: res => {
+      this.favoriteLoading = false;
+
+      if (!res.success) {
+        this.snackBarService.error(res.message || 'No se pudo actualizar favoritos');
+        return;
+      }
+
+      this.isFavorite = !wasFavorite;
+
+      if (this.isFavorite)
+        this.snackBarService.success(`${symbol} agregado a favoritos`);
+      else
+        this.snackBarService.info(`${symbol} eliminado de favoritos`);
+    },
+    error: err => {
+      this.favoriteLoading = false;
+      console.error('Error actualizando favorito', err);
+      this.snackBarService.error('No se pudo actualizar favoritos');
+    }
+  });
+}
 
   private getMarketChartConfiguration(data: any): any {
     if (this.selectedChartType === 'candlestick') {
@@ -441,6 +494,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         this.selectedSymbol = response.data.symbol;
         localStorage.setItem('lastMarketSymbol', response.data.symbol);
         this.assetErrorMessage = '';
+        this.loadFavoriteStatus(this.selectedSymbol);
         this.setupChart();
       },
       error: error => {

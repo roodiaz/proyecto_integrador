@@ -30,8 +30,14 @@ export class WatchlistService {
   }
 
   removeFavorite(symbol: string) {
-    return this.http.delete(
+    return this.http.delete<ApiResponse>(
       `${environment.apiUrl}/favorite/${symbol}`
+    );
+  }
+
+  existsFavorite(symbol: string) {
+    return this.http.get<ApiResponse<boolean>>(
+      `${environment.apiUrl}/favorite/exists/${symbol}`
     );
   }
 }

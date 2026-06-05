@@ -96,5 +96,29 @@ namespace InvestLab.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Indica si un activo ya se encuentra en la lista de favoritos del usuario autenticado.
+        /// </summary>
+        /// <param name="symbol">Símbolo/ticker del activo</param>
+        /// <returns>True si el activo está en favoritos, false en caso contrario</returns>
+        /// <response code="200">Consulta realizada correctamente</response>
+        /// <response code="400">Error en la consulta</response>
+        /// <response code="401">Usuario no autenticado</response>
+        [HttpGet("exists/{symbol}")]
+        public async Task<IActionResult> Exists(string symbol)
+        {
+            _logger.LogInformation("Consultando si el activo {Symbol} está en favoritos para usuario {UserId}", symbol, UserId);
+
+            var result = await _service.ExistsAsync(UserId, symbol);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al consultar favorito: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

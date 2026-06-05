@@ -148,9 +148,9 @@
           <mat-icon>notifications</mat-icon>
         </button>
 
-        <button type="button" [disabled]="!selectedAsset"
-          (click)="selectedAsset && addToWatchlist(selectedAsset.symbol)" title="Agregar a favoritos">
-          <mat-icon>star</mat-icon>
+        <button mat-icon-button type="button" class="action-icon favorite-button" [class.is-favorite]="isFavorite"
+          [disabled]="favoriteLoading" (click)="toggleFavorite(selectedSymbol)">
+          <mat-icon>{{ isFavorite ? 'star' : 'star_border' }}</mat-icon>
         </button>
       </div>
 
