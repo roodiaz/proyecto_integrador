@@ -12,59 +12,60 @@
     </div>
   </section>
 
-<section class="indices-grid" *ngIf="!loadingIndices && marketIndices.length > 0">
-  <article class="index-card" *ngFor="let index of marketIndices" [class.positive-card]="index.changePercent >= 0" [class.negative-card]="index.changePercent < 0">
-    <div>
-      <span class="index-name">{{ index.name }}</span>
-      <strong>{{ formatNumber(index.value) }}</strong>
-    </div>
+  <section class="indices-grid" *ngIf="!loadingIndices && marketIndices.length > 0">
+    <article class="index-card" *ngFor="let index of marketIndices" [class.positive-card]="index.changePercent >= 0"
+      [class.negative-card]="index.changePercent < 0">
+      <div>
+        <span class="index-name">{{ index.name }}</span>
+        <strong>{{ formatNumber(index.value) }}</strong>
+      </div>
 
-    <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
-      <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
-      <small>{{ getIndexChange(index) >= 0 ? '+' : '' }}{{ getIndexChange(index).toFixed(2) }}</small>
-    </div>
-  </article>
-</section>
+      <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
+        <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
+        <small>{{ getIndexChange(index) >= 0 ? '+' : '' }}{{ getIndexChange(index).toFixed(2) }}</small>
+      </div>
+    </article>
+  </section>
 
-<section class="indices-grid" *ngIf="loadingIndices">
-  <article class="index-card skeleton-card" *ngFor="let item of [1, 2, 3]">
-    <div>
-      <span class="skeleton skeleton-title"></span>
-      <strong class="skeleton skeleton-value"></strong>
-    </div>
+  <section class="indices-grid" *ngIf="loadingIndices">
+    <article class="index-card skeleton-card" *ngFor="let item of [1, 2, 3]">
+      <div>
+        <span class="skeleton skeleton-title"></span>
+        <strong class="skeleton skeleton-value"></strong>
+      </div>
 
-    <div class="index-side">
-      <span class="skeleton skeleton-percent"></span>
-      <small class="skeleton skeleton-small"></small>
-    </div>
-  </article>
-</section>
+      <div class="index-side">
+        <span class="skeleton skeleton-percent"></span>
+        <small class="skeleton skeleton-small"></small>
+      </div>
+    </article>
+  </section>
 
-<section class="indices-grid" *ngIf="!loadingIndices && marketIndices.length === 0">
-  <article class="index-card index-empty-card" *ngFor="let item of emptyIndexCards">
-    <div>
-      <span class="index-name">{{ item.name }}</span>
-      <strong>--</strong>
-    </div>
+  <section class="indices-grid" *ngIf="!loadingIndices && marketIndices.length === 0">
+    <article class="index-card index-empty-card" *ngFor="let item of emptyIndexCards">
+      <div>
+        <span class="index-name">{{ item.name }}</span>
+        <strong>--</strong>
+      </div>
 
-    <div class="index-side neutral">
-      <span>--%</span>
-      <small>Sin datos</small>
-    </div>
-  </article>
-</section>
+      <div class="index-side neutral">
+        <span>--%</span>
+        <small>Sin datos</small>
+      </div>
+    </article>
+  </section>
 
   <section class="asset-panel" [class.asset-panel-empty]="!selectedAsset">
     <div class="asset-main">
-      <ng-container *ngIf="selectedAsset; else emptyAssetMain">
+      <ng-container *ngIf="selectedAsset && !loadingAsset; else emptyAssetMain">
         <div class="asset-logo">{{ selectedAsset.symbol.charAt(0) }}</div>
 
         <div>
           <div class="asset-title-row">
             <h2>{{ selectedAsset.name }}</h2>
-            <span class="asset-badge" [class.positive]="selectedAsset.changePercent >= 0"
-              [class.negative]="selectedAsset.changePercent < 0">
-              {{ selectedAsset.changePercent >= 0 ? '+' : '' }}{{ selectedAsset.changePercent.toFixed(2) }}%
+            <span class="asset-badge" [class.positive]="getAssetChangePercent() >= 0"
+              [class.negative]="getAssetChangePercent() < 0">
+              {{ getAssetChangePercent() >= 0 ? '+' : '' }}{{ getAssetChangePercent().toFixed(2) }}%
             </span>
           </div>
 
@@ -73,62 +74,62 @@
         </div>
       </ng-container>
 
-      <ng-template #emptyAssetMain>
+      <<ng-template #emptyAssetMain>
         <div class="asset-logo empty-logo">
-          <mat-icon>search</mat-icon>
+          <mat-icon>{{ loadingAsset ? 'hourglass_empty' : 'search' }}</mat-icon>
         </div>
 
         <div class="empty-asset-text">
-          <h2>Buscá un activo</h2>
-          <p>Ingresá un símbolo para ver precio, métricas y evolución.</p>
+          <h2>{{ loadingAsset ? 'Buscando activo...' : 'Buscá un activo' }}</h2>
+          <p>{{ assetErrorMessage || 'Ingresá un símbolo para ver precio, métricas y evolución.' }}</p>
           <div class="empty-lines">
             <span></span>
             <span></span>
           </div>
         </div>
-      </ng-template>
+        </ng-template>
     </div>
 
     <div class="asset-stats">
       <ng-container *ngIf="selectedAsset; else emptyStats">
         <div class="stat-item">
           <span>Open</span>
-          <strong>${{ selectedAsset.open.toFixed(2) }}</strong>
+          <strong>{{ formatNullableCurrency(selectedAsset.open) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>Volume</span>
-          <strong>{{ formatVolume(selectedAsset.volume) }}</strong>
+          <strong>{{ selectedAsset.volume == null ? '--' : formatVolume(selectedAsset.volume) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>Day High</span>
-          <strong class="positive">${{ selectedAsset.dayHigh.toFixed(2) }}</strong>
+          <strong class="positive">{{ formatNullableCurrency(selectedAsset.dayHigh) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>Day Low</span>
-          <strong class="negative">${{ selectedAsset.dayLow.toFixed(2) }}</strong>
+          <strong class="negative">{{ formatNullableCurrency(selectedAsset.dayLow) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>Avg Vol</span>
-          <strong>{{ formatVolume(selectedAsset.avgVolume) }}</strong>
+          <strong>{{ selectedAsset.avgVolume == null ? '--' : formatVolume(selectedAsset.avgVolume) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>Mkt Cap</span>
-          <strong>{{ formatMarketCap(selectedAsset.marketCap) }}</strong>
+          <strong>{{ selectedAsset.marketCap == null ? '--' : formatMarketCap(selectedAsset.marketCap) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>P/E Ratio</span>
-          <strong>{{ selectedAsset.peRatio.toFixed(1) }}</strong>
+          <strong>{{ selectedAsset.peRatio == null ? '--' : selectedAsset.peRatio.toFixed(1) }}</strong>
         </div>
 
         <div class="stat-item">
           <span>Div Yield</span>
-          <strong>{{ selectedAsset.dividendYield.toFixed(2) }}%</strong>
+          <strong>{{ formatNullablePercent(selectedAsset.dividendYield) }}</strong>
         </div>
       </ng-container>
 
@@ -163,12 +164,15 @@
   <section class="chart-panel">
     <div class="chart-header">
       <div class="chart-title-section">
-        <h2 class="chart-title">bbb vs S&P 500 vs NASDAQ vs Dow Jones</h2>
+        <h2 class="chart-title">
+          {{ selectedAsset ? selectedAsset.symbol : 'Activo' }} vs S&P 500 vs NASDAQ vs Dow Jones
+        </h2>
 
         <div class="chart-subtitle">
-          <span class="current-value">7474</span>
-          <span class="change" [ngClass]="0 >= 0 ? 'positive' : 'negative'">
-            {{ 0 >= 0 ? '+' : '' }}74747%
+          <span class="current-value">{{ selectedAsset ? ('$' + selectedAsset.price.toFixed(2)) : '--' }}</span>
+          <span class="change" [ngClass]="getAssetChangePercent() >= 0 ? 'positive' : 'negative'">
+            {{ selectedAsset ? ((getAssetChangePercent() >= 0 ? '+' : '') + getAssetChangePercent().toFixed(2) + '%') :
+            '--%' }}
           </span>
           <span class="period">vs mercado</span>
         </div>
@@ -237,8 +241,8 @@
             <small>{{ stock.name }}</small>
           </div>
 
-          <b [class.positive]="stock.changePercent >= 0" [class.negative]="stock.changePercent < 0">
-            {{ stock.changePercent >= 0 ? '+' : '' }}{{ stock.changePercent.toFixed(1) }}%
+          <b [class.positive]="getStockChangePercent(stock) >= 0" [class.negative]="getStockChangePercent(stock) < 0">
+            {{ getStockChangePercent(stock) >= 0 ? '+' : '' }}{{ getStockChangePercent(stock).toFixed(1) }}%
           </b>
         </button>
       </div>

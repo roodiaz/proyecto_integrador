@@ -1,111 +1,125 @@
-<div class="create-alert-modal">
-  <!-- Modal Header -->
-  <div class="modal-header">
-    <div class="header-content">
-      <div class="header-text">
-        <h2>{{ isEditMode ? 'Editar Alerta' : 'Nueva Alerta' }}</h2>
-        <p>Configura una alerta para monitorear el precio de un activo</p>
-      </div>
+<div class="dialog-wrapper">
+
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="header-icon">
+      <mat-icon>notifications_active</mat-icon>
+    </div>
+    <div>
+      <h2 class="dialog-title">{{ isEditMode ? 'Editar Alerta' : 'Nueva Alerta' }}</h2>
+      <p class="dialog-subtitle">Configura una alerta para monitorear el precio de un activo</p>
     </div>
   </div>
-  
-  <!-- Modal Body -->
-  <div class="modal-body">
+
+  <!-- Body -->
+  <div class="dialog-body">
     <form [formGroup]="alertForm" (ngSubmit)="onSubmit()" class="alert-form">
-      <!-- Asset Section -->
+
+      <!-- Activo -->
       <div class="form-section">
-        <div class="section-header">
-          <h3>Activo</h3>
-        </div>
-        <mat-form-field appearance="outline" class="modern-field">
-          <mat-label>Símbolo del activo</mat-label>
-          <input matInput placeholder="Ej: AAPL, GOOGL, TSLA" formControlName="symbol" uppercase>
-          <mat-error *ngIf="alertForm.get('symbol')?.hasError('required')">
+        <p class="section-label">Activo</p>
+        <div class="field-group">
+          <label class="field-label">Símbolo del activo *</label>
+          <div class="field-input-wrap">
+            <input matInput class="field-input" formControlName="symbol"
+              placeholder="Ej: AAPL, GOOGL, TSLA" uppercase>
+            <mat-icon class="field-icon">candlestick_chart</mat-icon>
+          </div>
+          <span class="field-error"
+            *ngIf="alertForm.get('symbol')?.touched && alertForm.get('symbol')?.hasError('required')">
             El símbolo es requerido
-          </mat-error>
-          <mat-error *ngIf="alertForm.get('symbol')?.hasError('pattern')">
-            Ingrese un símbolo válido (1-5 letras mayúsculas)
-          </mat-error>
-        </mat-form-field>
+          </span>
+          <span class="field-error"
+            *ngIf="alertForm.get('symbol')?.touched && alertForm.get('symbol')?.hasError('pattern')">
+            Ingresá un símbolo válido (1-5 letras)
+          </span>
+        </div>
       </div>
 
-      <!-- Condition Section -->
+      <!-- Condición -->
       <div class="form-section">
-        <div class="section-header">
-          <h3>Condición</h3>
-        </div>
-        <mat-form-field appearance="outline" class="modern-field">
-          <mat-label>Tipo de condición</mat-label>
-          <mat-select formControlName="condition">
-            <mat-option *ngFor="let cond of conditions" [value]="cond.value">
-              {{ cond.label }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        <p class="section-label">Condición</p>
 
-        <!-- Price Input -->
-        <mat-form-field appearance="outline" class="modern-field" *ngIf="!isPercentageCondition()">
-          <mat-label>Precio objetivo</mat-label>
-          <input matInput type="number" step="0.01" min="0.01" formControlName="price" placeholder="0.00">
-          <span matTextPrefix>$</span>
-          <mat-error *ngIf="alertForm.get('price')?.hasError('required')">
+        <div class="field-group">
+          <label class="field-label">Tipo de condición</label>
+          <div class="field-input-wrap">
+            <mat-select class="field-select" formControlName="condition" panelClass="dark-select-panel">
+              <mat-option *ngFor="let cond of conditions" [value]="cond.value">
+                {{ cond.label }}
+              </mat-option>
+            </mat-select>
+          </div>
+        </div>
+
+        <!-- Precio objetivo -->
+        <div class="field-group" *ngIf="!isPercentageCondition()">
+          <label class="field-label">Precio objetivo *</label>
+          <div class="field-input-wrap">
+            <span class="field-prefix">$</span>
+            <input matInput class="field-input with-prefix" type="number" step="0.01" min="0.01"
+              formControlName="price" placeholder="0.00">
+          </div>
+          <span class="field-error"
+            *ngIf="alertForm.get('price')?.touched && alertForm.get('price')?.hasError('required')">
             El precio es requerido
-          </mat-error>
-          <mat-error *ngIf="alertForm.get('price')?.hasError('min')">
+          </span>
+          <span class="field-error"
+            *ngIf="alertForm.get('price')?.touched && alertForm.get('price')?.hasError('min')">
             El precio debe ser mayor a 0
-          </mat-error>
-        </mat-form-field>
+          </span>
+        </div>
 
-        <!-- Percentage Input -->
-        <mat-form-field appearance="outline" class="modern-field" *ngIf="isPercentageCondition()">
-          <mat-label>Cambio porcentual</mat-label>
-          <input matInput type="number" step="0.01" min="0.01" max="100" formControlName="percentChange" placeholder="0.00">
-          <span matSuffix>%</span>
-          <mat-error *ngIf="alertForm.get('percentChange')?.hasError('required')">
+        <!-- Cambio porcentual -->
+        <div class="field-group" *ngIf="isPercentageCondition()">
+          <label class="field-label">Cambio porcentual *</label>
+          <div class="field-input-wrap">
+            <input matInput class="field-input with-suffix" type="number" step="0.01" min="0.01" max="100"
+              formControlName="percentChange" placeholder="0.00">
+            <span class="field-suffix">%</span>
+          </div>
+          <span class="field-error"
+            *ngIf="alertForm.get('percentChange')?.touched && alertForm.get('percentChange')?.hasError('required')">
             El porcentaje es requerido
-          </mat-error>
-          <mat-error *ngIf="alertForm.get('percentChange')?.hasError('min')">
-            El porcentaje debe ser mayor a 0
-          </mat-error>
-          <mat-error *ngIf="alertForm.get('percentChange')?.hasError('max')">
-            El porcentaje no puede ser mayor a 100
-          </mat-error>
-        </mat-form-field>
+          </span>
+          <span class="field-error"
+            *ngIf="alertForm.get('percentChange')?.touched && alertForm.get('percentChange')?.hasError('min')">
+            Debe ser mayor a 0
+          </span>
+          <span class="field-error"
+            *ngIf="alertForm.get('percentChange')?.touched && alertForm.get('percentChange')?.hasError('max')">
+            No puede ser mayor a 100
+          </span>
+        </div>
       </div>
 
-      <!-- Status Section -->
+      <!-- Estado -->
       <div class="form-section">
-        <div class="section-header">
-          <h3>Estado</h3>
-        </div>
-        <div class="status-toggle">
-          <mat-slide-toggle formControlName="isActive" color="primary" class="modern-toggle">
+        <p class="section-label">Estado</p>
+        <div class="toggle-row">
+          <div class="toggle-info">
             <span class="toggle-label">
               {{ alertForm.get('isActive')?.value ? 'Alerta activa' : 'Alerta inactiva' }}
             </span>
-          </mat-slide-toggle>
-          <p class="toggle-description">
-            {{ alertForm.get('isActive')?.value 
-              ? 'La alerta activará notificaciones cuando se cumpla la condición' 
-              : 'La alerta está guardada pero no enviará notificaciones' }}
-          </p>
+            <span class="toggle-desc">
+              {{ alertForm.get('isActive')?.value
+                ? 'Enviará notificaciones cuando se cumpla la condición'
+                : 'Guardada pero sin enviar notificaciones' }}
+            </span>
+          </div>
+          <mat-slide-toggle formControlName="isActive" color="primary"></mat-slide-toggle>
         </div>
       </div>
+
     </form>
   </div>
 
-  <!-- Modal Footer -->
-  <div class="modal-footer">
-    <div class="footer-content">
-      <button mat-button class="cancel-btn" (click)="onCancel()">
-        Cancelar
-      </button>
-      <button mat-raised-button color="primary" 
-              class="submit-btn"
-              [disabled]="alertForm.invalid" 
-              (click)="onSubmit()">
-        {{ isEditMode ? 'Actualizar Alerta' : 'Crear Alerta' }}
-      </button>
-    </div>
+  <!-- Footer -->
+  <div class="dialog-footer">
+    <button class="btn-cancel" type="button" (click)="onCancel()">Cancelar</button>
+    <button class="btn-submit" type="button" [disabled]="alertForm.invalid" (click)="onSubmit()">
+      <mat-icon>{{ isEditMode ? 'edit' : 'add_alert' }}</mat-icon>
+      {{ isEditMode ? 'Actualizar Alerta' : 'Crear Alerta' }}
+    </button>
   </div>
+
 </div>

@@ -135,6 +135,7 @@ export class Notifications {
         const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
         const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
             width: '350px',
+            backdropClass: 'blur-backdrop',
             data: {
                 title: 'Eliminar alerta',
                 message: '¿Estás seguro de que deseas eliminar este registro del historial?'

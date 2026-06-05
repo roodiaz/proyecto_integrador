@@ -45,5 +45,36 @@ namespace InvestLab.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Obtiene el detalle de un activo del mercado.
+        /// </summary>
+        /// <param name="symbol">
+        /// Símbolo del activo a consultar.
+        /// </param>
+        /// <returns>
+        /// Información principal del activo solicitado.
+        /// </returns>
+        /// <response code="200">
+        /// Activo obtenido correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener el activo solicitado.
+        /// </response>
+        [HttpGet("asset/{symbol}")]
+        public async Task<IActionResult> GetAssetDetail(string symbol)
+        {
+            _logger.LogInformation("Solicitud de detalle de activo recibida para {Symbol}", symbol);
+
+            var result = await _service.GetAssetDetailAsync(symbol);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener detalle de activo {Symbol}: {Message}", symbol, result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

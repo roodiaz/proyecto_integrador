@@ -193,7 +193,8 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     const dialogRef = this.dialog.open(AddFavoriteDialog, {
       width: '420px',
       maxWidth: '95vw',
-      panelClass: 'watchlist-dialog'
+      panelClass: 'watchlist-dialog',
+      backdropClass: 'blur-backdrop',
     });
 
     dialogRef.afterClosed().subscribe(symbol => {

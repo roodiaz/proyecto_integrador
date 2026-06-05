@@ -3,7 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
-import { MarketOverview } from '../models/market.model';
+import {
+    MarketOverview,
+    MarketAsset
+} from '../models/market.model';
 
 @Injectable({
     providedIn: 'root'
@@ -17,6 +20,13 @@ export class MarketService {
         Observable<ApiResponse<MarketOverview>> {
         return this.http.get<ApiResponse<MarketOverview>>(
             `${this.apiUrl}/overview`
+        );
+    }
+
+    getAssetDetail(symbol: string): 
+    Observable<ApiResponse<MarketAsset>> {
+        return this.http.get<ApiResponse<MarketAsset>>(
+            `${this.apiUrl}/asset/${symbol}`
         );
     }
 }

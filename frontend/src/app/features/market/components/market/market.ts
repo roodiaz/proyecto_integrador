@@ -7,27 +7,13 @@ import Chart from 'chart.js/auto';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
 import { MarketService } from '../../services/market.service';
-import { MarketIndex, MarketStatus } from '../../models/market.model';
+import {
+  MarketIndex,
+  MarketStatus,
+  MarketAsset
+} from '../../models/market.model';
 
 Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcElement);
-
-interface MarketAsset {
-  symbol: string;
-  name: string;
-  exchange: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  open: number;
-  volume: number;
-  avgVolume: number;
-  dayHigh: number;
-  dayLow: number;
-  marketCap: number;
-  peRatio: number;
-  dividendYield: number;
-  sector: string;
-}
 
 interface MarketNews {
   source: string;
@@ -48,7 +34,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   selectedSymbol = 'NVDA';
   selectedTimeframe = '1m';
   selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
-  selectedAsset: MarketAsset | null = null;
   marketData: MarketAsset[] = [];
   trendingStocks: MarketAsset[] = [];
   marketNews: MarketNews[] = [];
@@ -65,6 +50,9 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
   emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
 
+  selectedAsset: MarketAsset | null = null;
+  loadingAsset = false;
+  assetErrorMessage = '';
 
   constructor(
     private router: Router,
@@ -77,7 +65,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadNews();
     this.updateClock();
     this.selectedAsset = this.marketData.find(x => x.symbol === this.selectedSymbol) ?? this.marketData[0];
-    this.trendingStocks = [...this.marketData].sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent)).slice(0, 6);
+    this.trendingStocks = [...this.marketData].sort((a, b) => Math.abs(b.changePercent!) - Math.abs(a.changePercent!)).slice(0, 6);
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
   }
 
@@ -285,12 +273,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   selectAsset(symbol: string): void {
-    const asset = this.marketData.find(x => x.symbol === symbol.trim().toUpperCase());
-    if (!asset) return;
-
-    this.selectedSymbol = asset.symbol;
-    this.selectedAsset = asset;
-    this.setupChart();
+    this.selectedSymbol = symbol;
+    this.searchAsset();
   }
 
   changeTimeframe(timeframe: string): void {
@@ -349,14 +333,38 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
   searchAsset(): void {
     const symbol = this.selectedSymbol.trim().toUpperCase();
-    const asset = this.marketData.find(x => x.symbol === symbol);
 
-    if (!asset) {
-      this.selectedSymbol = this.selectedAsset!.symbol;
+    if (!symbol) {
+      this.assetErrorMessage = 'Ingresá un símbolo para buscar';
+      this.selectedAsset = null;
       return;
     }
 
-    this.selectAsset(symbol);
+    this.loadingAsset = true;
+    this.assetErrorMessage = '';
+
+    this.marketService.getAssetDetail(symbol).subscribe({
+      next: response => {
+        this.loadingAsset = false;
+
+        if (!response.success || !response.data) {
+          this.selectedAsset = null;
+          this.assetErrorMessage = response.message || 'No se encontró información para el activo';
+          return;
+        }
+
+        this.selectedAsset = response.data;
+        this.selectedSymbol = response.data.symbol;
+        this.assetErrorMessage = '';
+        this.setupChart();
+      },
+      error: error => {
+        console.error('Error al obtener detalle del activo', error);
+        this.loadingAsset = false;
+        this.selectedAsset = null;
+        this.assetErrorMessage = 'No se pudo obtener la información del activo';
+      }
+    });
   }
 
   changeChartType(type: 'line' | 'bar' | 'candlestick'): void {
@@ -413,7 +421,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getMarketPerformancePoints(): any[] {
-    const multiplier = this.selectedAsset!.changePercent >= 0 ? 1 : -1;
+    const multiplier = this.selectedAsset!.changePercent! >= 0 ? 1 : -1;
 
     if (this.selectedTimeframe === '1d') {
       return [
@@ -515,5 +523,25 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
   getIndexChange(index: MarketIndex): number {
     return index.change ?? ((index.value ?? 0) - (index.previousClose ?? 0));
+  }
+
+  formatNullableCurrency(value: number | null | undefined): string {
+    return value == null ? '--' : `$${value.toFixed(2)}`;
+  }
+
+  formatNullableNumber(value: number | null | undefined): string {
+    return value == null ? '--' : value.toString();
+  }
+
+  formatNullablePercent(value: number | null | undefined): string {
+    return value == null ? '--' : `${value.toFixed(2)}%`;
+  }
+
+  getAssetChangePercent(): number {
+    return this.selectedAsset?.changePercent ?? 0;
+  }
+  
+  getStockChangePercent(stock: MarketAsset): number {
+    return stock.changePercent ?? 0;
   }
 }

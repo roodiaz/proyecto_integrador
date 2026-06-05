@@ -230,6 +230,7 @@ export class Alerts implements OnInit {
 
       const dialogRef = this.dialog.open(ModalComponent, {
         width: '600px',
+        backdropClass: 'blur-backdrop',
         data: {
           isEditing: false,
           alert: symbol ? { symbol } : null
@@ -254,6 +255,7 @@ export class Alerts implements OnInit {
 
     const dialogRef = this.dialog.open(ModalComponent, {
       width: '600px',
+      backdropClass: 'blur-backdrop',
       data: {
         alert
       }
@@ -271,6 +273,7 @@ export class Alerts implements OnInit {
 
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',
+      backdropClass: 'blur-backdrop',
       data: {
         title: 'Eliminar alerta',
         message: `¿Estás seguro de que deseas eliminar la alerta para ${alert.symbol}?`

@@ -23,10 +23,10 @@ builder.Services.AddResend(options =>
 
 // Workers
 builder.Services.AddHostedService<MarketSeederWorker>();
-builder.Services.AddHostedService<DailySnapshotWorker>();
-builder.Services.AddHostedService<AlertWorker>();
-builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
-builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
+//builder.Services.AddHostedService<DailySnapshotWorker>();
+//builder.Services.AddHostedService<AlertWorker>();
+//builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
+//builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
 
 var host = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using InvestLab.Business.Interfaces;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Market;
@@ -9,12 +10,14 @@ namespace InvestLab.Business.Services
     public class MarketService : IMarketService
     {
         private readonly IExternalProvider _externalProvider;
+        private readonly IAssetService _assetService;
         private readonly ILogger<MarketService> _logger;
 
-        public MarketService(IExternalProvider externalProvider, ILogger<MarketService> logger)
+        public MarketService(IExternalProvider externalProvider, ILogger<MarketService> logger, IAssetService assetService)
         {
             _externalProvider = externalProvider;
             _logger = logger;
+            _assetService = assetService;
         }
 
         public async Task<Response> GetMarketOverviewAsync()
@@ -53,6 +56,55 @@ namespace InvestLab.Business.Services
             }
         }
 
+        public async Task<Response> GetAssetDetailAsync(string symbol)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(symbol))
+                    return Response.Fail("Debe ingresar un símbolo válido");
+
+                symbol = symbol.Trim().ToUpper();
+
+                var asset = await _assetService.GetOrCreateAsync(symbol);
+                if (asset == null)
+                    return Response.Fail("Activo no encontrado");
+
+                var price = await _externalProvider.GetPriceAsync(symbol);
+                if (price == null)
+                    return Response.Fail("No se encontró información de precio para el activo solicitado");
+
+                var profile = await _externalProvider.GetProfileAsync(symbol);
+                var change = Math.Round(price.Price - price.PreviousClose, 2);
+
+                var result = new MarketAssetDetailDto
+                {
+                    Symbol = profile?.Symbol ?? price.Symbol,
+                    Name = profile?.Name ?? price.Symbol,
+                    Exchange = string.Empty,
+                    Price = price.Price,
+                    Change = change,
+                    ChangePercent = price.VariationPercent,
+                    Open = price.Open,
+                    Volume = price.Volume,
+                    AvgVolume = price.AvgVolume,
+                    DayHigh = price.DayHigh,
+                    DayLow = price.DayLow,
+                    MarketCap = price.MarketCap,
+                    PeRatio = price.PeRatio,
+                    DividendYield = price.DividendYield,
+                    Sector = profile?.Sector ?? "Unknown"
+                };
+
+                return Response.Ok(result, "Activo obtenido correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener detalle del activo {Symbol}", symbol);
+                return Response.Fail("Ocurrió un error al obtener el detalle del activo");
+            }
+        }
+
+        // Metodos auxiliares
         private static MarketStatusDto GetMarketStatus()
         {
             var timeZone = GetEasternTimeZone();

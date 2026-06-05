@@ -21,3 +21,21 @@ export interface MarketOverview {
   marketStatus: MarketStatus;
   indices: MarketIndex[];
 }
+
+export interface MarketAsset {
+  symbol: string;
+  name: string;
+  exchange: string;
+  price: number;
+  change: number | null;
+  changePercent: number | null;
+  open: number | null;
+  volume: number | null;
+  avgVolume: number | null;
+  dayHigh: number | null;
+  dayLow: number | null;
+  marketCap: number | null;
+  peRatio: number | null;
+  dividendYield: number | null;
+  sector: string | null;
+}

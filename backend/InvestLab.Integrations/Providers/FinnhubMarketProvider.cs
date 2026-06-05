@@ -186,4 +186,9 @@ public class FinnhubMarketProvider : IExternalProvider
                     : "Unknown"
         };
     }
+
+    public Task<MarketAssetDetailDto?> GetAssetDetailAsync(string symbol)
+    {
+        throw new NotImplementedException();
+    }
 }

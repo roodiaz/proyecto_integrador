@@ -1,59 +1,60 @@
 ﻿using InvestLab.Integrations.Configuration;
 using InvestLab.Integrations.Interfaces;
+using InvestLab.Models.DTOs;
 using InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
-using InvestLab.Models.DTOs;
+using NodaTime;
+using YahooQuotesApi;
 
 namespace InvestLab.Integrations.Providers
 {
     public class YahooMarketProvider : IExternalProvider
     {
         private readonly YahooOptions _options;
-        private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+        private readonly YahooQuotes _yahooQuotes;
 
         public YahooMarketProvider(HttpClient httpClient, IConfiguration config, IOptions<YahooOptions> options)
         {
-            _httpClient = httpClient;
             _config = config;
             _options = options.Value;
+            _yahooQuotes = new YahooQuotesBuilder().Build();
         }
 
         public async Task<MarketPriceDto?> GetPriceAsync(string symbol)
         {
-            var url = $"{_options.BaseUrl}/v8/finance/chart/{symbol}?range=1d&interval=1m";
-
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add("User-Agent", "Mozilla/5.0");
-
-            var response = await _httpClient.SendAsync(request);
-            //var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
+            if (string.IsNullOrWhiteSpace(symbol))
                 return null;
 
-            var json = await response.Content.ReadAsStringAsync();
+            symbol = symbol.Trim().ToUpper();
 
-            using var data = JsonDocument.Parse(json);
+            var snapshot = await _yahooQuotes.GetSnapshotAsync(symbol);
 
-            var result = data.RootElement
-                .GetProperty("chart")
-                .GetProperty("result")[0];
+            if (snapshot == null)
+                return null;
 
-            var meta = result.GetProperty("meta");
-            var price = meta.GetProperty("regularMarketPrice").GetDecimal();
-            var previousClose = meta.GetProperty("previousClose").GetDecimal();
+            var price = GetDecimalValue(snapshot, "RegularMarketPrice", "PostMarketPrice", "PreMarketPrice") ?? 0;
+            var previousClose = GetDecimalValue(snapshot, "RegularMarketPreviousClose", "PreviousClose", "RegularMarketPreviousCloseRaw") ?? 0;
+            var changePercent = GetDecimalValue(snapshot, "RegularMarketChangePercent", "ChangePercent", "RegularMarketChangePercentRaw");
 
-            var variation = ((price - previousClose) / previousClose) * 100;
+            if (changePercent == null && previousClose > 0)
+                changePercent = ((price - previousClose) / previousClose) * 100;
 
             return new MarketPriceDto
             {
-                Symbol = symbol,
+                Symbol = GetStringValue(snapshot, "Symbol") ?? symbol,
                 Price = price,
                 PreviousClose = previousClose,
-                VariationPercent = Math.Round(variation, 2)
+                VariationPercent = Math.Round(changePercent ?? 0, 2),
+                Open = GetDecimalValue(snapshot, "RegularMarketOpen", "Open"),
+                Volume = GetLongValue(snapshot, "RegularMarketVolume", "Volume"),
+                AvgVolume = GetLongValue(snapshot, "AverageDailyVolume3Month", "AverageDailyVolume10Day", "AverageVolume", "AverageVolume3Months"),
+                DayHigh = GetDecimalValue(snapshot, "RegularMarketDayHigh", "DayHigh"),
+                DayLow = GetDecimalValue(snapshot, "RegularMarketDayLow", "DayLow"),
+                MarketCap = GetLongValue(snapshot, "MarketCap", "MarketCapitalization"),
+                PeRatio = GetDecimalValue(snapshot, "TrailingPE", "PeRatio", "PERatio", "TrailingPe"),
+                DividendYield = GetDecimalValue(snapshot, "DividendYield", "TrailingAnnualDividendYield")
             };
         }
 
@@ -62,67 +63,40 @@ namespace InvestLab.Integrations.Providers
             if (symbols == null || !symbols.Any())
                 return [];
 
-            try
-            {
-                return await GetPricesFromSparkAsync(symbols);
-            }
-            catch (Exception ex)
-            {
+            var cleanSymbols = symbols.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim().ToUpper()).Distinct().ToArray();
 
-                var tasks = symbols.Select(GetPriceAsync);
+            if (cleanSymbols.Length == 0)
+                return [];
 
-                var results = await Task.WhenAll(tasks);
-
-                return results
-                    .Where(x => x != null)
-                    .Cast<MarketPriceDto>()
-                    .ToList();
-            }
-        }
-
-        private async Task<List<MarketPriceDto>> GetPricesFromSparkAsync(List<string> symbols)
-        {
-            var symbolsQuery = string.Join(",", symbols);
-
-            var url = $"{_options.BaseUrl}/v7/finance/spark?symbols={symbolsQuery}&range=1d&interval=1m";
-
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add("User-Agent", "Mozilla/5.0");
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (!response.IsSuccessStatusCode)
-                throw new Exception($"Yahoo Spark devolvió {response.StatusCode}");
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            using var data = JsonDocument.Parse(json);
-
-            var results = data.RootElement
-                .GetProperty("spark")
-                .GetProperty("result");
-
+            var snapshots = await _yahooQuotes.GetSnapshotAsync(cleanSymbols);
             var prices = new List<MarketPriceDto>();
 
-            foreach (var item in results.EnumerateArray())
+            foreach (var symbol in cleanSymbols)
             {
-                var symbol = item.GetProperty("symbol").GetString();
+                if (!snapshots.TryGetValue(symbol, out var snapshot) || snapshot == null)
+                    continue;
 
-                var meta = item
-                    .GetProperty("response")[0]
-                    .GetProperty("meta");
+                var price = GetDecimalValue(snapshot, "RegularMarketPrice", "PostMarketPrice", "PreMarketPrice") ?? 0;
+                var previousClose = GetDecimalValue(snapshot, "RegularMarketPreviousClose", "PreviousClose", "RegularMarketPreviousCloseRaw") ?? 0;
+                var changePercent = GetDecimalValue(snapshot, "RegularMarketChangePercent", "ChangePercent", "RegularMarketChangePercentRaw");
 
-                var price = meta.GetProperty("regularMarketPrice").GetDecimal();
-                var previousClose = meta.GetProperty("previousClose").GetDecimal();
-
-                var variation = ((price - previousClose) / previousClose) * 100;
+                if (changePercent == null && previousClose > 0)
+                    changePercent = ((price - previousClose) / previousClose) * 100;
 
                 prices.Add(new MarketPriceDto
                 {
-                    Symbol = symbol!,
+                    Symbol = GetStringValue(snapshot, "Symbol") ?? symbol,
                     Price = price,
                     PreviousClose = previousClose,
-                    VariationPercent = Math.Round(variation, 2)
+                    VariationPercent = Math.Round(changePercent ?? 0, 2),
+                    Open = GetDecimalValue(snapshot, "RegularMarketOpen", "Open"),
+                    Volume = GetLongValue(snapshot, "RegularMarketVolume", "Volume"),
+                    AvgVolume = GetLongValue(snapshot, "AverageDailyVolume3Month", "AverageDailyVolume10Day", "AverageVolume", "AverageVolume3Months"),
+                    DayHigh = GetDecimalValue(snapshot, "RegularMarketDayHigh", "DayHigh"),
+                    DayLow = GetDecimalValue(snapshot, "RegularMarketDayLow", "DayLow"),
+                    MarketCap = GetLongValue(snapshot, "MarketCap", "MarketCapitalization"),
+                    PeRatio = GetDecimalValue(snapshot, "TrailingPE", "PeRatio", "PERatio", "TrailingPe"),
+                    DividendYield = GetDecimalValue(snapshot, "DividendYield", "TrailingAnnualDividendYield")
                 });
             }
 
@@ -131,102 +105,164 @@ namespace InvestLab.Integrations.Providers
 
         public async Task<List<HistoricalPriceDto>> GetHistoricalAsync(string symbol, DateTime from, DateTime to)
         {
-            var period1 = ((DateTimeOffset)from).ToUnixTimeSeconds();
-            var period2 = ((DateTimeOffset)to).ToUnixTimeSeconds();
-
-            var url =
-                $"{_options.BaseUrl}/v8/finance/chart/{symbol}" +
-                $"?period1={period1}" +
-                $"&period2={period2}" +
-                $"&interval=1d";
-
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add("User-Agent", "Mozilla/5.0");
-
-            var response = await _httpClient.SendAsync(request);
-
-            //var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
+            if (string.IsNullOrWhiteSpace(symbol))
                 return [];
 
-            var json = await response.Content.ReadAsStringAsync();
+            symbol = symbol.Trim().ToUpper();
 
-            using var data = JsonDocument.Parse(json);
+            var start = Instant.FromDateTimeUtc(DateTime.SpecifyKind(from.Date, DateTimeKind.Utc));
+            var yahooQuotes = new YahooQuotesBuilder().WithHistoryStartDate(start).Build();
 
-            var result = data.RootElement
-                .GetProperty("chart")
-                .GetProperty("result")[0];
+            var result = await yahooQuotes.GetHistoryAsync(symbol);
 
-            var timestamps = result
-                .GetProperty("timestamp")
-                .EnumerateArray()
-                .Select(x => x.GetInt64())
-                .ToList();
+            if (result == null || result.Value == null)
+                return [];
 
-            var quote = result
-                .GetProperty("indicators")
-                .GetProperty("quote")[0];
+            var history = result.Value;
+            var ticks = GetObjectValue(history, "Ticks");
 
-            var opens = quote.GetProperty("open")
-                .EnumerateArray()
-                .ToList();
+            if (ticks == null)
+                return [];
 
-            var highs = quote.GetProperty("high")
-                .EnumerateArray()
-                .ToList();
+            var list = new List<HistoricalPriceDto>();
 
-            var lows = quote.GetProperty("low")
-                .EnumerateArray()
-                .ToList();
-
-            var closes = quote.GetProperty("close")
-                .EnumerateArray()
-                .ToList();
-
-            var volumes = quote.GetProperty("volume")
-                .EnumerateArray()
-                .ToList();
-
-            var history = new List<HistoricalPriceDto>();
-
-            for (int i = 0; i < timestamps.Count; i++)
+            foreach (var tick in (System.Collections.IEnumerable)ticks)
             {
-                if (closes[i].ValueKind == JsonValueKind.Null)
+                var date = GetDateTimeFromTick(tick);
+                if (date == null)
                     continue;
 
-                history.Add(new HistoricalPriceDto
+                if (date.Value.Date < from.Date || date.Value.Date > to.Date)
+                    continue;
+
+                var close = GetDecimalValue(tick, "Close");
+                if (close == null)
+                    continue;
+
+                list.Add(new HistoricalPriceDto
                 {
-                    Date = DateTimeOffset
-                        .FromUnixTimeSeconds(timestamps[i])
-                        .UtcDateTime,
-
-                    Open = opens[i].ValueKind == JsonValueKind.Null
-                        ? 0
-                        : opens[i].GetDecimal(),
-
-                    High = highs[i].ValueKind == JsonValueKind.Null
-                        ? 0
-                        : highs[i].GetDecimal(),
-
-                    Low = lows[i].ValueKind == JsonValueKind.Null
-                        ? 0
-                        : lows[i].GetDecimal(),
-
-                    Close = closes[i].GetDecimal(),
-
-                    Volume = volumes[i].ValueKind == JsonValueKind.Null
-                        ? 0
-                        : volumes[i].GetInt64()
+                    Date = date.Value,
+                    Open = GetDecimalValue(tick, "Open") ?? 0,
+                    High = GetDecimalValue(tick, "High") ?? 0,
+                    Low = GetDecimalValue(tick, "Low") ?? 0,
+                    Close = close.Value,
+                    Volume = GetLongValue(tick, "Volume") ?? 0
                 });
             }
 
-            return history;
+            return list.OrderBy(x => x.Date).ToList();
         }
 
-        public Task<AssetProfileDto?> GetProfileAsync(string symbol)
+        public async Task<AssetProfileDto?> GetProfileAsync(string symbol)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(symbol))
+                return null;
+
+            symbol = symbol.Trim().ToUpper();
+
+            var snapshot = await _yahooQuotes.GetSnapshotAsync(symbol);
+
+            if (snapshot == null)
+                return null;
+
+            return new AssetProfileDto
+            {
+                Symbol = GetStringValue(snapshot, "Symbol") ?? symbol,
+                Name = GetStringValue(snapshot, "LongName", "ShortName", "DisplayName") ?? symbol,
+                Sector = GetStringValue(snapshot, "Sector", "SectorDisp", "Industry") ?? "Unknown"
+            };
+        }
+
+        private static object? GetObjectValue(object source, params string[] propertyNames)
+        {
+            var type = source.GetType();
+
+            foreach (var propertyName in propertyNames)
+            {
+                var prop = type.GetProperty(propertyName);
+                if (prop == null)
+                    continue;
+
+                var value = prop.GetValue(source);
+                if (value != null)
+                    return value;
+            }
+
+            return null;
+        }
+
+        private static string? GetStringValue(object source, params string[] propertyNames)
+        {
+            var value = GetObjectValue(source, propertyNames);
+            return value?.ToString();
+        }
+
+        private static decimal? GetDecimalValue(object source, params string[] propertyNames)
+        {
+            var value = GetObjectValue(source, propertyNames);
+
+            if (value == null)
+                return null;
+
+            try
+            {
+                return value switch
+                {
+                    decimal d => d,
+                    double d => Convert.ToDecimal(d),
+                    float f => Convert.ToDecimal(f),
+                    int i => i,
+                    long l => l,
+                    short s => s,
+                    _ => decimal.TryParse(value.ToString(), out var parsed) ? parsed : null
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static long? GetLongValue(object source, params string[] propertyNames)
+        {
+            var value = GetObjectValue(source, propertyNames);
+
+            if (value == null)
+                return null;
+
+            try
+            {
+                return value switch
+                {
+                    long l => l,
+                    int i => i,
+                    short s => s,
+                    decimal d => Convert.ToInt64(d),
+                    double d => Convert.ToInt64(d),
+                    float f => Convert.ToInt64(f),
+                    _ => long.TryParse(value.ToString(), out var parsed) ? parsed : null
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static DateTime? GetDateTimeFromTick(object tick)
+        {
+            var value = GetObjectValue(tick, "Date");
+
+            if (value == null)
+                return null;
+
+            if (value is Instant instant)
+                return instant.ToDateTimeUtc();
+
+            if (value is DateTime dateTime)
+                return dateTime;
+
+            return null;
         }
     }
 }

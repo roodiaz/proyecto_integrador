@@ -132,7 +132,7 @@ public class MarketHistoryService : IMarketHistoryService
                 // Nunca recuperamos el día actual.
                 var toDate = DateTime.UtcNow.Date;
 
-                if (fromDate > toDate)
+                if (fromDate >= toDate)
                     continue;
 
                 _logger.LogInformation("Recuperando históricos para {Symbol}. Desde {From} hasta {To}", asset.Symbol, fromDate, toDate);

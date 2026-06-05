@@ -66,3 +66,10 @@ body {
     width: 100%;
   }
 }
+
+/* Backdrop con blur para dialogs */
+.blur-backdrop {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.55) !important;
+}
