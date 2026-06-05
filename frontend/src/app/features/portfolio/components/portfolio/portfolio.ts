@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
-import { BuyData, SellData } from '../../models/portfolio.modal.model';
+import { MatDialog } from '@angular/material/dialog';
+import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
+import { BuyData, SellData, PortfolioModalResult } from '../../models/portfolio.modal.model';
 
 import {
   PortfolioBalanceCards,
@@ -20,7 +21,7 @@ import {
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, PortfolioModal],
+  imports: [CommonModule, FormsModule, MaterialModule],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css'
 })
@@ -63,11 +64,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   // Operations
   operations: PortfolioTransaction[] = [];
 
-  // Modal controls
-  showBuyModal: boolean = false;
-  showSellModal: boolean = false;
-  selectedSymbol = '';
-
   // Top assets data
   topAssets: Array<{ ticker: string, percentage: number }> = [];
 
@@ -91,7 +87,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private snackBarService: SnackBarService,
-    private portfolioService: PortfolioService
+    private portfolioService: PortfolioService,
+    private dialog: MatDialog
   ) {
     Chart.register(...registerables);
   }
@@ -240,22 +237,44 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   // ─── Modal methods ───────────────────────────────────────────────────────────
 
-  openBuyModal(): void {
-    this.showBuyModal = true;
+  openBuyModal(symbol?: string): void {
+    const dialogRef = this.dialog.open(PortfolioModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'blur-backdrop',
+      panelClass: 'portfolio-dialog-panel',
+      data: {
+        mode: 'buy',
+        symbol
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
+      if (!result) return;
+      if (result.mode === 'buy') this.onBuyComplete(result.data);
+    });
   }
 
   openSellModal(symbol: string): void {
-    this.selectedSymbol = symbol;
-    this.showSellModal = true;
-  }
+    const dialogRef = this.dialog.open(PortfolioModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'blur-backdrop',
+      panelClass: 'portfolio-dialog-panel',
+      data: {
+        mode: 'sell',
+        symbol
+      }
+    });
 
-  closeBuyModal(): void {
-    this.showBuyModal = false;
-  }
-
-  closeSellModal(): void {
-    this.showSellModal = false;
-    this.selectedSymbol = '';
+    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
+      if (!result) return;
+      if (result.mode === 'sell') this.sellPosition(result.data);
+    });
   }
 
   // ─── Charts ──────────────────────────────────────────────────────────────────
@@ -525,40 +544,37 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.emptyOperationRows = Array(missing).fill(0);
   }
 
-  onBuyComplete(data: BuyData): void {
-    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.snackBarService.success(response.message || 'Compra realizada correctamente');
-          this.closeBuyModal();
-          this.loadBalanceCards();
-          this.loadPieChart();
-          this.loadPositions();
-          this.loadOperations();
-        } else {
-          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
-        }
-      },
-      error: () => {
-        this.snackBarService.error('Error al realizar la compra');
+onBuyComplete(data: BuyData): void {
+  this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+    next: response => {
+      if (response.success) {
+        this.snackBarService.success(response.message || 'Compra realizada correctamente');
+        this.refreshPortfolioData();
+      } else {
+        this.snackBarService.info(response.message || 'No se pudo realizar la compra');
       }
-    });
-  }
+    },
+    error: () => {
+      this.snackBarService.error('Error al realizar la compra');
+    }
+  });
+}
 
-  sellPosition(data: SellData): void {
-    this.portfolioService.sell(data).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.snackBarService.success('Venta realizada correctamente');
-          this.closeSellModal();
-          this.refreshPortfolioData();
-        }
-      },
-      error: (error) => {
-        this.snackBarService.error(error.error?.message ?? 'Error al vender activo');
+sellPosition(data: SellData): void {
+  this.portfolioService.sell(data).subscribe({
+    next: response => {
+      if (response.success) {
+        this.snackBarService.success(response.message || 'Venta realizada correctamente');
+        this.refreshPortfolioData();
+      } else {
+        this.snackBarService.info(response.message || 'No se pudo realizar la venta');
       }
-    });
-  }
+    },
+    error: error => {
+      this.snackBarService.error(error.error?.message ?? 'Error al vender activo');
+    }
+  });
+}
 
   private refreshPortfolioData(): void {
     this.loadBalanceCards();

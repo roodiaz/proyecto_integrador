@@ -1,125 +1,130 @@
-<div *ngIf="isVisible" class="modal-overlay" (click)="onClose()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>{{ modalTitle }}</h2>
-      <button class="close-btn" (click)="onClose()">✕</button>
-    </div>
+<div class="modal-container">
+  <div class="modal-header">
+    <h2>{{ modalTitle }}</h2>
+    <button class="close-btn" type="button" (click)="onClose()">✕</button>
+  </div>
 
-    <div class="modal-body">
-      <!-- Buy Modal Content -->
-      <div *ngIf="mode === 'buy'" class="buy-content">
+  <div class="modal-body">
+    <div *ngIf="mode === 'buy'" class="buy-content">
+      <div class="form-group">
+        <label for="ticker">Ticker</label>
+
+        <div class="ticker-search">
+          <input id="ticker" type="text" [(ngModel)]="buyTicker" placeholder="Ej: AAPL" class="form-input">
+
+          <button type="button" class="search-btn" (click)="loadMarketPrice()" [disabled]="isLoadingPrice">
+            <mat-icon class="search-icon">search</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
-          <label for="ticker">Ticker</label>
-
-          <div class="ticker-search">
-            <input id="ticker" type="text" [(ngModel)]="buyTicker" placeholder="Ej: AAPL" class="form-input">
-
-            <button type="button" class="search-btn" (click)="loadMarketPrice()">
-
-              <mat-icon class="search-icon">search</mat-icon>
-
-            </button>
-          </div>
+          <label for="quantity">Cantidad</label>
+          <input id="quantity" type="number" [(ngModel)]="buyQuantity" min="1" class="form-input">
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="quantity">Cantidad</label>
-            <input id="quantity" type="number" [(ngModel)]="buyQuantity" min="1" class="form-input">
-          </div>
-          <div class="form-group">
-            <label for="price">Precio mercado</label>
-            <div class="price-display">
-              ${{ marketPrice.toFixed(2) }}
-              <span class="price-label">Precio actual del mercado</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="cost-summary">
-          <div class="summary-row">
-            <span>Costo total:</span>
-            <span class="cost-amount">${{ totalCost.toFixed(2) }}</span>
-          </div>
-          <div class="summary-row">
-            <span>Saldo disponible:</span>
-            <span class="balance-amount">${{ currentBalance.toFixed(2) }}</span>
+        <div class="form-group">
+          <label for="price">Precio mercado</label>
+          <div class="price-display">
+            ${{ marketPrice.toFixed(2) }}
+            <span class="price-label">Precio actual del mercado</span>
           </div>
         </div>
       </div>
 
-      <!-- Sell Modal Content -->
-      <div *ngIf="mode === 'sell'" class="sell-content">
-        <div class="operation-info">
-          <h3>Información de la operación</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="label">Ticker:</span>
-              <span class="value">{{ position?.symbol }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Cantidad total:</span>
-              <span class="value">{{ position?.quantity }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Cantidad disponible:</span>
-              <span class="value">{{ position?.quantity }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Precio compra:</span>
-              <span class="value">{{ position?.avgPrice | currency:'USD' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Precio actual:</span>
-              <span class="value">{{ position?.currentPrice | currency:'USD' }}</span>
-            </div>
-          </div>
+      <div class="cost-summary">
+        <div class="summary-row">
+          <span>Costo total:</span>
+          <span class="cost-amount">${{ totalCost.toFixed(2) }}</span>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sellQuantity">Cantidad a vender</label>
-            <input id="sellQuantity" type="number" [(ngModel)]="sellQuantity" min="1" [max]="position?.quantity ?? 1"
-              class="form-input">
-          </div>
-          <div class="form-group">
-            <label for="sellPrice">Precio mercado</label>
-            <div class="price-display">
-              {{ position?.currentPrice | number:'1.2-2' }}
-              <span class="price-label">Precio actual del mercado</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="profit-summary">
-          <div class="summary-row">
-            <span>Total venta:</span>
-            <span class="sell-total">{{ sellTotal | currency:'USD' }}</span>
-          </div>
-          <div class="summary-row">
-            <span>Ganancia/Pérdida:</span>
-            <span class="profit-amount">
-              {{ profitAmount | currency:'USD' }}
-            </span>
-          </div>
-          <div class="summary-row">
-            <span>Porcentaje:</span>
-            <span class="profit-percent">
-              {{ profitPercent | number:'1.2-2' }}%
-            </span>
-          </div>
+        <div class="summary-row">
+          <span>Saldo disponible:</span>
+          <span class="balance-amount">${{ currentBalance.toFixed(2) }}</span>
         </div>
       </div>
     </div>
 
-    <div class="modal-footer">
-      <button class="cancel-btn" (click)="onClose()">Cancelar</button>
-      <button *ngIf="mode === 'buy'" class="confirm-btn buy-btn" (click)="onBuy()" [disabled]="!canBuy">
-        Comprar
-      </button>
-      <button *ngIf="mode === 'sell'" class="confirm-btn sell-btn" (click)="onSell()">
-        Vender
-      </button>
+    <div *ngIf="mode === 'sell'" class="sell-content">
+      <div class="operation-info">
+        <h3>Información de la operación</h3>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Ticker:</span>
+            <span class="value">{{ position?.symbol }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="label">Cantidad total:</span>
+            <span class="value">{{ position?.quantity }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="label">Cantidad disponible:</span>
+            <span class="value">{{ position?.quantity }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="label">Precio compra:</span>
+            <span class="value">{{ position?.avgPrice | currency:'USD' }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="label">Precio actual:</span>
+            <span class="value">{{ position?.currentPrice | currency:'USD' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="sellQuantity">Cantidad a vender</label>
+          <input id="sellQuantity" type="number" [(ngModel)]="sellQuantity" min="1" [max]="position?.quantity ?? 1" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="sellPrice">Precio mercado</label>
+          <div class="price-display">
+            {{ position?.currentPrice | number:'1.2-2' }}
+            <span class="price-label">Precio actual del mercado</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profit-summary">
+        <div class="summary-row">
+          <span>Total venta:</span>
+          <span class="sell-total">{{ sellTotal | currency:'USD' }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Ganancia/Pérdida:</span>
+          <span class="profit-amount" [class.positive]="profitAmount > 0" [class.negative]="profitAmount < 0">
+            {{ profitAmount | currency:'USD' }}
+          </span>
+        </div>
+
+        <div class="summary-row">
+          <span>Porcentaje:</span>
+          <span class="profit-percent" [class.positive]="profitPercent > 0" [class.negative]="profitPercent < 0">
+            {{ profitPercent | number:'1.2-2' }}%
+          </span>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="cancel-btn" type="button" (click)="onClose()">Cancelar</button>
+
+    <button *ngIf="mode === 'buy'" class="confirm-btn buy-btn" type="button" (click)="onBuy()" [disabled]="!canBuy">
+      Comprar
+    </button>
+
+    <button *ngIf="mode === 'sell'" class="confirm-btn sell-btn" type="button" (click)="onSell()" [disabled]="!canSell">
+      Vender
+    </button>
   </div>
 </div>

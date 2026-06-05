@@ -198,7 +198,7 @@
             </td>
 
             <td>
-              <button (click)="openSellModal(item.symbol)">
+              <button class="sell-btn" (click)="openSellModal(item.symbol)">
                 Vender
               </button>
             </td>
@@ -223,7 +223,8 @@
       <!-- Pagination Tenencias -->
       <div class="pagination-container">
         <div class="pagination-info">
-          <select class="page-size-select" [(ngModel)]="positionsPageSize" (ngModelChange)="onPositionsPageSizeChange()">
+          <select class="page-size-select" [(ngModel)]="positionsPageSize"
+            (ngModelChange)="onPositionsPageSizeChange()">
             <option [value]="5">5 por página</option>
             <option [value]="10">10 por página</option>
             <option [value]="20">20 por página</option>
@@ -241,7 +242,8 @@
               {{ page }}
             </button>
           </div>
-          <button class="pagination-btn" [disabled]="positionsPage === totalPositionsPages" (click)="nextPositionsPage()">
+          <button class="pagination-btn" [disabled]="positionsPage === totalPositionsPages"
+            (click)="nextPositionsPage()">
             Siguiente →
           </button>
         </div>
@@ -344,7 +346,8 @@
       <!-- Pagination Operaciones -->
       <div class="pagination-container">
         <div class="pagination-info">
-          <select class="page-size-select" [(ngModel)]="operationsPageSize" (ngModelChange)="onOperationsPageSizeChange()">
+          <select class="page-size-select" [(ngModel)]="operationsPageSize"
+            (ngModelChange)="onOperationsPageSizeChange()">
             <option [value]="5">5 por página</option>
             <option [value]="10">10 por página</option>
             <option [value]="20">20 por página</option>
@@ -362,23 +365,13 @@
               {{ page }}
             </button>
           </div>
-          <button class="pagination-btn" [disabled]="operationsPage === totalOperationsPages" (click)="nextOperationsPage()">
+          <button class="pagination-btn" [disabled]="operationsPage === totalOperationsPages"
+            (click)="nextOperationsPage()">
             Siguiente →
           </button>
         </div>
       </div>
 
     </div>
-
-    <!-- Buy Modal -->
-    <app-portfolio-modal [isVisible]="showBuyModal" [mode]="'buy'" (closeModal)="closeBuyModal()"
-      (buyComplete)="onBuyComplete($event)">
-    </app-portfolio-modal>
-
-    <!-- Sell Modal -->
-    <app-portfolio-modal [isVisible]="showSellModal" [mode]="'sell'" [symbol]="selectedSymbol"
-      (closeModal)="closeSellModal()" (sellComplete)="sellPosition($event)">
-    </app-portfolio-modal>
-
   </div>
 </div>
