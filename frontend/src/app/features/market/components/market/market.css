@@ -1224,3 +1224,15 @@
 .favorite-button.is-favorite mat-icon {
   color: #e9d77b;
 }
+
+.alert-button {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.alert-button:hover {
+  border-color: rgba(96, 165, 250, 0.65);
+  color: #93c5fd;
+  background: rgba(96, 165, 250, 0.08);
+}

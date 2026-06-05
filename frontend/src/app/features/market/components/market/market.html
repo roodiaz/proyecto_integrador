@@ -143,7 +143,7 @@
 
     <div class="asset-actions" [class.disabled-actions]="!selectedAsset">
       <div class="icon-actions">
-        <button type="button" [disabled]="!selectedAsset" (click)="selectedAsset && createAlert(selectedAsset.symbol)"
+        <button type="button" [disabled]="!selectedAsset" (click)="openCreateAlert(selectedAsset!.symbol)"
           title="Crear alerta">
           <mat-icon>notifications</mat-icon>
         </button>

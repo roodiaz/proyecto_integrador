@@ -9,6 +9,7 @@ import 'chartjs-adapter-date-fns';
 import { MarketService } from '../../services/market.service';
 import { WatchlistService } from '../../../watchlist/services/watchlist.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { MatDialog } from '@angular/material/dialog';
 
 import {
   MarketIndex,
@@ -70,7 +71,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private marketService: MarketService,
     private watchlistService: WatchlistService,
-    private snackBarService: SnackBarService
+    private snackBarService: SnackBarService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -227,37 +229,37 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
- toggleFavorite(symbol: string): void {
-  if (!symbol || this.favoriteLoading) return;
+  toggleFavorite(symbol: string): void {
+    if (!symbol || this.favoriteLoading) return;
 
-  this.favoriteLoading = true;
+    this.favoriteLoading = true;
 
-  const wasFavorite = this.isFavorite;
-  const request = wasFavorite ? this.watchlistService.removeFavorite(symbol) : this.watchlistService.addFavorite(symbol);
+    const wasFavorite = this.isFavorite;
+    const request = wasFavorite ? this.watchlistService.removeFavorite(symbol) : this.watchlistService.addFavorite(symbol);
 
-  request.subscribe({
-    next: res => {
-      this.favoriteLoading = false;
+    request.subscribe({
+      next: res => {
+        this.favoriteLoading = false;
 
-      if (!res.success) {
-        this.snackBarService.error(res.message || 'No se pudo actualizar favoritos');
-        return;
+        if (!res.success) {
+          this.snackBarService.error(res.message || 'No se pudo actualizar favoritos');
+          return;
+        }
+
+        this.isFavorite = !wasFavorite;
+
+        if (this.isFavorite)
+          this.snackBarService.success(`${symbol} agregado a favoritos`);
+        else
+          this.snackBarService.info(`${symbol} eliminado de favoritos`);
+      },
+      error: err => {
+        this.favoriteLoading = false;
+        console.error('Error actualizando favorito', err);
+        this.snackBarService.error('No se pudo actualizar favoritos');
       }
-
-      this.isFavorite = !wasFavorite;
-
-      if (this.isFavorite)
-        this.snackBarService.success(`${symbol} agregado a favoritos`);
-      else
-        this.snackBarService.info(`${symbol} eliminado de favoritos`);
-    },
-    error: err => {
-      this.favoriteLoading = false;
-      console.error('Error actualizando favorito', err);
-      this.snackBarService.error('No se pudo actualizar favoritos');
-    }
-  });
-}
+    });
+  }
 
   private getMarketChartConfiguration(data: any): any {
     if (this.selectedChartType === 'candlestick') {
@@ -426,14 +428,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.activeNewsIndex = this.activeNewsIndex === 0 ? this.marketNews.length - 1 : this.activeNewsIndex - 1;
   }
 
-  addToWatchlist(symbol: string): void {
-    console.log('Agregar a favoritos:', symbol);
-  }
-
-  createAlert(symbol: string): void {
-    console.log('Crear alerta:', symbol);
-  }
-
   buyAsset(symbol: string): void {
     this.router.navigate(['/portfolio'], { queryParams: { action: 'buy', symbol } });
   }
@@ -509,6 +503,37 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   changeChartType(type: 'line' | 'bar' | 'candlestick'): void {
     this.selectedChartType = type;
     this.setupChart();
+  }
+  async openCreateAlert(symbol?: string): Promise<void> {
+    const finalSymbol = symbol || this.selectedSymbol;
+
+    if (!finalSymbol) {
+      this.snackBarService.error('Primero seleccioná un activo');
+      return;
+    }
+
+    try {
+      const module = await import('../../../alerts/components/create-alert/create-alert');
+      const ModalComponent = module.CreateAlertComponent;
+
+      const dialogRef = this.dialog.open(ModalComponent, {
+        width: '600px',
+        backdropClass: 'blur-backdrop',
+        data: {
+          isEditing: false,
+          alert: { symbol: finalSymbol }
+        }
+      });
+
+      const result = await dialogRef.afterClosed().toPromise();
+
+      if (result)
+        this.snackBarService.success('Alerta creada correctamente');
+    }
+    catch (error) {
+      console.error('Error al abrir el modal de crear alerta', error);
+      this.snackBarService.error('No se pudo abrir el formulario de alerta');
+    }
   }
 
   private generateMarketChartData(): any {

@@ -46,7 +46,7 @@ export const materialModules = [
   MatDialogModule,
   MatTableModule,
   MatChipsModule,
-  MatPaginatorModule
+  MatPaginatorModule,
 ] as const;
 
 // Este módulo ya no es necesario en la nueva versión de Angular con standalone components
