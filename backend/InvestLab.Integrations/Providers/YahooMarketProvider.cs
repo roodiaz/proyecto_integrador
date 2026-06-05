@@ -241,22 +241,19 @@ namespace InvestLab.Integrations.Providers
         {
             count = count <= 0 ? 6 : count;
 
-            var news = await GetMarketNewsFromSearchAsync("mercado financiero", count, "https://query1.finance.yahoo.com", "es-AR", "AR");
+            var news = await GetMarketNewsFromSearchAsync("stock market", count, "https://query1.finance.yahoo.com", "en-US", "US");
+            if (news.Count > 0) return news;
 
-            if (news.Count > 0)
-                return news;
+            news = await GetMarketNewsFromSearchAsync("stock market", count, "https://query2.finance.yahoo.com", "en-US", "US");
+            if (news.Count > 0) return news;
 
-            news = await GetMarketNewsFromSearchAsync("mercado financiero", count, "https://query2.finance.yahoo.com", "es-AR", "AR");
+            news = await GetMarketNewsFromSearchAsync("wall street", count, "https://query1.finance.yahoo.com", "en-US", "US");
+            if (news.Count > 0) return news;
 
-            if (news.Count > 0)
-                return news;
+            news = await GetMarketNewsFromSearchAsync("S&P 500", count, "https://query1.finance.yahoo.com", "en-US", "US");
+            if (news.Count > 0) return news;
 
-            news = await GetMarketNewsFromSearchAsync("stock market", count, "https://query1.finance.yahoo.com", "en-US", "US");
-
-            if (news.Count > 0)
-                return news;
-
-            return await GetMarketNewsFromSearchAsync("stock market", count, "https://query2.finance.yahoo.com", "en-US", "US");
+            return await GetMarketNewsFromSearchAsync("investing", count, "https://query1.finance.yahoo.com", "en-US", "US");
         }
 
         private async Task<List<MarketNewsDto>> GetMarketNewsFromSearchAsync(string query, int count, string baseUrl, string lang, string region)
@@ -267,6 +264,7 @@ namespace InvestLab.Integrations.Providers
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("User-Agent", "Mozilla/5.0");
             request.Headers.Add("Accept", "application/json");
+            request.Headers.Add("Accept-Language", "es-US,es;q=0.9,en;q=0.7");
 
             var response = await _httpClient.SendAsync(request);
 
