@@ -14,4 +14,6 @@ public interface IExternalProvider
     Task<AssetProfileDto?> GetProfileAsync(string symbol);
 
     Task<List<MarketMoverDto>> GetMarketMoversAsync(string screenerId, int count);
+
+    Task<List<MarketNewsDto>> GetMarketNewsAsync(int count);
 }

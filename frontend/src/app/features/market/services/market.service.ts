@@ -6,7 +6,8 @@ import { ApiResponse } from '../../../core/models/api-response.model';
 import {
     MarketOverview,
     MarketAsset,
-    MarketMover
+    MarketMover,
+    MarketNews
 } from '../models/market.model';
 
 @Injectable({
@@ -46,6 +47,12 @@ export class MarketService {
     getLosers(): Observable<ApiResponse<MarketMover[]>> {
         return this.http.get<ApiResponse<MarketMover[]>>(
             `${this.apiUrl}/losers`
+        );
+    }
+
+    getMarketNews(): Observable<ApiResponse<MarketNews[]>> {
+        return this.http.get<ApiResponse<MarketNews[]>>(
+            `${this.apiUrl}/news`
         );
     }
 }

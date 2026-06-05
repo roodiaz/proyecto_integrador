@@ -196,4 +196,9 @@ public class FinnhubMarketProvider : IExternalProvider
     {
         throw new NotImplementedException();
     }
+
+    public Task<List<MarketNewsDto>> GetMarketNewsAsync(int count)
+    {
+        throw new NotImplementedException();
+    }
 }

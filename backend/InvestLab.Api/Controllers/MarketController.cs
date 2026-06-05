@@ -160,5 +160,33 @@ namespace InvestLab.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Obtiene las noticias principales del mercado.
+        /// </summary>
+        /// <returns>
+        /// Lista de noticias financieras destacadas.
+        /// </returns>
+        /// <response code="200">
+        /// Noticias obtenidas correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener las noticias del mercado.
+        /// </response>
+        [HttpGet("news")]
+        public async Task<IActionResult> GetMarketNews()
+        {
+            _logger.LogInformation("Solicitud de noticias del mercado recibida");
+
+            var result = await _service.GetMarketNewsAsync();
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener noticias del mercado: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

@@ -51,3 +51,14 @@ export interface MarketMover {
   sector: string | null;
 }
 
+export interface MarketNews {
+  id: string;
+  title: string;
+  source: string;
+  url: string;
+  publishedAt: string | null;
+  time: string;
+  summary: string;
+  relatedTickers: string[];
+}
+

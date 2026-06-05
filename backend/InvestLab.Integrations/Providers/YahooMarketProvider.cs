@@ -237,6 +237,79 @@ namespace InvestLab.Integrations.Providers
             return movers;
         }
 
+        public async Task<List<MarketNewsDto>> GetMarketNewsAsync(int count)
+        {
+            count = count <= 0 ? 6 : count;
+
+            var news = await GetMarketNewsFromSearchAsync("mercado financiero", count, "https://query1.finance.yahoo.com", "es-AR", "AR");
+
+            if (news.Count > 0)
+                return news;
+
+            news = await GetMarketNewsFromSearchAsync("mercado financiero", count, "https://query2.finance.yahoo.com", "es-AR", "AR");
+
+            if (news.Count > 0)
+                return news;
+
+            news = await GetMarketNewsFromSearchAsync("stock market", count, "https://query1.finance.yahoo.com", "en-US", "US");
+
+            if (news.Count > 0)
+                return news;
+
+            return await GetMarketNewsFromSearchAsync("stock market", count, "https://query2.finance.yahoo.com", "en-US", "US");
+        }
+
+        private async Task<List<MarketNewsDto>> GetMarketNewsFromSearchAsync(string query, int count, string baseUrl, string lang, string region)
+        {
+            var encodedQuery = Uri.EscapeDataString(query);
+            var url = $"{baseUrl}/v1/finance/search?q={encodedQuery}&newsCount={count}&lang={lang}&region={region}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+            request.Headers.Add("Accept", "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+                return [];
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var data = JsonDocument.Parse(json);
+
+            if (!data.RootElement.TryGetProperty("news", out var newsArray) || newsArray.ValueKind != JsonValueKind.Array)
+                return [];
+
+            var result = new List<MarketNewsDto>();
+
+            foreach (var item in newsArray.EnumerateArray())
+            {
+                var title = GetJsonString(item, "title");
+
+                if (string.IsNullOrWhiteSpace(title))
+                    continue;
+
+                var publishedAt = GetPublishedDate(item);
+                var relatedTickers = GetRelatedTickers(item);
+
+                result.Add(new MarketNewsDto
+                {
+                    Id = GetJsonString(item, "uuid") ?? Guid.NewGuid().ToString(),
+                    Title = title,
+                    Source = GetJsonString(item, "publisher") ?? "Yahoo Finance",
+                    Url = GetJsonString(item, "link") ?? string.Empty,
+                    PublishedAt = publishedAt,
+                    Time = publishedAt == null ? string.Empty : GetRelativeTime(publishedAt.Value),
+                    Summary = relatedTickers.Count > 0
+                        ? $"Noticia relacionada con {string.Join(", ", relatedTickers.Take(3))}. Continuá leyendo para ver el reporte completo."
+                        : "Continuá leyendo para ver el reporte completo.",
+                    RelatedTickers = relatedTickers
+                });
+            }
+
+            return result.Take(count).ToList();
+        }
+
         // HERLPERS
         private static object? GetObjectValue(object source, params string[] propertyNames)
         {
@@ -343,6 +416,43 @@ namespace InvestLab.Integrations.Providers
                 return dateTime;
 
             return null;
+        }
+
+        private static DateTime? GetPublishedDate(JsonElement item)
+        {
+            if (!item.TryGetProperty("providerPublishTime", out var value) || value.ValueKind != JsonValueKind.Number)
+                return null;
+
+            return DateTimeOffset.FromUnixTimeSeconds(value.GetInt64()).UtcDateTime;
+        }
+
+        private static List<string> GetRelatedTickers(JsonElement item)
+        {
+            if (!item.TryGetProperty("relatedTickers", out var tickers) || tickers.ValueKind != JsonValueKind.Array)
+                return [];
+
+            return tickers.EnumerateArray()
+                .Where(x => x.ValueKind == JsonValueKind.String)
+                .Select(x => x.GetString())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Cast<string>()
+                .ToList();
+        }
+
+        private static string GetRelativeTime(DateTime publishedAt)
+        {
+            var diff = DateTime.UtcNow - publishedAt;
+
+            if (diff.TotalMinutes < 1)
+                return "Ahora";
+
+            if (diff.TotalMinutes < 60)
+                return $"Hace {(int)diff.TotalMinutes} min";
+
+            if (diff.TotalHours < 24)
+                return $"Hace {(int)diff.TotalHours} h";
+
+            return $"Hace {(int)diff.TotalDays} días";
         }
     }
 }

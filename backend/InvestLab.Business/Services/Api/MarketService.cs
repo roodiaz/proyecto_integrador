@@ -146,6 +146,22 @@ namespace InvestLab.Business.Services
             }
 
         }
+
+        public async Task<Response> GetMarketNewsAsync()
+        {
+            try
+            {
+                var result = await _externalProvider.GetMarketNewsAsync(6);
+                return Response.Ok(result, "Noticias obtenidas correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener noticias del mercado");
+                return Response.Fail("Ocurrió un error al obtener las noticias del mercado");
+            }
+        }
+
+
         // Metodos auxiliares
         private static MarketStatusDto GetMarketStatus()
         {

@@ -13,5 +13,7 @@ namespace InvestLab.Business.Interfaces
         Task<Response> GetGainersAsync();
 
         Task<Response> GetLosersAsync();
+
+        Task<Response> GetMarketNewsAsync();
     }
 }

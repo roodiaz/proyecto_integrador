@@ -11,18 +11,11 @@ import {
   MarketIndex,
   MarketStatus,
   MarketAsset,
-  MarketMover
+  MarketMover,
+  MarketNews
 } from '../../models/market.model';
 
 Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcElement);
-
-interface MarketNews {
-  source: string;
-  time: string;
-  title: string;
-  summary: string;
-  url: string;
-}
 
 @Component({
   selector: 'app-market',
@@ -38,7 +31,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   selectedTimeframe = '1m';
   selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
   marketData: MarketAsset[] = [];
-  marketNews: MarketNews[] = [];
   currentTime = '';
   private chart: Chart | null = null;
   private clockInterval: any;
@@ -56,14 +48,16 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   assetErrorMessage = '';
 
   // cards inferiores
-  activeNewsIndex = 0;
   loadingTrending = false;
   loadingGainers = false;
   loadingLosers = false;
-
   trendingStocks: MarketMover[] = [];
   dayGainers: MarketMover[] = [];
   dayLosers: MarketMover[] = [];
+
+  activeNewsIndex = 0;
+  loadingNews = false;
+  marketNews: MarketNews[] = [];
 
   constructor(
     private router: Router,
@@ -94,11 +88,14 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
   get activeNews(): MarketNews {
     return this.marketNews[this.activeNewsIndex] ?? {
-      source: '',
-      time: '',
+      id: '',
       title: '',
+      source: '',
+      url: '',
+      publishedAt: null,
+      time: '',
       summary: '',
-      url: ''
+      relatedTickers: []
     };
   }
 
@@ -192,7 +189,21 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadNews(): void {
-    this.marketNews = [];
+    this.loadingNews = true;
+
+    this.marketService.getMarketNews().subscribe({
+      next: response => {
+        this.marketNews = response.success ? response.data ?? [] : [];
+        this.activeNewsIndex = 0;
+        this.loadingNews = false;
+      },
+      error: error => {
+        console.error('Error al obtener noticias del mercado', error);
+        this.marketNews = [];
+        this.activeNewsIndex = 0;
+        this.loadingNews = false;
+      }
+    });
   }
 
   private getMarketChartConfiguration(data: any): any {
@@ -353,10 +364,12 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   nextNews(): void {
-    this.activeNewsIndex = this.activeNewsIndex === this.marketNews.length - 1 ? 0 : this.activeNewsIndex + 1;
+    if (this.marketNews.length === 0) return;
+    this.activeNewsIndex = (this.activeNewsIndex + 1) % this.marketNews.length;
   }
 
   previousNews(): void {
+    if (this.marketNews.length === 0) return;
     this.activeNewsIndex = this.activeNewsIndex === 0 ? this.marketNews.length - 1 : this.activeNewsIndex - 1;
   }
 
@@ -377,6 +390,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openNews(url: string): void {
+    if (!url) return;
     window.open(url, '_blank');
   }
 

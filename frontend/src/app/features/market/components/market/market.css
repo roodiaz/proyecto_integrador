@@ -6,7 +6,7 @@
 }
 
 .market-terminal {
-  width: 100%;
+  width: 98%;
   min-height: 100%;
   padding: 24px;
   background: #0f1012;
@@ -1037,7 +1037,7 @@
 }
 
 .news-wide-card {
-  width: 100%;
+  width: 97%;
   min-height: 260px;
 }
 
@@ -1166,4 +1166,41 @@
   .news-wide-card {
     min-height: 300px;
   }
+}
+
+.news-excerpt {
+  max-width: 920px;
+  margin: 0;
+  color: #c2c6d6;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.news-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.news-tags span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(173, 198, 255, 0.08);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  color: #adc6ff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.news-read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.news-read-more mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
 }
