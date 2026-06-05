@@ -220,9 +220,32 @@
 
       </table>
 
-      <mat-paginator [length]="totalPositions" [pageSize]="5" [pageSizeOptions]="[5,10,20]"
-        (page)="onPositionsPageChange($event)">
-      </mat-paginator>
+      <!-- Pagination Tenencias -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <select class="page-size-select" [(ngModel)]="positionsPageSize" (ngModelChange)="onPositionsPageSizeChange()">
+            <option [value]="5">5 por página</option>
+            <option [value]="10">10 por página</option>
+            <option [value]="20">20 por página</option>
+          </select>
+          <span>Página {{ positionsPage }} de {{ totalPositionsPages }}</span>
+          <span>({{ totalPositions }} tenencias)</span>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" [disabled]="positionsPage === 1" (click)="previousPositionsPage()">
+            ← Anterior
+          </button>
+          <div class="page-numbers">
+            <button class="page-btn" *ngFor="let page of getPositionPageNumbers()"
+              [class.active]="page === positionsPage" (click)="goToPositionsPage(page)">
+              {{ page }}
+            </button>
+          </div>
+          <button class="pagination-btn" [disabled]="positionsPage === totalPositionsPages" (click)="nextPositionsPage()">
+            Siguiente →
+          </button>
+        </div>
+      </div>
 
     </div>
 
@@ -318,9 +341,32 @@
 
       </table>
 
-      <mat-paginator [length]="totalOperations" [pageSize]="10" [pageSizeOptions]="[5,10,20]"
-        (page)="onOperationsPageChange($event)">
-      </mat-paginator>
+      <!-- Pagination Operaciones -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <select class="page-size-select" [(ngModel)]="operationsPageSize" (ngModelChange)="onOperationsPageSizeChange()">
+            <option [value]="5">5 por página</option>
+            <option [value]="10">10 por página</option>
+            <option [value]="20">20 por página</option>
+          </select>
+          <span>Página {{ operationsPage }} de {{ totalOperationsPages }}</span>
+          <span>({{ totalOperations }} operaciones)</span>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" [disabled]="operationsPage === 1" (click)="previousOperationsPage()">
+            ← Anterior
+          </button>
+          <div class="page-numbers">
+            <button class="page-btn" *ngFor="let page of getOperationPageNumbers()"
+              [class.active]="page === operationsPage" (click)="goToOperationsPage(page)">
+              {{ page }}
+            </button>
+          </div>
+          <button class="pagination-btn" [disabled]="operationsPage === totalOperationsPages" (click)="nextOperationsPage()">
+            Siguiente →
+          </button>
+        </div>
+      </div>
 
     </div>
 
@@ -333,3 +379,6 @@
     <app-portfolio-modal [isVisible]="showSellModal" [mode]="'sell'" [symbol]="selectedSymbol"
       (closeModal)="closeSellModal()" (sellComplete)="sellPosition($event)">
     </app-portfolio-modal>
+
+  </div>
+</div>

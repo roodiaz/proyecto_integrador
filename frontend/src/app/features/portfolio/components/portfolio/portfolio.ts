@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PageEvent } from '@angular/material/paginator';
 import { Subscription } from 'rxjs';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { PortfolioService } from '../../services/portfolio.service';
@@ -94,7 +93,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     private snackBarService: SnackBarService,
     private portfolioService: PortfolioService
   ) {
-    // Register Chart.js components
     Chart.register(...registerables);
   }
 
@@ -109,11 +107,94 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Inicializar gráficos después de que la vista se renderice
     setTimeout(() => {
       this.initializeCharts();
     }, 100);
   }
+
+  // ─── Computed total pages ────────────────────────────────────────────────────
+
+  get totalPositionsPages(): number {
+    return Math.max(1, Math.ceil(this.totalPositions / this.positionsPageSize));
+  }
+
+  get totalOperationsPages(): number {
+    return Math.max(1, Math.ceil(this.totalOperations / this.operationsPageSize));
+  }
+
+  // ─── Page number arrays ──────────────────────────────────────────────────────
+
+  getPositionPageNumbers(): number[] {
+    return this.buildPageNumbers(this.positionsPage, this.totalPositionsPages);
+  }
+
+  getOperationPageNumbers(): number[] {
+    return this.buildPageNumbers(this.operationsPage, this.totalOperationsPages);
+  }
+
+  private buildPageNumbers(current: number, total: number): number[] {
+    const maxVisible = 5;
+    let start = Math.max(1, current - Math.floor(maxVisible / 2));
+    let end = Math.min(total, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  // ─── Navegación Tenencias ────────────────────────────────────────────────────
+
+  previousPositionsPage(): void {
+    if (this.positionsPage > 1) {
+      this.positionsPage--;
+      this.loadPositions();
+    }
+  }
+
+  nextPositionsPage(): void {
+    if (this.positionsPage < this.totalPositionsPages) {
+      this.positionsPage++;
+      this.loadPositions();
+    }
+  }
+
+  goToPositionsPage(page: number): void {
+    this.positionsPage = page;
+    this.loadPositions();
+  }
+
+  onPositionsPageSizeChange(): void {
+    this.positionsPage = 1;
+    this.loadPositions();
+  }
+
+  // ─── Navegación Operaciones ──────────────────────────────────────────────────
+
+  previousOperationsPage(): void {
+    if (this.operationsPage > 1) {
+      this.operationsPage--;
+      this.loadOperations();
+    }
+  }
+
+  nextOperationsPage(): void {
+    if (this.operationsPage < this.totalOperationsPages) {
+      this.operationsPage++;
+      this.loadOperations();
+    }
+  }
+
+  goToOperationsPage(page: number): void {
+    this.operationsPage = page;
+    this.loadOperations();
+  }
+
+  onOperationsPageSizeChange(): void {
+    this.operationsPage = 1;
+    this.loadOperations();
+  }
+
+  // ─── Data loading ────────────────────────────────────────────────────────────
 
   loadOperations(): void {
 
@@ -129,19 +210,13 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.portfolioService
       .getTransactionHistory(filter)
       .subscribe({
-
         next: (response) => {
-
           this.operations = response.data?.data ?? [];
           this.totalOperations = response.data?.total ?? 0;
           this.updateEmptyOperationRows();
-
         },
-
         error: (error) => { console.error(error); }
-
       });
-
   }
 
   loadBalanceCards(): void {
@@ -149,26 +224,22 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.portfolioService
       .getBalanceCards()
       .subscribe({
-
         next: (response) => {
           this.portfolioSummary = response.data!;
         },
-
         error: (error) => {
           console.error('Error loading balance cards', error);
         }
       });
-
   }
 
   onPeriodChange(event: Event): void {
-    this.selectedPeriod =
-      (event.target as HTMLSelectElement).value;
-
+    this.selectedPeriod = (event.target as HTMLSelectElement).value;
     this.loadLineChart();
   }
 
-  // Modal methods
+  // ─── Modal methods ───────────────────────────────────────────────────────────
+
   openBuyModal(): void {
     this.showBuyModal = true;
   }
@@ -187,6 +258,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.selectedSymbol = '';
   }
 
+  // ─── Charts ──────────────────────────────────────────────────────────────────
+
   initializeCharts(): void {
     this.createPieChart();
     this.createLineChart();
@@ -196,9 +269,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.portfolioService
       .getPieChart()
       .subscribe({
-
         next: (response) => {
-
           this.pieChartData = response.data!;
           this.topAssets = this.pieChartData
             .slice(0, 3)
@@ -206,68 +277,45 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
               ticker: x.symbol,
               percentage: x.percentage
             }));
-
           this.createPieChart();
-
         },
-
         error: (error) => {
           console.error(error);
         }
-
       });
-
   }
 
   loadLineChart(): void {
-
     this.portfolioService
       .getLineChart(this.selectedPeriod)
       .subscribe({
-
         next: (response) => {
-
           this.lineChartData = response.data!;
-
           this.createLineChart();
-
         },
-
         error: (error) => {
           console.error(error);
         }
-
       });
-
   }
 
   createPieChart(): void {
 
     const canvas = document.getElementById('pieChart') as HTMLCanvasElement;
-
-    if (!canvas)
-      return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    if (!ctx)
-      return;
-
-    if (this.pieChart)
-      this.pieChart.destroy();
+    if (this.pieChart) this.pieChart.destroy();
 
     this.pieChart = new Chart(ctx, {
-
       type: 'doughnut',
-
       data: {
-
         labels: this.pieChartData.map(x => x.symbol),
-
         datasets: [
           {
             data: this.pieChartData.map(x => x.currentValue),
-
             backgroundColor: [
               '#A9C455',
               '#4DA3F5',
@@ -281,22 +329,14 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           }
         ]
       },
-
       options: {
-
         cutout: '55%',
         responsive: true,
-
         plugins: {
-
-          legend: {
-            display: false
-          },
-
+          legend: { display: false },
           tooltip: {
             enabled: true,
             callbacks: {
-
               label: (context: any) => {
                 const value = context.parsed as number;
                 return `Valor: $${value.toLocaleString('es-ES')}`;
@@ -306,27 +346,21 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         }
       }
     });
-
   }
 
   createLineChart(): void {
+
     const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
     if (!canvas) return;
 
-    // Destroy existing chart if it exists
-    if (this.lineChart) {
-      this.lineChart.destroy();
-    }
+    if (this.lineChart) this.lineChart.destroy();
 
-    // Generar datos según el período seleccionado
     const data = this.lineChartData;
 
     const config: ChartConfiguration = {
       type: 'line',
       data: {
-        labels: data.map(d =>
-          new Date(d.date).toLocaleDateString('es-AR')
-        ),
+        labels: data.map(d => new Date(d.date).toLocaleDateString('es-AR')),
         datasets: [{
           label: 'Portfolio Value',
           data: data.map(d => d.totalValue),
@@ -351,9 +385,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           mode: 'index'
         },
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             titleColor: '#FFFFFF',
@@ -364,45 +396,30 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
             displayColors: false,
             callbacks: {
               title: (context: any) => {
-
                 const index = context[0].dataIndex;
-
-                const date =
-                  new Date(data[index].date);
-
+                const date = new Date(data[index].date);
                 if (
                   this.selectedPeriod === '7d' ||
                   this.selectedPeriod === '1m' ||
                   this.selectedPeriod === '3m'
                 ) {
-                  return date.toLocaleDateString(
-                    'es-ES',
-                    {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    });
-                }
-
-                return date.toLocaleDateString(
-                  'es-ES',
-                  {
+                  return date.toLocaleDateString('es-ES', {
+                    day: 'numeric',
                     month: 'long',
                     year: 'numeric'
                   });
+                }
+                return date.toLocaleDateString('es-ES', {
+                  month: 'long',
+                  year: 'numeric'
+                });
               },
               label: (context: any) => {
-
-                const value =
-                  context.raw ??
-                  context.parsed?.y ??
-                  0;
-
+                const value = context.raw ?? context.parsed?.y ?? 0;
                 return `Valor: $${Number(value).toLocaleString('es-ES', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2
                 })}`;
-
               }
             }
           }
@@ -410,56 +427,38 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         scales: {
           x: {
             display: true,
-            grid: {
-              display: false
-            },
+            grid: { display: false },
             ticks: {
               color: '#FFFFFF',
-              font: {
-                size: 11
-              },
+              font: { size: 11 },
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 4,
               callback: (value: any, index: any) => {
-
-                const date =
-                  new Date(data[index].date);
-
+                const date = new Date(data[index].date);
                 if (
                   this.selectedPeriod === '7d' ||
                   this.selectedPeriod === '1m' ||
                   this.selectedPeriod === '3m'
                 ) {
-
-                  return date.toLocaleDateString(
-                    'es-ES',
-                    {
-                      day: 'numeric',
-                      month: 'short'
-                    });
-
-                }
-
-                return date.toLocaleDateString(
-                  'es-ES',
-                  {
-                    month: 'short',
-                    year: '2-digit'
+                  return date.toLocaleDateString('es-ES', {
+                    day: 'numeric',
+                    month: 'short'
                   });
+                }
+                return date.toLocaleDateString('es-ES', {
+                  month: 'short',
+                  year: '2-digit'
+                });
               }
             }
           },
           y: {
             display: true,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
             ticks: {
               color: '#FFFFFF',
-              font: {
-                size: 11
-              },
+              font: { size: 11 },
               callback: (value: any) => {
                 return `$${(value as number / 1000).toFixed(1)}k`;
               }
@@ -467,14 +466,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           }
         },
         elements: {
-          point: {
-            hitRadius: 10,
-            hoverRadius: 8
-          },
-          line: {
-            borderCapStyle: 'round',
-            borderJoinStyle: 'round'
-          }
+          point: { hitRadius: 10, hoverRadius: 8 },
+          line: { borderCapStyle: 'round', borderJoinStyle: 'round' }
         }
       }
     };
@@ -487,93 +480,48 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     return colors[index % colors.length];
   }
 
-  onPositionsPageChange(event: PageEvent): void {
-
-    this.positionsPage = event.pageIndex + 1;
-    this.positionsPageSize = event.pageSize;
-
-    this.loadPositions();
-
-  }
-
-  onOperationsPageChange(event: PageEvent): void {
-
-    this.operationsPage = event.pageIndex + 1;
-    this.operationsPageSize = event.pageSize;
-    this.loadOperations();
-
-  }
-
   onOperationFiltersChange(): void {
-
     this.operationsPage = 1;
     this.loadOperations();
-
   }
 
   loadPositions(): void {
 
     const filter = {
-
       page: this.positionsPage,
       pageSize: this.positionsPageSize,
-
       symbol: this.symbolFilter,
-
       status: this.positionStatusFilter,
-
       sortBy: this.sortBy,
-
       sortDirection: this.sortDirection
-
     };
 
     this.portfolioService
       .getOpenPositions(filter)
       .subscribe({
-
         next: (response) => {
-
           this.positions = response.data?.items ?? [];
           this.totalPositions = response.data?.total ?? 0;
           this.updateEmptyHoldingRows();
         },
-
         error: (error) => {
           console.error(error);
         }
-
       });
-
   }
 
   onPositionFiltersChange(): void {
-
     this.positionsPage = 1;
-
     this.loadPositions();
-
   }
 
   private updateEmptyHoldingRows(): void {
-
-    const missing =
-      Math.max(
-        0,
-        this.positionsPageSize - this.positions.length
-      );
-
+    const missing = Math.max(0, this.positionsPageSize - this.positions.length);
     this.emptyHoldingRows = Array(missing).fill(0);
   }
 
   private updateEmptyOperationRows(): void {
-
-    const missing =
-      Math.max(
-        0,
-        this.operationsPageSize - this.operations.length
-      );
-
+    const missing = Math.max(0, this.operationsPageSize - this.operations.length);
     this.emptyOperationRows = Array(missing).fill(0);
   }
 
@@ -582,15 +530,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       next: (response) => {
         if (response.success) {
           this.snackBarService.success(response.message || 'Compra realizada correctamente');
-
           this.closeBuyModal();
-
           this.loadBalanceCards();
           this.loadPieChart();
           this.loadPositions();
           this.loadOperations();
-        }
-        else {
+        } else {
           this.snackBarService.info(response.message || 'No se pudo realizar la compra');
         }
       },

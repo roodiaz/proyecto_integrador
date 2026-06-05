@@ -454,11 +454,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
   padding: 10px 12px;
-
   border-radius: 8px;
-
   background: rgba(255, 255, 255, .03);
 }
 
@@ -485,11 +482,10 @@
 /* Operations Section */
 .operations-section {
   margin-top: 2rem;
-  background: rgba(30, 41, 59, 0.65);
-  border: 1px solid rgba(255, 255, 255, .08);
-  border-radius: 16px;
+  background: #201F1F;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   overflow: hidden;
-  backdrop-filter: blur(12px);
 }
 
 .section-title {
@@ -518,6 +514,13 @@
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.table-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .table-header h3 {
@@ -577,23 +580,6 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-}
-
-.mat-mdc-paginator-container {
-  color: var(--text-primary) !important;
-}
-
-.mat-mdc-paginator {
-  background: transparent !important;
-  color: var(--text-primary) !important;
-}
-
-.mat-mdc-select-value {
-  color: var(--text-primary) !important;
-}
-
-.mat-mdc-icon-button {
-  color: var(--text-primary) !important;
 }
 
 .operation-badge.sell {
@@ -765,6 +751,16 @@
   .operations-table td {
     padding: 12px 8px;
   }
+
+  .pagination-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .table-actions {
+    flex-wrap: wrap;
+  }
 }
 
 /* TENENCIAS */
@@ -775,23 +771,6 @@
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 32px;
-}
-
-.table-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.table-header h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 600;
 }
 
 .table-actions {
@@ -890,6 +869,103 @@
 
 .neutral {
   color: var(--text-primary) !important;
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────────────── */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.page-size-select {
+  padding: 5px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.page-size-select:focus {
+  border-color: var(--accent-primary);
+}
+
+.page-size-select option {
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.page-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #131313;
+  font-weight: 600;
 }
 
 /* Pro Terminal Theme Overrides */
