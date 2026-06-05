@@ -224,16 +224,66 @@
     </div>
   </section>
 
-  <section class="bottom-grid">
-    <article class="terminal-card trending-card">
+  <section class="market-bottom-layout">
+
+  <article class="terminal-card news-card news-wide-card">
+    <div class="small-card-header">
+      <div>
+        <h3>Market Intelligence</h3>
+        <p class="card-kicker">Noticias principales del mercado</p>
+      </div>
+
+      <div class="news-arrows" *ngIf="marketNews.length > 1">
+        <button type="button" (click)="previousNews()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <button type="button" (click)="nextNews()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="news-content wide-news-content" *ngIf="marketNews.length > 0">
+      <div class="news-meta">
+        <span>{{ activeNews.source }}</span>
+        <span>{{ activeNews.time }}</span>
+      </div>
+
+      <h4>{{ activeNews.title }}</h4>
+      <p>{{ activeNews.summary }}</p>
+
+      <button type="button" class="read-more" (click)="openNews(activeNews.url)">Read Full Report</button>
+    </div>
+
+    <div class="card-empty modern-empty" *ngIf="marketNews.length === 0">
+      <div class="card-empty-icon">📰</div>
+      <div class="card-empty-title">No hay noticias disponibles</div>
+      <div class="card-empty-text">Cuando conectemos el servicio de noticias, acá se van a mostrar los reportes principales del mercado.</div>
+    </div>
+
+    <div class="news-skeleton" >
+      <span class="skeleton skeleton-news-source"></span>
+      <span class="skeleton skeleton-news-title"></span>
+      <span class="skeleton skeleton-news-title short"></span>
+      <span class="skeleton skeleton-news-line"></span>
+      <span class="skeleton skeleton-news-line"></span>
+    </div>
+  </article>
+
+  <div class="market-lists-grid">
+
+    <article class="terminal-card market-list-card">
       <div class="small-card-header">
-        <h3>Tendencias Ahora</h3>
+        <div>
+          <h3>Tendencias Ahora</h3>
+          <p class="card-kicker">Activos con mayor actividad</p>
+        </div>
         <mat-icon>trending_up</mat-icon>
       </div>
 
-      <div class="trending-grid">
-        <button type="button" class="trending-item" *ngFor="let stock of trendingStocks; let i = index"
-          (click)="selectAsset(stock.symbol)">
+      <div class="trending-grid single-list" *ngIf="!loadingTrending && trendingStocks.length > 0">
+        <button type="button" class="trending-item" *ngFor="let stock of trendingStocks; let i = index" (click)="selectAsset(stock.symbol)">
           <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
 
           <div>
@@ -246,34 +296,88 @@
           </b>
         </button>
       </div>
+
+      <div class="card-empty modern-empty compact-empty" *ngIf="!loadingTrending && trendingStocks.length === 0">
+        <div class="card-empty-icon">📊</div>
+        <div class="card-empty-title">Sin tendencias disponibles</div>
+        <div class="card-empty-text">Todavía no hay activos destacados para mostrar.</div>
+      </div>
+
+      <div class="list-skeleton" *ngIf="loadingTrending">
+        <span class="skeleton skeleton-list-item" *ngFor="let item of [1, 2, 3]"></span>
+      </div>
     </article>
 
-    <article class="terminal-card news-card">
+    <article class="terminal-card market-list-card">
       <div class="small-card-header">
-        <h3>Market Intelligence</h3>
-
-        <div class="news-arrows">
-          <button type="button" (click)="previousNews()">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-
-          <button type="button" (click)="nextNews()">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
+        <div>
+          <h3>Ganadores del Día</h3>
+          <p class="card-kicker">Mayores subas</p>
         </div>
+        <mat-icon>north_east</mat-icon>
       </div>
 
-      <div class="news-content">
-        <div class="news-meta">
-          <span>{{ activeNews.source }}</span>
-          <span>{{ activeNews.time }}</span>
-        </div>
+      <div class="trending-grid single-list" *ngIf="!loadingGainers && dayGainers.length > 0">
+        <button type="button" class="trending-item" *ngFor="let stock of dayGainers; let i = index" (click)="selectAsset(stock.symbol)">
+          <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
 
-        <h4>{{ activeNews.title }}</h4>
-        <p>{{ activeNews.summary }}</p>
+          <div>
+            <strong>{{ stock.symbol }}</strong>
+            <small>{{ stock.name }}</small>
+          </div>
 
-        <button type="button" class="read-more" (click)="openNews(activeNews.url)">Read Full Report</button>
+          <b class="positive">
+            +{{ getStockChangePercent(stock).toFixed(1) }}%
+          </b>
+        </button>
+      </div>
+
+      <div class="card-empty modern-empty compact-empty" *ngIf="!loadingGainers && dayGainers.length === 0">
+        <div class="card-empty-icon">🚀</div>
+        <div class="card-empty-title">Sin ganadores disponibles</div>
+        <div class="card-empty-text">Cuando el mercado informe subas destacadas, aparecerán acá.</div>
+      </div>
+
+      <div class="list-skeleton" *ngIf="loadingGainers">
+        <span class="skeleton skeleton-list-item" *ngFor="let item of [1, 2, 3]"></span>
       </div>
     </article>
-  </section>
+
+    <article class="terminal-card market-list-card">
+      <div class="small-card-header">
+        <div>
+          <h3>Perdedores del Día</h3>
+          <p class="card-kicker">Mayores bajas</p>
+        </div>
+        <mat-icon>south_east</mat-icon>
+      </div>
+
+      <div class="trending-grid single-list" *ngIf="!loadingLosers && dayLosers.length > 0">
+        <button type="button" class="trending-item" *ngFor="let stock of dayLosers; let i = index" (click)="selectAsset(stock.symbol)">
+          <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
+
+          <div>
+            <strong>{{ stock.symbol }}</strong>
+            <small>{{ stock.name }}</small>
+          </div>
+
+          <b class="negative">
+            {{ getStockChangePercent(stock).toFixed(1) }}%
+          </b>
+        </button>
+      </div>
+
+      <div class="card-empty modern-empty compact-empty" *ngIf="!loadingLosers && dayLosers.length === 0">
+        <div class="card-empty-icon">📉</div>
+        <div class="card-empty-title">Sin perdedores disponibles</div>
+        <div class="card-empty-text">Cuando el mercado informe bajas destacadas, aparecerán acá.</div>
+      </div>
+
+      <div class="list-skeleton" *ngIf="loadingLosers">
+        <span class="skeleton skeleton-list-item" *ngFor="let item of [1, 2, 3]"></span>
+      </div>
+    </article>
+
+  </div>
+</section>
 </div>

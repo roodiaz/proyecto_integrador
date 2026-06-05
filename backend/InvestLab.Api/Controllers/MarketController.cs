@@ -76,5 +76,89 @@ namespace InvestLab.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Obtiene las tendencias actuales del mercado.
+        /// </summary>
+        /// <returns>
+        /// Lista de activos con mayor actividad.
+        /// </returns>
+        /// <response code="200">
+        /// Tendencias obtenidas correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener las tendencias.
+        /// </response>
+        [HttpGet("trending")]
+        public async Task<IActionResult> GetTrending()
+        {
+            _logger.LogInformation("Solicitud de tendencias del mercado recibida");
+
+            var result = await _service.GetTrendingAsync();
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener tendencias del mercado: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Obtiene los ganadores del día.
+        /// </summary>
+        /// <returns>
+        /// Lista de activos con mayores subas del día.
+        /// </returns>
+        /// <response code="200">
+        /// Ganadores obtenidos correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener los ganadores.
+        /// </response>
+        [HttpGet("gainers")]
+        public async Task<IActionResult> GetGainers()
+        {
+            _logger.LogInformation("Solicitud de ganadores del día recibida");
+
+            var result = await _service.GetGainersAsync();
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener ganadores del día: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Obtiene los perdedores del día.
+        /// </summary>
+        /// <returns>
+        /// Lista de activos con mayores bajas del día.
+        /// </returns>
+        /// <response code="200">
+        /// Perdedores obtenidos correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener los perdedores.
+        /// </response>
+        [HttpGet("losers")]
+        public async Task<IActionResult> GetLosers()
+        {
+            _logger.LogInformation("Solicitud de perdedores del día recibida");
+
+            var result = await _service.GetLosersAsync();
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener perdedores del día: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

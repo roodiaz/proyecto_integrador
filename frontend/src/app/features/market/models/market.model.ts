@@ -39,3 +39,15 @@ export interface MarketAsset {
   dividendYield: number | null;
   sector: string | null;
 }
+
+export interface MarketMover {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  volume: number | null;
+  exchange: string | null;
+  sector: string | null;
+}
+

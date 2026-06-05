@@ -7,5 +7,11 @@ namespace InvestLab.Business.Interfaces
         Task<Response> GetMarketOverviewAsync();
 
         Task<Response> GetAssetDetailAsync(string symbol);
+
+        Task<Response> GetTrendingAsync();
+
+        Task<Response> GetGainersAsync();
+
+        Task<Response> GetLosersAsync();
     }
 }

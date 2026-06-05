@@ -5,7 +5,8 @@ import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import {
     MarketOverview,
-    MarketAsset
+    MarketAsset,
+    MarketMover
 } from '../models/market.model';
 
 @Injectable({
@@ -23,10 +24,28 @@ export class MarketService {
         );
     }
 
-    getAssetDetail(symbol: string): 
-    Observable<ApiResponse<MarketAsset>> {
+    getAssetDetail(symbol: string):
+        Observable<ApiResponse<MarketAsset>> {
         return this.http.get<ApiResponse<MarketAsset>>(
             `${this.apiUrl}/asset/${symbol}`
+        );
+    }
+
+    getTrending(): Observable<ApiResponse<MarketMover[]>> {
+        return this.http.get<ApiResponse<MarketMover[]>>(
+            `${this.apiUrl}/trending`
+        );
+    }
+
+    getGainers(): Observable<ApiResponse<MarketMover[]>> {
+        return this.http.get<ApiResponse<MarketMover[]>>(
+            `${this.apiUrl}/gainers`
+        );
+    }
+
+    getLosers(): Observable<ApiResponse<MarketMover[]>> {
+        return this.http.get<ApiResponse<MarketMover[]>>(
+            `${this.apiUrl}/losers`
         );
     }
 }

@@ -10,7 +10,8 @@ import { MarketService } from '../../services/market.service';
 import {
   MarketIndex,
   MarketStatus,
-  MarketAsset
+  MarketAsset,
+  MarketMover
 } from '../../models/market.model';
 
 Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcElement);
@@ -31,13 +32,13 @@ interface MarketNews {
   styleUrl: './market.css'
 })
 export class Market implements OnInit, AfterViewInit, OnDestroy {
-  selectedSymbol = 'NVDA';
+
+  // grafico
+  selectedSymbol = localStorage.getItem('lastMarketSymbol') || 'AAPL';
   selectedTimeframe = '1m';
   selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
   marketData: MarketAsset[] = [];
-  trendingStocks: MarketAsset[] = [];
   marketNews: MarketNews[] = [];
-  activeNewsIndex = 0;
   currentTime = '';
   private chart: Chart | null = null;
   private clockInterval: any;
@@ -54,6 +55,16 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   loadingAsset = false;
   assetErrorMessage = '';
 
+  // cards inferiores
+  activeNewsIndex = 0;
+  loadingTrending = false;
+  loadingGainers = false;
+  loadingLosers = false;
+
+  trendingStocks: MarketMover[] = [];
+  dayGainers: MarketMover[] = [];
+  dayLosers: MarketMover[] = [];
+
   constructor(
     private router: Router,
     private marketService: MarketService
@@ -62,11 +73,14 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.loadMarketData();
     this.loadMarketOverview();
+    this.loadMarketLists();
     this.loadNews();
     this.updateClock();
-    this.selectedAsset = this.marketData.find(x => x.symbol === this.selectedSymbol) ?? this.marketData[0];
-    this.trendingStocks = [...this.marketData].sort((a, b) => Math.abs(b.changePercent!) - Math.abs(a.changePercent!)).slice(0, 6);
+    this.searchAsset();
+    this.searchAsset();
+
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
+    this.selectedAsset = this.marketData.find(x => x.symbol === this.selectedSymbol) ?? this.marketData[0];
   }
 
   ngAfterViewInit(): void {
@@ -79,7 +93,67 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get activeNews(): MarketNews {
-    return this.marketNews[this.activeNewsIndex] ?? this.marketNews[0];
+    return this.marketNews[this.activeNewsIndex] ?? {
+      source: '',
+      time: '',
+      title: '',
+      summary: '',
+      url: ''
+    };
+  }
+
+  private loadMarketLists(): void {
+    this.loadTrending();
+    this.loadGainers();
+    this.loadLosers();
+  }
+
+  private loadTrending(): void {
+    this.loadingTrending = true;
+
+    this.marketService.getTrending().subscribe({
+      next: response => {
+        this.trendingStocks = response.success ? response.data ?? [] : [];
+        this.loadingTrending = false;
+      },
+      error: error => {
+        console.error('Error al obtener tendencias', error);
+        this.trendingStocks = [];
+        this.loadingTrending = false;
+      }
+    });
+  }
+
+  private loadGainers(): void {
+    this.loadingGainers = true;
+
+    this.marketService.getGainers().subscribe({
+      next: response => {
+        this.dayGainers = response.success ? response.data ?? [] : [];
+        this.loadingGainers = false;
+      },
+      error: error => {
+        console.error('Error al obtener ganadores', error);
+        this.dayGainers = [];
+        this.loadingGainers = false;
+      }
+    });
+  }
+
+  private loadLosers(): void {
+    this.loadingLosers = true;
+
+    this.marketService.getLosers().subscribe({
+      next: response => {
+        this.dayLosers = response.success ? response.data ?? [] : [];
+        this.loadingLosers = false;
+      },
+      error: error => {
+        console.error('Error al obtener perdedores', error);
+        this.dayLosers = [];
+        this.loadingLosers = false;
+      }
+    });
   }
 
   private loadMarketData(): void {
@@ -118,11 +192,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadNews(): void {
-    this.marketNews = [
-      { source: 'REUTERS', time: '5m ago', title: 'NVIDIA Blackwell demand grows as AI spending continues to accelerate.', summary: 'Demand for next-generation AI chips remains strong, with major cloud providers increasing infrastructure investment and analysts watching semiconductor leaders closely.', url: 'https://finance.yahoo.com' },
-      { source: 'MARKET WATCH', time: '12m ago', title: 'Technology stocks lead the session while investors wait for new inflation data.', summary: 'Large-cap technology names pushed indexes higher as traders balanced earnings expectations with upcoming macroeconomic indicators.', url: 'https://finance.yahoo.com' },
-      { source: 'INVESTLAB', time: '18m ago', title: 'Market sentiment remains positive across growth stocks.', summary: 'Momentum continues in selected growth names, although volatility remains elevated in high-beta assets.', url: 'https://finance.yahoo.com' }
-    ];
+    this.marketNews = [];
   }
 
   private getMarketChartConfiguration(data: any): any {
@@ -355,6 +425,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
         this.selectedAsset = response.data;
         this.selectedSymbol = response.data.symbol;
+        localStorage.setItem('lastMarketSymbol', response.data.symbol);
         this.assetErrorMessage = '';
         this.setupChart();
       },
@@ -540,8 +611,9 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   getAssetChangePercent(): number {
     return this.selectedAsset?.changePercent ?? 0;
   }
-  
-  getStockChangePercent(stock: MarketAsset): number {
+
+  getStockChangePercent(stock: MarketMover): number {
     return stock.changePercent ?? 0;
   }
+
 }

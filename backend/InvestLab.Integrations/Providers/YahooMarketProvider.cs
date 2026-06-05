@@ -5,6 +5,7 @@ using InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using NodaTime;
+using System.Text.Json;
 using YahooQuotesApi;
 
 namespace InvestLab.Integrations.Providers
@@ -14,12 +15,14 @@ namespace InvestLab.Integrations.Providers
         private readonly YahooOptions _options;
         private readonly IConfiguration _config;
         private readonly YahooQuotes _yahooQuotes;
+        private readonly HttpClient _httpClient;
 
         public YahooMarketProvider(HttpClient httpClient, IConfiguration config, IOptions<YahooOptions> options)
         {
             _config = config;
             _options = options.Value;
             _yahooQuotes = new YahooQuotesBuilder().Build();
+            _httpClient = httpClient;
         }
 
         public async Task<MarketPriceDto?> GetPriceAsync(string symbol)
@@ -173,6 +176,68 @@ namespace InvestLab.Integrations.Providers
             };
         }
 
+        public async Task<List<MarketMoverDto>> GetMarketMoversAsync(string screenerId, int count)
+        {
+            if (string.IsNullOrWhiteSpace(screenerId))
+                return [];
+
+            count = count <= 0 ? 6 : count;
+
+            var url = $"https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds={Uri.EscapeDataString(screenerId)}&count={count}";
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+                return [];
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var data = JsonDocument.Parse(json);
+
+            if (!data.RootElement.TryGetProperty("finance", out var finance))
+                return [];
+
+            if (!finance.TryGetProperty("result", out var result) || result.ValueKind != JsonValueKind.Array || result.GetArrayLength() == 0)
+                return [];
+
+            var firstResult = result[0];
+
+            if (!firstResult.TryGetProperty("quotes", out var quotes) || quotes.ValueKind != JsonValueKind.Array)
+                return [];
+
+            var movers = new List<MarketMoverDto>();
+
+            foreach (var item in quotes.EnumerateArray())
+            {
+                var symbol = GetJsonString(item, "symbol");
+
+                if (string.IsNullOrWhiteSpace(symbol))
+                    continue;
+
+                var price = GetJsonDecimal(item, "regularMarketPrice") ?? 0;
+                var change = GetJsonDecimal(item, "regularMarketChange") ?? 0;
+                var changePercent = GetJsonDecimal(item, "regularMarketChangePercent") ?? 0;
+
+                movers.Add(new MarketMoverDto
+                {
+                    Symbol = symbol,
+                    Name = GetJsonString(item, "shortName") ?? GetJsonString(item, "longName") ?? GetJsonString(item, "displayName") ?? symbol,
+                    Price = Math.Round(price, 2),
+                    Change = Math.Round(change, 2),
+                    ChangePercent = Math.Round(changePercent, 2),
+                    Volume = GetJsonLong(item, "regularMarketVolume"),
+                    Exchange = GetJsonString(item, "fullExchangeName") ?? GetJsonString(item, "exchange"),
+                    Sector = GetJsonString(item, "sector")
+                });
+            }
+
+            return movers;
+        }
+
+        // HERLPERS
         private static object? GetObjectValue(object source, params string[] propertyNames)
         {
             var type = source.GetType();
@@ -247,6 +312,21 @@ namespace InvestLab.Integrations.Providers
             {
                 return null;
             }
+        }
+
+        private static string? GetJsonString(JsonElement element, string property)
+        {
+            return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+        }
+
+        private static decimal? GetJsonDecimal(JsonElement element, string property)
+        {
+            return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDecimal() : null;
+        }
+
+        private static long? GetJsonLong(JsonElement element, string property)
+        {
+            return element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetInt64() : null;
         }
 
         private static DateTime? GetDateTimeFromTick(object tick)

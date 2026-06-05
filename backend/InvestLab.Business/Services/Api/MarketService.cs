@@ -104,6 +104,48 @@ namespace InvestLab.Business.Services
             }
         }
 
+        public async Task<Response> GetTrendingAsync()
+        {
+            try
+            {
+                var result = await _externalProvider.GetMarketMoversAsync("most_actives", 6);
+                return Response.Ok(result, "Tendencias obtenidas correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener tendencias del mercado");
+                return Response.Fail("Ocurrió un error al obtener las tendencias del mercado");
+            }
+        }
+
+        public async Task<Response> GetGainersAsync()
+        {
+            try
+            {
+                var result = await _externalProvider.GetMarketMoversAsync("day_gainers", 6);
+                return Response.Ok(result, "Ganadores obtenidos correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener ganadores del mercado");
+                return Response.Fail("Ocurrió un error al obtener los ganadores del mercado");
+            }
+        }
+
+        public async Task<Response> GetLosersAsync()
+        {
+            try
+            {
+                var result = await _externalProvider.GetMarketMoversAsync("day_losers", 6);
+                return Response.Ok(result, "Perdedores obtenidos correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener perdedores del mercado");
+                return Response.Fail("Ocurrió un error al obtener los perdedores del mercado");
+            }
+
+        }
         // Metodos auxiliares
         private static MarketStatusDto GetMarketStatus()
         {

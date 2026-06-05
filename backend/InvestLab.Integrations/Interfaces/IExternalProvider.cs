@@ -12,4 +12,6 @@ public interface IExternalProvider
     Task<List<HistoricalPriceDto>> GetHistoricalAsync( string symbol,DateTime from,DateTime to);
 
     Task<AssetProfileDto?> GetProfileAsync(string symbol);
+
+    Task<List<MarketMoverDto>> GetMarketMoversAsync(string screenerId, int count);
 }
