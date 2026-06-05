@@ -1,70 +1,49 @@
-<h2 mat-dialog-title>
-    Agregar Activo
-</h2>
+<div class="dialog-header">
+  <h2 class="dialog-title">Agregar Activo</h2>
+  <p class="dialog-subtitle">Buscá por símbolo o seleccioná uno popular</p>
+</div>
 
-<mat-dialog-content>
+<mat-dialog-content class="dialog-body">
 
-    <mat-form-field appearance="outline" class="full-width">
-        <mat-label>
-            Buscar activo
-        </mat-label>
+  <!-- Buscador -->
+  <div class="search-wrap">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Ej: AAPL, NVDA, TSLA..."
+      [(ngModel)]="searchTerm">
+    <button class="search-clear" *ngIf="searchTerm" (click)="searchTerm = ''">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-        <input matInput [(ngModel)]="searchTerm" placeholder="Ej: AAPL, NVDA...">
+  <button class="btn-add-primary" (click)="add(searchTerm)" [disabled]="!searchTerm?.trim()">
+    <mat-icon>add</mat-icon>
+    Agregar "{{ searchTerm || '...' }}"
+  </button>
 
-    </mat-form-field>
+  <!-- Activos populares -->
+  <p class="section-label">Activos Populares</p>
 
-    <div class="search-actions">
-
-        <button mat-raised-button color="primary" (click)="add(searchTerm)" [disabled]="!searchTerm">
-            Agregar
-        </button>
-
-    </div>
-
-    <div class="section-title">
-        Activos Populares
-    </div>
-
-    <div class="asset-list">
-
-        <div class="asset-item" *ngFor="let asset of popularAssets">
-
-            <div class="asset-info">
-
-                <div class="asset-symbol">
-                    {{ asset.symbol.charAt(0) }}
-                </div>
-
-                <div>
-
-                    <div style="font-weight:600">
-                        {{ asset.symbol }}
-                    </div>
-
-                    <div class="asset-name">
-                        {{ asset.name }}
-                    </div>
-
-                </div>
-
-            </div>
-
-            <button mat-button color="primary" (click)="add(asset.symbol)">
-                Agregar
-            </button>
-
+  <div class="asset-list">
+    <div class="asset-item" *ngFor="let asset of popularAssets">
+      <div class="asset-info">
+        <div class="asset-logo">{{ asset.symbol.charAt(0) }}</div>
+        <div class="asset-text">
+          <span class="asset-symbol">{{ asset.symbol }}</span>
+          <span class="asset-name">{{ asset.name }}</span>
         </div>
-
+      </div>
+      <button class="btn-add-row" (click)="add(asset.symbol)">
+        <mat-icon>add</mat-icon>
+        Agregar
+      </button>
     </div>
+  </div>
 
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-
-    <button mat-button mat-dialog-close>
-
-        Cancelar
-
-    </button>
-
+<mat-dialog-actions class="dialog-actions">
+  <button class="btn-cancel" mat-dialog-close>Cancelar</button>
 </mat-dialog-actions>
