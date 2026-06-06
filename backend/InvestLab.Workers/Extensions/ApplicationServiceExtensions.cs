@@ -1,12 +1,13 @@
 ﻿using InvestLab.Data.DependencyInjection;
 
-namespace InvestLab.Api.Extensions
+namespace InvestLab.Workers.Extensions
 {
     public static class ApplicationServiceExtensions
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
+
+        public static IServiceCollection AddWorkerApplicationServices(this IServiceCollection services, IConfiguration config)
         {
-            services.AddApiBusinessServices();
+            services.AddWorkerBusinessServices();
 
             var connectionString = config.GetConnectionString("DefaultConnection");
 

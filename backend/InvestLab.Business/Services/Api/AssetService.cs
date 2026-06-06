@@ -20,7 +20,7 @@ public class AssetService : IAssetService
     {
         symbol = symbol.Trim().ToUpper();
 
-        var asset = await _assetRepository.GetBySymbolAsync(symbol);
+        var asset = await _assetRepository.GetAsync(symbol);
         if (asset != null)
             return asset;
 

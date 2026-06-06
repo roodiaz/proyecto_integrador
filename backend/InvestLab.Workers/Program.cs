@@ -1,4 +1,4 @@
-using InvestLab.Api.Extensions;
+using InvestLab.Workers.Extensions;
 using InvestLab.Integrations.Configuration;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Integrations.Providers;
@@ -23,10 +23,10 @@ builder.Services.AddResend(options =>
 
 // Workers
 builder.Services.AddHostedService<MarketSeederWorker>();
-//builder.Services.AddHostedService<DailySnapshotWorker>();
-//builder.Services.AddHostedService<AlertWorker>();
-//builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
-//builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
+builder.Services.AddHostedService<DailySnapshotWorker>();
+builder.Services.AddHostedService<AlertWorker>();
+builder.Services.AddHostedService<UserDailyLimitsResetWorker>();
+builder.Services.AddHostedService<MarketHistoryCleanupWorker>();
 
 var host = builder.Build();
 

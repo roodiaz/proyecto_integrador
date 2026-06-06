@@ -1,7 +1,9 @@
 ﻿using InvestLab.Business.Interfaces;
 using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Interfaces.Workers;
 using InvestLab.Business.Services;
 using InvestLab.Business.Services.Api;
+using InvestLab.Business.Services.Workers;
 using InvestLab.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,10 @@ public static class ApiBusinessServiceExtensions
 
         // interfaz externa
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+        // servicio segundo plano
+        services.AddScoped<IMarketPriceCacheService, MarketPriceCacheService>();
+        services.AddScoped<IMarketPriceRefreshService, MarketPriceRefreshService>();
 
         return services;
     }

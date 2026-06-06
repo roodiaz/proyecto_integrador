@@ -167,7 +167,7 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Límite diario alcanzado");
             }
 
-            var asset = await _assetRepository.GetBySymbolAsync(dto.Symbol);
+            var asset = await _assetRepository.GetAsync(dto.Symbol);
             if (asset == null)
             {
                 _logger.LogWarning("Activo no encontrado: {AssetId}", dto.Symbol);
@@ -235,7 +235,7 @@ public class PortfolioService : IPortfolioService
     {
         try
         {
-            var asset = await _assetRepository.GetBySymbolAsync(symbol);
+            var asset = await _assetRepository.GetAsync(symbol);
             if (asset == null)
             {
                 _logger.LogWarning("Activo no encontrado: {AssetId}", symbol);
@@ -280,7 +280,7 @@ public class PortfolioService : IPortfolioService
     {
         try
         {
-            var asset = await _assetRepository.GetBySymbolAsync(symbol);
+            var asset = await _assetRepository.GetAsync(symbol);
             if (asset == null)
             {
                 _logger.LogWarning("Activo no encontrado: {Symbol}", symbol);

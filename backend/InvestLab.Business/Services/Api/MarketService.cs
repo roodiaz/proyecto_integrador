@@ -4,20 +4,23 @@ using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Logging;
+using InvestLab.Models.DTOs.Market;
 
 namespace InvestLab.Business.Services
 {
     public class MarketService : IMarketService
     {
+        private readonly IMarketPriceCacheService _marketPriceCacheService;
         private readonly IExternalProvider _externalProvider;
         private readonly IAssetService _assetService;
         private readonly ILogger<MarketService> _logger;
 
-        public MarketService(IExternalProvider externalProvider, ILogger<MarketService> logger, IAssetService assetService)
+        public MarketService(IExternalProvider externalProvider, ILogger<MarketService> logger, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
         {
             _externalProvider = externalProvider;
             _logger = logger;
             _assetService = assetService;
+            _marketPriceCacheService = marketPriceCacheService;
         }
 
         public async Task<Response> GetMarketOverviewAsync()
@@ -161,6 +164,23 @@ namespace InvestLab.Business.Services
             }
         }
 
+        public async Task<Response> GetMarketPriceStatusAsync()
+        {
+            try
+            {
+                var updatedAt = await _marketPriceCacheService.GetLastUpdatedAtAsync();
+
+                return Response.Ok(new MarketPriceCacheStatusDto
+                {
+                    UpdatedAt = updatedAt
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener estado de actualización de precios");
+                return Response.Fail("Error interno");
+            }
+        }
 
         // Metodos auxiliares
         private static MarketStatusDto GetMarketStatus()

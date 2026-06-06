@@ -113,7 +113,7 @@ public class MarketHistoryService : IMarketHistoryService
     /// </summary>
     private async Task RecoverMissingHistoryAsync()
     {
-        var assets = await _assetRepository.GetAllSymbolsAsync();
+        var assets = await _assetRepository.GetAllAsync();
 
         foreach (var asset in assets)
         {

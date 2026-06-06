@@ -14,5 +14,6 @@ public class MarketPriceDto
     public long? MarketCap { get; set; }
     public decimal? PeRatio { get; set; }
     public decimal? DividendYield { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
 }

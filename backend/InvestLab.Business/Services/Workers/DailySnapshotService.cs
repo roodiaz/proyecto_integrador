@@ -35,7 +35,7 @@ public class DailySnapshotService : IDailySnapshotWorker
         _marketPriceService = marketPriceService;
     }
 
-    public async Task GenerateDailySnapshotsAsync()
+    public async Task GenerateDailyPortfolioSnapshotsAsync()
     {
         // Obtiene todos los usuarios activos del sistema
         var users = await _userRepository.GetAllAsync();
@@ -122,7 +122,7 @@ public class DailySnapshotService : IDailySnapshotWorker
     {
         _logger.LogInformation("Iniciando snapshot diario de mercado");
 
-        var assets = await _assetRepository.GetAllSymbolsAsync();
+        var assets = await _assetRepository.GetAllAsync();
         var insertedCount = 0;
 
         foreach (var asset in assets)

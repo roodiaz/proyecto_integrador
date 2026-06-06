@@ -1,6 +1,8 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 
-namespace InvestLab.Api.Extensions
+namespace InvestLab.Data.DependencyInjection
 {
     public static class MongoExtensions
     {

@@ -1,10 +1,8 @@
 ﻿using InvestLab.Business.Interfaces.Api;
-using InvestLab.Data;
 using InvestLab.Data.Interfaces;
-using InvestLab.Data.Repositories;
-using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Dashboard;
+using InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Logging;
 using static InvestLab.Models.Enums;
 
@@ -12,7 +10,7 @@ namespace InvestLab.Business.Services.Api;
 
 public class DashboardService : IDashboardService
 {
-    private readonly IExternalProvider _externalProvider;
+    private readonly IMarketPriceCacheService _marketPriceCacheService;
     private readonly ILogger<DashboardService> _logger;
 
     // Repositorios
@@ -24,10 +22,10 @@ public class DashboardService : IDashboardService
     private readonly ITransactionRepository _transactionRepository;
     private readonly INotificationRepository _notificationRepository;
 
-    public DashboardService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository, INotificationRepository notificationRepository)
+    public DashboardService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IMarketPriceCacheService marketPriceCacheService, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository, INotificationRepository notificationRepository)
     {
         _logger = logger;
-        _externalProvider = externalProvider;
+        _marketPriceCacheService = marketPriceCacheService;
 
         _userRepository = userRepository;
         _portfolioRepository = portfolioRepository;
@@ -50,18 +48,22 @@ public class DashboardService : IDashboardService
             }
 
             var portfolio = await _portfolioRepository.GetByUserAsync(userId);
+            var symbols = portfolio.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
+
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
+
             decimal holdingsValue = 0;
 
             foreach (var item in portfolio)
             {
-                if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol))
+                if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol) || item.Quantity <= 0)
                     continue;
 
-                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
-                if (market == null)
+                if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice))
                     continue;
 
-                holdingsValue += item.Quantity * market.Price;
+                holdingsValue += item.Quantity * currentPrice;
             }
 
             var totalValue = user.Balance + holdingsValue;
@@ -105,6 +107,11 @@ public class DashboardService : IDashboardService
         try
         {
             var portfolio = await _portfolioRepository.GetByUserAsync(userId);
+            var symbols = portfolio.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
+
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
+
             var items = new List<(string Sector, decimal Value)>();
 
             foreach (var item in portfolio)
@@ -112,12 +119,11 @@ public class DashboardService : IDashboardService
                 if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol) || item.Quantity <= 0)
                     continue;
 
-                var market = await _externalProvider.GetPriceAsync(item.Asset.Symbol);
-                if (market == null)
+                if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice))
                     continue;
 
                 var sector = string.IsNullOrWhiteSpace(item.Asset.Sector) ? "Sin sector" : item.Asset.Sector;
-                var value = item.Quantity * market.Price;
+                var value = item.Quantity * currentPrice;
 
                 items.Add((sector, value));
             }
@@ -220,13 +226,9 @@ public class DashboardService : IDashboardService
             }
             else
             {
-                portfolioHistory = portfolioHistory
-                    .OrderBy(x => x.Date)
-                    .ToList();
-
-                sp500History = sp500History
-                    .OrderBy(x => x.Date)
-                    .ToList();
+                portfolioHistory = portfolioHistory.OrderBy(x => x.Date).ToList();
+                sp500History = sp500History.OrderBy(x => x.Date).ToList();
+                nasdaqHistory = nasdaqHistory.OrderBy(x => x.Date).ToList();
             }
 
             var portfolioBase = portfolioHistory.First().TotalValue;
@@ -235,8 +237,6 @@ public class DashboardService : IDashboardService
 
             var sp500Dictionary = sp500History.ToDictionary(x => x.Date.Date, x => x.Close);
             var nasdaqDictionary = nasdaqHistory.ToDictionary(x => x.Date.Date, x => x.Close);
-
-            var benchmarkDictionary = sp500History.ToDictionary(x => x.Date.Date, x => x.Close);
 
             var chartData = portfolioHistory
                 .Where(x => sp500Dictionary.ContainsKey(x.Date.Date) && nasdaqDictionary.ContainsKey(x.Date.Date))
@@ -250,16 +250,22 @@ public class DashboardService : IDashboardService
                 .ToList();
 
             var positions = await _portfolioRepository.GetByUserAsync(userId);
+            var symbols = positions.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
+
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             decimal holdingsValue = 0;
 
             foreach (var position in positions)
             {
-                var market = await _externalProvider.GetPriceAsync(position.Asset.Symbol);
-                if (market == null)
+                if (position.Asset == null || string.IsNullOrWhiteSpace(position.Asset.Symbol) || position.Quantity <= 0)
                     continue;
 
-                holdingsValue += position.Quantity * market.Price;
+                if (!pricesBySymbol.TryGetValue(position.Asset.Symbol, out var currentPrice))
+                    continue;
+
+                holdingsValue += position.Quantity * currentPrice;
             }
 
             var currentValue = user.Balance + holdingsValue;
@@ -321,19 +327,6 @@ public class DashboardService : IDashboardService
 
     //
     // HELPERS
-    private static string BuildConditionText(Alert alert)
-    {
-        return ((AlertOperator)alert.Operator) switch
-        {
-            AlertOperator.GreaterThan => ">",
-            AlertOperator.LessThan => "<",
-            AlertOperator.GreaterThanOrEqual => ">=",
-            AlertOperator.LessThanOrEqual => "<=",
-            AlertOperator.Equal => "=",
-            _ => "-"
-        };
-    }
-
     private static string BuildTransactionTypeText(TransactionType type)
     {
         return ((TransactionType)type) switch

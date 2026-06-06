@@ -180,7 +180,8 @@ public class UserService : IUserService
                 }
             }
 
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var extension = Path.GetExtension(file.FileName);
+            var fileName = $"{Guid.NewGuid()}{extension}";
             var path = Path.Combine(folder, fileName);
             using (var stream = new FileStream(path, FileMode.Create))
             {
@@ -195,7 +196,7 @@ public class UserService : IUserService
 
             _logger.LogInformation("Imagen actualizada {UserId}", userId);
 
-            return Response.Ok(null, "Imagen actualizada");
+            return Response.Ok(user.ProfileImageUrl, "Imagen actualizada");
         }
         catch (Exception ex)
         {

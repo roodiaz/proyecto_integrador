@@ -51,7 +51,7 @@ public class DailySnapshotWorker : BackgroundService
             var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
 
             await service.SaveDailyMarketHistoryAsync();
-            await service.GenerateDailySnapshotsAsync();
+            await service.GenerateDailyPortfolioSnapshotsAsync();
 
         }
     }

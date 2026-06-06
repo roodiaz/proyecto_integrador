@@ -169,7 +169,7 @@ namespace InvestLab.Business.Services.Api
                 if (!IsValidCondition(dto))
                     return Response.Fail("Datos inválidos");
 
-                var asset = await _assetRepository.GetBySymbolAsync(dto.Symbol);
+                var asset = await _assetRepository.GetAsync(dto.Symbol);
 
                 if (asset == null)
                     return Response.Fail("Activo no encontrado");

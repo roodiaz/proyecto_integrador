@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material.module';
 import { DashboardService } from '../../services/dashboard.service';
+import { finalize } from 'rxjs';
+import { OnDestroy } from '@angular/core';
 import {
   DashboardTopCards,
   DashboardPerformanceChart,
@@ -25,16 +27,17 @@ import Chart from 'chart.js/auto';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-export class Dashboard implements OnInit, AfterViewInit {
+export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
+  private viewInitialized = false;
+  private chart: Chart | null = null;
+  private resizeObserver: any;
+
   selectedChartType: 'line' | 'bar' = 'line';
   selectedPeriod: '1W' | '1M' | '3M' | '1Y' = '1M';
   topCards: DashboardTopCards | null = null;
   performanceChart: DashboardPerformanceChart | null = null;
   loadingTopCards = false;
   loadingPerformanceChart = false;
-
-  private chart: Chart | null = null;
-  private resizeObserver: any;
 
   latestTransactions: DashboardLatestTransaction[] = [];
   loadingLatestTransactions = false;
@@ -57,9 +60,21 @@ export class Dashboard implements OnInit, AfterViewInit {
     this.loadPortfolioDistribution();
   }
 
-  ngAfterViewInit() {
-    this.setupChart();
+  ngAfterViewInit(): void {
+    this.viewInitialized = true;
     this.setupResizeObserver();
+    this.renderChartWhenReady();
+  }
+
+  ngOnDestroy(): void {
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 
   @HostListener('window:resize')
@@ -108,37 +123,46 @@ export class Dashboard implements OnInit, AfterViewInit {
     this.chart = new Chart(ctx, config);
   }
 
-  loadTopCards() {
+  loadTopCards(): void {
     this.loadingTopCards = true;
 
-    this.dashboardService.getTopCards().subscribe({
-      next: (response) => {
-        this.loadingTopCards = false;
+    this.dashboardService.getTopCards()
+      .pipe(finalize(() => this.loadingTopCards = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.topCards = null;
+            return;
+          }
 
-        if (!response.success) return;
-
-        this.topCards = response.data;
-        this.setupChart();
-      },
-      error: () => {
-        this.loadingTopCards = false;
-      }
-    });
+          this.topCards = response.data;
+        },
+        error: error => {
+          console.error('Error cargando cards del dashboard', error);
+          this.topCards = null;
+        }
+      });
   }
 
-  loadLatestTransactions() {
+  loadLatestTransactions(): void {
     this.loadingLatestTransactions = true;
 
-    this.dashboardService.getLatestTransactions().subscribe({
-      next: (response) => {
-        this.loadingLatestTransactions = false;
-        if (!response.success) return;
-        this.latestTransactions = response.data ?? [];
-      },
-      error: () => {
-        this.loadingLatestTransactions = false;
-      }
-    });
+    this.dashboardService.getLatestTransactions()
+      .pipe(finalize(() => this.loadingLatestTransactions = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.latestTransactions = [];
+            return;
+          }
+
+          this.latestTransactions = response.data;
+        },
+        error: error => {
+          console.error('Error cargando últimas operaciones', error);
+          this.latestTransactions = [];
+        }
+      });
   }
 
   getTransactionClass(type: string): string {
@@ -148,48 +172,53 @@ export class Dashboard implements OnInit, AfterViewInit {
     return '';
   }
 
-  loadPortfolioDistribution() {
+  loadPortfolioDistribution(): void {
     this.loadingPortfolioDistribution = true;
 
-    this.dashboardService.getPortfolioDistribution().subscribe({
-      next: (response) => {
-        this.loadingPortfolioDistribution = false;
-        if (!response.success) return;
-        this.portfolioDistribution = response.data ?? [];
-      },
-      error: () => {
-        this.loadingPortfolioDistribution = false;
-      }
-    });
-  }
-
-  loadPerformanceChart() {
-    this.loadingPerformanceChart = true;
-
-    this.dashboardService.getPerformanceChart(this.selectedPeriod).subscribe({
-      next: (response) => {
-        this.loadingPerformanceChart = false;
-
-        if (!response.success) return;
-
-        this.performanceChart = response.data;
-
-        if (!this.hasEnoughChartData) {
-          if (this.chart) {
-            this.chart.destroy();
-            this.chart = null;
+    this.dashboardService.getPortfolioDistribution()
+      .pipe(finalize(() => this.loadingPortfolioDistribution = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.portfolioDistribution = [];
+            return;
           }
 
+          this.portfolioDistribution = response.data;
+        },
+        error: error => {
+          console.error('Error cargando distribución del portfolio', error);
+          this.portfolioDistribution = [];
+        }
+      });
+  }
+
+  loadPerformanceChart(): void {
+    this.loadingPerformanceChart = true;
+    this.destroyChart();
+
+    this.dashboardService.getPerformanceChart(this.selectedPeriod).subscribe({
+      next: response => {
+        if (!response.success || !response.data) {
+          this.performanceChart = null;
+          this.loadingPerformanceChart = false;
           return;
         }
 
-        setTimeout(() => this.setupChart());
-      },
-      error: () => {
+        this.performanceChart = response.data;
         this.loadingPerformanceChart = false;
+
+        this.renderChartWhenReady();
+      },
+      error: error => {
+        console.error('Error cargando gráfico del dashboard', error);
+        this.performanceChart = null;
+        this.loadingPerformanceChart = false;
+        this.destroyChart();
       }
     });
   }
+
   formatCurrency(value: number | null | undefined): string {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value ?? 0);
   }
@@ -368,9 +397,9 @@ export class Dashboard implements OnInit, AfterViewInit {
     return 'neutral';
   }
 
-  onChartTypeChange() {
-    if (!this.hasEnoughChartData) return;
-    this.setupChart();
+  onChartTypeChange(): void {
+    this.destroyChart();
+    this.renderChartWhenReady();
   }
 
   onPeriodChange() {
@@ -378,22 +407,28 @@ export class Dashboard implements OnInit, AfterViewInit {
   }
 
   get hasEnoughChartData(): boolean {
-    return (this.performanceChart?.data?.length ?? 0) >= 2;
+    return !!this.performanceChart?.data && this.performanceChart.data.length > 0;
   }
 
-  loadRecentNotifications() {
+  loadRecentNotifications(): void {
     this.loadingRecentNotifications = true;
 
-    this.dashboardService.getRecentNotifications().subscribe({
-      next: (response) => {
-        this.loadingRecentNotifications = false;
-        if (!response.success) return;
-        this.recentNotifications = response.data ?? [];
-      },
-      error: () => {
-        this.loadingRecentNotifications = false;
-      }
-    });
+    this.dashboardService.getRecentNotifications()
+      .pipe(finalize(() => this.loadingRecentNotifications = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.recentNotifications = [];
+            return;
+          }
+
+          this.recentNotifications = response.data;
+        },
+        error: error => {
+          console.error('Error cargando notificaciones recientes', error);
+          this.recentNotifications = [];
+        }
+      });
   }
 
   getNotificationSymbol(message: string): string {
@@ -436,6 +471,28 @@ export class Dashboard implements OnInit, AfterViewInit {
 
   getAllocationWidth(value: number): string {
     return `${Math.min(Math.max(value ?? 0, 0), 100)}%`;
+  }
+
+  private renderChartWhenReady(): void {
+    if (!this.performanceChart?.data?.length) return;
+
+    setTimeout(() => {
+      const canvas = document.getElementById('mainChart') as HTMLCanvasElement;
+
+      if (!canvas) {
+        setTimeout(() => this.renderChartWhenReady(), 50);
+        return;
+      }
+
+      this.createChart(canvas);
+    }, 0);
+  }
+
+  private destroyChart(): void {
+    if (!this.chart) return;
+
+    this.chart.destroy();
+    this.chart = null;
   }
 }
 

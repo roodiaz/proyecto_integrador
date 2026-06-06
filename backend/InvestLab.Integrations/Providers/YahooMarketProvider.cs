@@ -308,6 +308,7 @@ namespace InvestLab.Integrations.Providers
             return result.Take(count).ToList();
         }
 
+
         // HERLPERS
         private static object? GetObjectValue(object source, params string[] propertyNames)
         {

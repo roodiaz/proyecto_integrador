@@ -188,5 +188,33 @@ namespace InvestLab.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Obtiene el estado de actualización de los precios de mercado.
+        /// </summary>
+        /// <returns>
+        /// Fecha de última actualización del cache de precios.
+        /// </returns>
+        /// <response code="200">
+        /// Estado de actualización obtenido correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener el estado de actualización.
+        /// </response>
+        [HttpGet("prices-status")]
+        public async Task<IActionResult> GetMarketPriceStatus()
+        {
+            _logger.LogInformation("Solicitud de estado de actualización de precios recibida");
+
+            var result = await _service.GetMarketPriceStatusAsync();
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener estado de actualización de precios: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }

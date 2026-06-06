@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\InvestLab.Api\InvestLab.Api.csproj" />
     <ProjectReference Include="..\InvestLab.Business\InvestLab.Business.csproj" />
     <ProjectReference Include="..\InvestLab.Data\InvestLab.Data.csproj" />
     <ProjectReference Include="..\InvestLab.Models\InvestLab.Models.csproj" />

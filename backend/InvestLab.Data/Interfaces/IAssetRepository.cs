@@ -2,9 +2,9 @@
 {
     public interface IAssetRepository
     {
-        Task<List<Asset>> GetAllSymbolsAsync();
+        Task<List<Asset>> GetAllAsync();
 
-        Task<Asset?> GetBySymbolAsync(string symbol);
+        Task<Asset?> GetAsync(string symbol);
 
         Task AddAsync(Asset asset);
 

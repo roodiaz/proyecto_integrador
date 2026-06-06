@@ -172,3 +172,58 @@
 .sidebar.collapsed .sidebar-nav--bottom {
   padding: 4px 6px 10px;
 }
+
+/* ─── Market status ─── */
+.market-status-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.055);
+  margin: 14px 8px 10px;
+  flex-shrink: 0;
+}
+
+.market-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  color: #7f8dab;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  border-radius: 8px;
+  opacity: 0.9;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.market-status-icon {
+  font-size: 17px !important;
+  width: 17px !important;
+  height: 17px !important;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #ADC6FF;
+  font-family: 'Material Icons' !important;
+}
+
+.market-status-text {
+  white-space: normal;
+  overflow: hidden;
+}
+
+/* ─── Collapsed market status ─── */
+.sidebar.collapsed .market-status-divider {
+  margin: 14px 8px 10px;
+}
+
+.sidebar.collapsed .market-status {
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+  gap: 0;
+}
+
+.sidebar.collapsed .market-status-text {
+  display: none;
+}

@@ -343,6 +343,14 @@
 
 .empty-cta:hover { background: #C1D5FF; }
 
+/* igual estilo punteado que los charts pero mas compacto y con margen interior */
+.holdings-section .empty-state,
+.operations-section .empty-state {
+  margin: 30px 30px;
+  min-height: 110px;
+  padding: 24px;
+}
+
 /* ─── Holdings & Operations sections ────────────────────────────────────────── */
 .holdings-section,
 .operations-section {

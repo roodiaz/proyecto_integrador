@@ -42,7 +42,7 @@
 
 .header-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -55,6 +55,7 @@
   align-items: center;
   gap: 16px;
   transition: .25s;
+  min-width: 0;
 }
 
 .stat-card:hover {
@@ -88,11 +89,16 @@
 
 .stat-content {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stat-label {
@@ -358,6 +364,13 @@
 /* RESPONSIVE */
 /* ========================= */
 
+/* sidebar 260px + padding 64px + contenido minimo ~900px = ~1224px */
+@media (max-width: 1300px) {
+  .header-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1200px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
@@ -365,10 +378,6 @@
 }
 
 @media (max-width: 900px) {
-
-  .header-stats {
-    grid-template-columns: 1fr 1fr;
-  }
 
   .chart-header {
     flex-direction: column;
@@ -493,42 +502,43 @@
 }
 
 .card-empty {
-  min-height: 150px;
+  min-height: 90px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   text-align: center;
-  padding: 20px;
+  padding: 16px;
   color: rgba(245, 247, 255, 0.75);
-  border-radius: 14px;
+  border-radius: 10px;
   border: 1px dashed rgba(173, 198, 255, 0.22);
   background: radial-gradient(circle at top, rgba(173, 198, 255, 0.055), transparent 42%), rgba(255, 255, 255, 0.015);
 }
 
 .card-empty-icon {
-  font-size: 32px;
+  font-size: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .card-empty-icon mat-icon {
-  font-size: 36px;
-  width: 36px;
-  height: 36px;
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
   color: var(--border-color);
 }
 
 .card-empty-title {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #f5f7ff;
 }
 
 .card-empty-text {
-  font-size: 0.9rem;
-  color: rgba(245, 247, 255, 0.65);
+  font-size: 0.78rem;
+  color: rgba(245, 247, 255, 0.55);
+  max-width: 220px;
 }
 

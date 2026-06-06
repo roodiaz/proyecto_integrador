@@ -12,13 +12,13 @@ public class AssetRepository : IAssetRepository
         _context = context;
     }
 
-    public async Task<Asset?> GetBySymbolAsync(string symbol)
+    public async Task<Asset?> GetAsync(string symbol)
     {
         return await _context.Assets
             .FirstOrDefaultAsync(x => x.Symbol == symbol.ToUpper());
     }
 
-    public async Task<List<Asset>> GetAllSymbolsAsync()
+    public async Task<List<Asset>> GetAllAsync()
     {
         return await _context.Assets .ToListAsync();
     }

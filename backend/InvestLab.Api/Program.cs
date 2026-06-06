@@ -5,6 +5,7 @@ using InvestLab.Integrations.Interfaces;
 using InvestLab.Integrations.Providers;
 using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.Options;
+using InvestLab.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Resend;
 using System.Text.Json;
@@ -34,6 +35,10 @@ builder.Services.AddResend(options =>
 {
     options.ApiToken = builder.Configuration["Email:ApiKey"]!;
 });
+
+
+builder.Services.AddMemoryCache();
+builder.Services.AddHostedService<MarketPriceRefreshWorker>();
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
