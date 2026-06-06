@@ -85,5 +85,10 @@ public class NotificationRepository : INotificationRepository
             .Take(limit)
             .ToListAsync();
     }
+
+    public async Task DeleteByUserIdAsync(int userId)
+    {
+        await _context.Notifications.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+    }
 }
 

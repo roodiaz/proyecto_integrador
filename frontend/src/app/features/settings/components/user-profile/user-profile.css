@@ -566,3 +566,82 @@
     grid-template-columns: 1fr;
   }
 }
+
+.danger-zone {
+  border-color: rgba(255, 180, 171, 0.45);
+  background: linear-gradient(135deg, rgba(255, 180, 171, 0.035), rgba(32, 31, 31, 1));
+}
+
+.danger-icon,
+.danger-title {
+  color: #FFB4AB;
+}
+
+.danger-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 28px;
+  padding-top: 4px;
+}
+
+.danger-copy h3 {
+  margin: 0 0 8px;
+  color: #FFB4AB;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.danger-copy p {
+  margin: 0;
+  max-width: 780px;
+  color: rgba(229, 226, 225, 0.72);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.btn-delete-account {
+  min-width: 190px;
+  border: 1px solid rgba(255, 180, 171, 0.55);
+  background: rgba(255, 180, 171, 0.08);
+  color: #FFB4AB;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: 0.2s ease;
+}
+
+.btn-delete-account mat-icon {
+  width: 19px;
+  height: 19px;
+  font-size: 19px;
+}
+
+.btn-delete-account:hover:not(:disabled) {
+  background: rgba(255, 180, 171, 0.14);
+  border-color: rgba(255, 180, 171, 0.85);
+  transform: translateY(-1px);
+}
+
+.btn-delete-account:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 768px) {
+  .danger-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-delete-account {
+    width: 100%;
+  }
+}

@@ -8,7 +8,7 @@ import { ApiResponse } from '../../../core/models/api-response.model';
   providedIn: 'root'
 })
 export class WatchlistService {
-  private apiUrl = 'api/watchlist'; // Reemplazar con la URL real del backend
+  private apiUrl = 'api/watchlist';
 
   constructor(private http: HttpClient) { }
 

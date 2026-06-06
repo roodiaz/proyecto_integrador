@@ -24,5 +24,7 @@ namespace InvestLab.Data.Interfaces
         Task UpdateAsync(Alert alert);
 
         Task<List<Alert>> GetLatestActiveByUserAsync( int userId,int take);
+
+        Task DeleteByUserIdAsync(int userId);
     }
 }

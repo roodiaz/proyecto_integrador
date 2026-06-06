@@ -133,6 +133,11 @@ namespace InvestLab.Data.Repositories
                 .Take(take)
                 .ToListAsync();
         }
+
+        public async Task DeleteByUserIdAsync(int userId)
+        {
+            await _context.Alerts.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+        }
     }
 }
 

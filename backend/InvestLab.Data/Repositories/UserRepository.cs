@@ -56,5 +56,11 @@ namespace InvestLab.Data.Repositories
             user.Balance = balance;
             user.UpdateAt = DateTime.UtcNow;
         }
+
+        public async Task DeleteAsync(User user)
+        {
+            _context.Users.Remove(user);
+            await Task.CompletedTask;
+        }
     }
 }

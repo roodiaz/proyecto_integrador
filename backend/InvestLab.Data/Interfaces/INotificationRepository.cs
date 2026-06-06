@@ -17,4 +17,6 @@ public interface INotificationRepository
     Task InsertAsync(Notification notification);
 
     Task<List<Notification>> GetLatestByUserAsync(int userId, int limit);
+
+    Task DeleteByUserIdAsync(int userId);
 }

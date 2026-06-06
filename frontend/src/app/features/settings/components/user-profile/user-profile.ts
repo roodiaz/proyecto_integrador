@@ -7,6 +7,8 @@ import { UserService } from '../../services/user.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { environment } from '../../../../../environments/environment';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-profile',
@@ -31,11 +33,14 @@ export class UserProfile implements OnInit {
   savingProfile = false;
   changingPassword = false;
   uploadingImage = false;
+  deletingAccount = false;
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
-    private notificationService: SnackBarService
+    private notificationService: SnackBarService,
+    private dialog: MatDialog,
+    private router: Router
   ) {
     this.profileForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(3)]],
@@ -66,32 +71,32 @@ export class UserProfile implements OnInit {
   }
 
   loadUserData(): void {
-  this.loadingProfile = true;
+    this.loadingProfile = true;
 
-  this.userService.getProfile()
-    .pipe(finalize(() => this.loadingProfile = false))
-    .subscribe({
-      next: response => {
-        if (!response.success || !response.data) return;
+    this.userService.getProfile()
+      .pipe(finalize(() => this.loadingProfile = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) return;
 
-        const profile = response.data;
+          const profile = response.data;
 
-        this.profileForm.patchValue({
-          userName: profile.username,
-          email: profile.email,
-          birthDate: profile.birthDate,
-          phone: profile.phone,
-          currency: profile.settings.currency,
-          emailNotifications: profile.settings.emailNotifications,
-        });
+          this.profileForm.patchValue({
+            userName: profile.username,
+            email: profile.email,
+            birthDate: profile.birthDate,
+            phone: profile.phone,
+            currency: profile.settings.currency,
+            emailNotifications: profile.settings.emailNotifications,
+          });
 
-        this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
-      },
-      error: error => {
-        console.error('Error cargando perfil de usuario', error);
-      }
-    });
-}
+          this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
+        },
+        error: error => {
+          console.error('Error cargando perfil de usuario', error);
+        }
+      });
+  }
   onSaveProfile(): void {
     if (!this.profileForm.valid) {
       this.notificationService.error('Por favor, completa el formulario correctamente');
@@ -190,5 +195,47 @@ export class UserProfile implements OnInit {
   triggerFileInput(): void {
     const fileInput = document.getElementById('profileImage') as HTMLInputElement;
     fileInput.click();
+  }
+
+  async confirmDeleteAccount(): Promise<void> {
+    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
+
+    const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
+      width: '430px',
+      backdropClass: 'blur-backdrop',
+      data: {
+        title: 'Eliminar cuenta',
+        message: '¿Estás segura de que querés eliminar tu cuenta? Se eliminarán tu usuario, portfolio, operaciones, favoritos, alertas, notificaciones y configuración. Esta acción no se puede deshacer.'
+      }
+    });
+
+    const result = await dialogRef.afterClosed().toPromise();
+
+    if (!result) return;
+
+    this.deleteAccount();
+  }
+
+  deleteAccount(): void {
+    this.deletingAccount = true;
+
+    this.userService.deleteAccount()
+      .pipe(finalize(() => this.deletingAccount = false))
+      .subscribe({
+        next: response => {
+          if (!response.success) {
+            this.notificationService.error(response.message || 'No se pudo eliminar la cuenta');
+            return;
+          }
+
+          this.notificationService.success(response.message || 'Cuenta eliminada correctamente');
+          localStorage.clear();
+          sessionStorage.clear();
+          this.router.navigate(['/login']);
+        },
+        error: error => {
+          this.notificationService.error(error.error?.message ?? 'Error al eliminar la cuenta');
+        }
+      });
   }
 }

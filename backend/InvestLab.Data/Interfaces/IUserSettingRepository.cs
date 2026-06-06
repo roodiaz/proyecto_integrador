@@ -9,5 +9,7 @@
         Task ResetDailyLimitsAsync();
 
         Task ResetOperationsUsedTodayAsync(int userId);
+
+        Task DeleteByUserIdAsync(int userId);
     }
 }

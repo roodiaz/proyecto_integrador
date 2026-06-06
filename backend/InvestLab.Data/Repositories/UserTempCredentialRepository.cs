@@ -32,5 +32,10 @@ namespace InvestLab.Data.Repositories
                 .OrderByDescending(x => x.CreatedAt)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task DeleteByUserIdAsync(int userId)
+        {
+            await _context.UserTempCredentials.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+        }
     }
 }

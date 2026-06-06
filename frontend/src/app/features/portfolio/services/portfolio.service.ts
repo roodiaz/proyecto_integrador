@@ -18,7 +18,7 @@ import {
   providedIn: 'root'
 })
 export class PortfolioService {
-  private apiUrl = 'api/portfolio'; // Reemplazar con la URL real del backend
+  private apiUrl = `${environment.apiUrl}/portfolio`; // Reemplazar con la URL real del backend
 
   constructor(private http: HttpClient) { }
 

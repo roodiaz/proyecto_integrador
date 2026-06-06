@@ -10,17 +10,40 @@ using Microsoft.Extensions.Logging;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher<User> _passwordHasher;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserService> _logger;
 
-    public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IUnitOfWork unitOfWork)
+    // repositorios
+    private readonly IUserRepository _userRepository;
+    private readonly IUserSettingRepository _userSettingRepository;
+    private readonly IPortfolioRepository _portfolioRepository;
+    private readonly ITransactionRepository _transactionRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IAlertRepository _alertRepository;
+    private readonly IFavoriteRepository _favoriteRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUserTempCredentialRepository _userTempCredentialRepository;
+
+    public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IUnitOfWork unitOfWork,
+       IUserSettingRepository userSettingRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository,  IPortfolioHistoryRepository portfolioHistoryRepository, INotificationRepository notificationRepository, IAlertRepository alertRepository, IFavoriteRepository favoriteRepository, IRefreshTokenRepository refreshTokenRepository, IUserTempCredentialRepository userTempCredentialRepository)
     {
-        _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _logger = logger;
+
         _unitOfWork = unitOfWork;
+        _userRepository = userRepository;
+        _userSettingRepository = userSettingRepository;
+        _portfolioRepository = portfolioRepository;
+        _transactionRepository = transactionRepository;
+        _portfolioHistoryRepository = portfolioHistoryRepository;
+        _notificationRepository = notificationRepository;
+        _alertRepository = alertRepository;
+        _favoriteRepository = favoriteRepository;
+        _refreshTokenRepository = refreshTokenRepository;
+        _userTempCredentialRepository = userTempCredentialRepository;
+
     }
 
     public async Task<Response> GetProfileAsync(int userId)
@@ -177,6 +200,53 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en UploadProfileImageAsync {UserId}", userId);
+            return Response.Fail("Error interno del servidor");
+        }
+    }
+
+    public async Task<Response> DeleteAccountAsync(int userId)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("DeleteAccount: usuario no encontrado {UserId}", userId);
+                return Response.Fail("Usuario no encontrado");
+            }
+
+            if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+            {
+                var oldFileName = Path.GetFileName(user.ProfileImageUrl);
+                var oldFilePath = Path.Combine("wwwroot", "images", oldFileName);
+
+                if (File.Exists(oldFilePath))
+                    File.Delete(oldFilePath);
+            }
+
+            await _portfolioHistoryRepository.DeleteByUserIdAsync(userId);
+
+            await _notificationRepository.DeleteByUserIdAsync(userId);
+            await _alertRepository.DeleteByUserIdAsync(userId);
+            await _favoriteRepository.DeleteByUserIdAsync(userId);
+            await _transactionRepository.DeleteByUserIdAsync(userId);
+            await _portfolioRepository.DeleteByUserIdAsync(userId);
+            await _refreshTokenRepository.DeleteByUserIdAsync(userId);
+            await _userTempCredentialRepository.DeleteByUserIdAsync(userId);
+            await _userSettingRepository.DeleteByUserIdAsync(userId);
+
+            await _userRepository.DeleteAsync(user);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Cuenta eliminada correctamente {UserId}", userId);
+
+            return Response.Ok(null, "Cuenta eliminada correctamente");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en DeleteAccountAsync {UserId}", userId);
             return Response.Fail("Error interno del servidor");
         }
     }

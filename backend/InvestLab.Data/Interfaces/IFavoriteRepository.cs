@@ -15,5 +15,8 @@ public interface IFavoriteRepository
     Task<Favorite?> GetByUserAndAssetAsync(int userId, int assetId);
 
     void Remove(Favorite favorite);
+
     Task<(List<Favorite> data, int total)> GetPagedAsync(int userId, FavoriteFilterDto filter);
+
+    Task DeleteByUserIdAsync(int userId);
 }

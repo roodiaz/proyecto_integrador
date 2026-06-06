@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
 import { ChangePasswordRequest, ProfileResponse, UpdateProfileRequest } from '../models/user-profile.model';
+import { Observable } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
@@ -10,17 +11,19 @@ import { ChangePasswordRequest, ProfileResponse, UpdateProfileRequest } from '..
 export class UserService {
 
     private readonly http = inject(HttpClient);
+    private apiUrl = `${environment.apiUrl}/user`;
+
 
     getProfile() {
         return this.http.get<ProfileResponse>(
-            `${environment.apiUrl}/user/get-profile`
+            `${this.apiUrl}/get-profile`
         );
     }
 
     updateProfile(request: UpdateProfileRequest) {
 
         return this.http.put<ApiResponse>(
-            `${environment.apiUrl}/user/update-profile`,
+            `${this.apiUrl}/update-profile`,
             request
         );
 
@@ -29,7 +32,7 @@ export class UserService {
     changePassword(request: ChangePasswordRequest) {
 
         return this.http.put<ApiResponse>(
-            `${environment.apiUrl}/user/change-password`,
+            `${this.apiUrl}/change-password`,
             request
         );
 
@@ -42,9 +45,15 @@ export class UserService {
         formData.append('file', file, file.name);
 
         return this.http.post(
-            `${environment.apiUrl}/user/profile-image`,
+            `${this.apiUrl}/profile-image`,
             formData
         );
+    }
 
+    deleteAccount():
+        Observable<ApiResponse> {
+        return this.http.delete<ApiResponse>(`
+            ${this.apiUrl}/delete-account`
+        );
     }
 }

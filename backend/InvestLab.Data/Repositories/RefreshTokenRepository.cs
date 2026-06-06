@@ -24,5 +24,10 @@ namespace InvestLab.Data.Repositories
         {
             await _context.RefreshTokens.AddAsync(token);
         }
+
+        public async Task DeleteByUserIdAsync(int userId)
+        {
+            await _context.RefreshTokens.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+        }
     }
 }

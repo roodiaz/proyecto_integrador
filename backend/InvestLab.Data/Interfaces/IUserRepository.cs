@@ -19,5 +19,7 @@ namespace InvestLab.Data.Interfaces
         Task<List<User>> GetAllAsync();
 
         Task UpdateBalanceAsync(int userId, decimal balance);
+
+        Task DeleteAsync(User user);
     }
 }

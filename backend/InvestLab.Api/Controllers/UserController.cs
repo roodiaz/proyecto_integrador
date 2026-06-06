@@ -122,4 +122,39 @@ public class UserController : BaseController
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Elimina definitivamente la cuenta del usuario autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Esta acción elimina los datos asociados al usuario:
+    /// portfolio, operaciones, favoritos, alertas, notificaciones,
+    /// configuración, tokens, credenciales temporales e historial de portfolio.
+    /// 
+    /// También elimina el registro del usuario.
+    /// Esta acción no se puede deshacer.
+    /// </remarks>
+    /// <returns>
+    /// Resultado de la eliminación de cuenta.
+    /// </returns>
+    /// <response code="200">Cuenta eliminada correctamente</response>
+    /// <response code="400">Error al eliminar la cuenta</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpDelete("delete-account")]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        _logger.LogInformation("Eliminando cuenta de usuario: UserId={UserId}", UserId);
+
+        var result = await _userService.DeleteAccountAsync(UserId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al eliminar cuenta: UserId={UserId}, Message={Message}", UserId, result.Message);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Cuenta eliminada correctamente: UserId={UserId}", UserId);
+
+        return Ok(result);
+    }
 }

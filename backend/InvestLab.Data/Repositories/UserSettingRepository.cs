@@ -41,5 +41,10 @@ namespace InvestLab.Data.Repositories
 
             settings.OperationsUsedToday = 0;
         }
+
+        public async Task DeleteByUserIdAsync(int userId)
+        {
+            await _context.UserSettings.Where(x => x.UserId == userId).ExecuteDeleteAsync();
+        }
     }
 }
