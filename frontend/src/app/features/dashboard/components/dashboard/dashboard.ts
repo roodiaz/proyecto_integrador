@@ -1,7 +1,6 @@
-import { Component, OnInit, ViewChild, HostListener, AfterViewInit } from '@angular/core';
+import { Component, OnInit, HostListener, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterOutlet } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { DashboardService } from '../../services/dashboard.service';
 import {

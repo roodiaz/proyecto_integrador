@@ -1,6 +1,6 @@
 <div class="dialog-header">
   <h2 class="dialog-title">Agregar Activo</h2>
-  <p class="dialog-subtitle">Buscá por símbolo o seleccioná uno popular</p>
+  <p class="dialog-subtitle">Busca por simbolo o selecciona uno popular</p>
 </div>
 
 <mat-dialog-content class="dialog-body">
@@ -13,12 +13,14 @@
       class="search-input"
       placeholder="Ej: AAPL, NVDA, TSLA..."
       [(ngModel)]="searchTerm">
-    <button class="search-clear" *ngIf="searchTerm" (click)="searchTerm = ''">
-      <mat-icon>close</mat-icon>
-    </button>
+    @if (searchTerm) {
+      <button class="search-clear" type="button" (click)="searchTerm = ''">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
   </div>
 
-  <button class="btn-add-primary" (click)="add(searchTerm)" [disabled]="!searchTerm?.trim()">
+  <button class="btn-add-primary" type="button" (click)="add(searchTerm)" [disabled]="!searchTerm.trim()">
     <mat-icon>add</mat-icon>
     Agregar "{{ searchTerm || '...' }}"
   </button>
@@ -27,23 +29,25 @@
   <p class="section-label">Activos Populares</p>
 
   <div class="asset-list">
-    <div class="asset-item" *ngFor="let asset of popularAssets">
-      <div class="asset-info">
-        <div class="asset-logo">{{ asset.symbol.charAt(0) }}</div>
-        <div class="asset-text">
-          <span class="asset-symbol">{{ asset.symbol }}</span>
-          <span class="asset-name">{{ asset.name }}</span>
+    @for (asset of popularAssets; track asset.symbol) {
+      <div class="asset-item">
+        <div class="asset-info">
+          <div class="asset-logo">{{ asset.symbol.charAt(0) }}</div>
+          <div class="asset-text">
+            <span class="asset-symbol">{{ asset.symbol }}</span>
+            <span class="asset-name">{{ asset.name }}</span>
+          </div>
         </div>
+        <button class="btn-add-row" type="button" (click)="add(asset.symbol)">
+          <mat-icon>add</mat-icon>
+          Agregar
+        </button>
       </div>
-      <button class="btn-add-row" (click)="add(asset.symbol)">
-        <mat-icon>add</mat-icon>
-        Agregar
-      </button>
-    </div>
+    }
   </div>
 
 </mat-dialog-content>
 
 <mat-dialog-actions class="dialog-actions">
-  <button class="btn-cancel" mat-dialog-close>Cancelar</button>
+  <button class="btn-cancel" type="button" mat-dialog-close>Cancelar</button>
 </mat-dialog-actions>

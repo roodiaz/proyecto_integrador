@@ -3,12 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MaterialModule } from '../../../../shared/material.module';
-import { Alert, ALERT_CONDITIONS, UpdateAlertDto } from '../../models/alert.model';
+import { Alert, ALERT_CONDITIONS, CreateAlertDto, UpdateAlertDto } from '../../models/alert.model';
 import { AlertService } from '../../services/alert.service';
-import { CreateAlertDto } from '../../models/alert.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
-
-type AlertFormData = Omit<Alert, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
 @Component({
   selector: 'app-create-alert',
@@ -62,7 +59,7 @@ export class CreateAlertComponent implements OnInit {
 
     }
 
-    // Update validators when condition changes
+    // Actualiza los validadores cuando cambia el tipo de condicion
     this.alertForm.get('condition')?.valueChanges.subscribe(condition => {
       const priceControl = this.alertForm.get('price');
       const percentControl = this.alertForm.get('percentChange');
@@ -89,7 +86,7 @@ export class CreateAlertComponent implements OnInit {
     });
   }
 
-  // Check if the current condition is a percentage-based condition
+  // Determina si la condicion seleccionada es de tipo porcentual
   isPercentageCondition(): boolean {
     const condition = this.alertForm.get('condition')?.value;
     return condition === '%>' || condition === '%<';

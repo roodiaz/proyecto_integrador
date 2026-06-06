@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { finalize, Subscription } from 'rxjs';
+import { finalize } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 
 import { MaterialModule } from '../../../../shared/material.module';
@@ -18,24 +18,27 @@ import { SnackBarService } from '../../../../core/services/snackbar.service';
   templateUrl: './watchlist.html',
   styleUrl: './watchlist.css'
 })
-export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
+export class Watchlist implements OnInit {
 
+  // Datos de la lista
   watchlistItems: FavoriteItem[] = [];
   filteredItems: FavoriteItem[] = [];
   ghostRows: null[] = [];
 
+  // Busqueda
   searchTerm = '';
 
+  // Paginacion
   readonly pageSize = 7;
   currentPage = 1;
   totalRecords = 0;
 
+  // Contador de favoritos
   currentFavorites = 0;
   maxFavorites = 0;
 
+  // Estado de carga
   loadingWatchlist = false;
-
-  private liveSubscription: Subscription | null = null;
 
   constructor(
     private router: Router,
@@ -48,58 +51,40 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     this.loadWatchlist();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.drawSparklines(), 100);
-  }
-
-  ngOnDestroy(): void {
-    this.liveSubscription?.unsubscribe();
-  }
-
+  // Carga y recarga de la lista
   loadWatchlist(): void {
-  this.loadingWatchlist = true;
+    this.loadingWatchlist = true;
 
-  const filter = {
-    page: this.currentPage,
-    pageSize: this.pageSize,
-    search: ''
-  };
+    const filter = {
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      search: ''
+    };
 
-  this.watchlistService.getFavorites(filter)
-    .pipe(finalize(() => this.loadingWatchlist = false))
-    .subscribe({
-      next: response => {
-        if (!response.success || !response.data) {
-          this.watchlistItems = [];
-          this.filteredItems = [];
-          this.totalRecords = 0;
-          this.currentFavorites = 0;
-          this.maxFavorites = 0;
-          this.updateGhostRows();
-          return;
+    this.watchlistService.getFavorites(filter)
+      .pipe(finalize(() => this.loadingWatchlist = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.resetList();
+            return;
+          }
+
+          this.watchlistItems = response.data.items;
+          this.totalRecords = response.data.total;
+          this.currentFavorites = response.data.currentFavorites;
+          this.maxFavorites = response.data.maxFavorites;
+
+          this.applySearch();
+        },
+        error: err => {
+          console.error('Error cargando favoritos', err);
+          this.resetList();
         }
+      });
+  }
 
-        this.watchlistItems = response.data.items;
-        this.totalRecords = response.data.total;
-        this.currentFavorites = response.data.currentFavorites;
-        this.maxFavorites = response.data.maxFavorites;
-
-        this.applySearch();
-        setTimeout(() => this.drawSparklines());
-      },
-      error: err => {
-        console.error('Error cargando favoritos', err);
-
-        this.watchlistItems = [];
-        this.filteredItems = [];
-        this.totalRecords = 0;
-        this.currentFavorites = 0;
-        this.maxFavorites = 0;
-        this.updateGhostRows();
-      }
-    });
-}
-
+  // Busqueda y limpieza
   onSearch(): void {
     this.applySearch();
   }
@@ -109,22 +94,33 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     this.applySearch();
   }
 
-  private applySearch(): void {
-    const term = this.searchTerm.trim().toLowerCase();
-
-    this.filteredItems = term
-      ? this.watchlistItems.filter(item => item.symbol.toLowerCase().includes(term) || item.name.toLowerCase().includes(term))
-      : [...this.watchlistItems];
-
-    this.updateGhostRows();
-    setTimeout(() => this.drawSparklines());
+  // Ordenamiento
+  sortBySymbol(): void {
+    this.watchlistItems.sort((a, b) => a.symbol.localeCompare(b.symbol));
+    this.applySearch();
   }
 
-  private updateGhostRows(): void {
-    const missing = this.pageSize - this.filteredItems.length;
-    this.ghostRows = missing > 0 ? Array(missing).fill(null) : [];
+  sortByPriceDesc(): void {
+    this.watchlistItems.sort((a, b) => b.price - a.price);
+    this.applySearch();
   }
 
+  sortByPriceAsc(): void {
+    this.watchlistItems.sort((a, b) => a.price - b.price);
+    this.applySearch();
+  }
+
+  sortByVariationDesc(): void {
+    this.watchlistItems.sort((a, b) => b.variationPercent - a.variationPercent);
+    this.applySearch();
+  }
+
+  sortByVariationAsc(): void {
+    this.watchlistItems.sort((a, b) => a.variationPercent - b.variationPercent);
+    this.applySearch();
+  }
+
+  // Paginacion
   getStartRecord(): number {
     return this.totalRecords === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
   }
@@ -159,31 +155,7 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     this.loadWatchlist();
   }
 
-  sortBySymbol(): void {
-    this.watchlistItems.sort((a, b) => a.symbol.localeCompare(b.symbol));
-    this.applySearch();
-  }
-
-  sortByPriceDesc(): void {
-    this.watchlistItems.sort((a, b) => b.price - a.price);
-    this.applySearch();
-  }
-
-  sortByPriceAsc(): void {
-    this.watchlistItems.sort((a, b) => a.price - b.price);
-    this.applySearch();
-  }
-
-  sortByVariationDesc(): void {
-    this.watchlistItems.sort((a, b) => b.variationPercent - a.variationPercent);
-    this.applySearch();
-  }
-
-  sortByVariationAsc(): void {
-    this.watchlistItems.sort((a, b) => a.variationPercent - b.variationPercent);
-    this.applySearch();
-  }
-
+  // Navegacion a otras pantallas
   goToMarket(symbol: string): void {
     this.router.navigate(['/market'], { queryParams: { ticker: symbol } });
   }
@@ -192,6 +164,7 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     this.router.navigate(['/alerts'], { queryParams: { ticker: symbol } });
   }
 
+  // Acciones sobre favoritos
   removeFromWatchlist(symbol: string): void {
     this.watchlistService.removeFavorite(symbol).subscribe({
       next: () => {
@@ -199,7 +172,6 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
         this.loadWatchlist();
       },
       error: err => {
-        console.error(err);
         this.notificationService.error(err.error?.message ?? 'Error al eliminar favorito');
       }
     });
@@ -228,12 +200,31 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  drawSparklines(): void {
-    if (this.loadingWatchlist) return;
+  // Helpers privados
+  private applySearch(): void {
+    const term = this.searchTerm.trim().toLowerCase();
 
-    this.filteredItems.forEach(item => {
-      const canvas = document.getElementById(`sparkline-${item.symbol}`) as HTMLCanvasElement;
-      if (!canvas) return;
-    });
+    this.filteredItems = term
+      ? this.watchlistItems.filter(item =>
+          item.symbol.toLowerCase().includes(term) ||
+          item.name.toLowerCase().includes(term)
+        )
+      : [...this.watchlistItems];
+
+    this.updateGhostRows();
+  }
+
+  private updateGhostRows(): void {
+    const missing = this.pageSize - this.filteredItems.length;
+    this.ghostRows = missing > 0 ? Array(missing).fill(null) : [];
+  }
+
+  private resetList(): void {
+    this.watchlistItems = [];
+    this.filteredItems = [];
+    this.totalRecords = 0;
+    this.currentFavorites = 0;
+    this.maxFavorites = 0;
+    this.updateGhostRows();
   }
 }
