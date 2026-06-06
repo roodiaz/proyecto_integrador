@@ -24,58 +24,78 @@
     <div class="summary-cards">
 
       <div class="summary-card">
-        <h3>Saldo Inicial</h3>
+        <div class="summary-card-header">
+          <h3>Saldo Inicial</h3>
+          <app-info-tooltip
+            text="Es el dinero virtual con el que empezaste la simulación. Sirve como punto de referencia para medir cuánto ganaste o perdiste en total."
+          />
+        </div>
         @if (!loadingSummary) {
-        <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
+          <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
         } @else {
-        <div class="skeleton skeleton-metric-value"></div>
+          <div class="skeleton skeleton-metric-value"></div>
         }
       </div>
 
       <div class="summary-card">
-        <h3>Saldo Actual</h3>
+        <div class="summary-card-header">
+          <h3>Saldo Actual</h3>
+          <app-info-tooltip
+            text="Es el dinero disponible en tu cuenta más el valor actual de todas tus inversiones abiertas, calculado al precio de mercado de hoy."
+          />
+        </div>
         @if (!loadingSummary) {
-        <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0"
-          [class.negative]="portfolioSummary.profitLoss < 0">
-          ${{ portfolioSummary.currentBalance.toFixed(2) }}
-        </p>
+          <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0"
+            [class.negative]="portfolioSummary.profitLoss < 0">
+            ${{ portfolioSummary.currentBalance.toFixed(2) }}
+          </p>
         } @else {
-        <div class="skeleton skeleton-metric-value"></div>
+          <div class="skeleton skeleton-metric-value"></div>
         }
       </div>
 
       <div class="summary-card">
-        <h3>Ganancia / Pérdida</h3>
+        <div class="summary-card-header">
+          <h3>Ganancia / Pérdida</h3>
+          <app-info-tooltip
+            text="Muestra cuánto ganaste o perdiste en total desde que empezaste la simulación, comparando el saldo actual con el saldo inicial."
+          />
+        </div>
         @if (!loadingSummary) {
-        <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0"
-          [class.negative]="portfolioSummary.profitLoss < 0">
-          {{ portfolioSummary.profitLoss > 0 ? '+' : '' }}${{ portfolioSummary.profitLoss.toFixed(2) }}
-          <span class="percent">({{ portfolioSummary.profitLossPercent > 0 ? '+' : '' }}{{
-            portfolioSummary.profitLossPercent.toFixed(2) }}%)</span>
-        </p>
+          <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0"
+            [class.negative]="portfolioSummary.profitLoss < 0">
+            {{ portfolioSummary.profitLoss > 0 ? '+' : '' }}${{ portfolioSummary.profitLoss.toFixed(2) }}
+            <span class="percent">({{ portfolioSummary.profitLossPercent > 0 ? '+' : '' }}{{
+              portfolioSummary.profitLossPercent.toFixed(2) }}%)</span>
+          </p>
         } @else {
-        <div class="skeleton skeleton-metric-value"></div>
+          <div class="skeleton skeleton-metric-value"></div>
         }
       </div>
 
       <div class="summary-card usage">
-        <h3>Operaciones del día</h3>
+        <div class="summary-card-header">
+          <h3>Operaciones del día</h3>
+          <app-info-tooltip
+            text="Indica cuántas operaciones (compras o ventas) realizaste hoy sobre el máximo permitido. Existe un límite diario para simular condiciones reales del mercado."
+          />
+        </div>
         @if (!loadingSummary) {
-        <div class="operations-counter">
-          <span class="counter-value">
-            {{ portfolioSummary.totalOperations }} / {{ portfolioSummary.maxOperations }}
-          </span>
-          <div class="operations-progress">
-            <div class="progress-fill"
-              [style.width.%]="portfolioSummary.maxOperations > 0 ? (portfolioSummary.totalOperations / portfolioSummary.maxOperations) * 100 : 0">
+          <div class="operations-counter">
+            <span class="counter-value">
+              {{ portfolioSummary.totalOperations }} / {{ portfolioSummary.maxOperations }}
+            </span>
+            <div class="operations-progress">
+              <div class="progress-fill"
+                [style.width.%]="portfolioSummary.maxOperations > 0 ? (portfolioSummary.totalOperations / portfolioSummary.maxOperations) * 100 : 0">
+              </div>
             </div>
           </div>
-        </div>
         } @else {
-        <div class="skeleton-card-list">
-          <span class="skeleton skeleton-text short"></span>
-          <span class="skeleton skeleton-text long"></span>
-        </div>
+          <div class="skeleton-card-list">
+            <span class="skeleton skeleton-text short"></span>
+            <span class="skeleton skeleton-text long"></span>
+          </div>
         }
       </div>
 
@@ -86,40 +106,45 @@
 
       <!-- Pie -->
       <div class="chart-container">
-        <h3>Distribución</h3>
+        <div class="summary-card-header" style="margin-bottom: 20px;">
+          <h3 style="margin: 0;">Distribución</h3>
+          <app-info-tooltip
+            text="Muestra cómo está repartido tu dinero entre los distintos activos que tenés. Diversificar entre varios activos ayuda a reducir el riesgo."
+          />
+        </div>
 
         @if (loadingCharts) {
-        <div class="skeleton-chart-box portfolio-chart-skeleton">
-          <div class="skeleton skeleton-chart-line xl"></div>
-          <div class="skeleton skeleton-chart-line lg"></div>
-          <div class="skeleton skeleton-chart-line md"></div>
-          <div class="skeleton skeleton-chart-line sm"></div>
-        </div>
-        } @else if (pieChartData.length === 0) {
-        <div class="empty-state">
-          <div class="empty-icon">◎</div>
-          <p class="empty-title">Sin activos en cartera</p>
-          <p class="empty-sub">Realizá tu primera compra para ver la distribución.</p>
-          <button class="empty-cta" type="button" (click)="openBuyModal()">+ Nueva Operación</button>
-        </div>
-        } @else {
-        <div class="distribution-wrapper">
-          <div class="donut-container">
-            <canvas id="pieChart"></canvas>
+          <div class="skeleton-chart-box portfolio-chart-skeleton">
+            <div class="skeleton skeleton-chart-line xl"></div>
+            <div class="skeleton skeleton-chart-line lg"></div>
+            <div class="skeleton skeleton-chart-line md"></div>
+            <div class="skeleton skeleton-chart-line sm"></div>
           </div>
-          <div class="top-assets-section">
-            <h3>Top Activos</h3>
-            <div class="top-assets-list">
-              @for (asset of topAssets; track asset.ticker; let i = $index) {
-              <div class="top-asset-item">
-                <div class="asset-color" [style.background-color]="getAssetColor(i)"></div>
-                <span class="asset-ticker">{{ asset.ticker }}</span>
-                <span class="asset-percentage">{{ asset.percentage.toFixed(1) }}%</span>
+        } @else if (pieChartData.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">◎</div>
+            <p class="empty-title">Sin activos en cartera</p>
+            <p class="empty-sub">Realizá tu primera compra para ver la distribución.</p>
+            <button class="empty-cta" type="button" (click)="openBuyModal()">+ Nueva Operación</button>
+          </div>
+        } @else {
+          <div class="distribution-wrapper">
+            <div class="donut-container">
+              <canvas id="pieChart"></canvas>
+            </div>
+            <div class="top-assets-section">
+              <h3>Top Activos</h3>
+              <div class="top-assets-list">
+                @for (asset of topAssets; track asset.ticker; let i = $index) {
+                  <div class="top-asset-item">
+                    <div class="asset-color" [style.background-color]="getAssetColor(i)"></div>
+                    <span class="asset-ticker">{{ asset.ticker }}</span>
+                    <span class="asset-percentage">{{ asset.percentage.toFixed(1) }}%</span>
+                  </div>
+                }
               </div>
-              }
             </div>
           </div>
-        </div>
         }
       </div>
 
@@ -127,7 +152,12 @@
       <div class="chart-container">
         <div class="chart-header">
           <div>
-            <h3>Evolución</h3>
+            <div class="summary-card-header" style="margin-bottom: 4px;">
+              <h3 style="margin: 0;">Evolución</h3>
+              <app-info-tooltip
+                text="Muestra cómo fue cambiando el valor total de tu portfolio a lo largo del tiempo. Cada punto representa el valor al cierre del mercado en esa fecha."
+              />
+            </div>
             @if (!loadingSummary) {
               <p class="chart-close-note">Precios de cierre al {{ portfolioSummary.lastMarketCloseDate | date:'dd/MM/yyyy' }}</p>
             }
@@ -135,27 +165,27 @@
           <div class="period-selector">
             <select [value]="selectedPeriod" (change)="onPeriodChange($event)" class="period-select">
               @for (period of timePeriods; track period.value) {
-              <option [value]="period.value">{{ period.label }}</option>
+                <option [value]="period.value">{{ period.label }}</option>
               }
             </select>
           </div>
         </div>
 
         @if (loadingCharts) {
-        <div class="skeleton-chart-box portfolio-chart-skeleton">
-          <div class="skeleton skeleton-chart-line xl"></div>
-          <div class="skeleton skeleton-chart-line lg"></div>
-          <div class="skeleton skeleton-chart-line md"></div>
-          <div class="skeleton skeleton-chart-line sm"></div>
-        </div>
+          <div class="skeleton-chart-box portfolio-chart-skeleton">
+            <div class="skeleton skeleton-chart-line xl"></div>
+            <div class="skeleton skeleton-chart-line lg"></div>
+            <div class="skeleton skeleton-chart-line md"></div>
+            <div class="skeleton skeleton-chart-line sm"></div>
+          </div>
         } @else if (lineChartData.length === 0) {
-        <div class="empty-state line-empty">
-          <div class="empty-icon">╌</div>
-          <p class="empty-title">Sin historial de evolución</p>
-          <p class="empty-sub">Los datos aparecerán una vez que haya operaciones registradas.</p>
-        </div>
+          <div class="empty-state line-empty">
+            <div class="empty-icon">╌</div>
+            <p class="empty-title">Sin historial de evolución</p>
+            <p class="empty-sub">Los datos aparecerán una vez que haya operaciones registradas.</p>
+          </div>
         } @else {
-        <canvas id="lineChart" width="400" height="200"></canvas>
+          <canvas id="lineChart" width="400" height="200"></canvas>
         }
       </div>
 
@@ -165,7 +195,12 @@
     <div class="holdings-section">
 
       <div class="table-header">
-        <h2>Tenencias</h2>
+        <div class="summary-card-header" style="gap: 8px;">
+          <h2>Tenencias</h2>
+          <app-info-tooltip
+            text="Son los activos que tenés actualmente en tu portfolio. Para cada uno podés ver cuánto compraste, a qué precio y cómo evolucionó desde entonces."
+          />
+        </div>
         <div class="table-filter-row">
           <div class="search-wrap">
             <mat-icon class="search-icon">search</mat-icon>
@@ -181,127 +216,170 @@
       </div>
 
       @if (showHoldingsFilters) {
-      <div class="advanced-filters">
-        <div class="filter-group">
-          <label class="filter-label">Estado</label>
-          <select class="filter-select" [(ngModel)]="positionStatusFilter" (ngModelChange)="onPositionFiltersChange()">
-            <option value="">Todas</option>
-            <option value="gain">Con ganancia</option>
-            <option value="loss">Con pérdida</option>
-          </select>
+        <div class="advanced-filters">
+          <div class="filter-group">
+            <label class="filter-label">Estado</label>
+            <select class="filter-select" [(ngModel)]="positionStatusFilter" (ngModelChange)="onPositionFiltersChange()">
+              <option value="">Todas</option>
+              <option value="gain">Con ganancia</option>
+              <option value="loss">Con pérdida</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Ordenar por</label>
+            <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onPositionFiltersChange()">
+              <option value="symbol">Ticker</option>
+              <option value="quantity">Cantidad</option>
+              <option value="currentValue">Valor Actual</option>
+              <option value="variation">Variación %</option>
+              <option value="profitLoss">Ganancia/Pérdida</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Dirección</label>
+            <select class="filter-select" [(ngModel)]="sortDirection" (ngModelChange)="onPositionFiltersChange()">
+              <option value="asc">Ascendente</option>
+              <option value="desc">Descendente</option>
+            </select>
+          </div>
         </div>
-        <div class="filter-group">
-          <label class="filter-label">Ordenar por</label>
-          <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onPositionFiltersChange()">
-            <option value="symbol">Ticker</option>
-            <option value="quantity">Cantidad</option>
-            <option value="currentValue">Valor Actual</option>
-            <option value="variation">Variación %</option>
-            <option value="profitLoss">Ganancia/Pérdida</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label class="filter-label">Dirección</label>
-          <select class="filter-select" [(ngModel)]="sortDirection" (ngModelChange)="onPositionFiltersChange()">
-            <option value="asc">Ascendente</option>
-            <option value="desc">Descendente</option>
-          </select>
-        </div>
-      </div>
       }
 
       @if (loadingPositions) {
-      <div class="portfolio-table-skeleton">
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-      </div>
-      } @else if (positions.length === 0 && !symbolFilter && !positionStatusFilter) {
-      <div class="empty-state">
-        <div class="empty-icon">▭</div>
-        <p class="empty-title">Sin posiciones abiertas</p>
-        <p class="empty-sub">Comprá un activo para comenzar a construir tu cartera.</p>
-        <button class="empty-cta" type="button" (click)="openBuyModal()">+ Nueva Operación</button>
-      </div>
-      } @else if (positions.length === 0) {
-      <div class="empty-state">
-        <div class="empty-icon">⌕</div>
-        <p class="empty-title">Sin resultados</p>
-        <p class="empty-sub">No hay tenencias que coincidan con los filtros aplicados.</p>
-      </div>
+        <div class="portfolio-table-skeleton">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
       } @else {
-      <table class="shared-table">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Cantidad</th>
-            <th>Precio Compra</th>
-            <th>Precio Actual</th>
-            <th>Variación</th>
-            <th>Ganancia/Pérdida</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of positions; track item.symbol) {
-          <tr>
-            <td class="ticker-cell">{{ item.symbol }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.averagePrice | currency:'USD' }}</td>
-            <td>{{ item.currentPrice | currency:'USD' }}</td>
-            <td [class.positive]="item.variationPercent >= 0" [class.negative]="item.variationPercent < 0"
-              [class.neutral]="item.variationPercent === 0">
-              {{ item.variationPercent | number:'1.2-2' }}%
-            </td>
-            <td [class.positive]="item.profitLoss >= 0" [class.negative]="item.profitLoss < 0"
-              [class.neutral]="item.profitLoss === 0">
-              {{ item.profitLoss | currency:'USD' }}
-            </td>
-            <td>
-              <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)">Vender</button>
-            </td>
-          </tr>
-          }
-          @for (row of emptyHoldingRows; track $index) {
-          <tr class="empty-row">
-            <td>&nbsp;</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          }
-        </tbody>
-      </table>
-
-      <div class="pagination-container">
-        <div class="pagination-info">
-          <select class="page-size-select" [(ngModel)]="positionsPageSize"
-            (ngModelChange)="onPositionsPageSizeChange()">
-            <option [value]="5">5 por página</option>
-            <option [value]="10">10 por página</option>
-            <option [value]="20">20 por página</option>
-          </select>
-          <span>Página {{ positionsPage }} de {{ totalPositionsPages }}</span>
-          <span>({{ totalPositions }} tenencias)</span>
-        </div>
-        <div class="pagination-controls">
-          <button class="pagination-btn" type="button" [disabled]="positionsPage === 1"
-            (click)="previousPositionsPage()">← Anterior</button>
-          <div class="page-numbers">
-            @for (page of getPositionPageNumbers(); track page) {
-            <button class="page-btn" type="button" [class.active]="page === positionsPage"
-              (click)="goToPositionsPage(page)">{{ page }}</button>
+        <table class="shared-table">
+          <thead>
+            <tr>
+              <th style="width:12%">
+                <div class="th-with-help">
+                  <span>Ticker</span>
+                  <app-info-tooltip text="El símbolo único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
+                </div>
+              </th>
+              <th style="width:10%">
+                <div class="th-with-help">
+                  <span>Cantidad</span>
+                  <app-info-tooltip text="El número de acciones que tenés de este activo en tu portfolio simulado." />
+                </div>
+              </th>
+              <th style="width:16%">
+                <div class="th-with-help">
+                  <span>Precio Compra</span>
+                  <app-info-tooltip text="El precio promedio al que compraste las acciones de este activo." />
+                </div>
+              </th>
+              <th style="width:16%">
+                <div class="th-with-help">
+                  <span>Precio Actual</span>
+                  <app-info-tooltip text="El precio de mercado actual de este activo, actualizado en tiempo real." />
+                </div>
+              </th>
+              <th style="width:13%">
+                <div class="th-with-help">
+                  <span>Variación</span>
+                  <app-info-tooltip text="El porcentaje de cambio entre el precio de compra y el precio actual. Si es positivo, el activo subió de valor desde que lo compraste." />
+                </div>
+              </th>
+              <th style="width:22%">
+                <div class="th-with-help">
+                  <span>Ganancia/Pérdida</span>
+                  <app-info-tooltip text="La diferencia en dinero entre lo que pagaste y lo que vale ahora. Un número positivo es ganancia, negativo es pérdida." />
+                </div>
+              </th>
+              <th style="width:11%">
+                <div class="th-with-help">
+                  <span>Acciones</span>
+                  <app-info-tooltip text="Opciones disponibles para operar con este activo. Podés venderlo directamente desde acá." />
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (positions.length === 0 && !symbolFilter && !positionStatusFilter) {
+              <tr>
+                <td class="td-empty" colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">▭</div>
+                    <p class="empty-title">Sin posiciones abiertas</p>
+                    <p class="empty-sub">Comprá un activo para comenzar a construir tu cartera.</p>
+                    <button class="empty-cta" type="button" (click)="openBuyModal()">+ Nueva Operación</button>
+                  </div>
+                </td>
+              </tr>
+            } @else if (positions.length === 0) {
+              <tr>
+                <td class="td-empty" colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">⌕</div>
+                    <p class="empty-title">Sin resultados</p>
+                    <p class="empty-sub">No hay tenencias que coincidan con los filtros aplicados.</p>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (item of positions; track item.symbol) {
+                <tr>
+                  <td class="ticker-cell">{{ item.symbol }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.averagePrice | currency:'USD' }}</td>
+                  <td>{{ item.currentPrice | currency:'USD' }}</td>
+                  <td [class.positive]="item.variationPercent >= 0" [class.negative]="item.variationPercent < 0"
+                    [class.neutral]="item.variationPercent === 0">
+                    {{ item.variationPercent | number:'1.2-2' }}%
+                  </td>
+                  <td [class.positive]="item.profitLoss >= 0" [class.negative]="item.profitLoss < 0"
+                    [class.neutral]="item.profitLoss === 0">
+                    {{ item.profitLoss | currency:'USD' }}
+                  </td>
+                  <td>
+                    <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)" title="Vender">
+                      <mat-icon>sell</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @for (row of emptyHoldingRows; track $index) {
+                <tr class="empty-row">
+                  <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+              }
             }
+          </tbody>
+        </table>
+
+        @if (positions.length > 0) {
+          <div class="pagination-container">
+            <div class="pagination-info">
+              <select class="page-size-select" [(ngModel)]="positionsPageSize"
+                (ngModelChange)="onPositionsPageSizeChange()">
+                <option [value]="5">5 por página</option>
+                <option [value]="10">10 por página</option>
+                <option [value]="20">20 por página</option>
+              </select>
+              <span>Página {{ positionsPage }} de {{ totalPositionsPages }}</span>
+              <span>({{ totalPositions }} tenencias)</span>
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" type="button" [disabled]="positionsPage === 1"
+                (click)="previousPositionsPage()">← Anterior</button>
+              <div class="page-numbers">
+                @for (page of getPositionPageNumbers(); track page) {
+                  <button class="page-btn" type="button" [class.active]="page === positionsPage"
+                    (click)="goToPositionsPage(page)">{{ page }}</button>
+                }
+              </div>
+              <button class="pagination-btn" type="button" [disabled]="positionsPage === totalPositionsPages"
+                (click)="nextPositionsPage()">Siguiente →</button>
+            </div>
           </div>
-          <button class="pagination-btn" type="button" [disabled]="positionsPage === totalPositionsPages"
-            (click)="nextPositionsPage()">Siguiente →</button>
-        </div>
-      </div>
+        }
       }
 
     </div>
@@ -310,7 +388,12 @@
     <div class="operations-section">
 
       <div class="table-header">
-        <h2>Operaciones Realizadas</h2>
+        <div class="summary-card-header" style="gap: 8px;">
+          <h2>Operaciones Realizadas</h2>
+          <app-info-tooltip
+            text="El historial completo de todas las compras y ventas simuladas que realizaste en la plataforma."
+          />
+        </div>
         <div class="table-filter-row">
           <div class="search-wrap">
             <mat-icon class="search-icon">search</mat-icon>
@@ -326,122 +409,157 @@
       </div>
 
       @if (showOperationsFilters) {
-      <div class="advanced-filters">
-        <div class="filter-group">
-          <label class="filter-label">Tipo</label>
-          <select class="filter-select" [(ngModel)]="operationTypeFilter" (change)="onOperationFiltersChange()">
-            <option [ngValue]="null">Todas</option>
-            <option [ngValue]="1">Compras</option>
-            <option [ngValue]="2">Ventas</option>
-          </select>
+        <div class="advanced-filters">
+          <div class="filter-group">
+            <label class="filter-label">Tipo</label>
+            <select class="filter-select" [(ngModel)]="operationTypeFilter" (change)="onOperationFiltersChange()">
+              <option [ngValue]="null">Todas</option>
+              <option [ngValue]="1">Compras</option>
+              <option [ngValue]="2">Ventas</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Período</label>
+            <select class="filter-select" [(ngModel)]="operationDaysFilter" (change)="onOperationFiltersChange()">
+              <option [ngValue]="null">Todo</option>
+              <option [ngValue]="7">Últimos 7 días</option>
+              <option [ngValue]="30">Últimos 30 días</option>
+              <option [ngValue]="90">Últimos 90 días</option>
+              <option [ngValue]="365">Último año</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Ordenar por</label>
+            <select class="filter-select" [(ngModel)]="operationOrderBy" (input)="onOperationFiltersChange()">
+              <option value="date">Fecha</option>
+              <option value="symbol">Ticker</option>
+              <option value="amount">Monto</option>
+            </select>
+          </div>
         </div>
-        <div class="filter-group">
-          <label class="filter-label">Período</label>
-          <select class="filter-select" [(ngModel)]="operationDaysFilter" (change)="onOperationFiltersChange()">
-            <option [ngValue]="null">Todo</option>
-            <option [ngValue]="7">Últimos 7 días</option>
-            <option [ngValue]="30">Últimos 30 días</option>
-            <option [ngValue]="90">Últimos 90 días</option>
-            <option [ngValue]="365">Último año</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label class="filter-label">Ordenar por</label>
-          <select class="filter-select" [(ngModel)]="operationOrderBy" (input)="onOperationFiltersChange()">
-            <option value="date">Fecha</option>
-            <option value="symbol">Ticker</option>
-            <option value="amount">Monto</option>
-          </select>
-        </div>
-      </div>
       }
 
       @if (loadingOperations) {
-      <div class="portfolio-table-skeleton">
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-      </div>
-      } @else if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null &&
-      operationDaysFilter === null) {
-      <div class="empty-state">
-        <div class="empty-icon">≡</div>
-        <p class="empty-title">Sin operaciones registradas</p>
-        <p class="empty-sub">Tus compras y ventas aparecerán acá cuando las realices.</p>
-      </div>
-      } @else if (operations.length === 0) {
-      <div class="empty-state">
-        <div class="empty-icon">⌕</div>
-        <p class="empty-title">Sin resultados</p>
-        <p class="empty-sub">No hay operaciones que coincidan con los filtros aplicados.</p>
-      </div>
+        <div class="portfolio-table-skeleton">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
       } @else {
-      <table class="shared-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Ticker</th>
-            <th>Tipo</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (operation of operations; track operation.operationDate + '-' + operation.symbol + '-' + operation.type)
-          {
-          <tr>
-            <td>{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td class="ticker-cell">{{ operation.symbol }}</td>
-            <td>
-              <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
-                {{ operation.type === 1 ? 'Compra' : 'Venta' }}
-              </span>
-            </td>
-            <td>{{ operation.quantity }}</td>
-            <td>{{ operation.buyPrice | currency:'USD' }}</td>
-            <td>{{ operation.total | currency:'USD' }}</td>
-          </tr>
-          }
-          @for (row of emptyOperationRows; track $index) {
-          <tr class="empty-row">
-            <td>&nbsp;</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          }
-        </tbody>
-      </table>
-
-      <div class="pagination-container">
-        <div class="pagination-info">
-          <select class="page-size-select" [(ngModel)]="operationsPageSize"
-            (ngModelChange)="onOperationsPageSizeChange()">
-            <option [value]="5">5 por página</option>
-            <option [value]="10">10 por página</option>
-            <option [value]="20">20 por página</option>
-          </select>
-          <span>Página {{ operationsPage }} de {{ totalOperationsPages }}</span>
-          <span>({{ totalOperations }} operaciones)</span>
-        </div>
-        <div class="pagination-controls">
-          <button class="pagination-btn" type="button" [disabled]="operationsPage === 1"
-            (click)="previousOperationsPage()">← Anterior</button>
-          <div class="page-numbers">
-            @for (page of getOperationPageNumbers(); track page) {
-            <button class="page-btn" type="button" [class.active]="page === operationsPage"
-              (click)="goToOperationsPage(page)">{{ page }}</button>
+        <table class="shared-table">
+          <thead>
+            <tr>
+              <th style="width:22%">
+                <div class="th-with-help">
+                  <span>Fecha</span>
+                  <app-info-tooltip text="La fecha y hora exacta en que se realizó la operación de compra o venta." />
+                </div>
+              </th>
+              <th style="width:15%">
+                <div class="th-with-help">
+                  <span>Ticker</span>
+                  <app-info-tooltip text="El símbolo de la acción operada. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
+                </div>
+              </th>
+              <th style="width:12%">
+                <div class="th-with-help">
+                  <span>Tipo</span>
+                  <app-info-tooltip text="Indica si fue una compra (adquiriste acciones) o una venta (las vendiste)." />
+                </div>
+              </th>
+              <th style="width:12%">
+                <div class="th-with-help">
+                  <span>Cantidad</span>
+                  <app-info-tooltip text="El número de acciones que compraste o vendiste en esa operación." />
+                </div>
+              </th>
+              <th style="width:17%">
+                <div class="th-with-help">
+                  <span>Precio</span>
+                  <app-info-tooltip text="El precio por acción al momento de realizar la operación." />
+                </div>
+              </th>
+              <th style="width:22%">
+                <div class="th-with-help">
+                  <span>Total</span>
+                  <app-info-tooltip text="El monto total de la operación: precio de la acción multiplicado por la cantidad comprada o vendida." />
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null && operationDaysFilter === null) {
+              <tr>
+                <td class="td-empty" colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon">≡</div>
+                    <p class="empty-title">Sin operaciones registradas</p>
+                    <p class="empty-sub">Tus compras y ventas aparecerán acá cuando las realices.</p>
+                  </div>
+                </td>
+              </tr>
+            } @else if (operations.length === 0) {
+              <tr>
+                <td class="td-empty" colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon">⌕</div>
+                    <p class="empty-title">Sin resultados</p>
+                    <p class="empty-sub">No hay operaciones que coincidan con los filtros aplicados.</p>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (operation of operations; track operation.operationDate + '-' + operation.symbol + '-' + operation.type) {
+                <tr>
+                  <td>{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="ticker-cell">{{ operation.symbol }}</td>
+                  <td>
+                    <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
+                      {{ operation.type === 1 ? 'Compra' : 'Venta' }}
+                    </span>
+                  </td>
+                  <td>{{ operation.quantity }}</td>
+                  <td>{{ operation.buyPrice | currency:'USD' }}</td>
+                  <td>{{ operation.total | currency:'USD' }}</td>
+                </tr>
+              }
+              @for (row of emptyOperationRows; track $index) {
+                <tr class="empty-row">
+                  <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+              }
             }
+          </tbody>
+        </table>
+
+        @if (operations.length > 0) {
+          <div class="pagination-container">
+            <div class="pagination-info">
+              <select class="page-size-select" [(ngModel)]="operationsPageSize"
+                (ngModelChange)="onOperationsPageSizeChange()">
+                <option [value]="5">5 por página</option>
+                <option [value]="10">10 por página</option>
+                <option [value]="20">20 por página</option>
+              </select>
+              <span>Página {{ operationsPage }} de {{ totalOperationsPages }}</span>
+              <span>({{ totalOperations }} operaciones)</span>
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" type="button" [disabled]="operationsPage === 1"
+                (click)="previousOperationsPage()">← Anterior</button>
+              <div class="page-numbers">
+                @for (page of getOperationPageNumbers(); track page) {
+                  <button class="page-btn" type="button" [class.active]="page === operationsPage"
+                    (click)="goToOperationsPage(page)">{{ page }}</button>
+                }
+              </div>
+              <button class="pagination-btn" type="button" [disabled]="operationsPage === totalOperationsPages"
+                (click)="nextOperationsPage()">Siguiente →</button>
+            </div>
           </div>
-          <button class="pagination-btn" type="button" [disabled]="operationsPage === totalOperationsPages"
-            (click)="nextOperationsPage()">Siguiente →</button>
-        </div>
-      </div>
+        }
       }
 
     </div>

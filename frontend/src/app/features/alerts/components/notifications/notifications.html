@@ -4,7 +4,10 @@
   <!-- Header -->
   <div class="notif-page-header">
     <div class="notif-title-block">
-      <h2 class="notif-title">Centro de Notificaciones</h2>
+      <div class="notif-title-row">
+        <h2 class="notif-title">Centro de Notificaciones</h2>
+        <app-info-tooltip text="Acá aparecen todos los avisos generados cuando una alerta se disparó. Cada notificación indica qué acción superó la condición configurada y a qué precio." />
+      </div>
 
       @if (!loadingNotifications) {
         <div class="notif-chips">
@@ -80,63 +83,57 @@
     </p>
   }
 
-  <!-- Notification List -->
+  <!-- Notification Grid -->
   <div class="notif-list">
 
     @if (loadingNotifications) {
-      <div class="notif-list-skeleton">
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-        <div class="skeleton skeleton-list-item"></div>
-      </div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
     } @else {
       @for (history of notificationList; track history.id) {
         <div class="notif-item" [class.unread]="!history.isRead">
 
-          <!-- Icon Badge -->
-          <div class="notif-icon-wrap">
-            <mat-icon class="notif-icon">notifications_active</mat-icon>
+          <!-- Card top: icon + unread dot -->
+          <div class="notif-card-top">
+            <div class="notif-icon-wrap">
+              <mat-icon class="notif-icon">notifications_active</mat-icon>
+            </div>
+            @if (!history.isRead) {
+              <span class="unread-dot"></span>
+            } @else {
+              <span class="notif-read-label">Leído</span>
+            }
           </div>
 
-          <!-- Body -->
-          <div class="notif-body">
-            <div class="notif-top-row">
-              <span class="notif-msg">{{ history.message }}</span>
+          <!-- Message -->
+          <span class="notif-msg">{{ history.message }}</span>
 
-              @if (!history.isRead) {
-                <span class="unread-dot"></span>
-              }
-            </div>
-
+          <!-- Meta + actions -->
+          <div class="notif-card-footer">
             <div class="notif-meta-row">
               <span class="notif-price">${{ history.price.toFixed(2) }}</span>
               <span class="notif-sep">·</span>
               <span class="notif-time">{{ history.createdAt | date:'d/M/yy, h:mm a' }}</span>
-
-              @if (history.isRead) {
-                <span class="notif-read-label">Leído</span>
-              }
             </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="notif-actions">
-            @if (!history.isRead) {
-              <button class="action-btn read-btn" (click)="markAsRead(history)" title="Marcar como leído">
-                <mat-icon>check_circle_outline</mat-icon>
+            <div class="notif-actions">
+              @if (!history.isRead) {
+                <button class="action-btn read-btn" (click)="markAsRead(history)" title="Marcar como leído">
+                  <mat-icon>check_circle_outline</mat-icon>
+                </button>
+              }
+              <button class="action-btn delete-btn" (click)="deleteNotification(history)" title="Eliminar">
+                <mat-icon>delete_outline</mat-icon>
               </button>
-            }
-
-            <button class="action-btn delete-btn" (click)="deleteNotification(history)" title="Eliminar">
-              <mat-icon>delete_outline</mat-icon>
-            </button>
+            </div>
           </div>
 
         </div>
       } @empty {
-        <div class="empty-state">
+        <div class="empty-state notif-empty">
           <mat-icon class="empty-icon">notifications_none</mat-icon>
           <h3 class="empty-title">No hay notificaciones</h3>
           <p class="empty-desc">Las alertas disparadas aparecerán aquí como notificaciones</p>

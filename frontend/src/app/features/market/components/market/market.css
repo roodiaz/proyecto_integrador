@@ -102,6 +102,13 @@
   border-left-color: #ff5451;
 }
 
+.index-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
 .index-name {
   display: block;
   color: #8c909f;
@@ -222,6 +229,17 @@
   gap: 22px 36px;
   padding: 30px 34px;
   background: rgba(19, 19, 19, 0.26);
+}
+
+.stat-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.stat-label-row span {
+  margin-bottom: 0;
 }
 
 .stat-item span {
@@ -817,11 +835,37 @@
   flex-shrink: 1;
 }
 
+.chart-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chart-title-row .chart-title {
+  margin: 0;
+}
+
 .chart-title {
   font-size: 22px;
   font-weight: 600;
   margin: 0 0 8px;
   color: #E5E2E1;
+}
+
+.card-title-with-help {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-title-row h3 {
+  margin: 0;
 }
 
 .chart-subtitle {

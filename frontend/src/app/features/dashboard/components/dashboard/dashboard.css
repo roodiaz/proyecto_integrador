@@ -245,10 +245,38 @@
 }
 
 .dashboard-card h3 {
-  margin: 0 0 24px;
+  margin: 0;
   color: var(--text-primary);
   font-size: 18px;
   font-weight: 600;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.chart-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chart-title-row .chart-title {
+  margin: 0;
+}
+
+.stat-card {
+  position: relative;
+}
+
+.stat-help {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 /* ========================= */

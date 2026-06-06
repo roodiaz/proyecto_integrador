@@ -27,6 +27,11 @@
 
           <div class="stat-label">Valor Total</div>
         </div>
+
+        <app-info-tooltip
+          class="stat-help"
+          text="El valor total es la suma de todo lo que tenés invertido en este momento, calculado al precio actual de cada activo."
+        />
       </div>
 
       <div class="stat-card">
@@ -47,6 +52,11 @@
 
           <div class="stat-label">Activos</div>
         </div>
+
+        <app-info-tooltip
+          class="stat-help"
+          text="Indica cuántos activos distintos tenés en tu portfolio ahora mismo. Un activo puede ser una acción, un ETF u otro instrumento de inversión."
+        />
       </div>
 
       <div class="stat-card" [ngClass]="!loadingTopCards ? getProfitClass() : ''">
@@ -70,6 +80,11 @@
 
           <div class="stat-label">Profit</div>
         </div>
+
+        <app-info-tooltip
+          class="stat-help"
+          text="Muestra cuánto ganaste o perdiste hoy con tus inversiones simuladas. Si el número es positivo, tus activos subieron de valor. Si es negativo, bajaron."
+        />
       </div>
 
       <div class="stat-card">
@@ -90,6 +105,11 @@
 
           <div class="stat-label">Alertas Activas</div>
         </div>
+
+        <app-info-tooltip
+          class="stat-help"
+          text="Son las alertas que configuraste y están esperando que se cumpla una condición, como que una acción suba o baje a cierto precio."
+        />
       </div>
 
     </div>
@@ -101,7 +121,12 @@
     <div class="chart-header">
 
       <div class="chart-title-section">
-        <h2 class="chart-title">Portfolio vs S&P500 vs NASDAQ</h2>
+        <div class="chart-title-row">
+          <h2 class="chart-title">Portfolio vs S&P500 vs NASDAQ</h2>
+          <app-info-tooltip
+            text="Este gráfico compara cómo creció tu portfolio frente a dos índices del mercado real. Te ayuda a ver si tus decisiones simuladas son mejores o peores que seguir el mercado en general."
+          />
+        </div>
 
         <div class="chart-subtitle">
           <span class="current-value">
@@ -174,7 +199,12 @@
     <!-- DISTRIBUCION -->
     <div class="dashboard-card">
 
-      <h3>Distribución del Portfolio</h3>
+      <div class="card-header">
+        <h3>Distribución del Portfolio</h3>
+        <app-info-tooltip
+          text="Muestra cómo están repartidas tus inversiones entre diferentes sectores, como tecnología, energía o finanzas. Una buena distribución ayuda a reducir el riesgo."
+        />
+      </div>
 
       @if (loadingPortfolioDistribution) {
         <div class="skeleton-card-list">
@@ -212,7 +242,12 @@
     <!-- NOTIFICACIONES -->
     <div class="dashboard-card">
 
-      <h3>Notificaciones Recientes</h3>
+      <div class="card-header">
+        <h3>Notificaciones Recientes</h3>
+        <app-info-tooltip
+          text="Acá aparecen los avisos más recientes generados por tus alertas. Por ejemplo, cuando una acción llegó al precio que vos configuraste."
+        />
+      </div>
 
       @if (loadingRecentNotifications) {
         <div class="skeleton-card-list">
@@ -251,7 +286,12 @@
     <!-- OPERACIONES -->
     <div class="dashboard-card">
 
-      <h3>Últimas Operaciones</h3>
+      <div class="card-header">
+        <h3>Últimas Operaciones</h3>
+        <app-info-tooltip
+          text="Son las últimas compras y ventas simuladas que realizaste. Te permite revisar tu historial de actividad reciente en la plataforma."
+        />
+      </div>
 
       @if (loadingLatestTransactions) {
         <div class="skeleton-card-list">

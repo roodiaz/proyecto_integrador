@@ -272,19 +272,14 @@
 
 .watchlist-table th {
   padding: 13px 16px;
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--text-muted);
-  text-align: left;
-}
-
-.watchlist-table th.col-price,
-.watchlist-table th.col-variation,
-.watchlist-table th.col-actions {
   text-align: center;
 }
+
 
 /* Celdas */
 .watchlist-table td {
@@ -292,15 +287,10 @@
   padding: 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, .04);
   vertical-align: middle;
-  font-size: 0.875rem;
-  text-align: left;
-}
-
-.watchlist-table td.col-price,
-.watchlist-table td.col-variation,
-.watchlist-table td.col-actions {
+  font-size: 0.95rem;
   text-align: center;
 }
+
 
 .watchlist-row {
   transition: background 0.15s;
@@ -327,6 +317,7 @@
 .ticker-cell {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 
@@ -351,7 +342,7 @@
 }
 
 .ticker-symbol {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -363,7 +354,7 @@
 
 .company-name {
   color: var(--text-sec);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -408,6 +399,19 @@
 
 .action-btn:hover {
   background: rgba(255, 255, 255, .06) !important;
+}
+
+/* ── Helpers de columnas ── */
+.th-with-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.td-empty {
+  padding: 0 !important;
+  border: none !important;
 }
 
 /* ── Empty / no-results ── */

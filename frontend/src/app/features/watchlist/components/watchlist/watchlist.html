@@ -93,95 +93,109 @@
           <div class="skeleton skeleton-list-item"></div>
           <div class="skeleton skeleton-list-item"></div>
         </div>
-      } @else if (watchlistItems.length === 0) {
-        <!-- Empty state (sin datos en absoluto) -->
-        <div class="empty-state">
-          <mat-icon class="empty-icon">star_border</mat-icon>
-          <h3>No tienes favoritos</h3>
-          <p>Agrega activos para comenzar a seguirlos.</p>
-
-          <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
-            <mat-icon>add</mat-icon>
-            Agregar Activo
-          </button>
-        </div>
       } @else {
         <table class="watchlist-table">
           <thead>
             <tr>
-              <th class="col-symbol">Símbolo</th>
-              <th class="col-company">Empresa</th>
-              <th class="col-price">Precio Actual</th>
-              <th class="col-variation">Variación %</th>
-              <th class="col-actions">Acciones</th>
+              <th class="col-symbol">
+                <div class="th-with-help">
+                  <span>Símbolo</span>
+                  <app-info-tooltip text="El código único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
+                </div>
+              </th>
+              <th class="col-company">
+                <div class="th-with-help">
+                  <span>Empresa</span>
+                  <app-info-tooltip text="El nombre completo de la empresa emisora de la acción." />
+                </div>
+              </th>
+              <th class="col-price">
+                <div class="th-with-help">
+                  <span>Precio Actual</span>
+                  <app-info-tooltip text="El precio de mercado más reciente de la acción, actualizado en tiempo real." />
+                </div>
+              </th>
+              <th class="col-variation">
+                <div class="th-with-help">
+                  <span>Variación %</span>
+                  <app-info-tooltip text="El porcentaje de cambio del precio respecto al cierre del día anterior. Verde significa que subió, rojo que bajó." />
+                </div>
+              </th>
+              <th class="col-actions">
+                <div class="th-with-help">
+                  <span>Acciones</span>
+                  <app-info-tooltip text="Opciones rápidas: ver el gráfico en Mercado, crear una alerta de precio, o quitar el activo de tus favoritos." />
+                </div>
+              </th>
             </tr>
           </thead>
 
           <tbody>
-
-            <!-- Filas con datos -->
-            @for (item of filteredItems; track item.symbol) {
-              <tr class="watchlist-row">
-                <td class="col-symbol">
-                  <div class="ticker-cell">
-                    <div class="company-logo">{{ item.symbol.charAt(0) }}</div>
-
-                    <div class="ticker-info">
-                      <span class="ticker-symbol">{{ item.symbol }}</span>
-                      <canvas class="sparkline" [id]="'sparkline-' + item.symbol" width="60" height="20"></canvas>
+            @if (watchlistItems.length === 0) {
+              <tr>
+                <td class="td-empty" colspan="5">
+                  <div class="empty-state">
+                    <mat-icon class="empty-icon">star_border</mat-icon>
+                    <h3>No tienes favoritos</h3>
+                    <p>Agrega activos para comenzar a seguirlos.</p>
+                    <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
+                      <mat-icon>add</mat-icon>
+                      Agregar Activo
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @else if (filteredItems.length === 0) {
+              <tr>
+                <td class="td-empty" colspan="5">
+                  <div class="no-results">
+                    <mat-icon>search_off</mat-icon>
+                    <p>Sin resultados para "<strong>{{ searchTerm }}</strong>"</p>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (item of filteredItems; track item.symbol) {
+                <tr class="watchlist-row">
+                  <td class="col-symbol">
+                    <div class="ticker-cell">
+                      <div class="company-logo">{{ item.symbol.charAt(0) }}</div>
+                      <div class="ticker-info">
+                        <span class="ticker-symbol">{{ item.symbol }}</span>
+                        <canvas class="sparkline" [id]="'sparkline-' + item.symbol" width="60" height="20"></canvas>
+                      </div>
                     </div>
-                  </div>
-                </td>
-
-                <td class="col-company company-name">{{ item.name }}</td>
-
-                <td class="col-price price-value">
-                  ${{ item.price.toFixed(2) }}
-                </td>
-
-                <td class="col-variation variation-value" [class.positive]="item.variationPercent > 0" [class.negative]="item.variationPercent < 0">
-                  {{ item.variationPercent > 0 ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
-                </td>
-
-                <td class="col-actions">
-                  <div class="row-actions">
-                    <button mat-icon-button class="action-btn market-btn" type="button" (click)="goToMarket(item.symbol); $event.stopPropagation()" title="Ver mercado">
-                      <mat-icon>show_chart</mat-icon>
-                    </button>
-
-                    <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" title="Crear alerta">
-                      <mat-icon>notifications</mat-icon>
-                    </button>
-
-                    <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" title="Eliminar">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                  <td class="col-company company-name">{{ item.name }}</td>
+                  <td class="col-price price-value">${{ item.price.toFixed(2) }}</td>
+                  <td class="col-variation variation-value" [class.positive]="item.variationPercent > 0" [class.negative]="item.variationPercent < 0">
+                    {{ item.variationPercent > 0 ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
+                  </td>
+                  <td class="col-actions">
+                    <div class="row-actions">
+                      <button mat-icon-button class="action-btn market-btn" type="button" (click)="goToMarket(item.symbol); $event.stopPropagation()" title="Ver mercado">
+                        <mat-icon>show_chart</mat-icon>
+                      </button>
+                      <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" title="Crear alerta">
+                        <mat-icon>notifications</mat-icon>
+                      </button>
+                      <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" title="Eliminar">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+              @for (ghost of ghostRows; track $index) {
+                <tr class="watchlist-row ghost-row">
+                  <td class="col-symbol"></td><td class="col-company"></td>
+                  <td class="col-price"></td><td class="col-variation"></td>
+                  <td class="col-actions"></td>
+                </tr>
+              }
             }
-
-            <!-- Filas fantasma para mantener altura fija -->
-            @for (ghost of ghostRows; track $index) {
-              <tr class="watchlist-row ghost-row">
-                <td class="col-symbol"></td>
-                <td class="col-company"></td>
-                <td class="col-price"></td>
-                <td class="col-variation"></td>
-                <td class="col-actions"></td>
-              </tr>
-            }
-
           </tbody>
         </table>
-
-        <!-- Sin resultados de búsqueda -->
-        @if (filteredItems.length === 0) {
-          <div class="no-results">
-            <mat-icon>search_off</mat-icon>
-            <p>Sin resultados para "<strong>{{ searchTerm }}</strong>"</p>
-          </div>
-        }
       }
 
     </div>

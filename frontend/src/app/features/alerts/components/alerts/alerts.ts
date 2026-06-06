@@ -10,6 +10,7 @@ import { AlertService } from '../../services/alert.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-alerts',
@@ -19,7 +20,8 @@ import { MaterialModule } from '../../../../shared/material.module';
     FormsModule,
     DatePipe,
     Notifications,
-    MaterialModule
+    MaterialModule,
+    InfoTooltipComponent
   ],
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']

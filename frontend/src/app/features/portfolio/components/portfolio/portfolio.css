@@ -121,13 +121,44 @@
   transform: translateY(-2px);
 }
 
+.summary-card-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.summary-card .summary-card-header h3,
+.table-header .summary-card-header h2 {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 .summary-card h3 {
-  margin: 0 0 10px 0;
+  margin: 0;
   color: var(--text-secondary);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.th-with-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.td-empty {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.td-empty .empty-state {
+  margin: 20px;
 }
 
 .summary-card .amount {
@@ -509,6 +540,7 @@
 .shared-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .shared-table thead {
@@ -517,7 +549,7 @@
 
 .shared-table th {
   padding: 13px 16px;
-  text-align: left;
+  text-align: center;
   color: var(--text-secondary);
   font-size: 10px;
   font-weight: 600;
@@ -529,7 +561,8 @@
 .shared-table td {
   padding: 14px 16px;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
+  text-align: center;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -562,19 +595,30 @@
 .neutral  { color: var(--text-primary) !important; }
 
 .sell-btn {
-  padding: 6px 14px;
-  background: var(--red-dim);
-  border: 1px solid var(--accent-red);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 180, 171, 0.3);
   color: var(--accent-red);
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.sell-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
 }
 
 .sell-btn:hover {
-  background: rgba(255, 180, 171, 0.3);
+  background: var(--red-dim);
+  border-color: var(--accent-red);
+  transform: translateY(-1px);
 }
 
 .operation-badge {

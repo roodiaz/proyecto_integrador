@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { NotificationService } from '../../services/notification.service';
 import { MaterialModule } from '../../../../shared/material.module';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
   templateUrl: './notifications.html',
   styleUrl: './notifications.css'
 })

@@ -10,11 +10,12 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { FavoriteItem } from '../../models/watchlist-item';
 import { AddFavoriteDialog } from '../add-favorite-dialog/add-favorite-dialog';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-watchlist',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
   templateUrl: './watchlist.html',
   styleUrl: './watchlist.css'
 })

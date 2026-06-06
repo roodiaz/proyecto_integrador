@@ -17,7 +17,10 @@
       @for (index of marketIndices; track index.symbol ?? index.name) {
         <article class="index-card" [class.positive-card]="index.changePercent >= 0" [class.negative-card]="index.changePercent < 0">
           <div>
-            <span class="index-name">{{ index.name }}</span>
+            <div class="index-name-row">
+              <span class="index-name">{{ index.name }}</span>
+              <app-info-tooltip [text]="getIndexTooltip(index.name)" />
+            </div>
             <strong>{{ formatNumber(index.value) }}</strong>
           </div>
 
@@ -53,7 +56,10 @@
       @for (item of emptyIndexCards; track item.name) {
         <article class="index-card index-empty-card">
           <div>
-            <span class="index-name">{{ item.name }}</span>
+            <div class="index-name-row">
+              <span class="index-name">{{ item.name }}</span>
+              <app-info-tooltip [text]="getIndexTooltip(item.name)" />
+            </div>
             <strong>--</strong>
           </div>
 
@@ -78,6 +84,10 @@
             <span class="asset-badge" [class.positive]="getAssetChangePercent() >= 0" [class.negative]="getAssetChangePercent() < 0">
               {{ getAssetChangePercent() >= 0 ? '+' : '' }}{{ getAssetChangePercent().toFixed(2) }}%
             </span>
+
+            <app-info-tooltip
+              text="Esta sección muestra la información principal del activo: su nombre, precio actual y variación respecto al cierre del día anterior."
+            />
           </div>
 
           <p>{{ selectedAsset.exchange }}: {{ selectedAsset.symbol }}</p>
@@ -112,42 +122,66 @@
     <div class="asset-stats">
       @if (selectedAsset) {
         <div class="stat-item">
-          <span>Open</span>
+          <div class="stat-label-row">
+            <span>Open</span>
+            <app-info-tooltip [text]="statTooltips['Open']" />
+          </div>
           <strong>{{ formatNullableCurrency(selectedAsset.open) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>Volume</span>
+          <div class="stat-label-row">
+            <span>Volume</span>
+            <app-info-tooltip [text]="statTooltips['Volume']" />
+          </div>
           <strong>{{ selectedAsset.volume == null ? '--' : formatVolume(selectedAsset.volume) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>Day High</span>
+          <div class="stat-label-row">
+            <span>Day High</span>
+            <app-info-tooltip [text]="statTooltips['Day High']" />
+          </div>
           <strong class="positive">{{ formatNullableCurrency(selectedAsset.dayHigh) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>Day Low</span>
+          <div class="stat-label-row">
+            <span>Day Low</span>
+            <app-info-tooltip [text]="statTooltips['Day Low']" />
+          </div>
           <strong class="negative">{{ formatNullableCurrency(selectedAsset.dayLow) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>Avg Vol</span>
+          <div class="stat-label-row">
+            <span>Avg Vol</span>
+            <app-info-tooltip [text]="statTooltips['Avg Vol']" />
+          </div>
           <strong>{{ selectedAsset.avgVolume == null ? '--' : formatVolume(selectedAsset.avgVolume) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>Mkt Cap</span>
+          <div class="stat-label-row">
+            <span>Mkt Cap</span>
+            <app-info-tooltip [text]="statTooltips['Mkt Cap']" />
+          </div>
           <strong>{{ selectedAsset.marketCap == null ? '--' : formatMarketCap(selectedAsset.marketCap) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>P/E Ratio</span>
+          <div class="stat-label-row">
+            <span>P/E Ratio</span>
+            <app-info-tooltip [text]="statTooltips['P/E Ratio']" />
+          </div>
           <strong>{{ selectedAsset.peRatio == null ? '--' : selectedAsset.peRatio.toFixed(1) }}</strong>
         </div>
 
         <div class="stat-item">
-          <span>Div Yield</span>
+          <div class="stat-label-row">
+            <span>Div Yield</span>
+            <app-info-tooltip [text]="statTooltips['Div Yield']" />
+          </div>
           <strong>{{ formatNullablePercent(selectedAsset.dividendYield) }}</strong>
         </div>
       } @else if (loadingAsset) {
@@ -160,7 +194,10 @@
       } @else {
         @for (item of emptyStatLabels; track item) {
           <div class="stat-item empty-stat">
-            <span>{{ item }}</span>
+            <div class="stat-label-row">
+              <span>{{ item }}</span>
+              <app-info-tooltip [text]="statTooltips[item] || ''" />
+            </div>
             <strong>--</strong>
           </div>
         }
@@ -179,11 +216,11 @@
       </div>
 
       <button type="button" class="buy-btn" [disabled]="!selectedAsset" (click)="selectedAsset && buyAsset(selectedAsset.symbol)">
-        BUY
+        COMPRAR
       </button>
 
       <button type="button" class="sell-btn" [disabled]="!selectedAsset || !hasPositionForSelectedAsset || loadingPositionStatus" (click)="selectedAsset && sellAsset(selectedAsset.symbol)" [title]="!hasPositionForSelectedAsset ? 'No tenés este activo en tu portfolio' : 'Vender activo'">
-        {{ loadingPositionStatus ? '...' : 'SELL' }}
+        {{ loadingPositionStatus ? '...' : 'VENDER' }}
       </button>
     </div>
   </section>
@@ -191,9 +228,12 @@
   <section class="chart-panel">
     <div class="chart-header">
       <div class="chart-title-section">
-        <h2 class="chart-title">
-          {{ selectedAsset ? selectedAsset.symbol : 'Activo' }} vs S&P 500 vs NASDAQ vs Dow Jones
-        </h2>
+        <div class="chart-title-row">
+          <h2 class="chart-title">
+            {{ selectedAsset ? selectedAsset.symbol : 'Activo' }} vs S&P 500 vs NASDAQ vs Dow Jones
+          </h2>
+          <app-info-tooltip [text]="chartTooltipText" />
+        </div>
 
         <div class="chart-subtitle">
           <span class="current-value">{{ selectedAsset ? ('$' + selectedAsset.price.toFixed(2)) : '--' }}</span>
@@ -264,8 +304,13 @@
 
     <article class="terminal-card news-card news-wide-card">
       <div class="small-card-header">
-        <div>
-          <h3>Market Intelligence</h3>
+        <div class="card-title-with-help">
+          <div class="card-title-row">
+            <h3>Market Intelligence</h3>
+            <app-info-tooltip
+              text="Noticias financieras recientes del mercado. Los eventos del mundo real pueden afectar el precio de los activos, por eso es útil mantenerse informado."
+            />
+          </div>
           <p class="card-kicker">Noticias principales del mercado</p>
         </div>
 
@@ -335,8 +380,13 @@
 
       <article class="terminal-card market-list-card">
         <div class="small-card-header">
-          <div>
-            <h3>Tendencias Ahora</h3>
+          <div class="card-title-with-help">
+            <div class="card-title-row">
+              <h3>Tendencias Ahora</h3>
+              <app-info-tooltip
+                text="Son los activos con mayor actividad de trading en este momento. Un volumen alto puede indicar que algo importante está pasando con esa acción."
+              />
+            </div>
             <p class="card-kicker">Activos con mayor actividad</p>
           </div>
 
@@ -377,8 +427,13 @@
 
       <article class="terminal-card market-list-card">
         <div class="small-card-header">
-          <div>
-            <h3>Ganadores del Día</h3>
+          <div class="card-title-with-help">
+            <div class="card-title-row">
+              <h3>Ganadores del Día</h3>
+              <app-info-tooltip
+                text="Los activos que más subieron de precio hoy. Pueden reflejar buenas noticias sobre la empresa o el sector al que pertenecen."
+              />
+            </div>
             <p class="card-kicker">Mayores subas</p>
           </div>
 
@@ -419,8 +474,13 @@
 
       <article class="terminal-card market-list-card">
         <div class="small-card-header">
-          <div>
-            <h3>Perdedores del Día</h3>
+          <div class="card-title-with-help">
+            <div class="card-title-row">
+              <h3>Perdedores del Día</h3>
+              <app-info-tooltip
+                text="Los activos que más cayeron de precio hoy. Pueden reflejar malas noticias, ventas masivas o resultados negativos del mercado."
+              />
+            </div>
             <p class="card-kicker">Mayores bajas</p>
           </div>
 

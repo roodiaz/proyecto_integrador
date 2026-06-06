@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PortfolioService } from '../../services/portfolio.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
 import { BuyData, SellData, PortfolioModalResult } from '../../models/portfolio.modal.model';
 import {
@@ -21,7 +22,7 @@ import {
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css',
 })

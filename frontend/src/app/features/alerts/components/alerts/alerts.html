@@ -39,7 +39,10 @@
       <div class="summary-cards">
 
         <div class="summary-card active">
-          <h3>Alertas Activas</h3>
+          <div class="summary-card-header">
+            <h3>Alertas Activas</h3>
+            <app-info-tooltip text="Son las alertas que están monitoreando el mercado ahora mismo. Cuando una acción cumpla la condición configurada, recibirás una notificación." />
+          </div>
           @if (!loadingStats) {
             <p class="amount">{{ activeAlerts }}</p>
           } @else {
@@ -48,7 +51,10 @@
         </div>
 
         <div class="summary-card paused">
-          <h3>Alertas Pausadas</h3>
+          <div class="summary-card-header">
+            <h3>Alertas Pausadas</h3>
+            <app-info-tooltip text="Alertas que desactivaste temporariamente. No se van a disparar hasta que las vuelvas a activar." />
+          </div>
           @if (!loadingStats) {
             <p class="amount">{{ pausedAlerts }}</p>
           } @else {
@@ -57,7 +63,10 @@
         </div>
 
         <div class="summary-card triggered">
-          <h3>Disparadas Hoy</h3>
+          <div class="summary-card-header">
+            <h3>Disparadas Hoy</h3>
+            <app-info-tooltip text="Cantidad de alertas que se activaron hoy porque el activo cumplió la condición que configuraste." />
+          </div>
           @if (!loadingStats) {
             <p class="amount">{{ triggeredToday }}</p>
           } @else {
@@ -66,7 +75,10 @@
         </div>
 
         <div class="summary-card usage">
-          <h3>Alertas Utilizadas</h3>
+          <div class="summary-card-header">
+            <h3>Alertas Utilizadas</h3>
+            <app-info-tooltip text="Cuántas alertas creaste sobre el máximo permitido. Hay un límite para mantener el sistema ordenado." />
+          </div>
           @if (!loadingStats) {
             <p class="amount">{{ usedAlerts }} <span class="limit">/ {{ limitAlerts }}</span></p>
             <div class="usage-progress">
@@ -127,9 +139,18 @@
       <div class="alerts-list-container">
         <div class="alerts-list-header">
           <div class="header-column symbol">Símbolo</div>
-          <div class="header-column condition">Condición</div>
-          <div class="header-column status">Estado</div>
-          <div class="header-column dates">Fechas</div>
+          <div class="header-column condition" style="gap: 6px;">
+            Condición
+            <app-info-tooltip text="Define cuándo se disparará la alerta. Por ejemplo: 'precio mayor a $150' o 'variación diaria mayor al 5%'." />
+          </div>
+          <div class="header-column status" style="gap: 6px;">
+            Estado
+            <app-info-tooltip text="Indica si la alerta está monitoreando el mercado (Activa) o temporalmente desactivada (Pausada)." />
+          </div>
+          <div class="header-column dates" style="gap: 6px;">
+            Fechas
+            <app-info-tooltip text="Fecha en que creaste la alerta y la última vez que se disparó automáticamente." />
+          </div>
           <div class="header-column actions">Acciones</div>
         </div>
 

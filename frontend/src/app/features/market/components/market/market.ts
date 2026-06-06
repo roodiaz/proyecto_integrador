@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import Chart from 'chart.js/auto';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
@@ -31,7 +32,7 @@ Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcEl
 @Component({
   selector: 'app-market',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
   templateUrl: './market.html',
   styleUrl: './market.css'
 })
@@ -57,6 +58,27 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   loadingOverview = false;
   emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
   emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
+
+  readonly indexTooltips: Record<string, string> = {
+    'S&P 500':   'El S&P 500 agrupa las 500 empresas más grandes de Estados Unidos. Es el índice más usado como referencia del mercado americano en general.',
+    'NASDAQ':    'El NASDAQ concentra principalmente empresas tecnológicas como Apple, Google y Microsoft. Refleja cómo se comporta el sector tech del mercado.',
+    'Dow Jones': 'El Dow Jones agrupa solo 30 grandes empresas industriales y tradicionales de EE.UU. Es uno de los índices más antiguos y conocidos del mundo.'
+  };
+
+  getIndexTooltip(name: string): string {
+    return this.indexTooltips[name] ?? 'Este índice agrupa un conjunto de acciones para mostrar cómo se comporta una parte del mercado.';
+  }
+
+  readonly statTooltips: Record<string, string> = {
+    'Open':      'Precio al que abrió la acción al comienzo de la jornada de hoy.',
+    'Volume':    'Cantidad de acciones negociadas hoy. Un volumen alto puede indicar mayor interés o actividad en el activo.',
+    'Day High':  'El precio más alto que alcanzó la acción durante el día de hoy.',
+    'Day Low':   'El precio más bajo que tocó la acción durante el día de hoy.',
+    'Avg Vol':   'Promedio de acciones negociadas por día en los últimos tiempos. Sirve para comparar si hoy hay más o menos actividad de lo normal.',
+    'Mkt Cap':   'Capitalización de mercado: el valor total de la empresa en bolsa. Se calcula multiplicando el precio de la acción por la cantidad total de acciones.',
+    'P/E Ratio': 'Relación precio-ganancias: indica cuánto pagan los inversores por cada unidad de ganancia de la empresa. Un valor alto puede significar que el mercado espera mucho crecimiento.',
+    'Div Yield': 'Rendimiento por dividendo: porcentaje que la empresa paga a sus accionistas sobre el precio actual. Es una forma de obtener ganancias además de la suba del precio.'
+  };
   hasPositionForSelectedAsset = false;
   loadingPositionStatus = false;
 
@@ -661,6 +683,12 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         this.assetErrorMessage = 'No se pudo obtener la información del activo';
       }
     });
+  }
+
+  get chartTooltipText(): string {
+    if (this.selectedChartType === 'candlestick')
+      return 'El gráfico de velas muestra el precio de apertura, cierre, máximo y mínimo de cada período. Es útil para analizar el movimiento interno del activo seleccionado.';
+    return 'Este gráfico compara el rendimiento del activo seleccionado frente al S&P 500, NASDAQ y Dow Jones. Te ayuda a ver si el activo se mueve mejor o peor que el mercado en general.';
   }
 
   changeChartType(type: 'line' | 'bar' | 'candlestick'): void {
