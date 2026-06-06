@@ -13,161 +13,169 @@
   </section>
 
   @if (!loadingIndices && marketIndices.length > 0) {
-    <section class="indices-grid">
-      @for (index of marketIndices; track index.symbol ?? index.name) {
-        <article class="index-card" [class.positive-card]="index.changePercent >= 0" [class.negative-card]="index.changePercent < 0">
-          <div>
-            <span class="index-name">{{ index.name }}</span>
-            <strong>{{ formatNumber(index.value) }}</strong>
-          </div>
+  <section class="indices-grid">
+    @for (index of marketIndices; track index.symbol ?? index.name) {
+    <article class="index-card" [class.positive-card]="index.changePercent >= 0"
+      [class.negative-card]="index.changePercent < 0">
+      <div>
+        <span class="index-name">{{ index.name }}</span>
+        <strong>{{ formatNumber(index.value) }}</strong>
+      </div>
 
-          <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
-            <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
-            <small>{{ getIndexChange(index) >= 0 ? '+' : '' }}{{ getIndexChange(index).toFixed(2) }}</small>
-          </div>
-        </article>
-      }
-    </section>
+      <div class="index-side" [class.positive]="index.changePercent >= 0" [class.negative]="index.changePercent < 0">
+        <span>{{ index.changePercent >= 0 ? '+' : '' }}{{ index.changePercent.toFixed(2) }}%</span>
+        <small>{{ getIndexChange(index) >= 0 ? '+' : '' }}{{ getIndexChange(index).toFixed(2) }}</small>
+      </div>
+    </article>
+    }
+  </section>
   }
 
   @if (loadingIndices) {
-    <section class="indices-grid">
-      @for (item of [1, 2, 3]; track item) {
-        <article class="index-card skeleton-card">
-          <div>
-            <span class="skeleton skeleton-title"></span>
-            <strong class="skeleton skeleton-value"></strong>
-          </div>
+  <section class="indices-grid">
+    @for (item of [1, 2, 3]; track item) {
+    <article class="index-card skeleton-card">
+      <div>
+        <span class="skeleton skeleton-title"></span>
+        <strong class="skeleton skeleton-value"></strong>
+      </div>
 
-          <div class="index-side">
-            <span class="skeleton skeleton-percent"></span>
-            <small class="skeleton skeleton-small"></small>
-          </div>
-        </article>
-      }
-    </section>
+      <div class="index-side">
+        <span class="skeleton skeleton-percent"></span>
+        <small class="skeleton skeleton-small"></small>
+      </div>
+    </article>
+    }
+  </section>
   }
 
   @if (!loadingIndices && marketIndices.length === 0) {
-    <section class="indices-grid">
-      @for (item of emptyIndexCards; track item.name) {
-        <article class="index-card index-empty-card">
-          <div>
-            <span class="index-name">{{ item.name }}</span>
-            <strong>--</strong>
-          </div>
+  <section class="indices-grid">
+    @for (item of emptyIndexCards; track item.name) {
+    <article class="index-card index-empty-card">
+      <div>
+        <span class="index-name">{{ item.name }}</span>
+        <strong>--</strong>
+      </div>
 
-          <div class="index-side neutral">
-            <span>--%</span>
-            <small>Sin datos</small>
-          </div>
-        </article>
-      }
-    </section>
+      <div class="index-side neutral">
+        <span>--%</span>
+        <small>Sin datos</small>
+      </div>
+    </article>
+    }
+  </section>
   }
 
   <section class="asset-panel" [class.asset-panel-empty]="!selectedAsset">
     <div class="asset-main">
       @if (selectedAsset && !loadingAsset) {
-        <div class="asset-logo">{{ selectedAsset.symbol.charAt(0) }}</div>
+      <div class="asset-logo">{{ selectedAsset.symbol.charAt(0) }}</div>
 
-        <div>
-          <div class="asset-title-row">
-            <h2>{{ selectedAsset.name }}</h2>
+      <div>
+        <div class="asset-title-row">
+          <h2>{{ selectedAsset.name }}</h2>
 
-            <span class="asset-badge" [class.positive]="getAssetChangePercent() >= 0" [class.negative]="getAssetChangePercent() < 0">
-              {{ getAssetChangePercent() >= 0 ? '+' : '' }}{{ getAssetChangePercent().toFixed(2) }}%
-            </span>
-          </div>
-
-          <p>{{ selectedAsset.exchange }}: {{ selectedAsset.symbol }}</p>
-          <strong>${{ selectedAsset.price.toFixed(2) }}</strong>
+          <span class="asset-badge" [class.positive]="getAssetChangePercent() >= 0"
+            [class.negative]="getAssetChangePercent() < 0">
+            {{ getAssetChangePercent() >= 0 ? '+' : '' }}{{ getAssetChangePercent().toFixed(2) }}%
+          </span>
         </div>
+
+        <p>{{ selectedAsset.exchange }}: {{ selectedAsset.symbol }}</p>
+        <strong>${{ selectedAsset.price.toFixed(2) }}</strong>
+      </div>
       } @else {
-        <div class="asset-logo empty-logo">
-          <mat-icon>{{ loadingAsset ? 'hourglass_empty' : 'search' }}</mat-icon>
-        </div>
+      <div class="asset-logo empty-logo">
+        <mat-icon>{{ loadingAsset ? 'hourglass_empty' : 'search' }}</mat-icon>
+      </div>
 
-        <div class="empty-asset-text">
-          <h2>{{ loadingAsset ? 'Buscando activo...' : 'Buscá un activo' }}</h2>
-          <p>{{ assetErrorMessage || 'Ingresá un símbolo para ver precio, métricas y evolución.' }}</p>
+      <div class="empty-asset-text">
+        <h2>{{ loadingAsset ? 'Buscando activo...' : 'Buscá un activo' }}</h2>
+        <p>{{ assetErrorMessage || 'Ingresá un símbolo para ver precio, métricas y evolución.' }}</p>
 
-          <div class="empty-lines">
-            <span></span>
-            <span></span>
-          </div>
+        <div class="empty-lines">
+          <span></span>
+          <span></span>
         </div>
+      </div>
       }
     </div>
 
     <div class="asset-stats">
       @if (selectedAsset) {
-        <div class="stat-item">
-          <span>Open</span>
-          <strong>{{ formatNullableCurrency(selectedAsset.open) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Open</span>
+        <strong>{{ formatNullableCurrency(selectedAsset.open) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>Volume</span>
-          <strong>{{ selectedAsset.volume == null ? '--' : formatVolume(selectedAsset.volume) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Volume</span>
+        <strong>{{ selectedAsset.volume == null ? '--' : formatVolume(selectedAsset.volume) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>Day High</span>
-          <strong class="positive">{{ formatNullableCurrency(selectedAsset.dayHigh) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Day High</span>
+        <strong class="positive">{{ formatNullableCurrency(selectedAsset.dayHigh) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>Day Low</span>
-          <strong class="negative">{{ formatNullableCurrency(selectedAsset.dayLow) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Day Low</span>
+        <strong class="negative">{{ formatNullableCurrency(selectedAsset.dayLow) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>Avg Vol</span>
-          <strong>{{ selectedAsset.avgVolume == null ? '--' : formatVolume(selectedAsset.avgVolume) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Avg Vol</span>
+        <strong>{{ selectedAsset.avgVolume == null ? '--' : formatVolume(selectedAsset.avgVolume) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>Mkt Cap</span>
-          <strong>{{ selectedAsset.marketCap == null ? '--' : formatMarketCap(selectedAsset.marketCap) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Mkt Cap</span>
+        <strong>{{ selectedAsset.marketCap == null ? '--' : formatMarketCap(selectedAsset.marketCap) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>P/E Ratio</span>
-          <strong>{{ selectedAsset.peRatio == null ? '--' : selectedAsset.peRatio.toFixed(1) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>P/E Ratio</span>
+        <strong>{{ selectedAsset.peRatio == null ? '--' : selectedAsset.peRatio.toFixed(1) }}</strong>
+      </div>
 
-        <div class="stat-item">
-          <span>Div Yield</span>
-          <strong>{{ formatNullablePercent(selectedAsset.dividendYield) }}</strong>
-        </div>
+      <div class="stat-item">
+        <span>Div Yield</span>
+        <strong>{{ formatNullablePercent(selectedAsset.dividendYield) }}</strong>
+      </div>
       } @else {
-        @for (item of emptyStatLabels; track item) {
-          <div class="stat-item empty-stat">
-            <span>{{ item }}</span>
-            <strong class="skeleton-line"></strong>
-          </div>
-        }
+      @for (item of emptyStatLabels; track item) {
+      <div class="stat-item empty-stat">
+        <span>{{ item }}</span>
+        <strong class="skeleton-line"></strong>
+      </div>
+      }
       }
     </div>
 
     <div class="asset-actions" [class.disabled-actions]="!selectedAsset">
       <div class="icon-actions">
-        <button type="button" [disabled]="!selectedAsset" (click)="openCreateAlert(selectedAsset!.symbol)" title="Crear alerta">
+        <button type="button" [disabled]="!selectedAsset" (click)="openCreateAlert(selectedAsset!.symbol)"
+          title="Crear alerta">
           <mat-icon>notifications</mat-icon>
         </button>
 
-        <button mat-icon-button type="button" class="action-icon favorite-button" [class.is-favorite]="isFavorite" [disabled]="favoriteLoading" (click)="toggleFavorite(selectedSymbol)">
+        <button mat-icon-button type="button" class="action-icon favorite-button" [class.is-favorite]="isFavorite"
+          [disabled]="favoriteLoading" (click)="toggleFavorite(selectedSymbol)">
           <mat-icon>{{ isFavorite ? 'star' : 'star_border' }}</mat-icon>
         </button>
       </div>
 
-      <button type="button" class="buy-btn" [disabled]="!selectedAsset" (click)="selectedAsset && buyAsset(selectedAsset.symbol)">
+      <button type="button" class="buy-btn" [disabled]="!selectedAsset"
+        (click)="selectedAsset && buyAsset(selectedAsset.symbol)">
         BUY
       </button>
 
-      <button type="button" class="sell-btn" [disabled]="!selectedAsset" (click)="selectedAsset && sellAsset(selectedAsset.symbol)">
-        SELL
+      <button type="button" class="sell-btn"
+        [disabled]="!selectedAsset || !hasPositionForSelectedAsset || loadingPositionStatus"
+        (click)="selectedAsset && sellAsset(selectedAsset.symbol)"
+        [title]="!hasPositionForSelectedAsset ? 'No tenés este activo en tu portfolio' : 'Vender activo'">
+        {{ loadingPositionStatus ? '...' : 'SELL' }}
       </button>
     </div>
   </section>
@@ -183,7 +191,8 @@
           <span class="current-value">{{ selectedAsset ? ('$' + selectedAsset.price.toFixed(2)) : '--' }}</span>
 
           <span class="change" [ngClass]="getAssetChangePercent() >= 0 ? 'positive' : 'negative'">
-            {{ selectedAsset ? ((getAssetChangePercent() >= 0 ? '+' : '') + getAssetChangePercent().toFixed(2) + '%') : '--%' }}
+            {{ selectedAsset ? ((getAssetChangePercent() >= 0 ? '+' : '') + getAssetChangePercent().toFixed(2) + '%') :
+            '--%' }}
           </span>
 
           <span class="period">vs mercado</span>
@@ -200,16 +209,23 @@
         </div>
 
         <div class="time-selector">
-          <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="changeTimeframe('1d')">1D</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '1w'" (click)="changeTimeframe('1w')">1W</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '1m'" (click)="changeTimeframe('1m')">1M</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '3m'" (click)="changeTimeframe('3m')">3M</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '6m'" (click)="changeTimeframe('6m')">6M</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '1y'" (click)="changeTimeframe('1y')">1Y</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1d'"
+            (click)="changeTimeframe('1d')">1D</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1w'"
+            (click)="changeTimeframe('1w')">1W</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1m'"
+            (click)="changeTimeframe('1m')">1M</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '3m'"
+            (click)="changeTimeframe('3m')">3M</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '6m'"
+            (click)="changeTimeframe('6m')">6M</button>
+          <button class="time-btn" [class.active]="selectedTimeframe === '1y'"
+            (click)="changeTimeframe('1y')">1Y</button>
         </div>
 
         <div class="chart-type-selector">
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="changeChartType('line')">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'"
+            (click)="changeChartType('line')">
             <mat-icon>show_chart</mat-icon>
           </button>
 
@@ -217,7 +233,8 @@
             <mat-icon>bar_chart</mat-icon>
           </button>
 
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'" (click)="changeChartType('candlestick')">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'candlestick'"
+            (click)="changeChartType('candlestick')">
             <mat-icon>candlestick_chart</mat-icon>
           </button>
         </div>
@@ -239,64 +256,64 @@
         </div>
 
         @if (marketNews.length > 1) {
-          <div class="news-arrows">
-            <button type="button" (click)="previousNews()">
-              <mat-icon>chevron_left</mat-icon>
-            </button>
+        <div class="news-arrows">
+          <button type="button" (click)="previousNews()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
 
-            <button type="button" (click)="nextNews()">
-              <mat-icon>chevron_right</mat-icon>
-            </button>
-          </div>
+          <button type="button" (click)="nextNews()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
         }
       </div>
 
       @if (!loadingNews && marketNews.length > 0) {
-        <div class="news-content wide-news-content">
-          <div class="news-meta">
-            <span>{{ activeNews.source }}</span>
-            <span>{{ activeNews.time }}</span>
-          </div>
-
-          <h4>{{ activeNews.title }}</h4>
-
-          @if (activeNews.summary) {
-            <p class="news-excerpt">
-              {{ activeNews.summary }}
-            </p>
-          }
-
-          @if (activeNews.relatedTickers.length > 0) {
-            <div class="news-tags">
-              @for (ticker of activeNews.relatedTickers.slice(0, 5); track ticker) {
-                <span>{{ ticker }}</span>
-              }
-            </div>
-          }
-
-          <button type="button" class="read-more news-read-more" (click)="openNews(activeNews.url)">
-            Continuar leyendo
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
+      <div class="news-content wide-news-content">
+        <div class="news-meta">
+          <span>{{ activeNews.source }}</span>
+          <span>{{ activeNews.time }}</span>
         </div>
+
+        <h4>{{ activeNews.title }}</h4>
+
+        @if (activeNews.summary) {
+        <p class="news-excerpt">
+          {{ activeNews.summary }}
+        </p>
+        }
+
+        @if (activeNews.relatedTickers.length > 0) {
+        <div class="news-tags">
+          @for (ticker of activeNews.relatedTickers.slice(0, 5); track ticker) {
+          <span>{{ ticker }}</span>
+          }
+        </div>
+        }
+
+        <button type="button" class="read-more news-read-more" (click)="openNews(activeNews.url)">
+          Continuar leyendo
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
       }
 
       @if (!loadingNews && marketNews.length === 0) {
-        <div class="card-empty modern-empty">
-          <div class="card-empty-icon">📰</div>
-          <div class="card-empty-title">No hay noticias disponibles</div>
-          <div class="card-empty-text">Cuando haya reportes principales del mercado, se van a mostrar acá.</div>
-        </div>
+      <div class="card-empty modern-empty">
+        <div class="card-empty-icon">📰</div>
+        <div class="card-empty-title">No hay noticias disponibles</div>
+        <div class="card-empty-text">Cuando haya reportes principales del mercado, se van a mostrar acá.</div>
+      </div>
       }
 
       @if (loadingNews) {
-        <div class="news-skeleton">
-          <span class="skeleton skeleton-news-source"></span>
-          <span class="skeleton skeleton-news-title"></span>
-          <span class="skeleton skeleton-news-title short"></span>
-          <span class="skeleton skeleton-news-line"></span>
-          <span class="skeleton skeleton-news-line"></span>
-        </div>
+      <div class="news-skeleton">
+        <span class="skeleton skeleton-news-source"></span>
+        <span class="skeleton skeleton-news-title"></span>
+        <span class="skeleton skeleton-news-title short"></span>
+        <span class="skeleton skeleton-news-line"></span>
+        <span class="skeleton skeleton-news-line"></span>
+      </div>
       }
     </article>
 
@@ -313,34 +330,34 @@
         </div>
 
         @if (!loadingTrending) {
-          <div class="trending-grid single-list">
-            @for (stock of trendingStocks; track stock.symbol; let i = $index) {
-              <button type="button" class="trending-item" (click)="selectAsset(stock.symbol)">
-                <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
+        <div class="trending-grid single-list">
+          @for (stock of trendingStocks; track stock.symbol; let i = $index) {
+          <button type="button" class="trending-item" (click)="selectAsset(stock.symbol)">
+            <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
 
-                <div>
-                  <strong>{{ stock.symbol }}</strong>
-                  <small>{{ stock.name }}</small>
-                </div>
+            <div>
+              <strong>{{ stock.symbol }}</strong>
+              <small>{{ stock.name }}</small>
+            </div>
 
-                <b [class.positive]="getStockChangePercent(stock) >= 0" [class.negative]="getStockChangePercent(stock) < 0">
-                  {{ getStockChangePercent(stock) >= 0 ? '+' : '' }}{{ getStockChangePercent(stock).toFixed(1) }}%
-                </b>
-              </button>
-            } @empty {
-              <div class="card-empty modern-empty compact-empty">
-                <div class="card-empty-icon">📊</div>
-                <div class="card-empty-title">Sin tendencias disponibles</div>
-                <div class="card-empty-text">Todavía no hay activos destacados para mostrar.</div>
-              </div>
-            }
+            <b [class.positive]="getStockChangePercent(stock) >= 0" [class.negative]="getStockChangePercent(stock) < 0">
+              {{ getStockChangePercent(stock) >= 0 ? '+' : '' }}{{ getStockChangePercent(stock).toFixed(1) }}%
+            </b>
+          </button>
+          } @empty {
+          <div class="card-empty modern-empty compact-empty">
+            <div class="card-empty-icon">📊</div>
+            <div class="card-empty-title">Sin tendencias disponibles</div>
+            <div class="card-empty-text">Todavía no hay activos destacados para mostrar.</div>
           </div>
+          }
+        </div>
         } @else {
-          <div class="list-skeleton">
-            @for (item of [1, 2, 3]; track item) {
-              <span class="skeleton skeleton-list-item"></span>
-            }
-          </div>
+        <div class="list-skeleton">
+          @for (item of [1, 2, 3]; track item) {
+          <span class="skeleton skeleton-list-item"></span>
+          }
+        </div>
         }
       </article>
 
@@ -355,34 +372,34 @@
         </div>
 
         @if (!loadingGainers) {
-          <div class="trending-grid single-list">
-            @for (stock of dayGainers; track stock.symbol; let i = $index) {
-              <button type="button" class="trending-item" (click)="selectAsset(stock.symbol)">
-                <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
+        <div class="trending-grid single-list">
+          @for (stock of dayGainers; track stock.symbol; let i = $index) {
+          <button type="button" class="trending-item" (click)="selectAsset(stock.symbol)">
+            <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
 
-                <div>
-                  <strong>{{ stock.symbol }}</strong>
-                  <small>{{ stock.name }}</small>
-                </div>
+            <div>
+              <strong>{{ stock.symbol }}</strong>
+              <small>{{ stock.name }}</small>
+            </div>
 
-                <b class="positive">
-                  +{{ getStockChangePercent(stock).toFixed(1) }}%
-                </b>
-              </button>
-            } @empty {
-              <div class="card-empty modern-empty compact-empty">
-                <div class="card-empty-icon">🚀</div>
-                <div class="card-empty-title">Sin ganadores disponibles</div>
-                <div class="card-empty-text">Cuando el mercado informe subas destacadas, aparecerán acá.</div>
-              </div>
-            }
+            <b class="positive">
+              +{{ getStockChangePercent(stock).toFixed(1) }}%
+            </b>
+          </button>
+          } @empty {
+          <div class="card-empty modern-empty compact-empty">
+            <div class="card-empty-icon">🚀</div>
+            <div class="card-empty-title">Sin ganadores disponibles</div>
+            <div class="card-empty-text">Cuando el mercado informe subas destacadas, aparecerán acá.</div>
           </div>
+          }
+        </div>
         } @else {
-          <div class="list-skeleton">
-            @for (item of [1, 2, 3]; track item) {
-              <span class="skeleton skeleton-list-item"></span>
-            }
-          </div>
+        <div class="list-skeleton">
+          @for (item of [1, 2, 3]; track item) {
+          <span class="skeleton skeleton-list-item"></span>
+          }
+        </div>
         }
       </article>
 
@@ -397,34 +414,34 @@
         </div>
 
         @if (!loadingLosers) {
-          <div class="trending-grid single-list">
-            @for (stock of dayLosers; track stock.symbol; let i = $index) {
-              <button type="button" class="trending-item" (click)="selectAsset(stock.symbol)">
-                <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
+        <div class="trending-grid single-list">
+          @for (stock of dayLosers; track stock.symbol; let i = $index) {
+          <button type="button" class="trending-item" (click)="selectAsset(stock.symbol)">
+            <span class="rank">{{ (i + 1).toString().padStart(2, '0') }}</span>
 
-                <div>
-                  <strong>{{ stock.symbol }}</strong>
-                  <small>{{ stock.name }}</small>
-                </div>
+            <div>
+              <strong>{{ stock.symbol }}</strong>
+              <small>{{ stock.name }}</small>
+            </div>
 
-                <b class="negative">
-                  {{ getStockChangePercent(stock).toFixed(1) }}%
-                </b>
-              </button>
-            } @empty {
-              <div class="card-empty modern-empty compact-empty">
-                <div class="card-empty-icon">📉</div>
-                <div class="card-empty-title">Sin perdedores disponibles</div>
-                <div class="card-empty-text">Cuando el mercado informe bajas destacadas, aparecerán acá.</div>
-              </div>
-            }
+            <b class="negative">
+              {{ getStockChangePercent(stock).toFixed(1) }}%
+            </b>
+          </button>
+          } @empty {
+          <div class="card-empty modern-empty compact-empty">
+            <div class="card-empty-icon">📉</div>
+            <div class="card-empty-title">Sin perdedores disponibles</div>
+            <div class="card-empty-text">Cuando el mercado informe bajas destacadas, aparecerán acá.</div>
           </div>
+          }
+        </div>
         } @else {
-          <div class="list-skeleton">
-            @for (item of [1, 2, 3]; track item) {
-              <span class="skeleton skeleton-list-item"></span>
-            }
-          </div>
+        <div class="list-skeleton">
+          @for (item of [1, 2, 3]; track item) {
+          <span class="skeleton skeleton-list-item"></span>
+          }
+        </div>
         }
       </article>
 

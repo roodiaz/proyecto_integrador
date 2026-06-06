@@ -73,3 +73,19 @@ body {
   -webkit-backdrop-filter: blur(6px);
   background-color: rgba(0, 0, 0, 0.55) !important;
 }
+
+.blur-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.portfolio-dialog-panel .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+}
+
+.portfolio-dialog-panel .mdc-dialog__surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+  overflow: visible !important;
+}

@@ -1236,3 +1236,23 @@
   color: #93c5fd;
   background: rgba(96, 165, 250, 0.08);
 }
+
+.sell-btn:disabled,
+.sell-btn.disabled,
+.asset-actions .sell-btn:disabled {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(229, 226, 225, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.sell-btn:disabled:hover,
+.asset-actions .sell-btn:disabled:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(229, 226, 225, 0.35) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}

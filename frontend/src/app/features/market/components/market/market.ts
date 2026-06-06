@@ -10,6 +10,9 @@ import { MarketService } from '../../services/market.service';
 import { WatchlistService } from '../../../watchlist/services/watchlist.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MatDialog } from '@angular/material/dialog';
+import { PortfolioModal } from '../../../portfolio/components/portfolio-modal/portfolio-modal';
+import { PortfolioService } from '../../../portfolio/services/portfolio.service';
+import { BuyData, SellData, PortfolioModalResult } from '../../../portfolio/models/portfolio.modal.model';
 
 import {
   MarketIndex,
@@ -46,6 +49,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   loadingOverview = false;
   emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
   emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
+  hasPositionForSelectedAsset = false;
+  loadingPositionStatus = false;
 
   // opciones card
   isFavorite = false;
@@ -71,6 +76,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private marketService: MarketService,
     private watchlistService: WatchlistService,
+    private portfolioService: PortfolioService,
     private snackBarService: SnackBarService,
     private dialog: MatDialog
   ) { }
@@ -112,6 +118,26 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadTrending();
     this.loadGainers();
     this.loadLosers();
+  }
+
+  loadPositionStatus(symbol: string): void {
+    if (!symbol) {
+      this.hasPositionForSelectedAsset = false;
+      return;
+    }
+
+    this.loadingPositionStatus = true;
+
+    this.portfolioService.getPosition(symbol).subscribe({
+      next: response => {
+        this.loadingPositionStatus = false;
+        this.hasPositionForSelectedAsset = !!(response.success && response.data && response.data.quantity > 0);
+      },
+      error: () => {
+        this.loadingPositionStatus = false;
+        this.hasPositionForSelectedAsset = false;
+      }
+    });
   }
 
   loadFavoriteStatus(symbol: string): void {
@@ -180,6 +206,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.marketData = [];
     this.trendingStocks = [];
     this.selectedAsset = null;
+    this.hasPositionForSelectedAsset = false;
   }
 
   private loadMarketOverview(): void {
@@ -225,6 +252,94 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         this.marketNews = [];
         this.activeNewsIndex = 0;
         this.loadingNews = false;
+      }
+    });
+  }
+
+  buyAsset(symbol?: string): void {
+    const finalSymbol = symbol || this.selectedSymbol;
+
+    if (!finalSymbol) {
+      this.snackBarService.error('Primero seleccioná un activo');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PortfolioModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'blur-backdrop',
+      panelClass: 'portfolio-dialog-panel',
+      data: {
+        mode: 'buy',
+        symbol: finalSymbol
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
+      if (!result || result.mode !== 'buy') return;
+      this.onBuyComplete(result.data);
+    });
+  }
+
+  sellAsset(symbol?: string): void {
+    const finalSymbol = symbol || this.selectedSymbol;
+
+    if (!finalSymbol) {
+      this.snackBarService.error('Primero seleccioná un activo');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PortfolioModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'blur-backdrop',
+      panelClass: 'portfolio-dialog-panel',
+      data: {
+        mode: 'sell',
+        symbol: finalSymbol
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
+      if (!result || result.mode !== 'sell') return;
+      this.sellPosition(result.data);
+    });
+  }
+
+  onBuyComplete(data: BuyData): void {
+    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+      next: response => {
+        if (!response.success) {
+          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
+          return;
+        }
+
+        this.snackBarService.success(response.message || 'Compra realizada correctamente');
+      },
+      error: error => {
+        console.error('Error al realizar la compra', error);
+        this.snackBarService.error(error?.error?.message || 'Error al realizar la compra');
+      }
+    });
+  }
+
+  sellPosition(data: SellData): void {
+    this.portfolioService.sell(data).subscribe({
+      next: response => {
+        if (!response.success) {
+          this.snackBarService.info(response.message || 'No se pudo realizar la venta');
+          return;
+        }
+
+        this.snackBarService.success(response.message || 'Venta realizada correctamente');
+      },
+      error: error => {
+        console.error('Error al vender activo', error);
+        this.snackBarService.error(error?.error?.message || 'Error al vender activo');
       }
     });
   }
@@ -428,14 +543,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.activeNewsIndex = this.activeNewsIndex === 0 ? this.marketNews.length - 1 : this.activeNewsIndex - 1;
   }
 
-  buyAsset(symbol: string): void {
-    this.router.navigate(['/portfolio'], { queryParams: { action: 'buy', symbol } });
-  }
-
-  sellAsset(symbol: string): void {
-    this.router.navigate(['/portfolio'], { queryParams: { action: 'sell', symbol } });
-  }
-
   openNews(url: string): void {
     if (!url) return;
     window.open(url, '_blank');
@@ -468,6 +575,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     if (!symbol) {
       this.assetErrorMessage = 'Ingresá un símbolo para buscar';
       this.selectedAsset = null;
+      this.hasPositionForSelectedAsset = false;
       return;
     }
 
@@ -480,6 +588,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
         if (!response.success || !response.data) {
           this.selectedAsset = null;
+          this.hasPositionForSelectedAsset = false;
           this.assetErrorMessage = response.message || 'No se encontró información para el activo';
           return;
         }
@@ -489,12 +598,14 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         localStorage.setItem('lastMarketSymbol', response.data.symbol);
         this.assetErrorMessage = '';
         this.loadFavoriteStatus(this.selectedSymbol);
+        this.loadPositionStatus(this.selectedSymbol);
         this.setupChart();
       },
       error: error => {
         console.error('Error al obtener detalle del activo', error);
         this.loadingAsset = false;
         this.selectedAsset = null;
+        this.hasPositionForSelectedAsset = false;
         this.assetErrorMessage = 'No se pudo obtener la información del activo';
       }
     });
