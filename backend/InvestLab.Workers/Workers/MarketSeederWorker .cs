@@ -34,6 +34,8 @@ public class MarketSeederWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Worker de carga inicial de históricos iniciado");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -41,17 +43,29 @@ public class MarketSeederWorker : BackgroundService
                 using var scope = _serviceProvider.CreateScope();
 
                 var service = scope.ServiceProvider.GetRequiredService<IMarketHistoryService>();
-
                 await service.SeedMissingHistoryAsync();
 
-                _logger.LogInformation("Validación de históricos ejecutada");
+                _logger.LogDebug("Validación de históricos ejecutada");
+
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Worker de carga inicial de históricos cancelado");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error ejecutando carga de históricos");
-            }
 
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Worker de carga inicial de históricos cancelado durante la espera posterior al error");
+                }
+            }
         }
     }
 }

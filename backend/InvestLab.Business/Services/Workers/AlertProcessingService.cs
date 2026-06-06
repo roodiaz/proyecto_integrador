@@ -35,46 +35,57 @@ public class AlertProcessingService : IAlertProcessingService
 
         foreach (var alert in alerts)
         {
-            var market = await _externalProvider.GetPriceAsync(alert.Asset.Symbol);
-            if (market == null)
-                continue;
-
-            var value = alert.ConditionType == ConditionType.Price ? market.Price : market.VariationPercent;
-
-            var triggered = EvaluateCondition(value, alert.Operator, alert.Value);
-
-            if (!triggered)
-                continue;
-
-            // evita duplicar alertas en el mismo día
-            if (alert.LastTriggered?.Date == DateTime.UtcNow.Date)
-                continue;
-
-            var notification = new Notification
+            try
             {
-                UserId = alert.UserId,
-                CreatedAt = DateTime.UtcNow,
-                Message = BuildAlertMessage(alert, value),
-                AlertId = alert.Id,
-                Price = market.Price,
-            };
+                var market = await _externalProvider.GetPriceAsync(alert.Asset.Symbol);
+                if (market == null)
+                    continue;
 
-            await _notificationRepository.InsertAsync(notification);
+                var value = alert.ConditionType == ConditionType.Price ? market.Price : market.VariationPercent;
+                var triggered = EvaluateCondition(value, alert.Operator, alert.Value);
 
-            var settings = await _userSettingRepository.GetByUserIdAsync(alert.UserId);
+                if (!triggered)
+                    continue;
 
-            if (settings?.EmailNotifications == true)
-            {
-                await _emailService.SendAsync("mail@test.com", "Alerta InvestLab", notification.Message);
+                if (alert.LastTriggered?.Date == DateTime.UtcNow.Date)
+                    continue;
+
+                var notification = new Notification
+                {
+                    UserId = alert.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    Message = BuildAlertMessage(alert, value),
+                    AlertId = alert.Id,
+                    Price = market.Price,
+                };
+
+                await _notificationRepository.InsertAsync(notification);
+
+                alert.LastTriggered = DateTime.UtcNow;
+
+                await _alertRepository.UpdateAsync(alert);
+                await _unitOfWork.SaveChangesAsync();
+
+                var settings = await _userSettingRepository.GetByUserIdAsync(alert.UserId);
+
+                if (settings?.EmailNotifications == true)
+                {
+                    try
+                    {
+                        await _emailService.SendAsync("mail@test.com", "Alerta InvestLab", notification.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error al enviar email de alerta para el usuario {UserId} y alerta {AlertId}", alert.UserId, alert.Id);
+                    }
+                }
             }
-
-            alert.LastTriggered = DateTime.UtcNow;
-
-            await _alertRepository.UpdateAsync(alert);
-            await _unitOfWork.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al procesar la alerta {AlertId}", alert.Id);
+            }
         }
     }
-
     private static bool EvaluateCondition(decimal currentValue, AlertOperator op, decimal target)
     {
         return op switch

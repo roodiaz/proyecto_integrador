@@ -1,5 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using DnsClient.Internal;
 using InvestLab.Business.Interfaces.Workers;
+using System.Runtime.InteropServices;
 
 namespace InvestLab.Workers.Workers;
 
@@ -19,40 +20,79 @@ namespace InvestLab.Workers.Workers;
 public class DailySnapshotWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<DailySnapshotWorker> _logger;
 
-    public DailySnapshotWorker(IServiceProvider serviceProvider)
+    public DailySnapshotWorker(IServiceProvider serviceProvider, ILogger<DailySnapshotWorker> logger)
     {
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var nyTimeZone = GetNewYorkTimeZone();
+            try
+            {
+                var nyTimeZone = GetNewYorkTimeZone();
 
-            var nowUtc = DateTime.UtcNow;
-            var nowNy = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, nyTimeZone);
+                var nowUtc = DateTime.UtcNow;
+                var nowNy = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, nyTimeZone);
 
-            // Ejecutar 5 minutos después del cierre del mercado (16:05 NY)
-            var nextRunNy = nowNy.Date.AddHours(16).AddMinutes(5);
+                var nextRunNy = nowNy.Date.AddHours(16).AddMinutes(5);
 
-            if (nowNy >= nextRunNy)
-                nextRunNy = nextRunNy.AddDays(1);
+                if (nowNy >= nextRunNy)
+                    nextRunNy = nextRunNy.AddDays(1);
 
-            var nextRunUtc = TimeZoneInfo.ConvertTimeToUtc(nextRunNy, nyTimeZone);
+                while (nextRunNy.DayOfWeek == DayOfWeek.Saturday || nextRunNy.DayOfWeek == DayOfWeek.Sunday)
+                    nextRunNy = nextRunNy.AddDays(1);
 
-            var delay = nextRunUtc - nowUtc;
+                var nextRunUtc = TimeZoneInfo.ConvertTimeToUtc(nextRunNy, nyTimeZone);
+                var delay = nextRunUtc - nowUtc;
 
-            await Task.Delay(delay, stoppingToken);
+                _logger.LogInformation("Worker de snapshots programado para {NextRunNy} NY / {NextRunUtc} UTC", nextRunNy, nextRunUtc);
 
-            using var scope = _serviceProvider.CreateScope();
+                await Task.Delay(delay, stoppingToken);
 
-            var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
+                using var scope = _serviceProvider.CreateScope();
 
-            await service.SaveDailyMarketHistoryAsync();
-            await service.GenerateDailyPortfolioSnapshotsAsync();
+                var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
 
+                try
+                {
+                    await service.SaveDailyMarketHistoryAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al guardar el historial diario de mercado");
+                }
+
+                try
+                {
+                    await service.GenerateDailyPortfolioSnapshotsAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error al generar snapshots diarios de portfolio");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Worker de snapshots diarios cancelado");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado en el worker de snapshots diarios");
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Worker de snapshots diarios cancelado durante la espera posterior al error");
+                }
+            }
         }
     }
 

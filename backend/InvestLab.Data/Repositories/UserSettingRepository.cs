@@ -30,6 +30,8 @@ namespace InvestLab.Data.Repositories
                     setters
                         .SetProperty(x => x.SearchesUsedToday, 0)
                         .SetProperty(x => x.OperationsUsedToday, 0));
+
+           await  _context.SaveChangesAsync();
         }
 
         public async Task ResetOperationsUsedTodayAsync(int userId)

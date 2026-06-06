@@ -17,26 +17,54 @@ namespace InvestLab.Workers.Workers;
 public class UserDailyLimitsResetWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<UserDailyLimitsResetWorker> _logger;
 
-    public UserDailyLimitsResetWorker(IServiceProvider serviceProvider)
+    public UserDailyLimitsResetWorker(IServiceProvider serviceProvider, ILogger<UserDailyLimitsResetWorker> logger)
     {
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Worker de reinicio de límites diarios iniciado");
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            var now = DateTime.UtcNow;
-            var nextRun = now.Date.AddDays(1);
-            var delay = nextRun - now;
+            try
+            {
+                var now = DateTime.UtcNow;
+                var nextRun = now.Date.AddDays(1);
+                var delay = nextRun - now;
 
-            await Task.Delay(delay, stoppingToken);
+                _logger.LogInformation("Reinicio de límites diarios programado para {NextRunUtc} UTC. Delay: {Delay}", nextRun, delay);
 
-            using var scope = _serviceProvider.CreateScope();
+                await Task.Delay(delay, stoppingToken);
 
-            var service = scope.ServiceProvider.GetRequiredService<IUserDailyLimitsResetService>();
-            await service.ResetDailyLimitsAsync();
+                using var scope = _serviceProvider.CreateScope();
+
+                var service = scope.ServiceProvider.GetRequiredService<IUserDailyLimitsResetService>();
+                await service.ResetDailyLimitsAsync();
+
+                _logger.LogInformation("Límites diarios reiniciados correctamente");
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Worker de reinicio de límites diarios cancelado");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado en el worker de reinicio de límites diarios");
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Worker de reinicio de límites diarios cancelado durante la espera posterior al error");
+                }
+            }
         }
     }
 }

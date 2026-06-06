@@ -18,12 +18,25 @@ namespace InvestLab.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await RefreshAsync();
+            _logger.LogInformation("Worker de actualización de precios de mercado iniciado");
 
-            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
-
-            while (await timer.WaitForNextTickAsync(stoppingToken))
+            try
+            {
                 await RefreshAsync();
+
+                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+
+                while (await timer.WaitForNextTickAsync(stoppingToken))
+                    await RefreshAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Worker de actualización de precios de mercado cancelado");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado en el worker de actualización de precios de mercado");
+            }
         }
 
         private async Task RefreshAsync()
@@ -31,12 +44,15 @@ namespace InvestLab.Workers
             try
             {
                 using var scope = _scopeFactory.CreateScope();
+
                 var refreshService = scope.ServiceProvider.GetRequiredService<IMarketPriceRefreshService>();
                 await refreshService.RefreshAsync();
+
+                _logger.LogInformation("Cache de precios de mercado actualizado correctamente");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error refreshing market prices cache");
+                _logger.LogError(ex, "Error al actualizar el cache de precios de mercado");
             }
         }
     }
