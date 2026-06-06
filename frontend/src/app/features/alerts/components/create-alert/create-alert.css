@@ -4,7 +4,6 @@
 
 :host {
   display: block;
-  font-family: 'Inter', sans-serif;
   color: #e5e2e1;
 }
 
@@ -128,7 +127,6 @@
   padding: 0.6rem 2.25rem 0.6rem 0.875rem;
   font-size: 0.875rem;
   color: #e5e2e1;
-  font-family: 'JetBrains Mono', monospace;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -167,7 +165,6 @@
   left: 0.75rem;
   color: #8c909f;
   font-size: 0.875rem;
-  font-family: 'JetBrains Mono', monospace;
   pointer-events: none;
 }
 
@@ -176,7 +173,6 @@
   right: 0.75rem;
   color: #8c909f;
   font-size: 0.875rem;
-  font-family: 'JetBrains Mono', monospace;
   pointer-events: none;
 }
 
@@ -290,7 +286,6 @@
   color: #8c909f;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: inherit;
 }
 
 .btn-cancel:hover {
@@ -311,7 +306,6 @@
   color: #002e6a;
   cursor: pointer;
   transition: opacity 0.2s;
-  font-family: inherit;
   box-shadow: 0 4px 14px rgba(173, 198, 255, 0.18);
 }
 

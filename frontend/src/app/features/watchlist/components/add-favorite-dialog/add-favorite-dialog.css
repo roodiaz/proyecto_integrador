@@ -5,7 +5,6 @@
 :host {
   display: block;
   color: #e5e2e1;
-  font-family: 'Inter', sans-serif;
 }
 
 /* ── Header ── */
@@ -61,7 +60,6 @@
   padding: 0.65rem 2.25rem 0.65rem 2.5rem;
   font-size: 0.875rem;
   color: #e5e2e1;
-  font-family: 'JetBrains Mono', monospace;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -75,7 +73,6 @@
 .search-input::placeholder {
   color: #8c909f;
   opacity: 0.7;
-  font-family: 'Inter', sans-serif;
 }
 
 .search-clear {
@@ -113,7 +110,6 @@
   color: #002e6a;
   cursor: pointer;
   transition: opacity 0.2s;
-  font-family: inherit;
 }
 
 .btn-add-primary mat-icon { font-size: 17px; width: 17px; height: 17px; }
@@ -185,7 +181,6 @@
 .asset-symbol {
   font-size: 0.8rem;
   font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.04em;
   color: #e5e2e1;
 }
@@ -208,7 +203,6 @@
   color: #adc6ff;
   cursor: pointer;
   transition: background 0.2s;
-  font-family: inherit;
   white-space: nowrap;
 }
 
@@ -232,7 +226,6 @@
   color: #8c909f;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: inherit;
 }
 
 .btn-cancel:hover {

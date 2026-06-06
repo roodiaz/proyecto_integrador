@@ -30,7 +30,6 @@
   color: var(--text);
   padding: 2.5rem;
   box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
 }
 
 .watchlist-content {
@@ -96,7 +95,6 @@
   padding: 0.6rem 2.25rem 0.6rem 2.5rem;
   font-size: 0.875rem;
   color: var(--text);
-  font-family: inherit;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -194,7 +192,6 @@
   border-radius: 9px;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: inherit;
   white-space: nowrap;
 }
 
@@ -353,7 +350,6 @@
 .ticker-symbol {
   font-size: 0.8rem;
   font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.04em;
   color: var(--text);
 }
@@ -372,13 +368,11 @@
 
 .price-value {
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
   color: var(--text);
 }
 
 .variation-value {
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
 }
 
 .variation-value.positive {
@@ -498,7 +492,6 @@
   color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
-  font-family: inherit;
 }
 
 .page-nav-btn mat-icon {
@@ -537,7 +530,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: inherit;
 }
 
 .page-num-btn:hover:not(.active) {

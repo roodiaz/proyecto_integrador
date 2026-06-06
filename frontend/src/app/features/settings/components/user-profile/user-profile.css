@@ -22,7 +22,6 @@
   color: var(--text);
   padding: 2rem 2.5rem;
   box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
 }
 
 /* ─── Hero Header ─── */
@@ -217,7 +216,6 @@
   padding: 0.6rem 2.5rem 0.6rem 0.875rem;
   font-size: 0.875rem;
   color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
   outline: none;
@@ -325,7 +323,6 @@
 
 ::ng-deep .field-select .mat-mdc-select-value {
   color: var(--text) !important;
-  font-family: 'JetBrains Mono', monospace !important;
   font-size: 0.875rem !important;
 }
 

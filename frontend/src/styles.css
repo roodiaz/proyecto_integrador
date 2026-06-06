@@ -14,7 +14,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: "JetBrains Mono", monospace !important;
   background-color: var(--primary-bg);
   color: var(--text-primary);
 }
