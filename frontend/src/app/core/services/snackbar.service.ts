@@ -9,42 +9,30 @@ export class SnackBarService {
   private snackBar = inject(MatSnackBar);
 
   success(message: string): void {
-
-    this.snackBar.open(
-      message,
-      'Cerrar',
-      {
-        duration: 3000,
-        panelClass: ['success-snackbar']
-      }
-    );
-
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 4000,
+      panelClass: ['app-snackbar', 'snackbar-success'],
+      verticalPosition: 'top',
+      horizontalPosition: 'right',
+    });
   }
 
   error(message: string): void {
-
-    this.snackBar.open(
-      message,
-      'Cerrar',
-      {
-        duration: 3000,
-        panelClass: ['error-snackbar']
-      }
-    );
-
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 5000,
+      panelClass: ['app-snackbar', 'snackbar-error'],
+      verticalPosition: 'top',
+      horizontalPosition: 'right',
+    });
   }
 
   info(message: string): void {
-
-    this.snackBar.open(
-      message,
-      'Cerrar',
-      {
-        duration: 3000,
-        panelClass: ['info-snackbar']
-      }
-    );
-
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 4000,
+      panelClass: ['app-snackbar', 'snackbar-info'],
+      verticalPosition: 'top',
+      horizontalPosition: 'right',
+    });
   }
 
 }

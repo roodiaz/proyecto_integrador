@@ -1,122 +1,174 @@
-.sidenav {
+:host {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ─── Sidebar shell ─── */
+.sidebar {
   width: 260px;
-  background: #131313;
-  color: #E5E2E1;
-  border-right: 1px solid #424754;
-  transition: width .3s ease;
-  overflow: hidden;
   height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 1000;
+  background: #0d0d0d;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
-/* ── Header ── */
-.sidenav-header {
-  padding: 14px 20px;
+/* ─── Header ─── */
+.sidebar-header {
   height: 64px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: #131313;
-  border-bottom: 1px solid #424754;
+  justify-content: center;
+  padding: 10px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidenav-header .logo {
-  max-height: 36px;
+.logo {
+  max-height: 42px;
   width: auto;
   object-fit: contain;
+  transition: max-height 0.2s;
 }
 
-/* ── Nav list principal ── */
-mat-nav-list {
-  padding: 16px 0;
+/* ─── Nav ─── */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 8px;
+  gap: 1px;
+  flex: 1;
+  overflow: hidden;
 }
 
-mat-nav-list a {
-  color: #C2C6D6 !important;
-  margin: 3px 12px;
-  border-radius: 12px;
-  padding: 14px 18px !important;
-  transition: all .25s ease;
+.sidebar-nav--bottom {
+  flex: 0;
+  padding-top: 4px;
+  padding-bottom: 10px;
+}
+
+/* ─── Nav item ─── */
+.nav-item {
   display: flex;
   align-items: center;
-}
-
-mat-nav-list a span {
-  color: #ffffff !important;
-  font-size: 14px;
-  font-weight: 400;
-}
-
-mat-nav-list a:hover {
-  background: rgba(173, 198, 255, .08);
-  color: #ADC6FF !important;
-}
-
-mat-nav-list a.active {
-  background: rgba(173, 198, 255, .12);
-  border: 1px solid rgba(173, 198, 255, .20);
-  color: #ADC6FF !important;
-  font-weight: 600;
-}
-
-mat-nav-list a.active mat-icon,
-mat-nav-list a:hover mat-icon {
-  color: #ADC6FF !important;
-}
-
-mat-icon {
-  color: #8A94A6;
-  margin-right: 14px;
-  transition: color .25s;
-}
-
-.menu-text {
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: #6b7080;
+  text-decoration: none;
+  font-family: "JetBrains Mono", monospace;
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-/* ── Bottom section: posición absoluta al fondo ── */
-.bottom-section {
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #b0b5c4;
+}
+
+.nav-item.active {
+  background: rgba(173, 198, 255, 0.07);
+  color: #ADC6FF;
+}
+
+.nav-item.active::before {
+  content: '';
   position: absolute;
-  bottom: 0;
   left: 0;
-  right: 0;
-  padding-bottom: 8px;
-  background: #131313;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 56%;
+  background: #ADC6FF;
+  border-radius: 0 2px 2px 0;
 }
 
-mat-divider {
-  margin: 0 16px 8px;
-  border-top-color: #424754;
+.nav-item--danger:hover {
+  background: rgba(255, 180, 171, 0.07);
+  color: #FFB4AB;
 }
 
-/* ── Collapsed ── */
-.sidenav.collapsed {
-  width: 72px;
+/* ─── Icon ─── */
+.nav-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+  color: inherit;
+  transition: color 0.15s;
+  font-family: 'Material Icons' !important;
 }
 
-.sidenav.collapsed .sidenav-header {
-  padding: 14px 0;
+/* ─── Label ─── */
+.nav-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  flex: 1;
+  transition: opacity 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Divider ─── */
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0 8px 6px;
+}
+
+.sidebar-bottom {
+  flex-shrink: 0;
+}
+
+/* ─── Collapsed state ─── */
+.sidebar.collapsed {
+  width: 64px;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 0;
   justify-content: center;
 }
 
-.sidenav.collapsed .sidenav-header .logo {
-  max-height: 30px;
-}
-
-.sidenav.collapsed mat-nav-list a {
+.sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 0 8px !important;
+  padding: 10px;
+  gap: 0;
 }
 
-.sidenav.collapsed mat-icon {
-  margin-right: 0;
-  transform: scale(1.1);
-}
-
-.sidenav.collapsed .menu-text {
+.sidebar.collapsed .nav-item::before {
   display: none;
+}
+
+.sidebar.collapsed .nav-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-nav {
+  padding: 10px 6px;
+}
+
+.sidebar.collapsed .sidebar-nav--bottom {
+  padding: 4px 6px 10px;
 }

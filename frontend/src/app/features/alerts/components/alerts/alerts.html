@@ -1,7 +1,7 @@
 <div class="alerts-container">
   <div class="alerts-content">
 
-    <!-- Header Interno -->
+    <!-- Header -->
     <div class="alerts-header">
       <div class="header-info">
         <h1>Centro de Alertas</h1>
@@ -16,7 +16,7 @@
       </button>
     </div>
 
-    <!-- Tabs Principales -->
+    <!-- Tabs -->
     <div class="tabs-container">
       <div class="tabs">
         <button class="tab" [class.active]="activeView === 'alerts'" (click)="setActiveView('alerts')">
@@ -25,11 +25,8 @@
 
         <button class="tab notification-tab" [class.active]="activeView === 'history'" (click)="setActiveView('history')">
           Notificaciones
-
           @if (unreadNotificationsCount > 0) {
-            <span class="notification-badge">
-              {{ unreadNotificationsCount }}
-            </span>
+            <span class="notification-badge">{{ unreadNotificationsCount }}</span>
           }
         </button>
       </div>
@@ -38,128 +35,95 @@
     <!-- TAB 1 — MIS ALERTAS -->
     <div class="tab-content" [class.active]="activeView === 'alerts'">
 
-      <!-- Cards de Resumen -->
+      <!-- Summary Cards -->
       <div class="summary-cards">
 
         <div class="summary-card active">
-          <div class="summary-icon">
-            @if (!loadingStats) {
-              🟢
-            } @else {
-              <span class="skeleton skeleton-icon"></span>
-            }
-          </div>
-
-          <div class="summary-content">
-            <div class="summary-title">Alertas Activas</div>
-
-            @if (!loadingStats) {
-              <div class="summary-value">{{ activeAlerts }}</div>
-            } @else {
-              <div class="skeleton skeleton-metric-value"></div>
-            }
-          </div>
+          <h3>Alertas Activas</h3>
+          @if (!loadingStats) {
+            <p class="amount">{{ activeAlerts }}</p>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
         </div>
 
         <div class="summary-card paused">
-          <div class="summary-icon">
-            @if (!loadingStats) {
-              ⏸️
-            } @else {
-              <span class="skeleton skeleton-icon"></span>
-            }
-          </div>
-
-          <div class="summary-content">
-            <div class="summary-title">Alertas Pausadas</div>
-
-            @if (!loadingStats) {
-              <div class="summary-value">{{ pausedAlerts }}</div>
-            } @else {
-              <div class="skeleton skeleton-metric-value"></div>
-            }
-          </div>
+          <h3>Alertas Pausadas</h3>
+          @if (!loadingStats) {
+            <p class="amount">{{ pausedAlerts }}</p>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
         </div>
 
         <div class="summary-card triggered">
-          <div class="summary-icon">
-            @if (!loadingStats) {
-              🔴
-            } @else {
-              <span class="skeleton skeleton-icon"></span>
-            }
-          </div>
-
-          <div class="summary-content">
-            <div class="summary-title">Disparadas Hoy</div>
-
-            @if (!loadingStats) {
-              <div class="summary-value">{{ triggeredToday }}</div>
-            } @else {
-              <div class="skeleton skeleton-metric-value"></div>
-            }
-          </div>
+          <h3>Disparadas Hoy</h3>
+          @if (!loadingStats) {
+            <p class="amount">{{ triggeredToday }}</p>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
         </div>
 
         <div class="summary-card usage">
-          <div class="summary-icon">
-            @if (!loadingStats) {
-              📊
-            } @else {
-              <span class="skeleton skeleton-icon"></span>
-            }
+          <h3>Alertas Utilizadas</h3>
+          @if (!loadingStats) {
+            <p class="amount">{{ usedAlerts }} <span class="limit">/ {{ limitAlerts }}</span></p>
+            <div class="usage-progress">
+              <div class="progress-fill" [style.width.%]="limitAlerts > 0 ? (usedAlerts / limitAlerts) * 100 : 0"></div>
+            </div>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-section">
+        <div class="filter-toolbar">
+          <div class="search-wrap">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input type="text" class="search-input" placeholder="Filtrar por ticker..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()">
           </div>
 
-          <div class="summary-content">
-            <div class="summary-title">
-              Alertas Utilizadas
+          <button class="btn-filter" (click)="showAlertFilters = !showAlertFilters">
+            <mat-icon>tune</mat-icon>
+            Filtrar
+            <mat-icon class="chevron" [class.open]="showAlertFilters">expand_more</mat-icon>
+          </button>
+
+          <button class="btn-clear" (click)="clearSearch()">
+            <mat-icon>close</mat-icon>
+            Limpiar
+          </button>
+        </div>
+
+        @if (showAlertFilters) {
+          <div class="advanced-filters">
+            <div class="filter-group">
+              <label class="filter-label">Estado</label>
+              <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
+                <option value="">Todos</option>
+                <option value="active">Activa</option>
+                <option value="paused">Pausada</option>
+              </select>
             </div>
 
-            @if (!loadingStats) {
-              <div class="alerts-counter">
-                <span class="counter-label">
-                  ALERTAS
-                </span>
+            <div class="filter-group">
+              <label class="filter-label">Desde</label>
+              <input type="date" class="filter-date" [(ngModel)]="createdFrom" (ngModelChange)="applyFilter()">
+            </div>
 
-                <span class="counter-value">
-                  {{ usedAlerts }} / {{ limitAlerts }}
-                </span>
-
-                <div class="alerts-progress">
-                  <div class="progress-fill" [style.width.%]="limitAlerts > 0 ? (usedAlerts / limitAlerts) * 100 : 0"></div>
-                </div>
-              </div>
-            } @else {
-              <div class="skeleton-card-list">
-                <span class="skeleton skeleton-text short"></span>
-                <span class="skeleton skeleton-text long"></span>
-              </div>
-            }
+            <div class="filter-group">
+              <label class="filter-label">Hasta</label>
+              <input type="date" class="filter-date" [(ngModel)]="createdTo" (ngModelChange)="applyFilter()">
+            </div>
           </div>
-        </div>
-
+        }
       </div>
 
-      <!-- Filtros Superiores -->
-      <div class="filters-section">
-        <div class="filter-controls">
-          <input type="text" placeholder="Filtrar por ticker..." class="filter-input" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()">
-
-          <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
-            <option value="">Todos los estados</option>
-            <option value="active">Activa</option>
-            <option value="paused">Pausada</option>
-          </select>
-
-          <input type="date" placeholder="Desde" class="filter-input" [(ngModel)]="createdFrom" (ngModelChange)="applyFilter()">
-
-          <input type="date" placeholder="Hasta" class="filter-input" [(ngModel)]="createdTo" (ngModelChange)="applyFilter()">
-
-          <button class="clear-btn" (click)="clearSearch()">Limpiar</button>
-        </div>
-      </div>
-
-      <!-- Lista de Alertas en Columnas -->
+      <!-- Lista de Alertas -->
       <div class="alerts-list-container">
         <div class="alerts-list-header">
           <div class="header-column symbol">Símbolo</div>
@@ -181,54 +145,51 @@
           } @else {
             @for (alert of alerts; track alert.id) {
               <div class="alert-item" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
+
                 <div class="alert-column symbol">
-                  <div class="alert-symbol-large">{{ alert.symbol }}</div>
+                  <span class="alert-symbol-large">{{ alert.symbol }}</span>
                 </div>
 
                 <div class="alert-column condition">
-                  <div class="alert-condition-text">
+                  <span class="alert-condition-text">
                     {{ getConditionDisplay(alert.condition) }} {{ getTargetDisplay(alert) }}
-                  </div>
+                  </span>
                 </div>
 
                 <div class="alert-column status">
-                  <div class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
+                  <span class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
                     {{ alert.isActive ? 'Activa' : 'Pausada' }}
-                  </div>
+                  </span>
                 </div>
 
                 <div class="alert-column dates">
-                  <div class="alert-date">
-                    Creada: {{ alert.createdAt | date:'short' }}
-                  </div>
-
-                  <div class="alert-last-triggered">
-                    Última: {{ alert.lastTriggered ? (alert.lastTriggered | date:'short') : 'Nunca' }}
-                  </div>
+                  <span class="alert-date">Creada: {{ alert.createdAt | date:'d/M/yy' }}</span>
+                  <span class="alert-last-triggered">Última: {{ alert.lastTriggered ? (alert.lastTriggered | date:'d/M/yy') : 'Nunca' }}</span>
                 </div>
 
                 <div class="alert-column actions">
                   <div class="alert-actions-list">
-                    <div class="switch-container">
-                      <label class="switch">
-                        <input type="checkbox" [checked]="alert.isActive" (change)="onToggleSwitch(alert, $event)">
-                        <span class="slider"></span>
-                      </label>
-                    </div>
+                    <label class="switch">
+                      <input type="checkbox" [checked]="alert.isActive" (change)="onToggleSwitch(alert, $event)">
+                      <span class="slider"></span>
+                    </label>
 
-                    <button class="edit-btn" (click)="editAlert(alert)">✏️</button>
-                    <button class="delete-btn" (click)="deleteAlert(alert)">🗑</button>
+                    <button class="action-icon-btn edit-btn" (click)="editAlert(alert)" title="Editar">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                    <button class="action-icon-btn delete-btn" (click)="deleteAlert(alert)" title="Eliminar">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
                   </div>
                 </div>
               </div>
             } @empty {
               <div class="empty-state">
-                <div class="empty-icon">🔔</div>
-                <h3>No hay alertas configuradas</h3>
-                <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
-                <button class="cta-button" (click)="createNewAlert()">
-                  Crear Primera Alerta
-                </button>
+                <mat-icon class="empty-icon">notifications_none</mat-icon>
+                <h3 class="empty-title">No hay alertas configuradas</h3>
+                <p class="empty-sub">Crea tu primera alerta para comenzar a monitorear tus activos</p>
+                <button class="empty-cta" (click)="createNewAlert()">Crear Primera Alerta</button>
               </div>
             }
           }
@@ -244,21 +205,15 @@
           </div>
 
           <div class="pagination-controls">
-            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">
-              ← Anterior
-            </button>
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">← Anterior</button>
 
             <div class="page-numbers">
               @for (page of getPageNumbers(); track page) {
-                <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
-                  {{ page }}
-                </button>
+                <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">{{ page }}</button>
               }
             </div>
 
-            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
-              Siguiente →
-            </button>
+            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">Siguiente →</button>
           </div>
         </div>
       }
@@ -270,5 +225,6 @@
         <app-notifications></app-notifications>
       }
     </div>
+
   </div>
 </div>

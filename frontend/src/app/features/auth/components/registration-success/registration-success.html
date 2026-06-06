@@ -1,107 +1,99 @@
 <div class="success-container">
-  <mat-card class="success-card">
-    <mat-card-header class="card-header">
-      <mat-card-title class="success-title">
-        <div class="title-line">¡REGISTRO EXITOSO!</div>
-      </mat-card-title>
-    </mat-card-header>
+  <div class="success-card">
 
-    <mat-card-content>
-      <!-- Success Icon -->
+    <div class="card-header">
+      <h1 class="success-title">¡REGISTRO EXITOSO!</h1>
+    </div>
+
+    <!-- Icon -->
+    @if (emailSent) {
+      <div class="success-icon">
+        <mat-icon class="check-icon">check_circle</mat-icon>
+      </div>
+    } @else {
+      <div class="success-icon">
+        <mat-icon class="error-icon">error</mat-icon>
+      </div>
+    }
+
+    <!-- Message -->
+    <div class="success-message">
       @if (emailSent) {
-        <div class="success-icon">
-          <mat-icon class="check-icon">check_circle</mat-icon>
-        </div>
+        <h2>Revisa tu correo electrónico</h2>
+        <p class="main-message">
+          Hemos enviado un código de verificación a:<br>
+          <strong>{{ userEmail }}</strong>
+        </p>
+        <p class="instructions">
+          Utiliza este código para ingresar a tu cuenta. El código es válido solo por:
+        </p>
       } @else {
-        <div class="success-icon error-icon-container">
-          <mat-icon class="error-icon">error</mat-icon>
-        </div>
+        <h2>Error al enviar el correo</h2>
       }
+    </div>
 
-      <!-- Success Message -->
-      <div class="success-message">
-        @if (emailSent) {
-          <h2>Revisa tu correo electrónico</h2>
-
-          <p class="main-message">
-            Hemos enviado un código de verificación a:<br>
-            <strong>{{ userEmail }}</strong>
-          </p>
-
-          <p class="instructions">
-            Utiliza este código para ingresar a tu cuenta. El código es válido solo por:
-          </p>
-        } @else {
-          <h2>Error al enviar el correo</h2>
-        }
+    <!-- Countdown -->
+    @if (emailSent) {
+      <div class="countdown-container">
+        <div class="countdown-display">
+          <mat-icon class="timer-icon">timer</mat-icon>
+          <span class="time-text">{{ timeDisplay }}</span>
+        </div>
+        <p class="countdown-label">minutos restantes</p>
       </div>
+    }
 
-      <!-- Countdown Timer -->
+    <!-- Verification Form -->
+    <div class="verification-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Código de verificación</mat-label>
+        <input matInput [(ngModel)]="verificationCode" maxlength="6" placeholder="Ingrese el código recibido">
+        <mat-icon matSuffix>vpn_key</mat-icon>
+      </mat-form-field>
+
+      <button class="btn-primary" type="button" (click)="verifyCode()">
+        Verificar Cuenta
+      </button>
+    </div>
+
+    <!-- Warning -->
+    <div class="warning-message">
+      <mat-icon class="warning-icon">warning</mat-icon>
       @if (emailSent) {
-        <div class="countdown-container">
-          <div class="countdown-display">
-            <mat-icon class="timer-icon">timer</mat-icon>
-            <span class="time-text">{{ timeDisplay }}</span>
-          </div>
-
-          <p class="countdown-label">minutos restantes</p>
-        </div>
+        <span>
+          El código expirará en 15 minutos.
+          Si no recibes el correo, revisa tu carpeta de spam o utiliza "Reenviar Correo".
+        </span>
+      } @else {
+        <span>
+          No pudimos enviar el correo de verificación.
+          Haz clic en "Reenviar Correo" para intentar nuevamente.
+        </span>
       }
+    </div>
 
-      <div class="verification-form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Código de verificación</mat-label>
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-primary" type="button" (click)="goToLogin()">
+        <mat-icon>login</mat-icon>
+        Ir al Inicio de Sesión
+      </button>
 
-          <input matInput [(ngModel)]="verificationCode" maxlength="6" placeholder="Ingrese el código recibido">
+      <button class="btn-secondary" type="button" (click)="resendEmail()">
+        <mat-icon>refresh</mat-icon>
+        Reenviar Correo
+      </button>
+    </div>
 
-          <mat-icon matSuffix>vpn_key</mat-icon>
-        </mat-form-field>
-
-        <button mat-flat-button color="primary" (click)="verifyCode()">
-          Verificar Cuenta
-        </button>
+    <!-- Additional Info -->
+    @if (emailSent) {
+      <div class="additional-info">
+        <mat-icon class="info-icon">info</mat-icon>
+        <span>
+          Si el correo no llega en unos minutos, revisa tu carpeta de spam o haz clic en "Reenviar Correo".
+        </span>
       </div>
+    }
 
-      <!-- Warning Message -->
-      <div class="warning-message">
-        <mat-icon class="warning-icon">warning</mat-icon>
-
-        @if (emailSent) {
-          <span>
-            El código expirará en 15 minutos.
-            Si no recibes el correo, revisa tu carpeta de spam o utiliza "Reenviar Correo".
-          </span>
-        } @else {
-          <span>
-            No pudimos enviar el correo de verificación.
-            Haz clic en "Reenviar Correo" para intentar nuevamente.
-          </span>
-        }
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="actions">
-        <button mat-flat-button color="primary" (click)="goToLogin()" class="login-button">
-          <mat-icon>login</mat-icon>
-          Ir al Inicio de Sesión
-        </button>
-
-        <button mat-stroked-button color="primary" (click)="resendEmail()" class="resend-button">
-          <mat-icon>refresh</mat-icon>
-          Reenviar Correo
-        </button>
-      </div>
-
-      <!-- Additional Info -->
-      @if (emailSent) {
-        <div class="additional-info">
-          <mat-icon class="info-icon">info</mat-icon>
-
-          <span>
-            Si el correo no llega en unos minutos, revisa tu carpeta de spam o haz clic en "Reenviar Correo".
-          </span>
-        </div>
-      }
-    </mat-card-content>
-  </mat-card>
+  </div>
 </div>

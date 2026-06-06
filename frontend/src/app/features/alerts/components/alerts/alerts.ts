@@ -47,6 +47,8 @@ export class Alerts implements OnInit {
   alertsPerPage = 10;
   currentPage = 1;
 
+  showAlertFilters = false;
+
   usedAlerts = 0;
   activeAlerts = 0;
   pausedAlerts = 0;

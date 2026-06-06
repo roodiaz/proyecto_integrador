@@ -6,10 +6,14 @@
       <mat-icon>notifications_active</mat-icon>
     </div>
 
-    <div>
+    <div class="header-text">
       <h2 class="dialog-title">{{ isEditMode ? 'Editar Alerta' : 'Nueva Alerta' }}</h2>
       <p class="dialog-subtitle">Configura una alerta para monitorear el precio de un activo</p>
     </div>
+
+    <button class="close-btn" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
   <!-- Body -->

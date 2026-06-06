@@ -1,50 +1,63 @@
-<mat-sidenav #sidenav mode="side" [opened]="true" class="sidenav" [ngClass]="{'collapsed': isCollapsed}">
+<aside class="sidebar" [class.collapsed]="isCollapsed">
 
-  <div class="sidenav-header" (click)="toggleSidebar()" style="cursor: pointer;">
-    <img [src]="isCollapsed ? '../img/logo.png' : '../img/logo_name_v2.png'" alt="Invest Lab" class="logo">
+  <!-- Header / Logo -->
+  <div class="sidebar-header" (click)="toggleSidebar()">
+    <img
+      [src]="isCollapsed ? '../img/logo.png' : '../img/logo_name_v2.png'"
+      alt="Invest Lab"
+      class="logo">
   </div>
 
-  <mat-nav-list>
-    <a mat-list-item routerLink="/dashboard" routerLinkActive="active" matTooltip="Dashboard" [matTooltipDisabled]="!isCollapsed">
-      <mat-icon>dashboard</mat-icon>
-      <span class="menu-text">Dashboard</span>
+  <!-- Main nav -->
+  <nav class="sidebar-nav">
+    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active"
+       [matTooltip]="'Dashboard'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+      <mat-icon class="nav-icon">dashboard</mat-icon>
+      <span class="nav-label">Dashboard</span>
     </a>
 
-    <a mat-list-item routerLink="/market" routerLinkActive="active" matTooltip="Mercado" [matTooltipDisabled]="!isCollapsed">
-      <mat-icon>trending_up</mat-icon>
-      <span class="menu-text">Mercado</span>
+    <a class="nav-item" routerLink="/market" routerLinkActive="active"
+       [matTooltip]="'Mercado'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+      <mat-icon class="nav-icon">trending_up</mat-icon>
+      <span class="nav-label">Mercado</span>
     </a>
 
-    <a mat-list-item routerLink="/portfolio" routerLinkActive="active" matTooltip="Mi Portafolio" [matTooltipDisabled]="!isCollapsed">
-      <mat-icon>account_balance_wallet</mat-icon>
-      <span class="menu-text">Mi Portafolio</span>
+    <a class="nav-item" routerLink="/portfolio" routerLinkActive="active"
+       [matTooltip]="'Mi Portafolio'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+      <mat-icon class="nav-icon">account_balance_wallet</mat-icon>
+      <span class="nav-label">Mi Portafolio</span>
     </a>
 
-    <a mat-list-item routerLink="/alerts" routerLinkActive="active" matTooltip="Alertas" [matTooltipDisabled]="!isCollapsed">
-      <mat-icon>notifications</mat-icon>
-      <span class="menu-text">Alertas</span>
+    <a class="nav-item" routerLink="/alerts" routerLinkActive="active"
+       [matTooltip]="'Alertas'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+      <mat-icon class="nav-icon">notifications</mat-icon>
+      <span class="nav-label">Alertas</span>
     </a>
 
-    <a mat-list-item routerLink="/watchlist" routerLinkActive="active" matTooltip="Lista de Seguimiento" [matTooltipDisabled]="!isCollapsed">
-      <mat-icon>star</mat-icon>
-      <span class="menu-text">Lista de Seguimiento</span>
+    <a class="nav-item" routerLink="/watchlist" routerLinkActive="active"
+       [matTooltip]="'Lista de Seguimiento'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+      <mat-icon class="nav-icon">star_border</mat-icon>
+      <span class="nav-label">Lista de Seguimiento</span>
     </a>
-  </mat-nav-list>
+  </nav>
 
-  <!-- Fuera del mat-nav-list para que el flex del .sidenav lo empuje al fondo -->
-  <div class="bottom-section">
-    <mat-divider></mat-divider>
-    <mat-nav-list>
-      <a mat-list-item routerLink="/profile" routerLinkActive="active" matTooltip="Configuración" [matTooltipDisabled]="!isCollapsed">
-        <mat-icon>settings</mat-icon>
-        <span class="menu-text">Configuración</span>
+  <!-- Bottom section -->
+  <div class="sidebar-bottom">
+    <div class="sidebar-divider"></div>
+
+    <nav class="sidebar-nav sidebar-nav--bottom">
+      <a class="nav-item" routerLink="/profile" routerLinkActive="active"
+         [matTooltip]="'Configuración'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+        <mat-icon class="nav-icon">settings</mat-icon>
+        <span class="nav-label">Configuración</span>
       </a>
 
-      <a mat-list-item (click)="logout()" matTooltip="Cerrar Sesión" [matTooltipDisabled]="!isCollapsed">
-        <mat-icon>logout</mat-icon>
-        <span class="menu-text">Cerrar Sesión</span>
+      <a class="nav-item nav-item--danger" (click)="logout()"
+         [matTooltip]="'Cerrar Sesión'" [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+        <mat-icon class="nav-icon">logout</mat-icon>
+        <span class="nav-label">Cerrar Sesión</span>
       </a>
-    </mat-nav-list>
+    </nav>
   </div>
 
-</mat-sidenav>
+</aside>

@@ -70,6 +70,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   operationsPage: number = 1;
   operationsPageSize: number = 10;
 
+  // ─── UI state ────────────────────────────────────────────────────────────────
+  showHoldingsFilters = false;
+  showOperationsFilters = false;
+
   // ─── Charts ──────────────────────────────────────────────────────────────────
   pieChartData: PortfolioPieChartItem[] = [];
   lineChartData: PortfolioLineChartItem[] = [];
@@ -263,7 +267,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         next: (res) => { this.portfolioSummary = res.data!; },
         error: (err) => {
           console.error('Balance cards error', err);
-          this.snackBarService.error('No se pudo cargar el resumen del portfolio');
         },
       });
   }
@@ -287,7 +290,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (err) => {
           console.error('Charts error', err);
-          this.snackBarService.error('No se pudieron cargar los gráficos del portfolio');
         },
       });
   }
@@ -329,7 +331,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (err) => {
           console.error('Positions error', err);
-          this.snackBarService.error('No se pudieron cargar las tenencias');
         },
       });
   }
@@ -355,7 +356,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (err) => {
           console.error('Operations error', err);
-          this.snackBarService.error('No se pudieron cargar las operaciones');
         },
       });
   }

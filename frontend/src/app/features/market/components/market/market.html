@@ -306,7 +306,7 @@
 
       @if (!loadingNews && marketNews.length === 0) {
         <div class="card-empty modern-empty">
-          <div class="card-empty-icon">📰</div>
+          <div class="card-empty-icon"><mat-icon>article</mat-icon></div>
           <div class="card-empty-title">No hay noticias disponibles</div>
           <div class="card-empty-text">Cuando haya reportes principales del mercado, se van a mostrar acá.</div>
         </div>
@@ -352,7 +352,7 @@
               </button>
             } @empty {
               <div class="card-empty modern-empty compact-empty">
-                <div class="card-empty-icon">📊</div>
+                <div class="card-empty-icon"><mat-icon>bar_chart</mat-icon></div>
                 <div class="card-empty-title">Sin tendencias disponibles</div>
                 <div class="card-empty-text">Todavía no hay activos destacados para mostrar.</div>
               </div>
@@ -394,7 +394,7 @@
               </button>
             } @empty {
               <div class="card-empty modern-empty compact-empty">
-                <div class="card-empty-icon">🚀</div>
+                <div class="card-empty-icon"><mat-icon>north_east</mat-icon></div>
                 <div class="card-empty-title">Sin ganadores disponibles</div>
                 <div class="card-empty-text">Cuando el mercado informe subas destacadas, aparecerán acá.</div>
               </div>
@@ -436,7 +436,7 @@
               </button>
             } @empty {
               <div class="card-empty modern-empty compact-empty">
-                <div class="card-empty-icon">📉</div>
+                <div class="card-empty-icon"><mat-icon>trending_down</mat-icon></div>
                 <div class="card-empty-title">Sin perdedores disponibles</div>
                 <div class="card-empty-text">Cuando el mercado informe bajas destacadas, aparecerán acá.</div>
               </div>

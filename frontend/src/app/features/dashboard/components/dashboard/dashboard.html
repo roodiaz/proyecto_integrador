@@ -9,7 +9,7 @@
       <div class="stat-card" [ngClass]="!loadingTopCards ? getBalanceClass() : ''">
         <div class="stat-icon">
           @if (!loadingTopCards) {
-            💰
+            <mat-icon>account_balance_wallet</mat-icon>
           } @else {
             <span class="skeleton skeleton-icon"></span>
           }
@@ -29,7 +29,7 @@
       <div class="stat-card">
         <div class="stat-icon">
           @if (!loadingTopCards) {
-            📊
+            <mat-icon>donut_large</mat-icon>
           } @else {
             <span class="skeleton skeleton-icon"></span>
           }
@@ -49,7 +49,7 @@
       <div class="stat-card" [ngClass]="!loadingTopCards ? getProfitClass() : ''">
         <div class="stat-icon">
           @if (!loadingTopCards) {
-            📈
+            <mat-icon>trending_up</mat-icon>
           } @else {
             <span class="skeleton skeleton-icon"></span>
           }
@@ -72,7 +72,7 @@
       <div class="stat-card">
         <div class="stat-icon">
           @if (!loadingTopCards) {
-            🔔
+            <mat-icon>notifications</mat-icon>
           } @else {
             <span class="skeleton skeleton-icon"></span>
           }
@@ -155,7 +155,7 @@
 
     @if (!loadingPerformanceChart && !hasEnoughChartData) {
       <div class="chart-empty">
-        <div class="chart-empty-icon">📉</div>
+        <div class="chart-empty-icon"><mat-icon>show_chart</mat-icon></div>
         <div class="chart-empty-title">No hay suficientes datos históricos</div>
         <div class="chart-empty-text">
           Todavía no existen suficientes snapshots del portfolio para mostrar la evolución de este período.
@@ -194,7 +194,7 @@
             </div>
           } @empty {
             <div class="card-empty">
-              <div class="card-empty-icon">📊</div>
+              <div class="card-empty-icon"><mat-icon>bar_chart</mat-icon></div>
               <div class="card-empty-title">No hay distribución disponible</div>
               <div class="card-empty-text">
                 Cuando tengas activos en tu portfolio, se mostrará la distribución por sector.
@@ -235,7 +235,7 @@
             </div>
           } @empty {
             <div class="card-empty">
-              <div class="card-empty-icon">🔕</div>
+              <div class="card-empty-icon"><mat-icon>notifications_off</mat-icon></div>
               <div class="card-empty-title">No hay notificaciones recientes</div>
               <div class="card-empty-text">Cuando una alerta se dispare, aparecerá acá.</div>
             </div>
@@ -285,7 +285,7 @@
           </table>
         } @else {
           <div class="card-empty">
-            <div class="card-empty-icon">📭</div>
+            <div class="card-empty-icon"><mat-icon>inbox</mat-icon></div>
             <div class="card-empty-title">No hay operaciones recientes</div>
             <div class="card-empty-text">Cuando compres o vendas activos, se mostrarán acá.</div>
           </div>

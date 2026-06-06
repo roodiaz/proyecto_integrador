@@ -6,10 +6,10 @@
 }
 
 .market-terminal {
-  width: 98%;
+  width: 100%;
   min-height: 100%;
   padding: 24px;
-  background: #0f1012;
+  background:  transparent;
   color: #e5e2e1;
 }
 
@@ -26,11 +26,11 @@
 
 .terminal-heading h1 {
   margin: 0;
-  color: #ffffff;
-  font-size: 42px;
-  line-height: 46px;
-  font-weight: 850;
-  letter-spacing: -0.04em;
+  color: #adc6ff;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .terminal-heading p {
@@ -1027,6 +1027,16 @@
 .card-empty-icon {
   font-size: 34px;
   opacity: 0.92;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-empty-icon mat-icon {
+  font-size: 34px;
+  width: 34px;
+  height: 34px;
+  color: rgba(140, 144, 159, 0.6);
 }
 
 .card-empty-title {

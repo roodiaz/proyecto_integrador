@@ -93,6 +93,18 @@
           <div class="skeleton skeleton-list-item"></div>
           <div class="skeleton skeleton-list-item"></div>
         </div>
+      } @else if (watchlistItems.length === 0) {
+        <!-- Empty state (sin datos en absoluto) -->
+        <div class="empty-state">
+          <mat-icon class="empty-icon">star_border</mat-icon>
+          <h3>No tienes favoritos</h3>
+          <p>Agrega activos para comenzar a seguirlos.</p>
+
+          <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
+            <mat-icon>add</mat-icon>
+            Agregar Activo
+          </button>
+        </div>
       } @else {
         <table class="watchlist-table">
           <thead>
@@ -163,22 +175,8 @@
           </tbody>
         </table>
 
-        <!-- Empty state (sin datos en absoluto) -->
-        @if (watchlistItems.length === 0) {
-          <div class="empty-state">
-            <mat-icon class="empty-icon">star_border</mat-icon>
-            <h3>No tienes favoritos</h3>
-            <p>Agrega activos para comenzar a seguirlos.</p>
-
-            <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
-              <mat-icon>add</mat-icon>
-              Agregar Activo
-            </button>
-          </div>
-        }
-
         <!-- Sin resultados de búsqueda -->
-        @if (watchlistItems.length > 0 && filteredItems.length === 0) {
+        @if (filteredItems.length === 0) {
           <div class="no-results">
             <mat-icon>search_off</mat-icon>
             <p>Sin resultados para "<strong>{{ searchTerm }}</strong>"</p>

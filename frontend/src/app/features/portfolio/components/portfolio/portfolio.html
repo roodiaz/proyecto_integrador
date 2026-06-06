@@ -167,27 +167,49 @@
 
       <div class="table-header">
         <h2>Tenencias</h2>
-        <div class="table-actions">
-          <input type="text" class="filter-input" placeholder="Buscar ticker..."
-            [(ngModel)]="symbolFilter" (ngModelChange)="onPositionFiltersChange()">
-          <select class="filter-select" [(ngModel)]="positionStatusFilter" (ngModelChange)="onPositionFiltersChange()">
-            <option value="">Todas</option>
-            <option value="gain">Con ganancia</option>
-            <option value="loss">Con pérdida</option>
-          </select>
-          <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onPositionFiltersChange()">
-            <option value="symbol">Ticker</option>
-            <option value="quantity">Cantidad</option>
-            <option value="currentValue">Valor Actual</option>
-            <option value="variation">Variación %</option>
-            <option value="profitLoss">Ganancia/Pérdida</option>
-          </select>
-          <select class="filter-select" [(ngModel)]="sortDirection" (ngModelChange)="onPositionFiltersChange()">
-            <option value="asc">Ascendente</option>
-            <option value="desc">Descendente</option>
-          </select>
+        <div class="table-filter-row">
+          <div class="search-wrap">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input type="text" class="search-input" placeholder="Buscar ticker..."
+              [(ngModel)]="symbolFilter" (ngModelChange)="onPositionFiltersChange()">
+          </div>
+          <button class="btn-filter" (click)="showHoldingsFilters = !showHoldingsFilters">
+            <mat-icon>tune</mat-icon>
+            Filtrar
+            <mat-icon class="chevron" [class.open]="showHoldingsFilters">expand_more</mat-icon>
+          </button>
         </div>
       </div>
+
+      @if (showHoldingsFilters) {
+        <div class="advanced-filters">
+          <div class="filter-group">
+            <label class="filter-label">Estado</label>
+            <select class="filter-select" [(ngModel)]="positionStatusFilter" (ngModelChange)="onPositionFiltersChange()">
+              <option value="">Todas</option>
+              <option value="gain">Con ganancia</option>
+              <option value="loss">Con pérdida</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Ordenar por</label>
+            <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onPositionFiltersChange()">
+              <option value="symbol">Ticker</option>
+              <option value="quantity">Cantidad</option>
+              <option value="currentValue">Valor Actual</option>
+              <option value="variation">Variación %</option>
+              <option value="profitLoss">Ganancia/Pérdida</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Dirección</label>
+            <select class="filter-select" [(ngModel)]="sortDirection" (ngModelChange)="onPositionFiltersChange()">
+              <option value="asc">Ascendente</option>
+              <option value="desc">Descendente</option>
+            </select>
+          </div>
+        </div>
+      }
 
       @if (loadingPositions) {
         <div class="portfolio-table-skeleton">
@@ -282,28 +304,50 @@
 
       <div class="table-header">
         <h2>Operaciones Realizadas</h2>
-        <div class="table-actions">
-          <input type="text" class="filter-input" placeholder="Buscar ticker..."
-            [(ngModel)]="operationSymbolFilter" (input)="onOperationFiltersChange()">
-          <select class="filter-select" [(ngModel)]="operationTypeFilter" (change)="onOperationFiltersChange()">
-            <option [ngValue]="null">Todas</option>
-            <option [ngValue]="1">Compras</option>
-            <option [ngValue]="2">Ventas</option>
-          </select>
-          <select class="filter-select" [(ngModel)]="operationDaysFilter" (change)="onOperationFiltersChange()">
-            <option [ngValue]="null">Todo</option>
-            <option [ngValue]="7">Últimos 7 días</option>
-            <option [ngValue]="30">Últimos 30 días</option>
-            <option [ngValue]="90">Últimos 90 días</option>
-            <option [ngValue]="365">Último año</option>
-          </select>
-          <select class="filter-select" [(ngModel)]="operationOrderBy" (input)="onOperationFiltersChange()">
-            <option value="date">Fecha</option>
-            <option value="symbol">Ticker</option>
-            <option value="amount">Monto</option>
-          </select>
+        <div class="table-filter-row">
+          <div class="search-wrap">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input type="text" class="search-input" placeholder="Buscar ticker..."
+              [(ngModel)]="operationSymbolFilter" (input)="onOperationFiltersChange()">
+          </div>
+          <button class="btn-filter" (click)="showOperationsFilters = !showOperationsFilters">
+            <mat-icon>tune</mat-icon>
+            Filtrar
+            <mat-icon class="chevron" [class.open]="showOperationsFilters">expand_more</mat-icon>
+          </button>
         </div>
       </div>
+
+      @if (showOperationsFilters) {
+        <div class="advanced-filters">
+          <div class="filter-group">
+            <label class="filter-label">Tipo</label>
+            <select class="filter-select" [(ngModel)]="operationTypeFilter" (change)="onOperationFiltersChange()">
+              <option [ngValue]="null">Todas</option>
+              <option [ngValue]="1">Compras</option>
+              <option [ngValue]="2">Ventas</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Período</label>
+            <select class="filter-select" [(ngModel)]="operationDaysFilter" (change)="onOperationFiltersChange()">
+              <option [ngValue]="null">Todo</option>
+              <option [ngValue]="7">Últimos 7 días</option>
+              <option [ngValue]="30">Últimos 30 días</option>
+              <option [ngValue]="90">Últimos 90 días</option>
+              <option [ngValue]="365">Último año</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Ordenar por</label>
+            <select class="filter-select" [(ngModel)]="operationOrderBy" (input)="onOperationFiltersChange()">
+              <option value="date">Fecha</option>
+              <option value="symbol">Ticker</option>
+              <option value="amount">Monto</option>
+            </select>
+          </div>
+        </div>
+      }
 
       @if (loadingOperations) {
         <div class="portfolio-table-skeleton">
