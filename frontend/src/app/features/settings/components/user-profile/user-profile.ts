@@ -97,7 +97,10 @@ export class UserProfile implements OnInit {
         }
       });
   }
+
   onSaveProfile(): void {
+    if (this.savingProfile) return;
+
     if (!this.profileForm.valid) {
       this.notificationService.error('Por favor, completa el formulario correctamente');
       return;
@@ -142,6 +145,8 @@ export class UserProfile implements OnInit {
   }
 
   onChangePassword(): void {
+    if (this.changingPassword) return;
+
     if (!this.passwordForm.valid) {
       this.notificationService.error('Formulario inválido');
       return;
@@ -180,9 +185,14 @@ export class UserProfile implements OnInit {
     this.userService.uploadProfileImage(file)
       .pipe(finalize(() => this.uploadingImage = false))
       .subscribe({
-        next: (response: any) => {
+        next: response => {
           this.notificationService.success(response.message);
-          this.loadUserData();
+
+          const imageUrl = response.data?.profileImageUrl;
+
+          if (imageUrl)
+            this.profileImageUrl = environment.serverUrl + imageUrl;
+
           input.value = '';
         },
         error: error => {
@@ -217,6 +227,8 @@ export class UserProfile implements OnInit {
   }
 
   deleteAccount(): void {
+    if (this.deletingAccount) return;
+
     this.deletingAccount = true;
 
     this.userService.deleteAccount()
