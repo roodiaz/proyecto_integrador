@@ -1,15 +1,23 @@
 <div class="portfolio-container">
   <div class="portfolio-content">
+
     <!-- Section Header -->
     <div class="section-header">
       <div class="title-container">
         <h2>Portfolio</h2>
 
-        <p class="market-close-date">
-          Los valores actuales del portfolio utilizan cotizaciones en tiempo real.
-          <br>
-          La evolución histórica se calcula con precios de cierre de mercado al {{ portfolioSummary.lastMarketCloseDate | date:'dd/MM/yyyy' }}.
-        </p>
+        @if (!loadingSummary) {
+          <p class="market-close-date">
+            Los valores actuales del portfolio utilizan cotizaciones en tiempo real.
+            <br>
+            La evolución histórica se calcula con precios de cierre de mercado al {{ portfolioSummary.lastMarketCloseDate | date:'dd/MM/yyyy' }}.
+          </p>
+        } @else {
+          <div class="skeleton-card-list">
+            <span class="skeleton skeleton-text long"></span>
+            <span class="skeleton skeleton-text medium"></span>
+          </div>
+        }
       </div>
 
       <button class="buy-action-btn" type="button" (click)="openBuyModal()">
@@ -20,80 +28,114 @@
     <!-- Portfolio Summary -->
     <div class="portfolio-summary">
       <div class="summary-cards">
+
         <div class="summary-card">
           <h3>Saldo Inicial</h3>
-          <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
+
+          @if (!loadingSummary) {
+            <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
         </div>
 
         <div class="summary-card">
           <h3>Saldo Actual</h3>
-          <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0" [class.negative]="portfolioSummary.profitLoss < 0">
-            ${{ portfolioSummary.currentBalance.toFixed(2) }}
-          </p>
+
+          @if (!loadingSummary) {
+            <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0" [class.negative]="portfolioSummary.profitLoss < 0">
+              ${{ portfolioSummary.currentBalance.toFixed(2) }}
+            </p>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
         </div>
 
         <div class="summary-card">
           <h3>Ganancia/Pérdida</h3>
-          <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0" [class.negative]="portfolioSummary.profitLoss < 0">
-            {{ portfolioSummary.profitLoss > 0 ? '+' : '' }}${{ portfolioSummary.profitLoss.toFixed(2) }}
-            <span class="percent">({{ portfolioSummary.profitLossPercent > 0 ? '+' : '' }}{{ portfolioSummary.profitLossPercent.toFixed(2) }}%)</span>
-          </p>
+
+          @if (!loadingSummary) {
+            <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0" [class.negative]="portfolioSummary.profitLoss < 0">
+              {{ portfolioSummary.profitLoss > 0 ? '+' : '' }}${{ portfolioSummary.profitLoss.toFixed(2) }}
+              <span class="percent">({{ portfolioSummary.profitLossPercent > 0 ? '+' : '' }}{{ portfolioSummary.profitLossPercent.toFixed(2) }}%)</span>
+            </p>
+          } @else {
+            <div class="skeleton skeleton-metric-value"></div>
+          }
         </div>
 
         <div class="summary-card usage">
           <div class="summary-content">
             <h3>Operaciones realizadas por día</h3>
 
-            <div class="operations-counter">
-              <span class="counter-value">
-                {{ portfolioSummary.totalOperations }} / {{ portfolioSummary.maxOperations }}
-              </span>
+            @if (!loadingSummary) {
+              <div class="operations-counter">
+                <span class="counter-value">
+                  {{ portfolioSummary.totalOperations }} / {{ portfolioSummary.maxOperations }}
+                </span>
 
-              <div class="operations-progress">
-                <div class="progress-fill" [style.width.%]="portfolioSummary.maxOperations > 0 ? (portfolioSummary.totalOperations / portfolioSummary.maxOperations) * 100 : 0"></div>
+                <div class="operations-progress">
+                  <div class="progress-fill" [style.width.%]="portfolioSummary.maxOperations > 0 ? (portfolioSummary.totalOperations / portfolioSummary.maxOperations) * 100 : 0"></div>
+                </div>
               </div>
-            </div>
+            } @else {
+              <div class="skeleton-card-list">
+                <span class="skeleton skeleton-text short"></span>
+                <span class="skeleton skeleton-text long"></span>
+              </div>
+            }
           </div>
         </div>
+
       </div>
     </div>
 
     <!-- Charts and Details Section -->
     <div class="charts-details-section">
       <div class="charts-section">
+
         <div class="chart-container">
           <h3>Distribución</h3>
 
-          <div class="distribution-wrapper">
-            <div class="donut-container">
-              <canvas id="pieChart"></canvas>
+          @if (loadingCharts) {
+            <div class="skeleton-chart-box portfolio-chart-skeleton">
+              <div class="skeleton skeleton-chart-line xl"></div>
+              <div class="skeleton skeleton-chart-line lg"></div>
+              <div class="skeleton skeleton-chart-line md"></div>
+              <div class="skeleton skeleton-chart-line sm"></div>
             </div>
+          } @else {
+            <div class="distribution-wrapper">
+              <div class="donut-container">
+                <canvas id="pieChart"></canvas>
+              </div>
 
-            <div class="top-assets-section">
-              <h3>Top Activos</h3>
+              <div class="top-assets-section">
+                <h3>Top Activos</h3>
 
-              <div class="top-assets-list">
-                @for (asset of topAssets; track asset.ticker; let i = $index) {
-                  <div class="top-asset-item">
-                    <div class="asset-color" [style.background-color]="getAssetColor(i)"></div>
+                <div class="top-assets-list">
+                  @for (asset of topAssets; track asset.ticker; let i = $index) {
+                    <div class="top-asset-item">
+                      <div class="asset-color" [style.background-color]="getAssetColor(i)"></div>
 
-                    <span class="asset-ticker">
-                      {{ asset.ticker }}
-                    </span>
+                      <span class="asset-ticker">
+                        {{ asset.ticker }}
+                      </span>
 
-                    <span class="asset-percentage">
-                      {{ asset.percentage.toFixed(1) }}%
-                    </span>
-                  </div>
-                } @empty {
-                  <div class="empty-state">
-                    <h3>Sin activos destacados</h3>
-                    <p>Cuando tengas posiciones abiertas, se mostrarán acá.</p>
-                  </div>
-                }
+                      <span class="asset-percentage">
+                        {{ asset.percentage.toFixed(1) }}%
+                      </span>
+                    </div>
+                  } @empty {
+                    <div class="empty-state">
+                      <h3>Sin activos destacados</h3>
+                      <p>Cuando tengas posiciones abiertas, se mostrarán acá.</p>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
 
         <div class="chart-container">
@@ -111,8 +153,18 @@
             </div>
           </div>
 
-          <canvas id="lineChart" width="400" height="200"></canvas>
+          @if (loadingCharts) {
+            <div class="skeleton-chart-box portfolio-chart-skeleton">
+              <div class="skeleton skeleton-chart-line xl"></div>
+              <div class="skeleton skeleton-chart-line lg"></div>
+              <div class="skeleton skeleton-chart-line md"></div>
+              <div class="skeleton skeleton-chart-line sm"></div>
+            </div>
+          } @else {
+            <canvas id="lineChart" width="400" height="200"></canvas>
+          }
         </div>
+
       </div>
     </div>
 
@@ -145,94 +197,104 @@
         </div>
       </div>
 
-      <table class="holdings-table">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Cantidad</th>
-            <th>Precio Compra</th>
-            <th>Precio Actual</th>
-            <th>Variación</th>
-            <th>Ganancia/Pérdida</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          @for (item of positions; track item.symbol) {
-            <tr>
-              <td>{{ item.symbol }}</td>
-              <td>{{ item.quantity }}</td>
-              <td>{{ item.averagePrice | currency:'USD' }}</td>
-              <td>{{ item.currentPrice | currency:'USD' }}</td>
-
-              <td [class.positive]="item.variationPercent >= 0" [class.negative]="item.variationPercent < 0" [class.neutral]="item.variationPercent === 0">
-                {{ item.variationPercent | number:'1.2-2' }}%
-              </td>
-
-              <td [class.positive]="item.profitLoss >= 0" [class.negative]="item.profitLoss < 0" [class.neutral]="item.profitLoss === 0">
-                {{ item.profitLoss | currency:'USD' }}
-              </td>
-
-              <td>
-                <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)">
-                  Vender
-                </button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="7">
-                No hay tenencias para mostrar.
-              </td>
-            </tr>
-          }
-
-          @for (row of emptyHoldingRows; track $index) {
-            <tr class="empty-row">
-              <td>&nbsp;</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          }
-        </tbody>
-      </table>
-
-      <!-- Pagination Tenencias -->
-      <div class="pagination-container">
-        <div class="pagination-info">
-          <select class="page-size-select" [(ngModel)]="positionsPageSize" (ngModelChange)="onPositionsPageSizeChange()">
-            <option [value]="5">5 por página</option>
-            <option [value]="10">10 por página</option>
-            <option [value]="20">20 por página</option>
-          </select>
-
-          <span>Página {{ positionsPage }} de {{ totalPositionsPages }}</span>
-          <span>({{ totalPositions }} tenencias)</span>
+      @if (loadingPositions) {
+        <div class="portfolio-table-skeleton">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
         </div>
+      } @else {
+        <table class="holdings-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Cantidad</th>
+              <th>Precio Compra</th>
+              <th>Precio Actual</th>
+              <th>Variación</th>
+              <th>Ganancia/Pérdida</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
 
-        <div class="pagination-controls">
-          <button class="pagination-btn" type="button" [disabled]="positionsPage === 1" (click)="previousPositionsPage()">
-            ← Anterior
-          </button>
+          <tbody>
+            @for (item of positions; track item.symbol) {
+              <tr>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.averagePrice | currency:'USD' }}</td>
+                <td>{{ item.currentPrice | currency:'USD' }}</td>
 
-          <div class="page-numbers">
-            @for (page of getPositionPageNumbers(); track page) {
-              <button class="page-btn" type="button" [class.active]="page === positionsPage" (click)="goToPositionsPage(page)">
-                {{ page }}
-              </button>
+                <td [class.positive]="item.variationPercent >= 0" [class.negative]="item.variationPercent < 0" [class.neutral]="item.variationPercent === 0">
+                  {{ item.variationPercent | number:'1.2-2' }}%
+                </td>
+
+                <td [class.positive]="item.profitLoss >= 0" [class.negative]="item.profitLoss < 0" [class.neutral]="item.profitLoss === 0">
+                  {{ item.profitLoss | currency:'USD' }}
+                </td>
+
+                <td>
+                  <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)">
+                    Vender
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7">
+                  No hay tenencias para mostrar.
+                </td>
+              </tr>
             }
+
+            @for (row of emptyHoldingRows; track $index) {
+              <tr class="empty-row">
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Pagination Tenencias -->
+        <div class="pagination-container">
+          <div class="pagination-info">
+            <select class="page-size-select" [(ngModel)]="positionsPageSize" (ngModelChange)="onPositionsPageSizeChange()">
+              <option [value]="5">5 por página</option>
+              <option [value]="10">10 por página</option>
+              <option [value]="20">20 por página</option>
+            </select>
+
+            <span>Página {{ positionsPage }} de {{ totalPositionsPages }}</span>
+            <span>({{ totalPositions }} tenencias)</span>
           </div>
 
-          <button class="pagination-btn" type="button" [disabled]="positionsPage === totalPositionsPages" (click)="nextPositionsPage()">
-            Siguiente →
-          </button>
+          <div class="pagination-controls">
+            <button class="pagination-btn" type="button" [disabled]="positionsPage === 1" (click)="previousPositionsPage()">
+              ← Anterior
+            </button>
+
+            <div class="page-numbers">
+              @for (page of getPositionPageNumbers(); track page) {
+                <button class="page-btn" type="button" [class.active]="page === positionsPage" (click)="goToPositionsPage(page)">
+                  {{ page }}
+                </button>
+              }
+            </div>
+
+            <button class="pagination-btn" type="button" [disabled]="positionsPage === totalPositionsPages" (click)="nextPositionsPage()">
+              Siguiente →
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <!-- OPERACIONES REALIZADAS -->
@@ -265,86 +327,97 @@
         </div>
       </div>
 
-      <table class="operations-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Ticker</th>
-            <th>Tipo</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          @for (operation of operations; track operation.operationDate + '-' + operation.symbol + '-' + operation.type) {
-            <tr>
-              <td>{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ operation.symbol }}</td>
-
-              <td>
-                <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
-                  {{ operation.type === 1 ? 'Compra' : 'Venta' }}
-                </span>
-              </td>
-
-              <td>{{ operation.quantity }}</td>
-              <td>{{ operation.buyPrice | currency:'USD' }}</td>
-              <td>{{ operation.total | currency:'USD' }}</td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="6">
-                No hay operaciones para mostrar.
-              </td>
-            </tr>
-          }
-
-          @for (row of emptyOperationRows; track $index) {
-            <tr class="empty-row">
-              <td>&nbsp;</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          }
-        </tbody>
-      </table>
-
-      <!-- Pagination Operaciones -->
-      <div class="pagination-container">
-        <div class="pagination-info">
-          <select class="page-size-select" [(ngModel)]="operationsPageSize" (ngModelChange)="onOperationsPageSizeChange()">
-            <option [value]="5">5 por página</option>
-            <option [value]="10">10 por página</option>
-            <option [value]="20">20 por página</option>
-          </select>
-
-          <span>Página {{ operationsPage }} de {{ totalOperationsPages }}</span>
-          <span>({{ totalOperations }} operaciones)</span>
+      @if (loadingOperations) {
+        <div class="portfolio-table-skeleton">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
         </div>
+      } @else {
+        <table class="operations-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Ticker</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+              <th>Precio</th>
+              <th>Total</th>
+            </tr>
+          </thead>
 
-        <div class="pagination-controls">
-          <button class="pagination-btn" type="button" [disabled]="operationsPage === 1" (click)="previousOperationsPage()">
-            ← Anterior
-          </button>
+          <tbody>
+            @for (operation of operations; track operation.operationDate + '-' + operation.symbol + '-' + operation.type) {
+              <tr>
+                <td>{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ operation.symbol }}</td>
 
-          <div class="page-numbers">
-            @for (page of getOperationPageNumbers(); track page) {
-              <button class="page-btn" type="button" [class.active]="page === operationsPage" (click)="goToOperationsPage(page)">
-                {{ page }}
-              </button>
+                <td>
+                  <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
+                    {{ operation.type === 1 ? 'Compra' : 'Venta' }}
+                  </span>
+                </td>
+
+                <td>{{ operation.quantity }}</td>
+                <td>{{ operation.buyPrice | currency:'USD' }}</td>
+                <td>{{ operation.total | currency:'USD' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">
+                  No hay operaciones para mostrar.
+                </td>
+              </tr>
             }
+
+            @for (row of emptyOperationRows; track $index) {
+              <tr class="empty-row">
+                <td>&nbsp;</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Pagination Operaciones -->
+        <div class="pagination-container">
+          <div class="pagination-info">
+            <select class="page-size-select" [(ngModel)]="operationsPageSize" (ngModelChange)="onOperationsPageSizeChange()">
+              <option [value]="5">5 por página</option>
+              <option [value]="10">10 por página</option>
+              <option [value]="20">20 por página</option>
+            </select>
+
+            <span>Página {{ operationsPage }} de {{ totalOperationsPages }}</span>
+            <span>({{ totalOperations }} operaciones)</span>
           </div>
 
-          <button class="pagination-btn" type="button" [disabled]="operationsPage === totalOperationsPages" (click)="nextOperationsPage()">
-            Siguiente →
-          </button>
+          <div class="pagination-controls">
+            <button class="pagination-btn" type="button" [disabled]="operationsPage === 1" (click)="previousOperationsPage()">
+              ← Anterior
+            </button>
+
+            <div class="page-numbers">
+              @for (page of getOperationPageNumbers(); track page) {
+                <button class="page-btn" type="button" [class.active]="page === operationsPage" (click)="goToOperationsPage(page)">
+                  {{ page }}
+                </button>
+              }
+            </div>
+
+            <button class="pagination-btn" type="button" [disabled]="operationsPage === totalOperationsPages" (click)="nextOperationsPage()">
+              Siguiente →
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
+
   </div>
 </div>

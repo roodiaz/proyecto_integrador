@@ -1,5 +1,6 @@
 <div class="alerts-container">
   <div class="alerts-content">
+
     <!-- Header Interno -->
     <div class="alerts-header">
       <div class="header-info">
@@ -36,56 +37,107 @@
 
     <!-- TAB 1 — MIS ALERTAS -->
     <div class="tab-content" [class.active]="activeView === 'alerts'">
+
       <!-- Cards de Resumen -->
       <div class="summary-cards">
+
         <div class="summary-card active">
-          <div class="summary-icon">🟢</div>
+          <div class="summary-icon">
+            @if (!loadingStats) {
+              🟢
+            } @else {
+              <span class="skeleton skeleton-icon"></span>
+            }
+          </div>
+
           <div class="summary-content">
             <div class="summary-title">Alertas Activas</div>
-            <div class="summary-value">{{ activeAlerts }}</div>
+
+            @if (!loadingStats) {
+              <div class="summary-value">{{ activeAlerts }}</div>
+            } @else {
+              <div class="skeleton skeleton-metric-value"></div>
+            }
           </div>
         </div>
 
         <div class="summary-card paused">
-          <div class="summary-icon">⏸️</div>
+          <div class="summary-icon">
+            @if (!loadingStats) {
+              ⏸️
+            } @else {
+              <span class="skeleton skeleton-icon"></span>
+            }
+          </div>
+
           <div class="summary-content">
             <div class="summary-title">Alertas Pausadas</div>
-            <div class="summary-value">{{ pausedAlerts }}</div>
+
+            @if (!loadingStats) {
+              <div class="summary-value">{{ pausedAlerts }}</div>
+            } @else {
+              <div class="skeleton skeleton-metric-value"></div>
+            }
           </div>
         </div>
 
         <div class="summary-card triggered">
-          <div class="summary-icon">🔴</div>
+          <div class="summary-icon">
+            @if (!loadingStats) {
+              🔴
+            } @else {
+              <span class="skeleton skeleton-icon"></span>
+            }
+          </div>
+
           <div class="summary-content">
             <div class="summary-title">Disparadas Hoy</div>
-            <div class="summary-value">{{ triggeredToday }}</div>
+
+            @if (!loadingStats) {
+              <div class="summary-value">{{ triggeredToday }}</div>
+            } @else {
+              <div class="skeleton skeleton-metric-value"></div>
+            }
           </div>
         </div>
 
         <div class="summary-card usage">
-          <div class="summary-icon">📊</div>
+          <div class="summary-icon">
+            @if (!loadingStats) {
+              📊
+            } @else {
+              <span class="skeleton skeleton-icon"></span>
+            }
+          </div>
 
           <div class="summary-content">
             <div class="summary-title">
               Alertas Utilizadas
             </div>
 
-            <div class="alerts-counter">
-              <span class="counter-label">
-                ALERTAS
-              </span>
+            @if (!loadingStats) {
+              <div class="alerts-counter">
+                <span class="counter-label">
+                  ALERTAS
+                </span>
 
-              <span class="counter-value">
-                {{ usedAlerts }} / {{ limitAlerts }}
-              </span>
+                <span class="counter-value">
+                  {{ usedAlerts }} / {{ limitAlerts }}
+                </span>
 
-              <div class="alerts-progress">
-                <div class="progress-fill" [style.width.%]="limitAlerts > 0 ? (usedAlerts / limitAlerts) * 100 : 0">
+                <div class="alerts-progress">
+                  <div class="progress-fill" [style.width.%]="limitAlerts > 0 ? (usedAlerts / limitAlerts) * 100 : 0"></div>
                 </div>
               </div>
-            </div>
+            } @else {
+              <div class="skeleton-card-list">
+                <span class="skeleton skeleton-text short"></span>
+                <span class="skeleton skeleton-text long"></span>
+              </div>
+            }
           </div>
         </div>
+
       </div>
 
       <!-- Filtros Superiores -->
@@ -118,63 +170,73 @@
         </div>
 
         <div class="alerts-list">
-          @for (alert of alerts; track alert.id) {
-            <div class="alert-item" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
-              <div class="alert-column symbol">
-                <div class="alert-symbol-large">{{ alert.symbol }}</div>
-              </div>
-
-              <div class="alert-column condition">
-                <div class="alert-condition-text">
-                  {{ getConditionDisplay(alert.condition) }} {{ getTargetDisplay(alert) }}
-                </div>
-              </div>
-
-              <div class="alert-column status">
-                <div class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
-                  {{ alert.isActive ? 'Activa' : 'Pausada' }}
-                </div>
-              </div>
-
-              <div class="alert-column dates">
-                <div class="alert-date">
-                  Creada: {{ alert.createdAt | date:'short' }}
+          @if (loadingAlerts) {
+            <div class="alerts-list-skeleton">
+              <div class="skeleton skeleton-list-item"></div>
+              <div class="skeleton skeleton-list-item"></div>
+              <div class="skeleton skeleton-list-item"></div>
+              <div class="skeleton skeleton-list-item"></div>
+              <div class="skeleton skeleton-list-item"></div>
+            </div>
+          } @else {
+            @for (alert of alerts; track alert.id) {
+              <div class="alert-item" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
+                <div class="alert-column symbol">
+                  <div class="alert-symbol-large">{{ alert.symbol }}</div>
                 </div>
 
-                <div class="alert-last-triggered">
-                  Última: {{ alert.lastTriggered ? (alert.lastTriggered | date:'short') : 'Nunca' }}
+                <div class="alert-column condition">
+                  <div class="alert-condition-text">
+                    {{ getConditionDisplay(alert.condition) }} {{ getTargetDisplay(alert) }}
+                  </div>
                 </div>
-              </div>
 
-              <div class="alert-column actions">
-                <div class="alert-actions-list">
-                  <div class="switch-container">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="alert.isActive" (change)="onToggleSwitch(alert, $event)">
-                      <span class="slider"></span>
-                    </label>
+                <div class="alert-column status">
+                  <div class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
+                    {{ alert.isActive ? 'Activa' : 'Pausada' }}
+                  </div>
+                </div>
+
+                <div class="alert-column dates">
+                  <div class="alert-date">
+                    Creada: {{ alert.createdAt | date:'short' }}
                   </div>
 
-                  <button class="edit-btn" (click)="editAlert(alert)">✏️</button>
-                  <button class="delete-btn" (click)="deleteAlert(alert)">🗑</button>
+                  <div class="alert-last-triggered">
+                    Última: {{ alert.lastTriggered ? (alert.lastTriggered | date:'short') : 'Nunca' }}
+                  </div>
+                </div>
+
+                <div class="alert-column actions">
+                  <div class="alert-actions-list">
+                    <div class="switch-container">
+                      <label class="switch">
+                        <input type="checkbox" [checked]="alert.isActive" (change)="onToggleSwitch(alert, $event)">
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <button class="edit-btn" (click)="editAlert(alert)">✏️</button>
+                    <button class="delete-btn" (click)="deleteAlert(alert)">🗑</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          } @empty {
-            <div class="empty-state">
-              <div class="empty-icon">🔔</div>
-              <h3>No hay alertas configuradas</h3>
-              <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
-              <button class="cta-button" (click)="createNewAlert()">
-                Crear Primera Alerta
-              </button>
-            </div>
+            } @empty {
+              <div class="empty-state">
+                <div class="empty-icon">🔔</div>
+                <h3>No hay alertas configuradas</h3>
+                <p>Crea tu primera alerta para comenzar a monitorear tus activos</p>
+                <button class="cta-button" (click)="createNewAlert()">
+                  Crear Primera Alerta
+                </button>
+              </div>
+            }
           }
         </div>
       </div>
 
       <!-- Pagination -->
-      @if (alerts.length > 0) {
+      @if (!loadingAlerts && alerts.length > 0) {
         <div class="pagination-container">
           <div class="pagination-info">
             <span>Página {{ currentPage }} de {{ totalPages }}</span>

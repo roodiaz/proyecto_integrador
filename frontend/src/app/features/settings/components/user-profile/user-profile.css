@@ -522,3 +522,47 @@
 .btn-secondary:hover {
   background: var(--surface-high);
 }
+
+.profile-avatar-skeleton {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+.profile-fields-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.profile-fields-skeleton.compact {
+  grid-template-columns: 1fr;
+}
+
+.profile-fields-skeleton .skeleton-list-item {
+  height: 58px;
+  border-radius: 14px;
+}
+
+.profile-notification-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.profile-notification-skeleton .skeleton-text {
+  height: 16px;
+}
+
+.btn:disabled,
+.avatar-wrapper:has(.profile-avatar-skeleton) {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .profile-fields-skeleton {
+    grid-template-columns: 1fr;
+  }
+}

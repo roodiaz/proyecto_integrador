@@ -1053,3 +1053,23 @@ input:checked + .slider:before {
   border-radius: 999px;
   transition: width .3s ease;
 }
+
+.summary-icon:has(.skeleton-icon) {
+  background: transparent;
+}
+
+.summary-card .skeleton-metric-value {
+  margin-top: 6px;
+}
+
+.alerts-list-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.alerts-list-skeleton .skeleton-list-item {
+  height: 72px;
+  border-radius: 12px;
+}

@@ -27,11 +27,17 @@
       <div class="toolbar-right">
         <div class="favorites-counter">
           <span class="counter-label">★ FAVORITOS</span>
-          <span class="counter-value">{{ currentFavorites }} / {{ maxFavorites }}</span>
 
-          <div class="favorites-progress">
-            <div class="progress-fill" [style.width.%]="maxFavorites > 0 ? (currentFavorites / maxFavorites) * 100 : 0"></div>
-          </div>
+          @if (!loadingWatchlist) {
+            <span class="counter-value">{{ currentFavorites }} / {{ maxFavorites }}</span>
+
+            <div class="favorites-progress">
+              <div class="progress-fill" [style.width.%]="maxFavorites > 0 ? (currentFavorites / maxFavorites) * 100 : 0"></div>
+            </div>
+          } @else {
+            <span class="skeleton skeleton-text short"></span>
+            <span class="skeleton skeleton-text long"></span>
+          }
         </div>
 
         <button class="btn-sort" type="button" [matMenuTriggerFor]="sortMenu">
@@ -77,101 +83,113 @@
     <!-- ── Tabla ── -->
     <div class="watchlist-table-container">
 
-      <table class="watchlist-table">
-        <thead>
-          <tr>
-            <th class="col-symbol">Símbolo</th>
-            <th class="col-company">Empresa</th>
-            <th class="col-price">Precio Actual</th>
-            <th class="col-variation">Variación %</th>
-            <th class="col-actions">Acciones</th>
-          </tr>
-        </thead>
+      @if (loadingWatchlist) {
+        <div class="watchlist-table-skeleton">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
+      } @else {
+        <table class="watchlist-table">
+          <thead>
+            <tr>
+              <th class="col-symbol">Símbolo</th>
+              <th class="col-company">Empresa</th>
+              <th class="col-price">Precio Actual</th>
+              <th class="col-variation">Variación %</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
 
-        <tbody>
+          <tbody>
 
-          <!-- Filas con datos -->
-          @for (item of filteredItems; track item.symbol) {
-            <tr class="watchlist-row">
-              <td class="col-symbol">
-                <div class="ticker-cell">
-                  <div class="company-logo">{{ item.symbol.charAt(0) }}</div>
+            <!-- Filas con datos -->
+            @for (item of filteredItems; track item.symbol) {
+              <tr class="watchlist-row">
+                <td class="col-symbol">
+                  <div class="ticker-cell">
+                    <div class="company-logo">{{ item.symbol.charAt(0) }}</div>
 
-                  <div class="ticker-info">
-                    <span class="ticker-symbol">{{ item.symbol }}</span>
-                    <canvas class="sparkline" [id]="'sparkline-' + item.symbol" width="60" height="20"></canvas>
+                    <div class="ticker-info">
+                      <span class="ticker-symbol">{{ item.symbol }}</span>
+                      <canvas class="sparkline" [id]="'sparkline-' + item.symbol" width="60" height="20"></canvas>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <td class="col-company company-name">{{ item.name }}</td>
+                <td class="col-company company-name">{{ item.name }}</td>
 
-              <td class="col-price price-value">
-                ${{ item.price.toFixed(2) }}
-              </td>
+                <td class="col-price price-value">
+                  ${{ item.price.toFixed(2) }}
+                </td>
 
-              <td class="col-variation variation-value" [class.positive]="item.variationPercent > 0" [class.negative]="item.variationPercent < 0">
-                {{ item.variationPercent > 0 ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
-              </td>
+                <td class="col-variation variation-value" [class.positive]="item.variationPercent > 0" [class.negative]="item.variationPercent < 0">
+                  {{ item.variationPercent > 0 ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
+                </td>
 
-              <td class="col-actions">
-                <div class="row-actions">
-                  <button mat-icon-button class="action-btn market-btn" type="button" (click)="goToMarket(item.symbol); $event.stopPropagation()" title="Ver mercado">
-                    <mat-icon>show_chart</mat-icon>
-                  </button>
+                <td class="col-actions">
+                  <div class="row-actions">
+                    <button mat-icon-button class="action-btn market-btn" type="button" (click)="goToMarket(item.symbol); $event.stopPropagation()" title="Ver mercado">
+                      <mat-icon>show_chart</mat-icon>
+                    </button>
 
-                  <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" title="Crear alerta">
-                    <mat-icon>notifications</mat-icon>
-                  </button>
+                    <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" title="Crear alerta">
+                      <mat-icon>notifications</mat-icon>
+                    </button>
 
-                  <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" title="Eliminar">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
+                    <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" title="Eliminar">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
 
-          <!-- Filas fantasma para mantener altura fija -->
-          @for (ghost of ghostRows; track $index) {
-            <tr class="watchlist-row ghost-row">
-              <td class="col-symbol"></td>
-              <td class="col-company"></td>
-              <td class="col-price"></td>
-              <td class="col-variation"></td>
-              <td class="col-actions"></td>
-            </tr>
-          }
+            <!-- Filas fantasma para mantener altura fija -->
+            @for (ghost of ghostRows; track $index) {
+              <tr class="watchlist-row ghost-row">
+                <td class="col-symbol"></td>
+                <td class="col-company"></td>
+                <td class="col-price"></td>
+                <td class="col-variation"></td>
+                <td class="col-actions"></td>
+              </tr>
+            }
 
-        </tbody>
-      </table>
+          </tbody>
+        </table>
 
-      <!-- Empty state (sin datos en absoluto) -->
-      @if (watchlistItems.length === 0) {
-        <div class="empty-state">
-          <mat-icon class="empty-icon">star_border</mat-icon>
-          <h3>No tienes favoritos</h3>
-          <p>Agrega activos para comenzar a seguirlos.</p>
+        <!-- Empty state (sin datos en absoluto) -->
+        @if (watchlistItems.length === 0) {
+          <div class="empty-state">
+            <mat-icon class="empty-icon">star_border</mat-icon>
+            <h3>No tienes favoritos</h3>
+            <p>Agrega activos para comenzar a seguirlos.</p>
 
-          <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
-            <mat-icon>add</mat-icon>
-            Agregar Activo
-          </button>
-        </div>
-      }
+            <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
+              <mat-icon>add</mat-icon>
+              Agregar Activo
+            </button>
+          </div>
+        }
 
-      <!-- Sin resultados de búsqueda -->
-      @if (watchlistItems.length > 0 && filteredItems.length === 0) {
-        <div class="no-results">
-          <mat-icon>search_off</mat-icon>
-          <p>Sin resultados para "<strong>{{ searchTerm }}</strong>"</p>
-        </div>
+        <!-- Sin resultados de búsqueda -->
+        @if (watchlistItems.length > 0 && filteredItems.length === 0) {
+          <div class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <p>Sin resultados para "<strong>{{ searchTerm }}</strong>"</p>
+          </div>
+        }
       }
 
     </div>
 
     <!-- ── Paginación ── -->
-    @if (watchlistItems.length > 0) {
+    @if (!loadingWatchlist && watchlistItems.length > 0) {
       <div class="wl-pagination">
         <div class="page-info">
           <span class="page-label">{{ getStartRecord() }} – {{ getEndRecord() }} de {{ totalRecords }}</span>

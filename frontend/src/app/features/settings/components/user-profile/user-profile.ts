@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
 import { userProfileSelectOptions } from '../../models/user-profile.model';
 import { UserService } from '../../services/user.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
@@ -22,9 +23,14 @@ export class UserProfile implements OnInit {
   profileForm: FormGroup;
   passwordForm: FormGroup;
   hidePassword = true;
-  // Opciones para los selects
+
   currencies = userProfileSelectOptions.currencies;
   profileImageUrl = '';
+
+  loadingProfile = false;
+  savingProfile = false;
+  changingPassword = false;
+  uploadingImage = false;
 
   constructor(
     private fb: FormBuilder,
@@ -32,11 +38,10 @@ export class UserProfile implements OnInit {
     private notificationService: SnackBarService
   ) {
     this.profileForm = this.fb.group({
-      // Información Personal
       userName: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       birthDate: [null],
-      phone: ['', [Validators.pattern('^[0-9+\-\s()]*$')]],
+      phone: ['', [Validators.pattern('^[0-9+\\-\\s()]*$')]],
       currency: ['USD', [Validators.required]],
       emailNotifications: [true],
     });
@@ -47,29 +52,27 @@ export class UserProfile implements OnInit {
       confirmPassword: ['']
     });
 
-    // Suscribirse a los cambios en los campos de contraseña para aplicar la validación dinámicamente
     this.passwordForm.get('newPassword')?.valueChanges.subscribe(() => {
       this.passwordForm.get('confirmPassword')?.updateValueAndValidity();
     });
+
     this.passwordForm.get('confirmPassword')?.valueChanges.subscribe(() => {
       this.passwordMatchValidator(this.passwordForm);
     });
   }
 
   ngOnInit(): void {
-    // Cargar datos del usuario actual
     this.loadUserData();
   }
 
   loadUserData(): void {
+    this.loadingProfile = true;
 
     this.userService.getProfile()
+      .pipe(finalize(() => this.loadingProfile = false))
       .subscribe({
-
-        next: (response) => {
-
-          if (!response.success || !response.data)
-            return;
+        next: response => {
+          if (!response.success || !response.data) return;
 
           const profile = response.data;
 
@@ -82,27 +85,22 @@ export class UserProfile implements OnInit {
             emailNotifications: profile.settings.emailNotifications,
           });
 
-          this.profileImageUrl = environment.serverUrl + profile.profileImageUrl;
+          this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
         },
-
-        error: (error) => {
+        error: error => {
           console.error(error);
+          this.notificationService.error('No se pudo cargar el perfil');
         }
-
       });
-
   }
 
   onSaveProfile(): void {
-
     if (!this.profileForm.valid) {
-
-      this.notificationService.error(
-        'Por favor, completa el formulario correctamente'
-      );
-
+      this.notificationService.error('Por favor, completa el formulario correctamente');
       return;
     }
+
+    this.savingProfile = true;
 
     const request = {
       userName: this.profileForm.value.userName,
@@ -113,40 +111,26 @@ export class UserProfile implements OnInit {
     };
 
     this.userService.updateProfile(request)
+      .pipe(finalize(() => this.savingProfile = false))
       .subscribe({
-
-        next: (response) => {
-
-          this.notificationService.success(
-            response.message
-          );
-
+        next: response => {
+          this.notificationService.success(response.message);
         },
-
-        error: (error) => {
-
-          this.notificationService.error(
-            error.error?.message ??
-            'Error al actualizar perfil'
-          );
-
+        error: error => {
+          this.notificationService.error(error.error?.message ?? 'Error al actualizar perfil');
         }
-
       });
-
   }
 
-  passwordMatchValidator(form: FormGroup) {
+  passwordMatchValidator(form: FormGroup): void {
     const newPassword = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
 
-    // Si ambos campos están vacíos o no han sido tocados, no hay error
     if (!newPassword?.value && !confirmPassword?.value) {
       confirmPassword?.setErrors(null);
       return;
     }
 
-    // Si las contraseñas no coinciden, establecer error
     if (newPassword?.value !== confirmPassword?.value) {
       confirmPassword?.setErrors({ passwordMismatch: true });
     } else {
@@ -155,15 +139,12 @@ export class UserProfile implements OnInit {
   }
 
   onChangePassword(): void {
-
     if (!this.passwordForm.valid) {
-
-      this.notificationService.error(
-        'Formulario inválido'
-      );
-
+      this.notificationService.error('Formulario inválido');
       return;
     }
+
+    this.changingPassword = true;
 
     const request = {
       currentPassword: this.passwordForm.value.currentPassword,
@@ -172,58 +153,44 @@ export class UserProfile implements OnInit {
     };
 
     this.userService.changePassword(request)
+      .pipe(finalize(() => this.changingPassword = false))
       .subscribe({
-
-        next: (response) => {
-
-          this.notificationService.success(
-            response.message
-          );
-
+        next: response => {
+          this.notificationService.success(response.message);
           this.passwordForm.reset();
         },
-
-        error: (error) => {
-
-          this.notificationService.error(
-            error.error?.message ??
-            'Error al cambiar contraseña'
-          );
+        error: error => {
+          this.notificationService.error(error.error?.message ?? 'Error al cambiar contraseña');
         }
       });
   }
 
   onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
 
-    const input =
-      event.target as HTMLInputElement;
-
-    if (!input.files?.length)
-      return;
+    if (!input.files?.length) return;
 
     const file = input.files[0];
 
-    this.userService
-      .uploadProfileImage(file)
+    this.uploadingImage = true;
+
+    this.userService.uploadProfileImage(file)
+      .pipe(finalize(() => this.uploadingImage = false))
       .subscribe({
-
         next: (response: any) => {
-
           this.notificationService.success(response.message);
           this.loadUserData();
+          input.value = '';
         },
-
-        error: (error) => {
+        error: error => {
           this.notificationService.error(error.error?.message ?? 'Error al subir imagen');
+          input.value = '';
         }
-
       });
-
   }
 
   triggerFileInput(): void {
     const fileInput = document.getElementById('profileImage') as HTMLInputElement;
     fileInput.click();
   }
-
 }

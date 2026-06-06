@@ -89,3 +89,117 @@ body {
   border-radius: 12px !important;
   overflow: visible !important;
 }
+
+/* ========================= */
+/* GLOBAL SKELETON LOADERS */
+/* ========================= */
+
+.skeleton {
+  display: block;
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 75%);
+  background-size: 220% 100%;
+  animation: skeleton-loading 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 220% 0; }
+  100% { background-position: -220% 0; }
+}
+
+.skeleton-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.skeleton-metric-value {
+  width: 150px;
+  height: 28px;
+  margin-bottom: 8px;
+}
+
+.skeleton-title {
+  width: 160px;
+  height: 22px;
+}
+
+.skeleton-subtitle {
+  width: 90px;
+  height: 12px;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 14px;
+}
+
+.skeleton-text.short {
+  width: 35%;
+}
+
+.skeleton-text.medium {
+  width: 55%;
+}
+
+.skeleton-text.long {
+  width: 75%;
+}
+
+.skeleton-card-list {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.skeleton-list-item {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.skeleton-chart-box {
+  min-height: 360px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(160, 180, 255, 0.25);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+
+.skeleton-chart-line {
+  height: 16px;
+}
+
+.skeleton-chart-line.xl {
+  width: 78%;
+}
+
+.skeleton-chart-line.lg {
+  width: 62%;
+}
+
+.skeleton-chart-line.md {
+  width: 44%;
+}
+
+.skeleton-chart-line.sm {
+  width: 28%;
+}
+
+@media (max-width: 600px) {
+  .skeleton-chart-box {
+    min-height: 300px;
+    padding: 28px;
+  }
+
+  .skeleton-metric-value {
+    width: 120px;
+  }
+}

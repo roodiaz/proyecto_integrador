@@ -6,14 +6,20 @@
 
     <div class="header-stats">
 
-      <div class="stat-card" [ngClass]="getBalanceClass()">
-        <div class="stat-icon">💰</div>
+      <div class="stat-card" [ngClass]="!loadingTopCards ? getBalanceClass() : ''">
+        <div class="stat-icon">
+          @if (!loadingTopCards) {
+            💰
+          } @else {
+            <span class="skeleton skeleton-icon"></span>
+          }
+        </div>
 
         <div class="stat-content">
           @if (!loadingTopCards) {
             <div class="stat-value">{{ formatCurrency(topCards?.totalValue) }}</div>
           } @else {
-            <div class="stat-value">Cargando...</div>
+            <div class="skeleton skeleton-metric-value"></div>
           }
 
           <div class="stat-label">Valor Total</div>
@@ -21,21 +27,33 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon">📊</div>
+        <div class="stat-icon">
+          @if (!loadingTopCards) {
+            📊
+          } @else {
+            <span class="skeleton skeleton-icon"></span>
+          }
+        </div>
 
         <div class="stat-content">
           @if (!loadingTopCards) {
             <div class="stat-value">{{ topCards?.activeAssets ?? 0 }}</div>
           } @else {
-            <div class="stat-value">Cargando...</div>
+            <div class="skeleton skeleton-metric-value"></div>
           }
 
           <div class="stat-label">Activos</div>
         </div>
       </div>
 
-      <div class="stat-card" [ngClass]="getProfitClass()">
-        <div class="stat-icon">📈</div>
+      <div class="stat-card" [ngClass]="!loadingTopCards ? getProfitClass() : ''">
+        <div class="stat-icon">
+          @if (!loadingTopCards) {
+            📈
+          } @else {
+            <span class="skeleton skeleton-icon"></span>
+          }
+        </div>
 
         <div class="stat-content">
           @if (!loadingTopCards) {
@@ -44,7 +62,7 @@
               <span class="profit-percent">({{ formatPercent(topCards?.todayProfitPercent) }})</span>
             </div>
           } @else {
-            <div class="stat-value">Cargando...</div>
+            <div class="skeleton skeleton-metric-value"></div>
           }
 
           <div class="stat-label">Profit</div>
@@ -52,13 +70,19 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon">🔔</div>
+        <div class="stat-icon">
+          @if (!loadingTopCards) {
+            🔔
+          } @else {
+            <span class="skeleton skeleton-icon"></span>
+          }
+        </div>
 
         <div class="stat-content">
           @if (!loadingTopCards) {
             <div class="stat-value">{{ topCards?.activeAlerts ?? 0 }}</div>
           } @else {
-            <div class="stat-value">Cargando...</div>
+            <div class="skeleton skeleton-metric-value"></div>
           }
 
           <div class="stat-label">Alertas Activas</div>
@@ -114,7 +138,16 @@
 
     </div>
 
-    @if (hasEnoughChartData) {
+    @if (loadingPerformanceChart) {
+      <div class="skeleton-chart-box">
+        <div class="skeleton skeleton-chart-line xl"></div>
+        <div class="skeleton skeleton-chart-line lg"></div>
+        <div class="skeleton skeleton-chart-line md"></div>
+        <div class="skeleton skeleton-chart-line sm"></div>
+      </div>
+    }
+
+    @if (!loadingPerformanceChart && hasEnoughChartData) {
       <div class="chart-container">
         <canvas id="mainChart" class="main-chart"></canvas>
       </div>
@@ -130,13 +163,6 @@
       </div>
     }
 
-    @if (loadingPerformanceChart) {
-      <div class="chart-empty">
-        <div class="chart-empty-icon">⏳</div>
-        <div class="chart-empty-title">Cargando gráfico...</div>
-      </div>
-    }
-
   </div>
 
   <!-- BOTTOM SECTION -->
@@ -147,7 +173,13 @@
 
       <h3>Distribución del Portfolio</h3>
 
-      @if (!loadingPortfolioDistribution) {
+      @if (loadingPortfolioDistribution) {
+        <div class="skeleton-card-list">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
+      } @else {
         <div class="allocation-list">
           @for (item of portfolioDistribution; track item.sector) {
             <div class="allocation-item">
@@ -170,11 +202,6 @@
             </div>
           }
         </div>
-      } @else {
-        <div class="card-empty">
-          <div class="card-empty-icon">⏳</div>
-          <div class="card-empty-title">Cargando distribución...</div>
-        </div>
       }
 
     </div>
@@ -184,7 +211,13 @@
 
       <h3>Notificaciones Recientes</h3>
 
-      @if (!loadingRecentNotifications) {
+      @if (loadingRecentNotifications) {
+        <div class="skeleton-card-list">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
+      } @else {
         <div class="alerts-modern">
           @for (notification of recentNotifications; track notification) {
             <div class="alert-modern-item" [ngClass]="getNotificationClass(notification)">
@@ -208,11 +241,6 @@
             </div>
           }
         </div>
-      } @else {
-        <div class="card-empty">
-          <div class="card-empty-icon">⏳</div>
-          <div class="card-empty-title">Cargando notificaciones...</div>
-        </div>
       }
 
     </div>
@@ -222,7 +250,13 @@
 
       <h3>Últimas Operaciones</h3>
 
-      @if (!loadingLatestTransactions) {
+      @if (loadingLatestTransactions) {
+        <div class="skeleton-card-list">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
+      } @else {
         @if (latestTransactions.length > 0) {
           <table class="operations-table">
             <thead>
@@ -256,11 +290,6 @@
             <div class="card-empty-text">Cuando compres o vendas activos, se mostrarán acá.</div>
           </div>
         }
-      } @else {
-        <div class="card-empty">
-          <div class="card-empty-icon">⏳</div>
-          <div class="card-empty-title">Cargando operaciones...</div>
-        </div>
       }
 
     </div>

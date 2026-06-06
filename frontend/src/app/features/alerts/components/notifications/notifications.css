@@ -570,3 +570,20 @@
   border-color: var(--accent);
   font-weight: 700;
 }
+
+.notif-list-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notif-list-skeleton .skeleton-list-item {
+  height: 82px;
+  border-radius: 14px;
+}
+
+.notif-chips .skeleton-text {
+  width: 110px;
+  height: 30px;
+  border-radius: 999px;
+}

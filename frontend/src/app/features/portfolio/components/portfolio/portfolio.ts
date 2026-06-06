@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
+import { finalize, forkJoin, Subscription } from 'rxjs';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { PortfolioService } from '../../services/portfolio.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -27,7 +27,14 @@ import {
 })
 export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
-  // Top Cards
+  loadingSummary = false;
+  loadingCharts = false;
+  loadingPositions = false;
+  loadingOperations = false;
+
+  private chartRequestsInProgress = 0;
+  private viewInitialized = false;
+
   portfolioSummary: PortfolioBalanceCards = {
     initialBalance: 0,
     currentBalance: 0,
@@ -38,7 +45,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     lastMarketCloseDate: ''
   };
 
-  // Filters Holdings
   symbolFilter = '';
   positionStatusFilter = '';
   sortBy = 'profitLoss';
@@ -46,14 +52,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   positionsPage = 1;
   positionsPageSize = 5;
 
-  // Holdings
   positions: any[] = [];
   totalPositions = 0;
   totalOperations = 0;
   emptyOperationRows: number[] = [];
   emptyHoldingRows: number[] = [];
 
-  // Filter Operations
   operationsPage = 1;
   operationsPageSize = 10;
   operationSymbolFilter = '';
@@ -61,20 +65,17 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   operationDaysFilter: number | null = null;
   operationOrderBy = 'date';
 
-  // Operations
   operations: PortfolioTransaction[] = [];
 
-  // Top assets data
   topAssets: Array<{ ticker: string, percentage: number }> = [];
 
-  // Chart.js instances
   pieChartData: PortfolioPieChartItem[] = [];
   lineChartData: PortfolioLineChartItem[] = [];
   pieChart: Chart | null = null;
   lineChart: Chart | null = null;
 
-  // Time period selector
-  selectedPeriod: string = '1m';
+  selectedPeriod = '1m';
+
   timePeriods = [
     { value: '7d', label: '7 días' },
     { value: '1m', label: '1 mes' },
@@ -97,19 +98,16 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.refreshPortfolioData();
   }
 
-  ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-  }
-
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initializeCharts();
-    }, 100);
+    this.viewInitialized = true;
+    this.renderChartsWhenReady();
   }
 
-  // ─── Computed total pages ────────────────────────────────────────────────────
+  ngOnDestroy(): void {
+    if (this.subscription) this.subscription.unsubscribe();
+    if (this.pieChart) this.pieChart.destroy();
+    if (this.lineChart) this.lineChart.destroy();
+  }
 
   get totalPositionsPages(): number {
     return Math.max(1, Math.ceil(this.totalPositions / this.positionsPageSize));
@@ -118,8 +116,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   get totalOperationsPages(): number {
     return Math.max(1, Math.ceil(this.totalOperations / this.operationsPageSize));
   }
-
-  // ─── Page number arrays ──────────────────────────────────────────────────────
 
   getPositionPageNumbers(): number[] {
     return this.buildPageNumbers(this.positionsPage, this.totalPositionsPages);
@@ -133,26 +129,24 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     const maxVisible = 5;
     let start = Math.max(1, current - Math.floor(maxVisible / 2));
     let end = Math.min(total, start + maxVisible - 1);
+
     if (end - start + 1 < maxVisible) {
       start = Math.max(1, end - maxVisible + 1);
     }
+
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
-  // ─── Navegación Tenencias ────────────────────────────────────────────────────
-
   previousPositionsPage(): void {
-    if (this.positionsPage > 1) {
-      this.positionsPage--;
-      this.loadPositions();
-    }
+    if (this.positionsPage <= 1) return;
+    this.positionsPage--;
+    this.loadPositions();
   }
 
   nextPositionsPage(): void {
-    if (this.positionsPage < this.totalPositionsPages) {
-      this.positionsPage++;
-      this.loadPositions();
-    }
+    if (this.positionsPage >= this.totalPositionsPages) return;
+    this.positionsPage++;
+    this.loadPositions();
   }
 
   goToPositionsPage(page: number): void {
@@ -165,20 +159,16 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.loadPositions();
   }
 
-  // ─── Navegación Operaciones ──────────────────────────────────────────────────
-
   previousOperationsPage(): void {
-    if (this.operationsPage > 1) {
-      this.operationsPage--;
-      this.loadOperations();
-    }
+    if (this.operationsPage <= 1) return;
+    this.operationsPage--;
+    this.loadOperations();
   }
 
   nextOperationsPage(): void {
-    if (this.operationsPage < this.totalOperationsPages) {
-      this.operationsPage++;
-      this.loadOperations();
-    }
+    if (this.operationsPage >= this.totalOperationsPages) return;
+    this.operationsPage++;
+    this.loadOperations();
   }
 
   goToOperationsPage(page: number): void {
@@ -191,9 +181,175 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.loadOperations();
   }
 
-  // ─── Data loading ────────────────────────────────────────────────────────────
+  loadBalanceCards(): void {
+    this.loadingSummary = true;
+
+    this.portfolioService.getBalanceCards()
+      .pipe(finalize(() => this.loadingSummary = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.portfolioSummary = {
+              initialBalance: 0,
+              currentBalance: 0,
+              profitLoss: 0,
+              profitLossPercent: 0,
+              totalOperations: 0,
+              maxOperations: 0,
+              lastMarketCloseDate: ''
+            };
+
+            return;
+          }
+
+          this.portfolioSummary = response.data;
+        },
+        error: error => {
+          console.error('Error cargando resumen del portfolio', error);
+
+          this.portfolioSummary = {
+            initialBalance: 0,
+            currentBalance: 0,
+            profitLoss: 0,
+            profitLossPercent: 0,
+            totalOperations: 0,
+            maxOperations: 0,
+            lastMarketCloseDate: ''
+          };
+        }
+      });
+  }
+
+  loadCharts(): void {
+    this.beginChartLoading();
+
+    forkJoin({
+      pie: this.portfolioService.getPieChart(),
+      line: this.portfolioService.getLineChart(this.selectedPeriod)
+    })
+      .pipe(finalize(() => this.endChartLoading()))
+      .subscribe({
+        next: response => {
+          this.pieChartData = response.pie?.data ?? [];
+          this.lineChartData = response.line?.data ?? [];
+
+          this.topAssets = this.pieChartData.slice(0, 3).map(x => ({
+            ticker: x.symbol,
+            percentage: x.percentage
+          }));
+
+          this.renderChartsWhenReady();
+        },
+        error: error => {
+          console.error('Error cargando gráficos del portfolio', error);
+
+          this.pieChartData = [];
+          this.lineChartData = [];
+          this.topAssets = [];
+
+          this.renderChartsWhenReady();
+        }
+      });
+  }
+
+  loadPieChart(): void {
+    this.beginChartLoading();
+
+    this.portfolioService.getPieChart()
+      .pipe(finalize(() => this.endChartLoading()))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.pieChartData = [];
+            this.topAssets = [];
+            this.renderChartsWhenReady();
+            return;
+          }
+
+          this.pieChartData = response.data;
+
+          this.topAssets = this.pieChartData.slice(0, 3).map(x => ({
+            ticker: x.symbol,
+            percentage: x.percentage
+          }));
+
+          this.renderChartsWhenReady();
+        },
+        error: error => {
+          console.error('Error cargando distribución del portfolio', error);
+
+          this.pieChartData = [];
+          this.topAssets = [];
+
+          this.renderChartsWhenReady();
+        }
+      });
+  }
+
+  loadLineChart(): void {
+    this.beginChartLoading();
+
+    this.portfolioService.getLineChart(this.selectedPeriod)
+      .pipe(finalize(() => this.endChartLoading()))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.lineChartData = [];
+            this.renderChartsWhenReady();
+            return;
+          }
+
+          this.lineChartData = response.data;
+          this.renderChartsWhenReady();
+        },
+        error: error => {
+          console.error('Error cargando evolución del portfolio', error);
+
+          this.lineChartData = [];
+
+          this.renderChartsWhenReady();
+        }
+      });
+  }
+
+  loadPositions(): void {
+    this.loadingPositions = true;
+
+    const filter = {
+      page: this.positionsPage,
+      pageSize: this.positionsPageSize,
+      symbol: this.symbolFilter,
+      status: this.positionStatusFilter,
+      sortBy: this.sortBy,
+      sortDirection: this.sortDirection
+    };
+
+    this.portfolioService.getOpenPositions(filter)
+      .pipe(finalize(() => this.loadingPositions = false))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.positions = [];
+            this.totalPositions = 0;
+            this.updateEmptyHoldingRows();
+            return;
+          }
+
+          this.positions = response.data.items ?? [];
+          this.totalPositions = response.data.total ?? 0;
+          this.updateEmptyHoldingRows();
+        },
+        error: error => {
+          console.error('Error cargando tenencias', error);
+          this.positions = [];
+          this.totalPositions = 0;
+          this.updateEmptyHoldingRows();
+        }
+      });
+  }
 
   loadOperations(): void {
+    this.loadingOperations = true;
 
     const filter: TransactionFilter = {
       page: this.operationsPage,
@@ -204,28 +360,26 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       orderBy: this.operationOrderBy
     };
 
-    this.portfolioService
-      .getTransactionHistory(filter)
+    this.portfolioService.getTransactionHistory(filter)
+      .pipe(finalize(() => this.loadingOperations = false))
       .subscribe({
-        next: (response) => {
-          this.operations = response.data?.data ?? [];
-          this.totalOperations = response.data?.total ?? 0;
+        next: response => {
+          if (!response.success || !response.data) {
+            this.operations = [];
+            this.totalOperations = 0;
+            this.updateEmptyOperationRows();
+            return;
+          }
+
+          this.operations = response.data.data ?? [];
+          this.totalOperations = response.data.total ?? 0;
           this.updateEmptyOperationRows();
         },
-        error: (error) => { console.error(error); }
-      });
-  }
-
-  loadBalanceCards(): void {
-
-    this.portfolioService
-      .getBalanceCards()
-      .subscribe({
-        next: (response) => {
-          this.portfolioSummary = response.data!;
-        },
-        error: (error) => {
-          console.error('Error loading balance cards', error);
+        error: error => {
+          console.error('Error cargando operaciones', error);
+          this.operations = [];
+          this.totalOperations = 0;
+          this.updateEmptyOperationRows();
         }
       });
   }
@@ -235,7 +389,15 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.loadLineChart();
   }
 
-  // ─── Modal methods ───────────────────────────────────────────────────────────
+  onPositionFiltersChange(): void {
+    this.positionsPage = 1;
+    this.loadPositions();
+  }
+
+  onOperationFiltersChange(): void {
+    this.operationsPage = 1;
+    this.loadOperations();
+  }
 
   openBuyModal(symbol?: string): void {
     const dialogRef = this.dialog.open(PortfolioModal, {
@@ -277,49 +439,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  // ─── Charts ──────────────────────────────────────────────────────────────────
-
   initializeCharts(): void {
     this.createPieChart();
     this.createLineChart();
   }
 
-  loadPieChart(): void {
-    this.portfolioService
-      .getPieChart()
-      .subscribe({
-        next: (response) => {
-          this.pieChartData = response.data!;
-          this.topAssets = this.pieChartData
-            .slice(0, 3)
-            .map(x => ({
-              ticker: x.symbol,
-              percentage: x.percentage
-            }));
-          this.createPieChart();
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
-  }
-
-  loadLineChart(): void {
-    this.portfolioService
-      .getLineChart(this.selectedPeriod)
-      .subscribe({
-        next: (response) => {
-          this.lineChartData = response.data!;
-          this.createLineChart();
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
-  }
-
   createPieChart(): void {
-
     const canvas = document.getElementById('pieChart') as HTMLCanvasElement;
     if (!canvas) return;
 
@@ -368,7 +493,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   }
 
   createLineChart(): void {
-
     const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
     if (!canvas) return;
 
@@ -417,17 +541,15 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
               title: (context: any) => {
                 const index = context[0].dataIndex;
                 const date = new Date(data[index].date);
-                if (
-                  this.selectedPeriod === '7d' ||
-                  this.selectedPeriod === '1m' ||
-                  this.selectedPeriod === '3m'
-                ) {
+
+                if (this.selectedPeriod === '7d' || this.selectedPeriod === '1m' || this.selectedPeriod === '3m') {
                   return date.toLocaleDateString('es-ES', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
                   });
                 }
+
                 return date.toLocaleDateString('es-ES', {
                   month: 'long',
                   year: 'numeric'
@@ -455,16 +577,14 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
               maxTicksLimit: 4,
               callback: (value: any, index: any) => {
                 const date = new Date(data[index].date);
-                if (
-                  this.selectedPeriod === '7d' ||
-                  this.selectedPeriod === '1m' ||
-                  this.selectedPeriod === '3m'
-                ) {
+
+                if (this.selectedPeriod === '7d' || this.selectedPeriod === '1m' || this.selectedPeriod === '3m') {
                   return date.toLocaleDateString('es-ES', {
                     day: 'numeric',
                     month: 'short'
                   });
                 }
+
                 return date.toLocaleDateString('es-ES', {
                   month: 'short',
                   year: '2-digit'
@@ -499,39 +619,62 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     return colors[index % colors.length];
   }
 
-  onOperationFiltersChange(): void {
-    this.operationsPage = 1;
+  onBuyComplete(data: BuyData): void {
+    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+      next: response => {
+        if (response.success) {
+          this.snackBarService.success(response.message || 'Compra realizada correctamente');
+          this.refreshPortfolioData();
+        } else {
+          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
+        }
+      },
+      error: () => {
+        this.snackBarService.error('Error al realizar la compra');
+      }
+    });
+  }
+
+  sellPosition(data: SellData): void {
+    this.portfolioService.sell(data).subscribe({
+      next: response => {
+        if (response.success) {
+          this.snackBarService.success(response.message || 'Venta realizada correctamente');
+          this.refreshPortfolioData();
+        } else {
+          this.snackBarService.info(response.message || 'No se pudo realizar la venta');
+        }
+      },
+      error: error => {
+        this.snackBarService.error(error.error?.message ?? 'Error al vender activo');
+      }
+    });
+  }
+
+  private refreshPortfolioData(): void {
+    this.loadBalanceCards();
+    this.loadCharts();
+    this.loadPositions();
     this.loadOperations();
   }
 
-  loadPositions(): void {
-
-    const filter = {
-      page: this.positionsPage,
-      pageSize: this.positionsPageSize,
-      symbol: this.symbolFilter,
-      status: this.positionStatusFilter,
-      sortBy: this.sortBy,
-      sortDirection: this.sortDirection
-    };
-
-    this.portfolioService
-      .getOpenPositions(filter)
-      .subscribe({
-        next: (response) => {
-          this.positions = response.data?.items ?? [];
-          this.totalPositions = response.data?.total ?? 0;
-          this.updateEmptyHoldingRows();
-        },
-        error: (error) => {
-          console.error(error);
-        }
-      });
+  private beginChartLoading(): void {
+    this.chartRequestsInProgress++;
+    this.loadingCharts = true;
   }
 
-  onPositionFiltersChange(): void {
-    this.positionsPage = 1;
-    this.loadPositions();
+  private endChartLoading(): void {
+    this.chartRequestsInProgress = Math.max(0, this.chartRequestsInProgress - 1);
+    this.loadingCharts = this.chartRequestsInProgress > 0;
+  }
+
+  private renderChartsWhenReady(): void {
+    if (!this.viewInitialized) return;
+
+    setTimeout(() => {
+      this.createPieChart();
+      this.createLineChart();
+    }, 0);
   }
 
   private updateEmptyHoldingRows(): void {
@@ -542,45 +685,5 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   private updateEmptyOperationRows(): void {
     const missing = Math.max(0, this.operationsPageSize - this.operations.length);
     this.emptyOperationRows = Array(missing).fill(0);
-  }
-
-onBuyComplete(data: BuyData): void {
-  this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
-    next: response => {
-      if (response.success) {
-        this.snackBarService.success(response.message || 'Compra realizada correctamente');
-        this.refreshPortfolioData();
-      } else {
-        this.snackBarService.info(response.message || 'No se pudo realizar la compra');
-      }
-    },
-    error: () => {
-      this.snackBarService.error('Error al realizar la compra');
-    }
-  });
-}
-
-sellPosition(data: SellData): void {
-  this.portfolioService.sell(data).subscribe({
-    next: response => {
-      if (response.success) {
-        this.snackBarService.success(response.message || 'Venta realizada correctamente');
-        this.refreshPortfolioData();
-      } else {
-        this.snackBarService.info(response.message || 'No se pudo realizar la venta');
-      }
-    },
-    error: error => {
-      this.snackBarService.error(error.error?.message ?? 'Error al vender activo');
-    }
-  });
-}
-
-  private refreshPortfolioData(): void {
-    this.loadBalanceCards();
-    this.loadPieChart();
-    this.loadLineChart();
-    this.loadPositions();
-    this.loadOperations();
   }
 }
