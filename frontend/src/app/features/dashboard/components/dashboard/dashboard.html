@@ -8,39 +8,59 @@
 
       <div class="stat-card" [ngClass]="getBalanceClass()">
         <div class="stat-icon">💰</div>
+
         <div class="stat-content">
-          <div class="stat-value" *ngIf="!loadingTopCards">{{ formatCurrency(topCards?.totalValue) }}</div>
-          <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
+          @if (!loadingTopCards) {
+            <div class="stat-value">{{ formatCurrency(topCards?.totalValue) }}</div>
+          } @else {
+            <div class="stat-value">Cargando...</div>
+          }
+
           <div class="stat-label">Valor Total</div>
         </div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon">📊</div>
+
         <div class="stat-content">
-          <div class="stat-value" *ngIf="!loadingTopCards">{{ topCards?.activeAssets ?? 0 }}</div>
-          <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
+          @if (!loadingTopCards) {
+            <div class="stat-value">{{ topCards?.activeAssets ?? 0 }}</div>
+          } @else {
+            <div class="stat-value">Cargando...</div>
+          }
+
           <div class="stat-label">Activos</div>
         </div>
       </div>
 
       <div class="stat-card" [ngClass]="getProfitClass()">
         <div class="stat-icon">📈</div>
+
         <div class="stat-content">
-          <div class="stat-value" *ngIf="!loadingTopCards">
-            {{ formatCurrency(topCards?.todayProfit) }}
-            <span class="profit-percent">({{ formatPercent(topCards?.todayProfitPercent) }})</span>
-          </div>
-          <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
+          @if (!loadingTopCards) {
+            <div class="stat-value">
+              {{ formatCurrency(topCards?.todayProfit) }}
+              <span class="profit-percent">({{ formatPercent(topCards?.todayProfitPercent) }})</span>
+            </div>
+          } @else {
+            <div class="stat-value">Cargando...</div>
+          }
+
           <div class="stat-label">Profit</div>
         </div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon">🔔</div>
+
         <div class="stat-content">
-          <div class="stat-value" *ngIf="!loadingTopCards">{{ topCards?.activeAlerts ?? 0 }}</div>
-          <div class="stat-value" *ngIf="loadingTopCards">Cargando...</div>
+          @if (!loadingTopCards) {
+            <div class="stat-value">{{ topCards?.activeAlerts ?? 0 }}</div>
+          } @else {
+            <div class="stat-value">Cargando...</div>
+          }
+
           <div class="stat-label">Alertas Activas</div>
         </div>
       </div>
@@ -57,190 +77,191 @@
         <h2 class="chart-title">Portfolio vs S&P500 vs NASDAQ</h2>
 
         <div class="chart-subtitle">
-          <span class="current-value">{{ formatCurrency(performanceChart?.currentValue ?? topCards?.totalValue)
-            }}</span>
-          <span class="change" [ngClass]="getChartVariationClass()">{{ formatPercent(performanceChart?.variationPercent)
-            }}</span>
-          <span class="period">{{ performanceChart?.variationText || 'últimos 30 días' }}</span>
+          <span class="current-value">
+            {{ formatCurrency(performanceChart?.currentValue ?? topCards?.totalValue) }}
+          </span>
+
+          <span class="change" [ngClass]="getChartVariationClass()">
+            {{ formatPercent(performanceChart?.variationPercent) }}
+          </span>
+
+          <span class="period">
+            {{ performanceChart?.variationText || 'últimos 30 días' }}
+          </span>
         </div>
       </div>
 
       <div class="chart-controls">
 
         <div class="time-selector">
-          <button class="time-btn" [class.active]="selectedPeriod === '1W'"
-            (click)="selectedPeriod = '1W'; onPeriodChange()">1W</button>
-
-          <button class="time-btn" [class.active]="selectedPeriod === '1M'"
-            (click)="selectedPeriod = '1M'; onPeriodChange()">1M</button>
-
-          <button class="time-btn" [class.active]="selectedPeriod === '3M'"
-            (click)="selectedPeriod = '3M'; onPeriodChange()">3M</button>
-
-          <button class="time-btn" [class.active]="selectedPeriod === '1Y'"
-            (click)="selectedPeriod = '1Y'; onPeriodChange()">1Y</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1W'" (click)="selectedPeriod = '1W'; onPeriodChange()">1W</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1M'" (click)="selectedPeriod = '1M'; onPeriodChange()">1M</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '3M'" (click)="selectedPeriod = '3M'; onPeriodChange()">3M</button>
+          <button class="time-btn" [class.active]="selectedPeriod === '1Y'" (click)="selectedPeriod = '1Y'; onPeriodChange()">1Y</button>
         </div>
 
         <div class="chart-type-selector">
-
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'"
-            (click)="selectedChartType = 'line'; onChartTypeChange()">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="selectedChartType = 'line'; onChartTypeChange()">
             <mat-icon>show_chart</mat-icon>
           </button>
 
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'"
-            (click)="selectedChartType = 'bar'; onChartTypeChange()">
+          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="selectedChartType = 'bar'; onChartTypeChange()">
             <mat-icon>bar_chart</mat-icon>
           </button>
-
         </div>
 
       </div>
 
     </div>
 
-    <div class="chart-container" *ngIf="hasEnoughChartData">
-      <canvas id="mainChart" class="main-chart"></canvas>
-    </div>
-
-    <div class="chart-empty" *ngIf="!loadingPerformanceChart && !hasEnoughChartData">
-      <div class="chart-empty-icon">📉</div>
-      <div class="chart-empty-title">No hay suficientes datos históricos</div>
-      <div class="chart-empty-text">
-        Todavía no existen suficientes snapshots del portfolio para mostrar la evolución de este período.
+    @if (hasEnoughChartData) {
+      <div class="chart-container">
+        <canvas id="mainChart" class="main-chart"></canvas>
       </div>
-    </div>
+    }
 
-    <div class="chart-empty" *ngIf="loadingPerformanceChart">
-      <div class="chart-empty-icon">⏳</div>
-      <div class="chart-empty-title">Cargando gráfico...</div>
-    </div>
+    @if (!loadingPerformanceChart && !hasEnoughChartData) {
+      <div class="chart-empty">
+        <div class="chart-empty-icon">📉</div>
+        <div class="chart-empty-title">No hay suficientes datos históricos</div>
+        <div class="chart-empty-text">
+          Todavía no existen suficientes snapshots del portfolio para mostrar la evolución de este período.
+        </div>
+      </div>
+    }
+
+    @if (loadingPerformanceChart) {
+      <div class="chart-empty">
+        <div class="chart-empty-icon">⏳</div>
+        <div class="chart-empty-title">Cargando gráfico...</div>
+      </div>
+    }
 
   </div>
 
   <!-- BOTTOM SECTION -->
-
   <div class="dashboard-grid">
 
     <!-- DISTRIBUCION -->
-
     <div class="dashboard-card">
 
       <h3>Distribución del Portfolio</h3>
 
-      <div class="allocation-list" *ngIf="!loadingPortfolioDistribution && portfolioDistribution.length > 0">
+      @if (!loadingPortfolioDistribution) {
+        <div class="allocation-list">
+          @for (item of portfolioDistribution; track item.sector) {
+            <div class="allocation-item">
+              <div class="allocation-header">
+                <span>{{ item.sector }}</span>
+                <span>{{ item.percentage.toFixed(2) }}%</span>
+              </div>
 
-        <div class="allocation-item" *ngFor="let item of portfolioDistribution">
-
-          <div class="allocation-header">
-            <span>{{ item.sector }}</span>
-            <span>{{ item.percentage.toFixed(2) }}%</span>
-          </div>
-
-          <div class="allocation-bar">
-            <div class="allocation-fill" [style.width]="getAllocationWidth(item.percentage)"></div>
-          </div>
-
+              <div class="allocation-bar">
+                <div class="allocation-fill" [style.width]="getAllocationWidth(item.percentage)"></div>
+              </div>
+            </div>
+          } @empty {
+            <div class="card-empty">
+              <div class="card-empty-icon">📊</div>
+              <div class="card-empty-title">No hay distribución disponible</div>
+              <div class="card-empty-text">
+                Cuando tengas activos en tu portfolio, se mostrará la distribución por sector.
+              </div>
+            </div>
+          }
         </div>
-
-      </div>
-
-      <div class="card-empty" *ngIf="!loadingPortfolioDistribution && portfolioDistribution.length === 0">
-        <div class="card-empty-icon">📊</div>
-        <div class="card-empty-title">No hay distribución disponible</div>
-        <div class="card-empty-text">Cuando tengas activos en tu portfolio, se mostrará la distribución por sector.
+      } @else {
+        <div class="card-empty">
+          <div class="card-empty-icon">⏳</div>
+          <div class="card-empty-title">Cargando distribución...</div>
         </div>
-      </div>
-
-      <div class="card-empty" *ngIf="loadingPortfolioDistribution">
-        <div class="card-empty-icon">⏳</div>
-        <div class="card-empty-title">Cargando distribución...</div>
-      </div>
+      }
 
     </div>
 
     <!-- NOTIFICACIONES -->
-
     <div class="dashboard-card">
 
       <h3>Notificaciones Recientes</h3>
 
-      <div class="alerts-modern" *ngIf="!loadingRecentNotifications && recentNotifications.length > 0">
+      @if (!loadingRecentNotifications) {
+        <div class="alerts-modern">
+          @for (notification of recentNotifications; track notification) {
+            <div class="alert-modern-item" [ngClass]="getNotificationClass(notification)">
+              <div class="alert-modern-symbol">
+                {{ getNotificationSymbol(notification.message) }}
+              </div>
 
-        <div class="alert-modern-item" *ngFor="let notification of recentNotifications"
-          [ngClass]="getNotificationClass(notification)">
+              <div class="alert-modern-message">
+                {{ getNotificationMessage(notification.message) }}
+              </div>
 
-          <div class="alert-modern-symbol">
-            {{ getNotificationSymbol(notification.message) }}
-          </div>
-
-          <div class="alert-modern-message">
-            {{ getNotificationMessage(notification.message) }}
-          </div>
-
-          <div class="alert-modern-date">
-            {{ formatRelativeDate(notification.createdAt) }}
-          </div>
-
+              <div class="alert-modern-date">
+                {{ formatRelativeDate(notification.createdAt) }}
+              </div>
+            </div>
+          } @empty {
+            <div class="card-empty">
+              <div class="card-empty-icon">🔕</div>
+              <div class="card-empty-title">No hay notificaciones recientes</div>
+              <div class="card-empty-text">Cuando una alerta se dispare, aparecerá acá.</div>
+            </div>
+          }
         </div>
-
-      </div>
-
-      <div class="card-empty" *ngIf="!loadingRecentNotifications && recentNotifications.length === 0">
-        <div class="card-empty-icon">🔕</div>
-        <div class="card-empty-title">No hay notificaciones recientes</div>
-        <div class="card-empty-text">Cuando una alerta se dispare, aparecerá acá.</div>
-      </div>
-
-      <div class="card-empty" *ngIf="loadingRecentNotifications">
-        <div class="card-empty-icon">⏳</div>
-        <div class="card-empty-title">Cargando notificaciones...</div>
-      </div>
+      } @else {
+        <div class="card-empty">
+          <div class="card-empty-icon">⏳</div>
+          <div class="card-empty-title">Cargando notificaciones...</div>
+        </div>
+      }
 
     </div>
 
     <!-- OPERACIONES -->
-
     <div class="dashboard-card">
 
       <h3>Últimas Operaciones</h3>
 
-      <table class="operations-table" *ngIf="!loadingLatestTransactions && latestTransactions.length > 0">
+      @if (!loadingLatestTransactions) {
+        @if (latestTransactions.length > 0) {
+          <table class="operations-table">
+            <thead>
+              <tr>
+                <th>Activo</th>
+                <th>Tipo</th>
+                <th>Precio</th>
+              </tr>
+            </thead>
 
-        <thead>
-          <tr>
-            <th>Activo</th>
-            <th>Tipo</th>
-            <th>Precio</th>
-          </tr>
-        </thead>
+            <tbody>
+              @for (transaction of latestTransactions; track transaction) {
+                <tr>
+                  <td>{{ transaction.assetSymbol }}</td>
 
-        <tbody>
-          <tr *ngFor="let transaction of latestTransactions">
-            <td>{{ transaction.assetSymbol }}</td>
+                  <td>
+                    <span class="operation-badge" [ngClass]="getTransactionClass(transaction.type)">
+                      {{ transaction.type }}
+                    </span>
+                  </td>
 
-            <td>
-              <span class="operation-badge" [ngClass]="getTransactionClass(transaction.type)">
-                {{ transaction.type }}
-              </span>
-            </td>
-
-            <td>{{ formatCurrency(transaction.total) }}</td>
-          </tr>
-        </tbody>
-
-      </table>
-
-      <div class="card-empty" *ngIf="!loadingLatestTransactions && latestTransactions.length === 0">
-        <div class="card-empty-icon">📭</div>
-        <div class="card-empty-title">No hay operaciones recientes</div>
-        <div class="card-empty-text">Cuando compres o vendas activos, se mostrarán acá.</div>
-      </div>
-
-      <div class="card-empty" *ngIf="loadingLatestTransactions">
-        <div class="card-empty-icon">⏳</div>
-        <div class="card-empty-title">Cargando operaciones...</div>
-      </div>
+                  <td>{{ formatCurrency(transaction.total) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="card-empty">
+            <div class="card-empty-icon">📭</div>
+            <div class="card-empty-title">No hay operaciones recientes</div>
+            <div class="card-empty-text">Cuando compres o vendas activos, se mostrarán acá.</div>
+          </div>
+        }
+      } @else {
+        <div class="card-empty">
+          <div class="card-empty-icon">⏳</div>
+          <div class="card-empty-title">Cargando operaciones...</div>
+        </div>
+      }
 
     </div>
 

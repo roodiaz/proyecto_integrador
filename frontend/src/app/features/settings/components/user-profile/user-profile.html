@@ -4,15 +4,17 @@
   <header class="profile-hero">
     <div class="avatar-wrapper" (click)="triggerFileInput()">
       <img [src]="profileImageUrl || 'assets/images/default-avatar.png'" alt="Foto perfil" class="profile-avatar">
+
       <div class="avatar-overlay">
         <mat-icon>edit</mat-icon>
       </div>
+
       <input type="file" id="profileImage" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
     </div>
+
     <div class="hero-info">
       <h1 class="hero-name">Perfil de Usuario</h1>
       <p class="hero-subtitle">Administra tu información personal y preferencias</p>
-
     </div>
   </header>
 
@@ -25,33 +27,43 @@
         <mat-icon class="card-icon">badge</mat-icon>
         <h2 class="card-title">Información Personal</h2>
       </div>
+
       <form [formGroup]="profileForm">
         <div class="fields-grid">
 
           <div class="field-group">
             <label class="field-label">Nombre de Usuario *</label>
+
             <div class="field-input-wrap">
               <input matInput formControlName="userName" class="field-input" placeholder="Tu nombre de usuario">
               <mat-icon class="field-icon">person</mat-icon>
             </div>
-            <span class="field-error" *ngIf="profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched">
-              El nombre es requerido
-            </span>
+
+            @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
+              <span class="field-error">
+                El nombre es requerido
+              </span>
+            }
           </div>
 
           <div class="field-group">
             <label class="field-label">Correo Electrónico *</label>
+
             <div class="field-input-wrap">
               <input matInput formControlName="email" type="email" class="field-input" placeholder="ejemplo@dominio.com">
               <mat-icon class="field-icon">mail</mat-icon>
             </div>
-            <span class="field-error" *ngIf="profileForm.get('email')?.hasError('email') && profileForm.get('email')?.touched">
-              Por favor ingresá un correo válido
-            </span>
+
+            @if (profileForm.get('email')?.hasError('email') && profileForm.get('email')?.touched) {
+              <span class="field-error">
+                Por favor ingresá un correo válido
+              </span>
+            }
           </div>
 
           <div class="field-group">
             <label class="field-label">Fecha de Nacimiento</label>
+
             <div class="field-input-wrap datepicker-wrap">
               <input [matDatepicker]="picker" formControlName="birthDate" class="field-input" placeholder="dd/mm/aaaa" readonly>
               <mat-datepicker-toggle [for]="picker" class="datepicker-toggle-btn"></mat-datepicker-toggle>
@@ -61,13 +73,17 @@
 
           <div class="field-group">
             <label class="field-label">Teléfono</label>
+
             <div class="field-input-wrap">
               <input matInput formControlName="phone" class="field-input" placeholder="+54 11 1234-5678">
               <mat-icon class="field-icon">call</mat-icon>
             </div>
-            <span class="field-error" *ngIf="profileForm.get('phone')?.hasError('pattern') && profileForm.get('phone')?.touched">
-              Formato de teléfono inválido
-            </span>
+
+            @if (profileForm.get('phone')?.hasError('pattern') && profileForm.get('phone')?.touched) {
+              <span class="field-error">
+                Formato de teléfono inválido
+              </span>
+            }
           </div>
 
         </div>
@@ -80,11 +96,13 @@
         <mat-icon class="card-icon">settings_suggest</mat-icon>
         <h2 class="card-title">Preferencias</h2>
       </div>
+
       <form [formGroup]="profileForm">
         <div class="fields-stack">
 
           <div class="field-group">
             <label class="field-label">Idioma</label>
+
             <div class="field-input-wrap">
               <mat-select class="field-select" value="es" panelClass="dark-select-panel">
                 <mat-option value="es">Español</mat-option>
@@ -92,12 +110,14 @@
                   Inglés <span class="coming-soon-inline">(Próximamente)</span>
                 </mat-option>
               </mat-select>
+
               <mat-icon class="field-icon">language</mat-icon>
             </div>
           </div>
 
           <div class="field-group">
             <label class="field-label">Moneda Principal *</label>
+
             <div class="field-input-wrap">
               <mat-select formControlName="currency" class="field-select" panelClass="dark-select-panel">
                 <mat-option value="USD">Dólares (USD)</mat-option>
@@ -108,6 +128,7 @@
                   Pesos Argentinos (ARS) <span class="coming-soon-inline">(Próximamente)</span>
                 </mat-option>
               </mat-select>
+
               <mat-icon class="field-icon">payments</mat-icon>
             </div>
           </div>
@@ -122,12 +143,14 @@
         <mat-icon class="card-icon">notifications</mat-icon>
         <h2 class="card-title">Notificaciones</h2>
       </div>
+
       <form [formGroup]="profileForm">
         <div class="notification-row">
           <div class="notification-info">
             <span class="notif-label">Correo Electrónico</span>
             <span class="notif-desc">Alertas de mercado y seguridad</span>
           </div>
+
           <mat-slide-toggle formControlName="emailNotifications" color="primary"></mat-slide-toggle>
         </div>
       </form>
@@ -139,13 +162,16 @@
         <mat-icon class="card-icon">lock_reset</mat-icon>
         <h2 class="card-title">Seguridad</h2>
       </div>
+
       <form [formGroup]="passwordForm">
         <div class="fields-grid">
 
           <div class="field-group">
             <label class="field-label">Contraseña Actual</label>
+
             <div class="field-input-wrap">
               <input [type]="hidePassword ? 'password' : 'text'" formControlName="currentPassword" class="field-input" placeholder="••••••••">
+
               <button type="button" class="field-icon icon-btn" (click)="hidePassword = !hidePassword">
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
@@ -154,8 +180,10 @@
 
           <div class="field-group">
             <label class="field-label">Nueva Contraseña</label>
+
             <div class="field-input-wrap">
               <input [type]="hidePassword ? 'password' : 'text'" formControlName="newPassword" class="field-input" placeholder="••••••••">
+
               <button type="button" class="field-icon icon-btn" (click)="hidePassword = !hidePassword">
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
@@ -164,15 +192,20 @@
 
           <div class="field-group">
             <label class="field-label">Confirmar Nueva Contraseña</label>
+
             <div class="field-input-wrap">
               <input [type]="hidePassword ? 'password' : 'text'" formControlName="confirmPassword" class="field-input" placeholder="••••••••">
+
               <button type="button" class="field-icon icon-btn" (click)="hidePassword = !hidePassword">
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
-            <span class="field-error" *ngIf="passwordForm.get('confirmPassword')?.hasError('passwordMismatch')">
-              Las contraseñas no coinciden
-            </span>
+
+            @if (passwordForm.get('confirmPassword')?.hasError('passwordMismatch')) {
+              <span class="field-error">
+                Las contraseñas no coinciden
+              </span>
+            }
           </div>
 
         </div>
@@ -183,10 +216,12 @@
             <mat-icon class="note-icon">info</mat-icon>
             Toda la información se cifra mediante protocolos de grado institucional AES-256 antes de guardarse en nuestros servidores.
           </p>
+
           <div class="action-buttons">
             <button class="btn btn-secondary" type="button" (click)="onChangePassword()">
               Cambiar Contraseña
             </button>
+
             <button class="btn btn-primary" type="button" (click)="onSaveProfile()">
               <mat-icon>save</mat-icon>
               Guardar Cambios

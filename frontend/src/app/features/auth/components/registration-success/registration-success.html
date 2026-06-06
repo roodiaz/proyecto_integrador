@@ -8,42 +8,47 @@
 
     <mat-card-content>
       <!-- Success Icon -->
-      <div class="success-icon" *ngIf="emailSent">
-        <mat-icon class="check-icon">check_circle</mat-icon>
-      </div>
-      <div class="success-icon error-icon-container" *ngIf="!emailSent">
-        <mat-icon class="error-icon">error</mat-icon>
-      </div>
+      @if (emailSent) {
+        <div class="success-icon">
+          <mat-icon class="check-icon">check_circle</mat-icon>
+        </div>
+      } @else {
+        <div class="success-icon error-icon-container">
+          <mat-icon class="error-icon">error</mat-icon>
+        </div>
+      }
 
       <!-- Success Message -->
       <div class="success-message">
-        <h2 *ngIf="emailSent">
-          Revisa tu correo electrónico
-        </h2>
+        @if (emailSent) {
+          <h2>Revisa tu correo electrónico</h2>
 
-        <h2 *ngIf="!emailSent">
-          Error al enviar el correo
-        </h2>
-        <p class="main-message" *ngIf="emailSent">
-          Hemos enviado un código de verificación a:<br>
-          <strong>{{ userEmail }}</strong>
-        </p>
-        <p class="instructions" *ngIf="emailSent">
-          Utiliza este código para ingresar a tu cuenta. El código es válido solo por:
-        </p>
+          <p class="main-message">
+            Hemos enviado un código de verificación a:<br>
+            <strong>{{ userEmail }}</strong>
+          </p>
+
+          <p class="instructions">
+            Utiliza este código para ingresar a tu cuenta. El código es válido solo por:
+          </p>
+        } @else {
+          <h2>Error al enviar el correo</h2>
+        }
       </div>
 
       <!-- Countdown Timer -->
-      <div class="countdown-container" *ngIf="emailSent">
-        <div class="countdown-display">
-          <mat-icon class="timer-icon">timer</mat-icon>
-          <span class="time-text">{{ timeDisplay }}</span>
+      @if (emailSent) {
+        <div class="countdown-container">
+          <div class="countdown-display">
+            <mat-icon class="timer-icon">timer</mat-icon>
+            <span class="time-text">{{ timeDisplay }}</span>
+          </div>
+
+          <p class="countdown-label">minutos restantes</p>
         </div>
-        <p class="countdown-label">minutos restantes</p>
-      </div>
+      }
 
       <div class="verification-form">
-
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Código de verificación</mat-label>
 
@@ -55,22 +60,23 @@
         <button mat-flat-button color="primary" (click)="verifyCode()">
           Verificar Cuenta
         </button>
-
       </div>
 
       <!-- Warning Message -->
       <div class="warning-message">
         <mat-icon class="warning-icon">warning</mat-icon>
 
-        <span *ngIf="emailSent">
-          El código expirará en 15 minutos.
-          Si no recibes el correo, revisa tu carpeta de spam o utiliza "Reenviar Correo".
-        </span>
-
-        <span *ngIf="!emailSent">
-          No pudimos enviar el correo de verificación.
-          Haz clic en "Reenviar Correo" para intentar nuevamente.
-        </span>
+        @if (emailSent) {
+          <span>
+            El código expirará en 15 minutos.
+            Si no recibes el correo, revisa tu carpeta de spam o utiliza "Reenviar Correo".
+          </span>
+        } @else {
+          <span>
+            No pudimos enviar el correo de verificación.
+            Haz clic en "Reenviar Correo" para intentar nuevamente.
+          </span>
+        }
       </div>
 
       <!-- Action Buttons -->
@@ -87,12 +93,15 @@
       </div>
 
       <!-- Additional Info -->
-      <div class="additional-info" *ngIf="emailSent">
-        <mat-icon class="info-icon">info</mat-icon>
-        <span>
-          Si el correo no llega en unos minutos, revisa tu carpeta de spam o haz clic en "Reenviar Correo".
-        </span>
-      </div>
+      @if (emailSent) {
+        <div class="additional-info">
+          <mat-icon class="info-icon">info</mat-icon>
+
+          <span>
+            Si el correo no llega en unos minutos, revisa tu carpeta de spam o haz clic en "Reenviar Correo".
+          </span>
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>

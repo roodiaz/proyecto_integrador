@@ -5,33 +5,35 @@
   <div class="notif-page-header">
     <div class="notif-title-block">
       <h2 class="notif-title">Centro de Notificaciones</h2>
+
       <div class="notif-chips">
         <span class="chip">{{ totalNotifications }} totales</span>
         <span class="chip chip-unread">{{ getUnreadHistoryCount() }} sin leer</span>
       </div>
     </div>
-    <button class="btn-mark-all" (click)="markAllAsRead()" *ngIf="getUnreadHistoryCount() > 0">
-      <mat-icon>done_all</mat-icon>
-      Marcar todo como leído
-    </button>
+
+    @if (getUnreadHistoryCount() > 0) {
+      <button class="btn-mark-all" (click)="markAllAsRead()">
+        <mat-icon>done_all</mat-icon>
+        Marcar todo como leído
+      </button>
+    }
   </div>
 
   <!-- Search & Filters -->
   <div class="notif-toolbar">
     <div class="search-wrap">
       <mat-icon class="search-icon">search</mat-icon>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Buscar ticker (ej: AAPL)..."
-        [(ngModel)]="notificationSearch"
-        (ngModelChange)="applyNotificationFilter()">
+
+      <input type="text" class="search-input" placeholder="Buscar ticker (ej: AAPL)..." [(ngModel)]="notificationSearch" (ngModelChange)="applyNotificationFilter()">
     </div>
+
     <button class="btn-filter" (click)="showNotificationFilters = !showNotificationFilters">
       <mat-icon>tune</mat-icon>
       Filtrar
       <mat-icon class="chevron" [class.open]="showNotificationFilters">expand_more</mat-icon>
     </button>
+
     <button class="btn-clear" (click)="clearNotificationFilters()">
       <mat-icon>close</mat-icon>
       Limpiar
@@ -39,105 +41,122 @@
   </div>
 
   <!-- Advanced Filters -->
-  <div class="advanced-filters" *ngIf="showNotificationFilters">
-    <div class="filter-group">
-      <label class="filter-label">Estado</label>
-      <select class="filter-select" [(ngModel)]="notificationStatusFilter" (ngModelChange)="applyNotificationFilter()">
-        <option value="">Todas</option>
-        <option value="unread">No leídas</option>
-        <option value="read">Leídas</option>
-      </select>
+  @if (showNotificationFilters) {
+    <div class="advanced-filters">
+      <div class="filter-group">
+        <label class="filter-label">Estado</label>
+
+        <select class="filter-select" [(ngModel)]="notificationStatusFilter" (ngModelChange)="applyNotificationFilter()">
+          <option value="">Todas</option>
+          <option value="unread">No leídas</option>
+          <option value="read">Leídas</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Período</label>
+
+        <select class="filter-select" [(ngModel)]="notificationDateFilter" (ngModelChange)="applyNotificationFilter()">
+          <option value="">Todas las fechas</option>
+          <option value="today">Hoy</option>
+          <option value="week">Últimos 7 días</option>
+          <option value="month">Últimos 30 días</option>
+        </select>
+      </div>
     </div>
-    <div class="filter-group">
-      <label class="filter-label">Período</label>
-      <select class="filter-select" [(ngModel)]="notificationDateFilter" (ngModelChange)="applyNotificationFilter()">
-        <option value="">Todas las fechas</option>
-        <option value="today">Hoy</option>
-        <option value="week">Últimos 7 días</option>
-        <option value="month">Últimos 30 días</option>
-      </select>
-    </div>
-  </div>
+  }
 
   <!-- Section Label -->
-  <p class="notif-section-label" *ngIf="notificationList.length > 0">
-    Notificaciones de Alertas Disparadas
-  </p>
+  @if (notificationList.length > 0) {
+    <p class="notif-section-label">
+      Notificaciones de Alertas Disparadas
+    </p>
+  }
 
   <!-- Notification List -->
   <div class="notif-list">
 
-    <div
-      class="notif-item"
-      *ngFor="let history of notificationList"
-      [class.unread]="!history.isRead">
+    @for (history of notificationList; track history.id) {
+      <div class="notif-item" [class.unread]="!history.isRead">
 
-      <!-- Icon Badge -->
-      <div class="notif-icon-wrap">
-        <mat-icon class="notif-icon">notifications_active</mat-icon>
-      </div>
-
-      <!-- Body -->
-      <div class="notif-body">
-        <div class="notif-top-row">
-          <!-- <span class="notif-ticker">{{ history. }}</span> -->
-          <span class="notif-msg">{{ history.message }}</span>
-          <span class="unread-dot" *ngIf="!history.isRead"></span>
+        <!-- Icon Badge -->
+        <div class="notif-icon-wrap">
+          <mat-icon class="notif-icon">notifications_active</mat-icon>
         </div>
-        <div class="notif-meta-row">
-          <span class="notif-price">${{ history.price.toFixed(2) }}</span>
-          <span class="notif-sep">·</span>
-          <span class="notif-time">{{ history.createdAt | date:'d/M/yy, h:mm a' }}</span>
-          <span class="notif-read-label" *ngIf="history.isRead">Leído</span>
+
+        <!-- Body -->
+        <div class="notif-body">
+          <div class="notif-top-row">
+            <span class="notif-msg">{{ history.message }}</span>
+
+            @if (!history.isRead) {
+              <span class="unread-dot"></span>
+            }
+          </div>
+
+          <div class="notif-meta-row">
+            <span class="notif-price">${{ history.price.toFixed(2) }}</span>
+            <span class="notif-sep">·</span>
+            <span class="notif-time">{{ history.createdAt | date:'d/M/yy, h:mm a' }}</span>
+
+            @if (history.isRead) {
+              <span class="notif-read-label">Leído</span>
+            }
+          </div>
         </div>
+
+        <!-- Actions -->
+        <div class="notif-actions">
+          @if (!history.isRead) {
+            <button class="action-btn read-btn" (click)="markAsRead(history)" title="Marcar como leído">
+              <mat-icon>check_circle_outline</mat-icon>
+            </button>
+          }
+
+          <button class="action-btn delete-btn" (click)="deleteNotification(history)" title="Eliminar">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+
       </div>
-
-      <!-- Actions -->
-      <div class="notif-actions">
-        <button class="action-btn read-btn" *ngIf="!history.isRead" (click)="markAsRead(history)" title="Marcar como leído">
-          <mat-icon>check_circle_outline</mat-icon>
-        </button>
-        <button class="action-btn delete-btn" (click)="deleteNotification(history)" title="Eliminar">
-          <mat-icon>delete_outline</mat-icon>
-        </button>
+    } @empty {
+      <div class="empty-state">
+        <mat-icon class="empty-icon">notifications_none</mat-icon>
+        <h3 class="empty-title">No hay notificaciones</h3>
+        <p class="empty-desc">Las alertas disparadas aparecerán aquí como notificaciones</p>
       </div>
-
-    </div>
-
-    <!-- Empty State -->
-    <div class="empty-state" *ngIf="notificationList.length === 0">
-      <mat-icon class="empty-icon">notifications_none</mat-icon>
-      <h3 class="empty-title">No hay notificaciones</h3>
-      <p class="empty-desc">Las alertas disparadas aparecerán aquí como notificaciones</p>
-    </div>
+    }
 
   </div>
 
   <!-- Pagination -->
-  <div class="notif-pagination" *ngIf="totalNotifications > 0">
-    <div class="page-info">
-      <span class="page-label">Página {{ currentNotificationPage }} de {{ totalNotificationPages }}</span>
-      <span class="page-total">({{ totalNotifications }} notificaciones)</span>
-    </div>
-    <div class="page-controls">
-      <button class="page-nav-btn" [disabled]="currentNotificationPage === 1" (click)="previousNotificationPage()">
-        <mat-icon>chevron_left</mat-icon>
-        Anterior
-      </button>
-      <div class="page-numbers">
-        <button
-          class="page-num-btn"
-          *ngFor="let page of getNotificationPageNumbers()"
-          [class.active]="page === currentNotificationPage"
-          (click)="goToNotificationPage(page)">
-          {{ page }}
+  @if (totalNotifications > 0) {
+    <div class="notif-pagination">
+      <div class="page-info">
+        <span class="page-label">Página {{ currentNotificationPage }} de {{ totalNotificationPages }}</span>
+        <span class="page-total">({{ totalNotifications }} notificaciones)</span>
+      </div>
+
+      <div class="page-controls">
+        <button class="page-nav-btn" [disabled]="currentNotificationPage === 1" (click)="previousNotificationPage()">
+          <mat-icon>chevron_left</mat-icon>
+          Anterior
+        </button>
+
+        <div class="page-numbers">
+          @for (page of getNotificationPageNumbers(); track page) {
+            <button class="page-num-btn" [class.active]="page === currentNotificationPage" (click)="goToNotificationPage(page)">
+              {{ page }}
+            </button>
+          }
+        </div>
+
+        <button class="page-nav-btn" [disabled]="currentNotificationPage === totalNotificationPages" (click)="nextNotificationPage()">
+          Siguiente
+          <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
-      <button class="page-nav-btn" [disabled]="currentNotificationPage === totalNotificationPages" (click)="nextNotificationPage()">
-        Siguiente
-        <mat-icon>chevron_right</mat-icon>
-      </button>
     </div>
-  </div>
+  }
 
 </div>

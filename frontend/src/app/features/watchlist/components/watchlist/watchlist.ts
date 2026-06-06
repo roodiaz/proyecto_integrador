@@ -29,7 +29,7 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
   searchTerm = '';
 
   // ── Paginación ─────────────────────────────────────────
-  readonly pageSize = 10;
+  readonly pageSize = 7;
   currentPage  = 1;
   totalRecords = 0;
 
