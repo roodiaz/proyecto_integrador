@@ -66,34 +66,32 @@ export class UserProfile implements OnInit {
   }
 
   loadUserData(): void {
-    this.loadingProfile = true;
+  this.loadingProfile = true;
 
-    this.userService.getProfile()
-      .pipe(finalize(() => this.loadingProfile = false))
-      .subscribe({
-        next: response => {
-          if (!response.success || !response.data) return;
+  this.userService.getProfile()
+    .pipe(finalize(() => this.loadingProfile = false))
+    .subscribe({
+      next: response => {
+        if (!response.success || !response.data) return;
 
-          const profile = response.data;
+        const profile = response.data;
 
-          this.profileForm.patchValue({
-            userName: profile.username,
-            email: profile.email,
-            birthDate: profile.birthDate,
-            phone: profile.phone,
-            currency: profile.settings.currency,
-            emailNotifications: profile.settings.emailNotifications,
-          });
+        this.profileForm.patchValue({
+          userName: profile.username,
+          email: profile.email,
+          birthDate: profile.birthDate,
+          phone: profile.phone,
+          currency: profile.settings.currency,
+          emailNotifications: profile.settings.emailNotifications,
+        });
 
-          this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
-        },
-        error: error => {
-          console.error(error);
-          this.notificationService.error('No se pudo cargar el perfil');
-        }
-      });
-  }
-
+        this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
+      },
+      error: error => {
+        console.error('Error cargando perfil de usuario', error);
+      }
+    });
+}
   onSaveProfile(): void {
     if (!this.profileForm.valid) {
       this.notificationService.error('Por favor, completa el formulario correctamente');

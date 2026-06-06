@@ -57,34 +57,48 @@ export class Watchlist implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadWatchlist(): void {
-    this.loadingWatchlist = true;
+  this.loadingWatchlist = true;
 
-    const filter = {
-      page: this.currentPage,
-      pageSize: this.pageSize,
-      search: ''
-    };
+  const filter = {
+    page: this.currentPage,
+    pageSize: this.pageSize,
+    search: ''
+  };
 
-    this.watchlistService.getFavorites(filter)
-      .pipe(finalize(() => this.loadingWatchlist = false))
-      .subscribe({
-        next: response => {
-          if (!response.success || !response.data) return;
-
-          this.watchlistItems = response.data.items;
-          this.totalRecords = response.data.total;
-          this.currentFavorites = response.data.currentFavorites;
-          this.maxFavorites = response.data.maxFavorites;
-
-          this.applySearch();
-          setTimeout(() => this.drawSparklines());
-        },
-        error: err => {
-          console.error(err);
-          this.notificationService.error('No se pudieron cargar los favoritos');
+  this.watchlistService.getFavorites(filter)
+    .pipe(finalize(() => this.loadingWatchlist = false))
+    .subscribe({
+      next: response => {
+        if (!response.success || !response.data) {
+          this.watchlistItems = [];
+          this.filteredItems = [];
+          this.totalRecords = 0;
+          this.currentFavorites = 0;
+          this.maxFavorites = 0;
+          this.updateGhostRows();
+          return;
         }
-      });
-  }
+
+        this.watchlistItems = response.data.items;
+        this.totalRecords = response.data.total;
+        this.currentFavorites = response.data.currentFavorites;
+        this.maxFavorites = response.data.maxFavorites;
+
+        this.applySearch();
+        setTimeout(() => this.drawSparklines());
+      },
+      error: err => {
+        console.error('Error cargando favoritos', err);
+
+        this.watchlistItems = [];
+        this.filteredItems = [];
+        this.totalRecords = 0;
+        this.currentFavorites = 0;
+        this.maxFavorites = 0;
+        this.updateGhostRows();
+      }
+    });
+}
 
   onSearch(): void {
     this.applySearch();
