@@ -15,5 +15,7 @@ namespace InvestLab.Data.Interfaces
         Task<List<Portfolio>> GetByUserAsync(int userId);
 
         Task<List<Portfolio>> GetPagedByUserAsync(int userId);
+
+        Task DeleteByUserIdAsync(int userId);
     }
 }

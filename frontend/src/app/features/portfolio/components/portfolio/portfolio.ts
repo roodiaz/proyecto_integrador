@@ -557,4 +557,40 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     const missing = Math.max(0, this.operationsPageSize - this.operations.length);
     this.emptyOperationRows = Array(missing).fill(0);
   }
+
+  async confirmResetSimulation(): Promise<void> {
+    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
+
+    const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
+      width: '420px',
+      backdropClass: 'blur-backdrop',
+      data: {
+        title: 'Reiniciar portfolio',
+        message: '¿Estás segura de que querés reiniciar tu portfolio? Se eliminarán tus tenencias, operaciones e historial de evolución. Tu saldo volverá al monto inicial.'
+      }
+    });
+
+    const result = await dialogRef.afterClosed().toPromise();
+
+    if (!result) return;
+
+    this.resetSimulation();
+  }
+
+  resetSimulation(): void {
+    this.portfolioService.resetSimulation().subscribe({
+      next: response => {
+        if (response.success) {
+          this.snackBarService.success(response.message || 'Portfolio reiniciado correctamente');
+          this.refreshPortfolioData();
+          return;
+        }
+
+        this.snackBarService.info(response.message || 'No se pudo reiniciar el portfolio');
+      },
+      error: error => {
+        this.snackBarService.error(error.error?.message ?? 'Error al reiniciar el portfolio');
+      }
+    });
+  }
 }

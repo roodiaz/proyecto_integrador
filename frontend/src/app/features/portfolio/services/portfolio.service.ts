@@ -24,14 +24,14 @@ export class PortfolioService {
 
   getBalanceCards(): Observable<ApiResponse<PortfolioBalanceCards>> {
     return this.http.get<ApiResponse<PortfolioBalanceCards>>(
-      `${environment.apiUrl}/portfolio/balance-cards`
+      `${this.apiUrl}/balance-cards`
     );
   }
 
   getPieChart(): Observable<ApiResponse<PortfolioPieChartItem[]>> {
 
     return this.http.get<ApiResponse<PortfolioPieChartItem[]>>(
-      `${environment.apiUrl}/portfolio/pie-chart`
+      `${this.apiUrl}/pie-chart`
     );
   }
 
@@ -41,7 +41,7 @@ export class PortfolioService {
     return this.http.post<
       ApiResponse<PortfolioLineChartItem[]>
     >(
-      `${environment.apiUrl}/portfolio/line-chart`,
+      `${this.apiUrl}/line-chart`,
       { period }
     );
   }
@@ -52,7 +52,7 @@ export class PortfolioService {
     return this.http.post<
       ApiResponse<PagedOpenPositions>
     >(
-      `${environment.apiUrl}/portfolio/open-positions`,
+      `${this.apiUrl}/open-positions`,
       filter
     );
   }
@@ -63,20 +63,20 @@ export class PortfolioService {
     return this.http.post<
       ApiResponse<PagedTransactions>
     >(
-      `${environment.apiUrl}/portfolio/history`,
+      `${this.apiUrl}/history`,
       filter
     );
   }
 
   getAssetPrice(symbol: string): Observable<ApiResponse<{ symbol: string; currentPrice: number }>> {
     return this.http.get<ApiResponse<{ symbol: string; currentPrice: number }>>(
-      `${environment.apiUrl}/portfolio/price/${symbol}`
+      `${this.apiUrl}/price/${symbol}`
     );
   }
 
   buyAsset(symbol: string, quantity: number): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(
-      `${environment.apiUrl}/portfolio/buy`,
+      `${this.apiUrl}/buy`,
       {
         symbol,
         quantity
@@ -86,13 +86,19 @@ export class PortfolioService {
 
   getPosition(symbol: string): Observable<ApiResponse<PortfolioPosition>> {
     return this.http.get<ApiResponse<PortfolioPosition>>(
-      `${environment.apiUrl}/portfolio/${symbol}`
+      `${this.apiUrl}/${symbol}`
     );
   }
 
   sell(data: SellData): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
-      `${environment.apiUrl}/portfolio/sell`, data
+      `${this.apiUrl}/sell`, data
+    );
+  }
+
+  resetSimulation(): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`
+      ${this.apiUrl}/reset-simulation`, {}
     );
   }
 }

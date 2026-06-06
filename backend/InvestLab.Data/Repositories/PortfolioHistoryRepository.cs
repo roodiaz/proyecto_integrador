@@ -58,5 +58,11 @@ namespace InvestLab.Data.Repositories
                 .Limit(1)
                 .FirstOrDefaultAsync() != null;
         }
+
+        public async Task DeleteByUserIdAsync(int userId)
+        {
+            var filter = Builders<PortfolioHistory>.Filter.Eq(x => x.UserId, userId);
+            await _collection.DeleteManyAsync(filter);
+        }
     }
 }

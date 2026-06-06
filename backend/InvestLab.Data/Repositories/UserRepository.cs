@@ -45,5 +45,16 @@ namespace InvestLab.Data.Repositories
         {
             return await _context.Users.Where(x => x.IsActive).ToListAsync();
         }
+
+        public async Task UpdateBalanceAsync(int userId, decimal balance)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null)
+                return;
+
+            user.Balance = balance;
+            user.UpdateAt = DateTime.UtcNow;
+        }
     }
 }

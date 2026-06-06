@@ -87,7 +87,7 @@ public class PortfolioService : IPortfolioService
             if (user.Balance < total)
             {
                 _logger.LogWarning("Saldo insuficiente: {UserId}", userId);
-                return Response.Fail("Saldo insuficiente");
+                return Response.Fail("Saldo insuficiente. Podés vender activos o reiniciar tu portfolio simulado.");
             }
 
             var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
@@ -545,6 +545,37 @@ public class PortfolioService : IPortfolioService
         {
             _logger.LogError(ex, "Error al obtener line chart portfolio");
 
+            return Response.Fail("Error interno");
+        }
+    }
+
+    public async Task<Response> ResetSimulationAsync(int userId)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("Usuario no encontrado al reiniciar portfolio: {UserId}", userId);
+                return Response.Fail("Usuario no encontrado");
+            }
+
+            await _portfolioHistoryRepository.DeleteByUserIdAsync(userId);
+            await _transactionRepository.DeleteByUserIdAsync(userId);
+            await _portfolioRepository.DeleteByUserIdAsync(userId);
+            await _userRepository.UpdateBalanceAsync(userId, _limits.InitialBalance);
+            await _userSettingRepository.ResetOperationsUsedTodayAsync(userId);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Portfolio reiniciado correctamente: UserId={UserId}", userId);
+
+            return Response.Ok(null, "Portfolio reiniciado correctamente");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al reiniciar portfolio: UserId={UserId}", userId);
             return Response.Fail("Error interno");
         }
     }

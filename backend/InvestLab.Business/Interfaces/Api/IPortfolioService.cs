@@ -20,5 +20,7 @@ namespace InvestLab.Business.Interfaces.Api
         Task<Response> GetOpenPositionsAsync(int userId, PortfolioOpenPositionsFilterDto filter);
 
         Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter);
+
+        Task<Response> ResetSimulationAsync(int userId);
     }
 }

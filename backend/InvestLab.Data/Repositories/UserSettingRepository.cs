@@ -31,5 +31,15 @@ namespace InvestLab.Data.Repositories
                         .SetProperty(x => x.SearchesUsedToday, 0)
                         .SetProperty(x => x.OperationsUsedToday, 0));
         }
+
+        public async Task ResetOperationsUsedTodayAsync(int userId)
+        {
+            var settings = await _context.UserSettings.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            if (settings == null)
+                return;
+
+            settings.OperationsUsedToday = 0;
+        }
     }
 }

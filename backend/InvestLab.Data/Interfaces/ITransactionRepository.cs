@@ -9,5 +9,7 @@ namespace InvestLab.Data.Interfaces
         Task<List<Transaction>> GetLatestByUserAsync(int userId, int take);
 
         Task<(List<TransactionDto> Data, int Total)> SearchAsync( int userId,TransactionFilterDto filter);
+
+        Task DeleteByUserIdAsync(int userId);
     }
 }

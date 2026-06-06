@@ -275,4 +275,39 @@ public class PortfolioController : BaseController
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Reinicia la simulación del portfolio del usuario autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Elimina las tenencias actuales, el historial de operaciones simuladas
+    /// y el historial de evolución del portfolio.
+    /// Además, restablece el balance virtual inicial y reinicia el contador
+    /// diario de operaciones utilizadas.
+    /// 
+    /// No elimina favoritos, alertas, notificaciones ni preferencias del usuario.
+    /// </remarks>
+    /// <returns>
+    /// Resultado de la operación de reinicio.
+    /// </returns>
+    /// <response code="200">Portfolio reiniciado correctamente</response>
+    /// <response code="400">Error al reiniciar el portfolio</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("reset-simulation")]
+    public async Task<IActionResult> ResetSimulation()
+    {
+        _logger.LogInformation("Reiniciando simulación de portfolio: UserId={UserId}", UserId);
+
+        var result = await _portfolioService.ResetSimulationAsync(UserId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al reiniciar simulación de portfolio: UserId={UserId}, Message={Message}", UserId, result.Message);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Simulación de portfolio reiniciada correctamente: UserId={UserId}", UserId);
+
+        return Ok(result);
+    }
 }

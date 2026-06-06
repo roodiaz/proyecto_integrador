@@ -52,5 +52,12 @@ namespace InvestLab.Data.Repositories
                 .Where(x => x.UserId == userId)
                 .ToListAsync();
         }
+
+        public async Task DeleteByUserIdAsync(int userId)
+        {
+            await _context.Portfolios
+                .Where(x => x.UserId == userId)
+                .ExecuteDeleteAsync();
+        }
     }
 }
