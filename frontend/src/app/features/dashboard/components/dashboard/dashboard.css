@@ -32,12 +32,22 @@
   margin-bottom: 32px;
 }
 
+.dashboard-title-block {
+  margin-bottom: 24px;
+}
+
 .dashboard-title {
   font-size: 36px;
   font-weight: 700;
-  margin: 0 0 24px;
+  margin: 0 0 6px;
   color: var(--accent-primary);
   letter-spacing: -0.5px;
+}
+
+.dashboard-subtitle {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: #8c909f;
 }
 
 .header-stats {

@@ -17,5 +17,9 @@ namespace InvestLab.Business.Interfaces
         Task<Response> GetMarketNewsAsync();
 
         Task<Response> GetMarketPriceStatusAsync();
+
+        Task<Response> GetAssetHistoryAsync(string symbol, string range);
+
+        Task<Response> GetComparisonHistoryAsync(string range);
     }
 }

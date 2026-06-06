@@ -3,8 +3,9 @@ using InvestLab.Business.Interfaces.Api;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Market;
-using Microsoft.Extensions.Logging;
 using InvestLab.Models.DTOs.Market;
+using InvestLab.Models.DTOs.Market.InvestLab.Models.DTOs.Market;
+using Microsoft.Extensions.Logging;
 
 namespace InvestLab.Business.Services
 {
@@ -28,12 +29,12 @@ namespace InvestLab.Business.Services
             try
             {
                 var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI" };
-                var prices = await _externalProvider.GetPricesAsync(symbols);
+                var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
 
-                if (prices == null || prices.Count == 0)
+                if (marketPricesResponse.Prices == null || marketPricesResponse.Prices.Count == 0)
                     return Response.Fail("No se pudieron obtener los índices del mercado");
 
-                var indices = prices.Select(x => new MarketIndexDto
+                var indices = marketPricesResponse.Prices.Select(x => new MarketIndexDto
                 {
                     Symbol = x.Symbol,
                     Name = GetIndexName(x.Symbol),
@@ -72,7 +73,9 @@ namespace InvestLab.Business.Services
                 if (asset == null)
                     return Response.Fail("Activo no encontrado");
 
-                var price = await _externalProvider.GetPriceAsync(symbol);
+                var marketPricesResponse = await _marketPriceCacheService.GetPricesAsync(new List<string> { symbol });
+                var price = marketPricesResponse.Prices.FirstOrDefault(x => x.Symbol == symbol);
+
                 if (price == null)
                     return Response.Fail("No se encontró información de precio para el activo solicitado");
 
@@ -182,6 +185,85 @@ namespace InvestLab.Business.Services
             }
         }
 
+        public async Task<Response> GetAssetHistoryAsync(string symbol, string range)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(symbol))
+                    return Response.Fail("Debe ingresar un símbolo válido");
+
+                symbol = symbol.Trim().ToUpper();
+                range = NormalizeHistoryRange(range);
+
+                if (!IsValidHistoryRange(range))
+                    return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y");
+
+                var history = await _externalProvider.GetChartHistoryAsync(symbol, range);
+
+                if (history == null || history.Count == 0)
+                    return Response.Fail("No se encontraron datos históricos para el activo");
+
+                var result = new MarketAssetHistoryDto
+                {
+                    Symbol = symbol,
+                    Range = range,
+                    Series = new MarketHistorySeriesDto
+                    {
+                        Symbol = symbol,
+                        Name = symbol,
+                        Points = history.Select(MapHistoryPoint).ToList()
+                    }
+                };
+
+                return Response.Ok(result, "Histórico del activo obtenido correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener histórico del activo {Symbol} con rango {Range}", symbol, range);
+                return Response.Fail("Ocurrió un error al obtener el histórico del activo");
+            }
+        }
+
+        public async Task<Response> GetComparisonHistoryAsync(string range)
+        {
+            try
+            {
+                range = NormalizeHistoryRange(range);
+
+                if (!IsValidHistoryRange(range))
+                    return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y");
+
+                var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI" };
+                var series = new List<MarketHistorySeriesDto>();
+
+                foreach (var symbol in symbols)
+                {
+                    var history = await _externalProvider.GetChartHistoryAsync(symbol, range);
+
+                    series.Add(new MarketHistorySeriesDto
+                    {
+                        Symbol = symbol,
+                        Name = GetIndexName(symbol),
+                        Points = history?.Select(MapHistoryPoint).ToList() ?? new List<MarketHistoryPointDto>()
+                    });
+                }
+
+                var result = new MarketComparisonHistoryDto
+                {
+                    Range = range,
+                    Series = series
+                };
+
+                return Response.Ok(result, "Histórico de comparación obtenido correctamente");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener histórico de comparación con rango {Range}", range);
+                return Response.Fail("Ocurrió un error al obtener el histórico de comparación");
+            }
+        }
+
+
         // Metodos auxiliares
         private static MarketStatusDto GetMarketStatus()
         {
@@ -223,6 +305,45 @@ namespace InvestLab.Business.Services
                 "^IXIC" => "NASDAQ",
                 "^DJI" => "Dow Jones",
                 _ => symbol
+            };
+        }
+
+        private static string NormalizeHistoryRange(string range)
+        {
+            return string.IsNullOrWhiteSpace(range) ? "1m" : range.Trim().ToLower();
+        }
+
+        private static bool IsValidHistoryRange(string range)
+        {
+            return range is "1d" or "1w" or "1m" or "3m" or "6m" or "1y";
+        }
+
+        private static DateTime GetHistoryFromDate(string range)
+        {
+            var now = DateTime.UtcNow;
+
+            return range switch
+            {
+                "1d" => now.AddDays(-1),
+                "1w" => now.AddDays(-7),
+                "1m" => now.AddMonths(-1),
+                "3m" => now.AddMonths(-3),
+                "6m" => now.AddMonths(-6),
+                "1y" => now.AddYears(-1),
+                _ => now.AddMonths(-1)
+            };
+        }
+
+        private static MarketHistoryPointDto MapHistoryPoint(HistoricalPriceDto item)
+        {
+            return new MarketHistoryPointDto
+            {
+                Date = item.Date,
+                Open = item.Open,
+                High = item.High,
+                Low = item.Low,
+                Close = item.Close,
+                Volume = item.Volume
             };
         }
     }

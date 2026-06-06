@@ -58,10 +58,9 @@
 }
 
 .header-subtitle {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 11px;
-  line-height: 1.6;
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .new-alert-btn {
@@ -860,6 +859,13 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 .empty-cta:hover { background: #C1D5FF; }
+
+/* dentro del contenedor de lista de alertas el empty-state queda mas compacto */
+.alerts-list-container .empty-state {
+  margin: 30px 30px;
+  min-height: 110px;
+  padding: 24px;
+}
 
 /* ── Alerts counter ── */
 .alerts-counter { width: 100%; margin-top: 8px; }

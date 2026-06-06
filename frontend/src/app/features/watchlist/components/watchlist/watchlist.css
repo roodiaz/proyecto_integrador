@@ -426,6 +426,12 @@
   background: radial-gradient(circle at top, rgba(173, 198, 255, 0.055), transparent 42%), rgba(255, 255, 255, 0.015);
 }
 
+/* margen para que el borde punteado se vea separado del borde del contenedor */
+.watchlist-table-container .empty-state,
+.watchlist-table-container .no-results {
+  margin: 40px 40px;
+}
+
 .empty-icon,
 .no-results mat-icon {
   font-size: 48px;

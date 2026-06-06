@@ -19,7 +19,11 @@ import {
   MarketStatus,
   MarketAsset,
   MarketMover,
-  MarketNews
+  MarketNews,
+  MarketAssetHistory,
+  MarketComparisonHistory,
+  MarketHistoryPoint,
+  MarketHistorySeries
 } from '../../models/market.model';
 
 Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcElement);
@@ -39,6 +43,10 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
   marketData: MarketAsset[] = [];
   currentTime = '';
+  assetHistory: MarketAssetHistory | null = null;
+  comparisonHistory: MarketComparisonHistory | null = null;
+  loadingChart = false;
+  lastComparisonRange = '';
   private chart: Chart | null = null;
   private clockInterval: any;
 
@@ -87,6 +95,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadMarketLists();
     this.loadNews();
     this.updateClock();
+    this.loadComparisonHistory();
     this.searchAsset();
 
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
@@ -118,6 +127,56 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadTrending();
     this.loadGainers();
     this.loadLosers();
+  }
+
+  private loadComparisonHistory(): void {
+    if (this.lastComparisonRange === this.selectedTimeframe && this.comparisonHistory?.series?.length) {
+      this.setupChart();
+      return;
+    }
+
+    this.loadingChart = true;
+
+    this.marketService.getComparisonHistory(this.selectedTimeframe).subscribe({
+      next: response => {
+        this.comparisonHistory = response.success ? response.data ?? null : null;
+        this.lastComparisonRange = this.selectedTimeframe;
+        this.loadingChart = false;
+        this.setupChart();
+      },
+      error: error => {
+        console.error('Error al obtener histórico de comparación', error);
+        this.comparisonHistory = null;
+        this.loadingChart = false;
+        this.setupChart();
+      }
+    });
+  }
+
+  private loadAssetHistory(): void {
+    const symbol = this.selectedSymbol.trim().toUpperCase();
+
+    if (!symbol) {
+      this.assetHistory = null;
+      this.setupChart();
+      return;
+    }
+
+    this.loadingChart = true;
+
+    this.marketService.getAssetHistory(symbol, this.selectedTimeframe).subscribe({
+      next: response => {
+        this.assetHistory = response.success ? response.data ?? null : null;
+        this.loadingChart = false;
+        this.setupChart();
+      },
+      error: error => {
+        console.error('Error al obtener histórico del activo', error);
+        this.assetHistory = null;
+        this.loadingChart = false;
+        this.setupChart();
+      }
+    });
   }
 
   loadPositionStatus(symbol: string): void {
@@ -490,6 +549,9 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupChart(): void {
+    if (!this.selectedAsset || !this.assetHistory)
+      return;
+
     const canvas = document.getElementById('marketTerminalChart') as HTMLCanvasElement;
     if (!canvas) return;
 
@@ -504,33 +566,22 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.chart = new Chart(ctx, config);
   }
 
-  private getChartData(): { labels: string[]; asset: number[]; sp500: number[] } {
-    const base = this.selectedAsset!.price;
-    if (this.selectedTimeframe === '1d') return { labels: ['09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00'], asset: [base - 22, base - 18, base - 25, base - 10, base - 6, base - 8, base + 4, base + 1, base + 2, base + 14, base + 20, base + 27], sp500: [5200, 5204, 5198, 5205, 5208, 5210, 5213, 5216, 5220, 5225, 5230, 5241] };
-    if (this.selectedTimeframe === '1w') return { labels: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'], asset: [base - 45, base - 20, base - 30, base + 10, base + 24], sp500: [5160, 5180, 5172, 5210, 5241] };
-    if (this.selectedTimeframe === '3m') return {
-      labels: ['Abr 01', 'Abr 15', 'May 01', 'May 15', 'Jun 01', 'Jun 15', 'Jun 30'],
-      asset: [base - 105, base - 82, base - 64, base - 38, base - 20, base + 12, base + 35],
-      sp500: [4980, 5030, 5080, 5110, 5160, 5205, 5241]
-    };
-
-    if (this.selectedTimeframe === '6m') return {
-      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-      asset: [base - 155, base - 132, base - 118, base - 86, base - 44, base + 20],
-      sp500: [4750, 4860, 4940, 5030, 5140, 5241]
-    };
-    if (this.selectedTimeframe === '1y') return { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], asset: [base - 180, base - 150, base - 165, base - 110, base - 90, base - 60, base - 20, base + 10, base - 5, base + 35, base + 70, base + 105], sp500: [4600, 4680, 4725, 4800, 4890, 4950, 5030, 5100, 5060, 5150, 5200, 5241] };
-    return { labels: ['01 Jun', '05 Jun', '09 Jun', '13 Jun', '17 Jun', '21 Jun', '25 Jun', '29 Jun'], asset: [base - 70, base - 80, base - 35, base - 20, base - 28, base + 5, base + 35, base + 62], sp500: [5120, 5130, 5110, 5150, 5168, 5190, 5210, 5241] };
-  }
-
   selectAsset(symbol: string): void {
-    this.selectedSymbol = symbol;
+    const normalizedSymbol = symbol.trim().toUpperCase();
+
+    if (!normalizedSymbol || normalizedSymbol === this.selectedSymbol)
+      return;
+
+    this.selectedSymbol = normalizedSymbol;
     this.searchAsset();
   }
 
   changeTimeframe(timeframe: string): void {
+    if (timeframe === this.selectedTimeframe) return;
+
     this.selectedTimeframe = timeframe;
-    this.setupChart();
+    this.loadComparisonHistory();
+    this.loadAssetHistory();
   }
 
   nextNews(): void {
@@ -579,6 +630,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.selectedSymbol = symbol;
     this.loadingAsset = true;
     this.assetErrorMessage = '';
 
@@ -596,10 +648,10 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         this.selectedAsset = response.data;
         this.selectedSymbol = response.data.symbol;
         localStorage.setItem('lastMarketSymbol', response.data.symbol);
+        this.loadAssetHistory();
         this.assetErrorMessage = '';
         this.loadFavoriteStatus(this.selectedSymbol);
         this.loadPositionStatus(this.selectedSymbol);
-        this.setupChart();
       },
       error: error => {
         console.error('Error al obtener detalle del activo', error);
@@ -650,134 +702,48 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   private generateMarketChartData(): any {
     if (this.selectedChartType === 'candlestick') return this.generateCandlestickChartData();
 
-    const points = this.getMarketPerformancePoints();
-    const labels = points.map(x => x.label);
+    const labels = this.assetHistory?.series.points.map(x => this.formatChartLabel(x.date)) ?? [];
 
-    const datasets = [
+    const datasets: any[] = [
       {
-        label: this.selectedAsset!.symbol,
-        data: points.map(x => x.asset),
+        label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
+        data: this.assetHistory?.series.points.map(x => x.close) ?? [],
         borderColor: '#4a90e2',
         backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.12)' : '#4a90e2',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: this.selectedChartType === 'line'
-      },
-      {
-        label: 'S&P 500',
-        data: points.map(x => x.sp500),
-        borderColor: '#10b981',
-        backgroundColor: this.selectedChartType === 'line' ? 'rgba(16, 185, 129, 0.10)' : '#10b981',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: this.selectedChartType === 'line'
-      },
-      {
-        label: 'NASDAQ',
-        data: points.map(x => x.nasdaq),
-        borderColor: '#f59e0b',
-        backgroundColor: this.selectedChartType === 'line' ? 'rgba(245, 158, 11, 0.10)' : '#f59e0b',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: this.selectedChartType === 'line'
-      },
-      {
-        label: 'Dow Jones',
-        data: points.map(x => x.dowjones),
-        borderColor: '#a78bfa',
-        backgroundColor: this.selectedChartType === 'line' ? 'rgba(167, 139, 250, 0.10)' : '#a78bfa',
         borderWidth: 2,
         tension: 0.4,
         fill: this.selectedChartType === 'line'
       }
     ];
 
+    this.comparisonHistory?.series.forEach(series => {
+      datasets.push({
+        label: series.name || series.symbol,
+        data: this.alignSeriesToLabels(series.points, labels),
+        borderColor: this.getSeriesColor(series.symbol),
+        backgroundColor: this.selectedChartType === 'line' ? this.getSeriesBackgroundColor(series.symbol) : this.getSeriesColor(series.symbol),
+        borderWidth: 2,
+        tension: 0.4,
+        fill: this.selectedChartType === 'line'
+      });
+    });
+
     return { labels, datasets };
   }
 
-  private getMarketPerformancePoints(): any[] {
-    const multiplier = this.selectedAsset!.changePercent! >= 0 ? 1 : -1;
-
-    if (this.selectedTimeframe === '1d') {
-      return [
-        { label: '09:30', asset: 0, sp500: 0.10, nasdaq: -0.05, dowjones: 0.02 },
-        { label: '10:00', asset: 0.25 * multiplier, sp500: 0.18, nasdaq: 0.08, dowjones: 0.10 },
-        { label: '10:30', asset: 0.55 * multiplier, sp500: 0.22, nasdaq: 0.15, dowjones: 0.18 },
-        { label: '11:00', asset: 0.90 * multiplier, sp500: 0.28, nasdaq: 0.22, dowjones: 0.21 },
-        { label: '11:30', asset: 1.20 * multiplier, sp500: 0.34, nasdaq: 0.30, dowjones: 0.25 },
-        { label: '12:00', asset: 1.55 * multiplier, sp500: 0.39, nasdaq: 0.38, dowjones: 0.28 },
-        { label: '12:30', asset: 1.83 * multiplier, sp500: 0.45, nasdaq: 0.42, dowjones: 0.31 }
-      ];
-    }
-
-    if (this.selectedTimeframe === '1w') {
-      return [
-        { label: 'Lun', asset: 0, sp500: 0.4, nasdaq: 0.6, dowjones: 0.2 },
-        { label: 'Mar', asset: 1.4 * multiplier, sp500: 0.9, nasdaq: 1.1, dowjones: 0.5 },
-        { label: 'Mie', asset: 2.1 * multiplier, sp500: 1.2, nasdaq: 1.7, dowjones: 0.9 },
-        { label: 'Jue', asset: 3.4 * multiplier, sp500: 1.6, nasdaq: 2.0, dowjones: 1.1 },
-        { label: 'Vie', asset: 4.2 * multiplier, sp500: 2.0, nasdaq: 2.5, dowjones: 1.4 }
-      ];
-    }
-
-    if (this.selectedTimeframe === '3m') {
-      return [
-        { label: 'Abr', asset: 0, sp500: 1.1, nasdaq: 1.5, dowjones: 0.8 },
-        { label: 'Abr 15', asset: 3.2 * multiplier, sp500: 1.8, nasdaq: 2.3, dowjones: 1.2 },
-        { label: 'May', asset: 5.9 * multiplier, sp500: 2.6, nasdaq: 3.1, dowjones: 1.8 },
-        { label: 'May 15', asset: 8.5 * multiplier, sp500: 3.2, nasdaq: 4.2, dowjones: 2.4 },
-        { label: 'Jun', asset: 11.2 * multiplier, sp500: 4.0, nasdaq: 5.6, dowjones: 3.1 },
-        { label: 'Jun 15', asset: 13.1 * multiplier, sp500: 4.5, nasdaq: 6.3, dowjones: 3.6 }
-      ];
-    }
-
-    if (this.selectedTimeframe === '6m') {
-      return [
-        { label: 'Ene', asset: 0, sp500: 1.2, nasdaq: 2.0, dowjones: 0.9 },
-        { label: 'Feb', asset: 4.5 * multiplier, sp500: 2.1, nasdaq: 3.8, dowjones: 1.6 },
-        { label: 'Mar', asset: 6.8 * multiplier, sp500: 3.3, nasdaq: 5.1, dowjones: 2.7 },
-        { label: 'Abr', asset: 10.4 * multiplier, sp500: 4.6, nasdaq: 6.8, dowjones: 3.4 },
-        { label: 'May', asset: 14.8 * multiplier, sp500: 5.2, nasdaq: 7.6, dowjones: 4.2 },
-        { label: 'Jun', asset: 18.5 * multiplier, sp500: 6.1, nasdaq: 8.4, dowjones: 5.0 }
-      ];
-    }
-
-    if (this.selectedTimeframe === '1y') {
-      return [
-        { label: 'Ene', asset: 0, sp500: 2.0, nasdaq: 3.5, dowjones: 1.4 },
-        { label: 'Feb', asset: 5.0 * multiplier, sp500: 3.1, nasdaq: 4.6, dowjones: 2.0 },
-        { label: 'Mar', asset: 8.5 * multiplier, sp500: 4.2, nasdaq: 6.2, dowjones: 3.1 },
-        { label: 'Abr', asset: 14.0 * multiplier, sp500: 6.0, nasdaq: 8.4, dowjones: 4.2 },
-        { label: 'May', asset: 20.5 * multiplier, sp500: 7.1, nasdaq: 10.2, dowjones: 5.3 },
-        { label: 'Jun', asset: 26.0 * multiplier, sp500: 8.0, nasdaq: 12.0, dowjones: 6.1 },
-        { label: 'Jul', asset: 31.2 * multiplier, sp500: 9.2, nasdaq: 14.1, dowjones: 7.0 },
-        { label: 'Ago', asset: 34.7 * multiplier, sp500: 10.1, nasdaq: 15.8, dowjones: 7.6 }
-      ];
-    }
-
-    return [
-      { label: '28/05', asset: 0, sp500: 4.2, nasdaq: 6.3, dowjones: 3.8 },
-      { label: '29/05', asset: 2.6 * multiplier, sp500: 4.4, nasdaq: 6.5, dowjones: 3.9 },
-      { label: '01/06', asset: 10.0 * multiplier, sp500: 4.7, nasdaq: 7.0, dowjones: 4.1 },
-      { label: '02/06', asset: 12.6 * multiplier, sp500: 4.8, nasdaq: 7.0, dowjones: 4.2 },
-      { label: '03/06', asset: 14.3 * multiplier, sp500: 4.0, nasdaq: 6.0, dowjones: 3.7 }
-    ];
-  }
-
   private generateCandlestickChartData(): any {
-    const base = this.selectedAsset!.price;
-    const candles = [
-      { x: new Date('2026-06-01').getTime(), o: base - 32, h: base - 10, l: base - 42, c: base - 18 },
-      { x: new Date('2026-06-02').getTime(), o: base - 18, h: base + 4, l: base - 28, c: base - 6 },
-      { x: new Date('2026-06-03').getTime(), o: base - 6, h: base + 18, l: base - 12, c: base + 12 },
-      { x: new Date('2026-06-04').getTime(), o: base + 12, h: base + 30, l: base + 2, c: base + 22 },
-      { x: new Date('2026-06-05').getTime(), o: base + 22, h: base + 35, l: base + 10, c: base + 18 }
-    ];
+    const candles = this.assetHistory?.series.points.map(x => ({
+      x: new Date(x.date).getTime(),
+      o: x.open,
+      h: x.high,
+      l: x.low,
+      c: x.close
+    })) ?? [];
 
     return {
       datasets: [
         {
-          label: this.selectedAsset!.symbol,
+          label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
           data: candles
         }
       ]
@@ -818,6 +784,34 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
   getStockChangePercent(stock: MarketMover): number {
     return stock.changePercent ?? 0;
+  }
+
+  private formatChartLabel(date: string): string {
+    const value = new Date(date);
+
+    if (this.selectedTimeframe === '1d')
+      return value.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+    if (this.selectedTimeframe === '1w')
+      return value.toLocaleDateString('es-AR', { weekday: 'short' });
+
+    if (this.selectedTimeframe === '1m' || this.selectedTimeframe === '3m')
+      return value.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+
+    return value.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' });
+  }
+
+  private alignSeriesToLabels(points: MarketHistoryPoint[], labels: string[]): number[] {
+    const map = new Map(points.map(x => [this.formatChartLabel(x.date), x.close]));
+    return labels.map(label => map.get(label) ?? null) as number[];
+  }
+
+  private getSeriesColor(symbol: string): string {
+    return symbol === '^GSPC' ? '#10b981' : symbol === '^IXIC' ? '#f59e0b' : '#a78bfa';
+  }
+
+  private getSeriesBackgroundColor(symbol: string): string {
+    return symbol === '^GSPC' ? 'rgba(16, 185, 129, 0.10)' : symbol === '^IXIC' ? 'rgba(245, 158, 11, 0.10)' : 'rgba(167, 139, 250, 0.10)';
   }
 
 }

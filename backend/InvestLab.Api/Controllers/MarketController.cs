@@ -216,5 +216,71 @@ namespace InvestLab.Api.Controllers
 
             return Ok(result);
         }
+
+        /// <summary>
+        /// Obtiene el histórico de los índices usados para comparar en el gráfico.
+        /// </summary>
+        /// <param name="range">
+        /// Rango del gráfico. Valores permitidos: 1d, 1w, 1m, 3m, 6m, 1y.
+        /// </param>
+        /// <returns>
+        /// Series históricas de S&P 500, NASDAQ y Dow Jones.
+        /// </returns>
+        /// <response code="200">
+        /// Histórico de comparación obtenido correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener el histórico de comparación.
+        /// </response>
+        [HttpGet("comparison-history")]
+        public async Task<IActionResult> GetComparisonHistory([FromQuery] string range = "1m")
+        {
+            _logger.LogInformation("Solicitud de histórico de comparación recibida con rango {Range}", range);
+
+            var result = await _service.GetComparisonHistoryAsync(range);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener histórico de comparación: {Message}", result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Obtiene el histórico de un activo para el gráfico.
+        /// </summary>
+        /// <param name="symbol">
+        /// Símbolo del activo a consultar.
+        /// </param>
+        /// <param name="range">
+        /// Rango del gráfico. Valores permitidos: 1d, 1w, 1m, 3m, 6m, 1y.
+        /// </param>
+        /// <returns>
+        /// Serie histórica del activo solicitado.
+        /// </returns>
+        /// <response code="200">
+        /// Histórico del activo obtenido correctamente.
+        /// </response>
+        /// <response code="400">
+        /// Error al obtener el histórico del activo.
+        /// </response>
+        [HttpGet("asset/{symbol}/history")]
+        public async Task<IActionResult> GetAssetHistory(string symbol, [FromQuery] string range = "1m")
+        {
+            _logger.LogInformation("Solicitud de histórico de activo recibida para {Symbol} con rango {Range}", symbol, range);
+
+            var result = await _service.GetAssetHistoryAsync(symbol, range);
+
+            if (!result.Success)
+            {
+                _logger.LogWarning("Error al obtener histórico de activo {Symbol}: {Message}", symbol, result.Message);
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+
     }
 }

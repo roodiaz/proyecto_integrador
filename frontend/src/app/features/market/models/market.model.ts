@@ -62,3 +62,29 @@ export interface MarketNews {
   relatedTickers: string[];
 }
 
+export interface MarketHistoryPoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface MarketHistorySeries {
+  symbol: string;
+  name: string;
+  points: MarketHistoryPoint[];
+}
+
+export interface MarketAssetHistory {
+  symbol: string;
+  range: string;
+  series: MarketHistorySeries;
+}
+
+export interface MarketComparisonHistory {
+  range: string;
+  series: MarketHistorySeries[];
+}
+

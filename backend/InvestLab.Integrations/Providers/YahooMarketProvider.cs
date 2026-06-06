@@ -308,6 +308,85 @@ namespace InvestLab.Integrations.Providers
             return result.Take(count).ToList();
         }
 
+        public async Task<List<HistoricalPriceDto>> GetChartHistoryAsync(string symbol, string range)
+        {
+            if (string.IsNullOrWhiteSpace(symbol))
+                return [];
+
+            symbol = symbol.Trim().ToUpper();
+            range = string.IsNullOrWhiteSpace(range) ? "1m" : range.Trim().ToLower();
+
+            var yahooParams = GetYahooChartParams(range);
+            var url = $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(symbol)}?range={yahooParams.Range}&interval={yahooParams.Interval}";
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+            request.Headers.Accept.ParseAdd("application/json, text/plain, */*");
+            request.Headers.AcceptLanguage.ParseAdd("en-US,en;q=0.9,es;q=0.8");
+            request.Headers.Referrer = new Uri("https://finance.yahoo.com/");
+
+            using var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+                return [];
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            using var document = await JsonDocument.ParseAsync(stream);
+
+            if (!document.RootElement.TryGetProperty("chart", out var chart))
+                return [];
+
+            if (!chart.TryGetProperty("result", out var resultArray) || resultArray.ValueKind != JsonValueKind.Array || resultArray.GetArrayLength() == 0)
+                return [];
+
+            var result = resultArray[0];
+
+            if (!result.TryGetProperty("timestamp", out var timestamps) || timestamps.ValueKind != JsonValueKind.Array)
+                return [];
+
+            if (!result.TryGetProperty("indicators", out var indicators))
+                return [];
+
+            if (!indicators.TryGetProperty("quote", out var quoteArray) || quoteArray.ValueKind != JsonValueKind.Array || quoteArray.GetArrayLength() == 0)
+                return [];
+
+            var quote = quoteArray[0];
+
+            if (!quote.TryGetProperty("open", out var opens) || !quote.TryGetProperty("high", out var highs) || !quote.TryGetProperty("low", out var lows) || !quote.TryGetProperty("close", out var closes) || !quote.TryGetProperty("volume", out var volumes))
+                return [];
+
+            var list = new List<HistoricalPriceDto>();
+            var count = timestamps.GetArrayLength();
+
+            for (var i = 0; i < count; i++)
+            {
+                if (i >= closes.GetArrayLength())
+                    break;
+
+                if (closes[i].ValueKind == JsonValueKind.Null)
+                    continue;
+
+                var close = closes[i].GetDecimal();
+                var open = i < opens.GetArrayLength() && opens[i].ValueKind != JsonValueKind.Null ? opens[i].GetDecimal() : close;
+                var high = i < highs.GetArrayLength() && highs[i].ValueKind != JsonValueKind.Null ? highs[i].GetDecimal() : close;
+                var low = i < lows.GetArrayLength() && lows[i].ValueKind != JsonValueKind.Null ? lows[i].GetDecimal() : close;
+                var volume = i < volumes.GetArrayLength() && volumes[i].ValueKind != JsonValueKind.Null ? volumes[i].GetInt64() : 0;
+                var unix = timestamps[i].GetInt64();
+                var date = DateTimeOffset.FromUnixTimeSeconds(unix).UtcDateTime;
+
+                list.Add(new HistoricalPriceDto
+                {
+                    Date = date,
+                    Open = open,
+                    High = high,
+                    Low = low,
+                    Close = close,
+                    Volume = volume
+                });
+            }
+
+            return list.OrderBy(x => x.Date).ToList();
+        }
 
         // HERLPERS
         private static object? GetObjectValue(object source, params string[] propertyNames)
@@ -415,6 +494,20 @@ namespace InvestLab.Integrations.Providers
                 return dateTime;
 
             return null;
+        }
+
+        private static (string Range, string Interval) GetYahooChartParams(string range)
+        {
+            return range switch
+            {
+                "1d" => ("1d", "5m"),
+                "1w" => ("5d", "15m"),
+                "1m" => ("1mo", "1d"),
+                "3m" => ("3mo", "1d"),
+                "6m" => ("6mo", "1wk"),
+                "1y" => ("1y", "1mo"),
+                _ => ("1mo", "1d")
+            };
         }
 
         private static DateTime? GetPublishedDate(JsonElement item)

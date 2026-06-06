@@ -201,4 +201,9 @@ public class FinnhubMarketProvider : IExternalProvider
     {
         throw new NotImplementedException();
     }
+
+    public Task<List<HistoricalPriceDto>> GetChartHistoryAsync(string symbol, string range)
+    {
+        throw new NotImplementedException();
+    }
 }

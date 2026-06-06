@@ -104,11 +104,6 @@
           } @else {
             <h2>Buscá un activo</h2>
             <p>{{ assetErrorMessage || 'Ingresá un símbolo para ver precio, métricas y evolución.' }}</p>
-
-            <div class="empty-lines">
-              <span class="skeleton skeleton-text medium"></span>
-              <span class="skeleton skeleton-text short"></span>
-            </div>
           }
         </div>
       }
@@ -155,11 +150,18 @@
           <span>Div Yield</span>
           <strong>{{ formatNullablePercent(selectedAsset.dividendYield) }}</strong>
         </div>
-      } @else {
+      } @else if (loadingAsset) {
         @for (item of emptyStatLabels; track item) {
           <div class="stat-item empty-stat">
             <span>{{ item }}</span>
             <strong class="skeleton skeleton-text short"></strong>
+          </div>
+        }
+      } @else {
+        @for (item of emptyStatLabels; track item) {
+          <div class="stat-item empty-stat">
+            <span>{{ item }}</span>
+            <strong>--</strong>
           </div>
         }
       }
@@ -238,12 +240,18 @@
       </div>
     </div>
 
-    @if (loadingAsset) {
+    @if (loadingAsset || loadingChart) {
       <div class="skeleton-chart-box">
         <div class="skeleton skeleton-chart-line xl"></div>
         <div class="skeleton skeleton-chart-line lg"></div>
         <div class="skeleton skeleton-chart-line md"></div>
         <div class="skeleton skeleton-chart-line sm"></div>
+      </div>
+    } @else if (!selectedAsset) {
+      <div class="card-empty modern-empty chart-no-data">
+        <div class="card-empty-icon"><mat-icon>show_chart</mat-icon></div>
+        <div class="card-empty-title">Sin activo seleccionado</div>
+        <div class="card-empty-text">Buscá un símbolo para ver la evolución del precio comparada con el mercado.</div>
       </div>
     } @else {
       <div class="chart-container">

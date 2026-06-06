@@ -5,20 +5,7 @@
     <div class="section-header">
       <div class="title-container">
         <h2>Portfolio</h2>
-
-        @if (!loadingSummary) {
-        <p class="market-close-date">
-          Los valores actuales del portfolio utilizan cotizaciones en tiempo real.
-          <br>
-          La evolución histórica se calcula con precios de cierre de mercado al {{ portfolioSummary.lastMarketCloseDate
-          | date:'dd/MM/yyyy' }}.
-        </p>
-        } @else {
-        <div class="skeleton-card-list">
-          <span class="skeleton skeleton-text long"></span>
-          <span class="skeleton skeleton-text medium"></span>
-        </div>
-        }
+        <p class="page-subtitle">Seguí el rendimiento de tus inversiones, tenencias y operaciones realizadas.</p>
       </div>
 
       <div class="header-actions">
@@ -139,7 +126,12 @@
       <!-- Line -->
       <div class="chart-container">
         <div class="chart-header">
-          <h3>Evolución</h3>
+          <div>
+            <h3>Evolución</h3>
+            @if (!loadingSummary) {
+              <p class="chart-close-note">Precios de cierre al {{ portfolioSummary.lastMarketCloseDate | date:'dd/MM/yyyy' }}</p>
+            }
+          </div>
           <div class="period-selector">
             <select [value]="selectedPeriod" (change)="onPeriodChange($event)" class="period-select">
               @for (period of timePeriods; track period.value) {
