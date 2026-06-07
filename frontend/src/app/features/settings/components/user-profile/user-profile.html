@@ -4,7 +4,7 @@
   <header class="profile-hero">
     <div class="avatar-wrapper" (click)="!uploadingImage && triggerFileInput()">
       @if (!loadingProfile) {
-      <img [src]="profileImageUrl || 'assets/images/default-avatar.png'" alt="Foto perfil" class="profile-avatar">
+      <img [src]="profileImageUrl || 'img/logo.png'" alt="Foto perfil" class="profile-avatar">
       } @else {
       <span class="skeleton profile-avatar-skeleton"></span>
       }

@@ -1,53 +1,58 @@
-<div class="dialog-header">
-  <h2 class="dialog-title">Agregar Activo</h2>
-  <p class="dialog-subtitle">Busca por simbolo o selecciona uno popular</p>
-</div>
-
-<mat-dialog-content class="dialog-body">
-
-  <!-- Buscador -->
-  <div class="search-wrap">
-    <mat-icon class="search-icon">search</mat-icon>
-    <input
-      type="text"
-      class="search-input"
-      placeholder="Ej: AAPL, NVDA, TSLA..."
-      [(ngModel)]="searchTerm">
-    @if (searchTerm) {
-      <button class="search-clear" type="button" (click)="searchTerm = ''">
-        <mat-icon>close</mat-icon>
-      </button>
-    }
+<div class="modal-container">
+  <div class="modal-header">
+    <div>
+      <h2>Agregar Activo</h2>
+      <p class="modal-subtitle">Busca por símbolo o selecciona uno popular</p>
+    </div>
+    <button class="close-btn" type="button" mat-dialog-close>✕</button>
   </div>
 
-  <button class="btn-add-primary" type="button" (click)="add(searchTerm)" [disabled]="!searchTerm.trim()">
-    <mat-icon>add</mat-icon>
-    Agregar "{{ searchTerm || '...' }}"
-  </button>
+  <div class="modal-body">
 
-  <!-- Activos populares -->
-  <p class="section-label">Activos Populares</p>
-
-  <div class="asset-list">
-    @for (asset of popularAssets; track asset.symbol) {
-      <div class="asset-item">
-        <div class="asset-info">
-          <div class="asset-logo">{{ asset.symbol.charAt(0) }}</div>
-          <div class="asset-text">
-            <span class="asset-symbol">{{ asset.symbol }}</span>
-            <span class="asset-name">{{ asset.name }}</span>
-          </div>
-        </div>
-        <button class="btn-add-row" type="button" (click)="add(asset.symbol)">
-          <mat-icon>add</mat-icon>
-          Agregar
+    <!-- Buscador -->
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Ej: AAPL, NVDA, TSLA..."
+        [(ngModel)]="searchTerm">
+      @if (searchTerm) {
+        <button class="search-clear" type="button" (click)="searchTerm = ''">
+          <mat-icon>close</mat-icon>
         </button>
-      </div>
-    }
+      }
+    </div>
+
+    <button class="btn-add-primary" type="button" (click)="add(searchTerm)" [disabled]="!searchTerm.trim()">
+      <mat-icon>add</mat-icon>
+      Agregar "{{ searchTerm || '...' }}"
+    </button>
+
+    <!-- Activos populares -->
+    <p class="section-label">Activos Populares</p>
+
+    <div class="asset-list">
+      @for (asset of popularAssets; track asset.symbol) {
+        <div class="asset-item">
+          <div class="asset-info">
+            <div class="asset-logo">{{ asset.symbol.charAt(0) }}</div>
+            <div class="asset-text">
+              <span class="asset-symbol">{{ asset.symbol }}</span>
+              <span class="asset-name">{{ asset.name }}</span>
+            </div>
+          </div>
+          <button class="btn-add-row" type="button" (click)="add(asset.symbol)">
+            <mat-icon>add</mat-icon>
+            Agregar
+          </button>
+        </div>
+      }
+    </div>
+
   </div>
 
-</mat-dialog-content>
-
-<mat-dialog-actions class="dialog-actions">
-  <button class="btn-cancel" type="button" mat-dialog-close>Cancelar</button>
-</mat-dialog-actions>
+  <div class="modal-footer">
+    <button class="cancel-btn" type="button" mat-dialog-close>Cancelar</button>
+  </div>
+</div>
