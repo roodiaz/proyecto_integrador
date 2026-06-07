@@ -25,30 +25,13 @@
 
       <div class="summary-card">
         <div class="summary-card-header">
-          <h3>Saldo Inicial</h3>
-          <app-info-tooltip
-            text="Es el dinero virtual con el que empezaste la simulación. Sirve como punto de referencia para medir cuánto ganaste o perdiste en total."
-          />
-        </div>
-        @if (!loadingSummary) {
-          <p class="amount">${{ portfolioSummary.initialBalance.toFixed(2) }}</p>
-        } @else {
-          <div class="skeleton skeleton-metric-value"></div>
-        }
-      </div>
-
-      <div class="summary-card">
-        <div class="summary-card-header">
           <h3>Saldo Actual</h3>
           <app-info-tooltip
-            text="Es el dinero disponible en tu cuenta más el valor actual de todas tus inversiones abiertas, calculado al precio de mercado de hoy."
+            text="Es el dinero disponible en tu cuenta para operar, sin contar el valor de tus inversiones abiertas."
           />
         </div>
         @if (!loadingSummary) {
-          <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0"
-            [class.negative]="portfolioSummary.profitLoss < 0">
-            ${{ portfolioSummary.currentBalance.toFixed(2) }}
-          </p>
+          <p class="amount">${{ portfolioSummary.currentBalance.toFixed(2) }}</p>
         } @else {
           <div class="skeleton skeleton-metric-value"></div>
         }
@@ -58,7 +41,7 @@
         <div class="summary-card-header">
           <h3>Ganancia / Pérdida</h3>
           <app-info-tooltip
-            text="Muestra cuánto ganaste o perdiste en total desde que empezaste la simulación, comparando el saldo actual con el saldo inicial."
+            text="Es el resultado total desde que empezaste la simulación (saldo total menos saldo inicial). Se compone de ganancia 'realizada' (la que ya quedó fija al vender) y 'no realizada' (la valorización de tus inversiones abiertas al precio de hoy). Por eso vender al precio de mercado no cambia este total: solo convierte una ganancia no realizada en realizada."
           />
         </div>
         @if (!loadingSummary) {
@@ -67,6 +50,33 @@
             {{ portfolioSummary.profitLoss > 0 ? '+' : '' }}${{ portfolioSummary.profitLoss.toFixed(2) }}
             <span class="percent">({{ portfolioSummary.profitLossPercent > 0 ? '+' : '' }}{{
               portfolioSummary.profitLossPercent.toFixed(2) }}%)</span>
+          </p>
+          <p class="amount-breakdown">
+            <span [class.positive]="portfolioSummary.realizedProfitLoss > 0"
+              [class.negative]="portfolioSummary.realizedProfitLoss < 0">
+              Realizada: {{ portfolioSummary.realizedProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.realizedProfitLoss.toFixed(2) }}
+            </span>
+            <span [class.positive]="portfolioSummary.unrealizedProfitLoss > 0"
+              [class.negative]="portfolioSummary.unrealizedProfitLoss < 0">
+              No realizada: {{ portfolioSummary.unrealizedProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.unrealizedProfitLoss.toFixed(2) }}
+            </span>
+          </p>
+        } @else {
+          <div class="skeleton skeleton-metric-value"></div>
+        }
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-card-header">
+          <h3>Saldo Total</h3>
+          <app-info-tooltip
+            text="Es el dinero disponible en tu cuenta más el valor actual de todas tus inversiones abiertas, calculado al precio de mercado de hoy."
+          />
+        </div>
+        @if (!loadingSummary) {
+          <p class="amount" [class.positive]="portfolioSummary.profitLoss > 0"
+            [class.negative]="portfolioSummary.profitLoss < 0">
+            ${{ portfolioSummary.totalBalance.toFixed(2) }}
           </p>
         } @else {
           <div class="skeleton skeleton-metric-value"></div>
@@ -257,43 +267,49 @@
         <table class="shared-table">
           <thead>
             <tr>
-              <th style="width:12%">
+              <th style="width:11%">
                 <div class="th-with-help">
                   <span>Ticker</span>
                   <app-info-tooltip text="El símbolo único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
                 </div>
               </th>
-              <th style="width:10%">
+              <th style="width:13%">
+                <div class="th-with-help">
+                  <span>Sector</span>
+                  <app-info-tooltip text="El sector de la economía al que pertenece la empresa, como tecnología, energía o finanzas." />
+                </div>
+              </th>
+              <th style="width:9%">
                 <div class="th-with-help">
                   <span>Cantidad</span>
                   <app-info-tooltip text="El número de acciones que tenés de este activo en tu portfolio simulado." />
                 </div>
               </th>
-              <th style="width:16%">
+              <th style="width:14%">
                 <div class="th-with-help">
                   <span>Precio Compra</span>
                   <app-info-tooltip text="El precio promedio al que compraste las acciones de este activo." />
                 </div>
               </th>
-              <th style="width:16%">
+              <th style="width:14%">
                 <div class="th-with-help">
                   <span>Precio Actual</span>
                   <app-info-tooltip text="El precio de mercado actual de este activo, actualizado en tiempo real." />
                 </div>
               </th>
-              <th style="width:13%">
+              <th style="width:12%">
                 <div class="th-with-help">
                   <span>Variación</span>
                   <app-info-tooltip text="El porcentaje de cambio entre el precio de compra y el precio actual. Si es positivo, el activo subió de valor desde que lo compraste." />
                 </div>
               </th>
-              <th style="width:22%">
+              <th style="width:18%">
                 <div class="th-with-help">
                   <span>Ganancia/Pérdida</span>
                   <app-info-tooltip text="La diferencia en dinero entre lo que pagaste y lo que vale ahora. Un número positivo es ganancia, negativo es pérdida." />
                 </div>
               </th>
-              <th style="width:11%">
+              <th style="width:9%">
                 <div class="th-with-help">
                   <span>Acciones</span>
                   <app-info-tooltip text="Opciones disponibles para operar con este activo. Podés venderlo directamente desde acá." />
@@ -304,7 +320,7 @@
           <tbody>
             @if (positions.length === 0 && !symbolFilter && !positionStatusFilter) {
               <tr>
-                <td class="td-empty" colspan="7">
+                <td class="td-empty" colspan="8">
                   <div class="empty-state">
                     <div class="empty-icon">▭</div>
                     <p class="empty-title">Sin posiciones abiertas</p>
@@ -315,7 +331,7 @@
               </tr>
             } @else if (positions.length === 0) {
               <tr>
-                <td class="td-empty" colspan="7">
+                <td class="td-empty" colspan="8">
                   <div class="empty-state">
                     <div class="empty-icon">⌕</div>
                     <p class="empty-title">Sin resultados</p>
@@ -327,6 +343,7 @@
               @for (item of positions; track item.symbol) {
                 <tr>
                   <td class="ticker-cell">{{ item.symbol }}</td>
+                  <td>{{ item.sector || '—' }}</td>
                   <td>{{ item.quantity }}</td>
                   <td>{{ item.averagePrice | currency:'USD' }}</td>
                   <td>{{ item.currentPrice | currency:'USD' }}</td>
@@ -347,7 +364,7 @@
               }
               @for (row of emptyHoldingRows; track $index) {
                 <tr class="empty-row">
-                  <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
+                  <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                 </tr>
               }
             }
@@ -451,37 +468,43 @@
         <table class="shared-table">
           <thead>
             <tr>
-              <th style="width:22%">
+              <th style="width:18%">
                 <div class="th-with-help">
                   <span>Fecha</span>
                   <app-info-tooltip text="La fecha y hora exacta en que se realizó la operación de compra o venta." />
                 </div>
               </th>
-              <th style="width:15%">
+              <th style="width:12%">
                 <div class="th-with-help">
                   <span>Ticker</span>
                   <app-info-tooltip text="El símbolo de la acción operada. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
                 </div>
               </th>
-              <th style="width:12%">
+              <th style="width:13%">
+                <div class="th-with-help">
+                  <span>Sector</span>
+                  <app-info-tooltip text="El sector de la economía al que pertenece la empresa, como tecnología, energía o finanzas." />
+                </div>
+              </th>
+              <th style="width:11%">
                 <div class="th-with-help">
                   <span>Tipo</span>
                   <app-info-tooltip text="Indica si fue una compra (adquiriste acciones) o una venta (las vendiste)." />
                 </div>
               </th>
-              <th style="width:12%">
+              <th style="width:10%">
                 <div class="th-with-help">
                   <span>Cantidad</span>
                   <app-info-tooltip text="El número de acciones que compraste o vendiste en esa operación." />
                 </div>
               </th>
-              <th style="width:17%">
+              <th style="width:16%">
                 <div class="th-with-help">
                   <span>Precio</span>
                   <app-info-tooltip text="El precio por acción al momento de realizar la operación." />
                 </div>
               </th>
-              <th style="width:22%">
+              <th style="width:20%">
                 <div class="th-with-help">
                   <span>Total</span>
                   <app-info-tooltip text="El monto total de la operación: precio de la acción multiplicado por la cantidad comprada o vendida." />
@@ -492,7 +515,7 @@
           <tbody>
             @if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null && operationDaysFilter === null) {
               <tr>
-                <td class="td-empty" colspan="6">
+                <td class="td-empty" colspan="7">
                   <div class="empty-state">
                     <div class="empty-icon">≡</div>
                     <p class="empty-title">Sin operaciones registradas</p>
@@ -502,7 +525,7 @@
               </tr>
             } @else if (operations.length === 0) {
               <tr>
-                <td class="td-empty" colspan="6">
+                <td class="td-empty" colspan="7">
                   <div class="empty-state">
                     <div class="empty-icon">⌕</div>
                     <p class="empty-title">Sin resultados</p>
@@ -515,6 +538,7 @@
                 <tr>
                   <td>{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</td>
                   <td class="ticker-cell">{{ operation.symbol }}</td>
+                  <td>{{ operation.sector || '—' }}</td>
                   <td>
                     <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
                       {{ operation.type === 1 ? 'Compra' : 'Venta' }}
@@ -527,7 +551,7 @@
               }
               @for (row of emptyOperationRows; track $index) {
                 <tr class="empty-row">
-                  <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td>
+                  <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
                 </tr>
               }
             }

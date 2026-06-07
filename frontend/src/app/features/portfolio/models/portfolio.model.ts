@@ -1,6 +1,7 @@
 export interface Position {
 
   symbol: string;
+  sector?: string;
   quantity: number;
   averagePrice: number;
   currentPrice: number;
@@ -17,10 +18,12 @@ export interface PortfolioItem {
 }
 
 export interface PortfolioBalanceCards {
-  initialBalance: number;
   currentBalance: number;
+  totalBalance: number;
   profitLoss: number;
   profitLossPercent: number;
+  realizedProfitLoss: number;
+  unrealizedProfitLoss: number;
   totalOperations: number;
   maxOperations: number;
   lastMarketCloseDate: string;
@@ -63,6 +66,7 @@ export interface TransactionFilter {
 export interface PortfolioTransaction {
   operationDate: string;
   symbol: string;
+  sector?: string;
   type: number;
   quantity: number;
   buyPrice: number;

@@ -45,10 +45,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   // ── Tarjetas de resumen ──
   portfolioSummary: PortfolioBalanceCards = {
-    initialBalance: 0,
     currentBalance: 0,
+    totalBalance: 0,
     profitLoss: 0,
     profitLossPercent: 0,
+    realizedProfitLoss: 0,
+    unrealizedProfitLoss: 0,
     totalOperations: 0,
     maxOperations: 0,
     lastMarketCloseDate: '',
@@ -313,7 +315,14 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.portfolioService.getBalanceCards()
       .pipe(finalize(() => this.loadingSummary = false))
       .subscribe({
-        next: (res) => { this.portfolioSummary = res.data!; },
+        next: (res) => {
+          const data = res.data!;
+          this.portfolioSummary = {
+            ...data,
+            realizedProfitLoss: data.realizedProfitLoss ?? 0,
+            unrealizedProfitLoss: data.unrealizedProfitLoss ?? 0,
+          };
+        },
         error: (err) => {
           console.error('Balance cards error', err);
         },
@@ -353,7 +362,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (err) => {
           console.error('Line chart error', err);
-          this.snackBarService.error('No se pudo cargar la evolución del portfolio');
         },
       });
   }

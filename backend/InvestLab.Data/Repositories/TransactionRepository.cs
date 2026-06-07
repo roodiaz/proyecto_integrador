@@ -82,6 +82,7 @@ namespace InvestLab.Data.Repositories
                 {
                     OperationDate = x.CreatedAt,
                     Symbol = x.Asset.Symbol,
+                    Sector = x.Asset.Sector,
                     Type = x.Type,
                     Quantity = x.Quantity,
                     BuyPrice = x.Price,

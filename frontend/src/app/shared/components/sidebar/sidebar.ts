@@ -107,8 +107,10 @@ export class Sidebar implements OnDestroy {
     if (diffSeconds < 60) return `Precios actualizados hace ${diffSeconds} segundos`;
 
     const diffMinutes = Math.floor(diffSeconds / 60);
-    if (diffMinutes === 1) return 'Precios actualizados hace 1 minuto';
-    if (diffMinutes < 60) return `Precios actualizados hace ${diffMinutes} minutos`;
+    const remainingSeconds = diffSeconds % 60;
+    const minutesText = diffMinutes === 1 ? '1 minuto' : `${diffMinutes} minutos`;
+    const secondsText = remainingSeconds === 1 ? '1 segundo' : `${remainingSeconds} segundos`;
+    if (diffMinutes < 60) return `Precios actualizados hace ${minutesText} y ${secondsText}`;
 
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours === 1) return 'Precios actualizados hace 1 hora';

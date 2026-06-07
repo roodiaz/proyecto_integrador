@@ -386,6 +386,7 @@ public class PortfolioService : IPortfolioService
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             decimal holdingsValue = 0;
+            decimal unrealizedProfitLoss = 0;
             foreach (var item in portfolio)
             {
                 if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice))
@@ -395,20 +396,24 @@ public class PortfolioService : IPortfolioService
                 }
 
                 holdingsValue += item.Quantity * currentPrice;
+                unrealizedProfitLoss += (currentPrice - item.AvgPrice) * item.Quantity;
             }
 
             var marketMetadata = await _marketMetadataRepository.GetAsync();
 
-            var currentBalance = user.Balance + holdingsValue;
-            var profitLoss = currentBalance - _limits.InitialBalance;
+            var totalBalance = user.Balance + holdingsValue;
+            var profitLoss = totalBalance - _limits.InitialBalance;
             var profitPercent = _limits.InitialBalance == 0 ? 0 : (profitLoss / _limits.InitialBalance) * 100;
+            var realizedProfitLoss = profitLoss - unrealizedProfitLoss;
 
             var response = new PortfolioBalanceCardsDto
             {
-                InitialBalance = _limits.InitialBalance,
-                CurrentBalance = Math.Round(currentBalance, 2),
+                CurrentBalance = Math.Round(user.Balance, 2),
+                TotalBalance = Math.Round(totalBalance, 2),
                 ProfitLoss = Math.Round(profitLoss, 2),
                 ProfitLossPercent = Math.Round(profitPercent, 2),
+                RealizedProfitLoss = Math.Round(realizedProfitLoss, 2),
+                UnrealizedProfitLoss = Math.Round(unrealizedProfitLoss, 2),
                 TotalOperations = settings.OperationsUsedToday,
                 MaxOperations = _limits.MaxOperationsPerDay,
                 LastMarketCloseDate = marketMetadata?.LastMarketCloseDate
@@ -512,6 +517,7 @@ public class PortfolioService : IPortfolioService
                 positions.Add(new PortfolioOpenPositionDto
                 {
                     Symbol = item.Asset.Symbol,
+                    Sector = item.Asset.Sector,
                     Quantity = item.Quantity,
                     AveragePrice = Math.Round(item.AvgPrice, 2),
                     CurrentPrice = Math.Round(currentPrice, 2),

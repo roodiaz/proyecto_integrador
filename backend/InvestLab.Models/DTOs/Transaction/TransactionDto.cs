@@ -8,6 +8,8 @@ namespace InvestLab.Models.DTOs.Transaction
 
         public string Symbol { get; set; } = string.Empty;
 
+        public string? Sector { get; set; }
+
         public TransactionType Type { get; set; }
 
         public decimal Quantity { get; set; }

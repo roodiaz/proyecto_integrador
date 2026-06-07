@@ -15,7 +15,7 @@ export class SnackBarService {
 
   /**
    * Muestra una notificación de éxito (verde) durante 4 segundos, en la
-   * esquina superior derecha de la pantalla.
+   * parte superior central de la pantalla.
    * @param message Mensaje a mostrar al usuario.
    */
   success(message: string): void {
@@ -23,13 +23,13 @@ export class SnackBarService {
       duration: 4000,
       panelClass: ['app-snackbar', 'snackbar-success'],
       verticalPosition: 'top',
-      horizontalPosition: 'right',
+      horizontalPosition: 'center',
     });
   }
 
   /**
    * Muestra una notificación de error (roja) durante 5 segundos, en la
-   * esquina superior derecha de la pantalla.
+   * parte superior central de la pantalla.
    * @param message Mensaje a mostrar al usuario.
    */
   error(message: string): void {
@@ -37,13 +37,13 @@ export class SnackBarService {
       duration: 5000,
       panelClass: ['app-snackbar', 'snackbar-error'],
       verticalPosition: 'top',
-      horizontalPosition: 'right',
+      horizontalPosition: 'center',
     });
   }
 
   /**
    * Muestra una notificación informativa (azul) durante 4 segundos, en la
-   * esquina superior derecha de la pantalla.
+   * parte superior central de la pantalla.
    * @param message Mensaje a mostrar al usuario.
    */
   info(message: string): void {
@@ -51,7 +51,7 @@ export class SnackBarService {
       duration: 4000,
       panelClass: ['app-snackbar', 'snackbar-info'],
       verticalPosition: 'top',
-      horizontalPosition: 'right',
+      horizontalPosition: 'center',
     });
   }
 

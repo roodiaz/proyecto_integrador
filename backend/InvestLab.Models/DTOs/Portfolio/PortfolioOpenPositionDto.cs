@@ -4,6 +4,8 @@
     {
         public string Symbol { get; set; } = default!;
 
+        public string? Sector { get; set; }
+
         public decimal Quantity { get; set; }
 
         public decimal AveragePrice { get; set; }

@@ -487,10 +487,12 @@ public class PortfolioServiceTests
 
         Assert.True(result.Success);
         var data = Assert.IsType<PortfolioBalanceCardsDto>(result.Data);
-        Assert.Equal(10000, data.InitialBalance);
-        Assert.Equal(10500, data.CurrentBalance);
+        Assert.Equal(9000, data.CurrentBalance);
+        Assert.Equal(10500, data.TotalBalance);
         Assert.Equal(500, data.ProfitLoss);
         Assert.Equal(5, data.ProfitLossPercent);
+        Assert.Equal(500, data.UnrealizedProfitLoss);
+        Assert.Equal(0, data.RealizedProfitLoss);
         Assert.Equal(2, data.TotalOperations);
     }
 
