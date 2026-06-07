@@ -35,7 +35,10 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// <param name="logger">Logger utilizado para registrar la actividad del servicio.</param>
     /// <param name="priceHistoryRepository">Repositorio de históricos de precios.</param>
     /// <param name="marketPriceService">Servicio encargado de obtener precios de mercado.</param>
-    public DailySnapshotService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DailySnapshotService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketPriceService marketPriceService)
+    /// <param name="assetRepository">Repositorio de activos.</param>
+    /// <param name="marketMetadataRepository">Repositorio de metadata de mercado.</param>
+    /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
+    public DailySnapshotService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DailySnapshotService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketPriceService marketPriceService, IAssetRepository assetRepository, IMarketMetadataRepository marketMetadataRepository, IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository;
         _portfolioRepository = portfolioRepository;
@@ -44,6 +47,9 @@ public class DailySnapshotService : IDailySnapshotWorker
         _logger = logger;
         _priceHistoryRepository = priceHistoryRepository;
         _marketPriceService = marketPriceService;
+        _assetRepository = assetRepository;
+        _marketMetadataRepository = marketMetadataRepository;
+        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
