@@ -111,9 +111,6 @@
   transition: border-color 0.2s;
 }
 
-.form-section:hover {
-  border-color: #424754;
-}
 
 .section-label {
   margin: 0;

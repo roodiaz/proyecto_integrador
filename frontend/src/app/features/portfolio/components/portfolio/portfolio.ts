@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, forkJoin, Subscription } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -19,6 +19,15 @@ import {
   PortfolioTransaction,
 } from '../../models/portfolio.model';
 
+/**
+ * Pantalla principal del portfolio simulado.
+ *
+ * Muestra un resumen del estado de la cuenta (saldo inicial/actual, ganancia o pérdida
+ * y operaciones del día), gráficos de distribución y evolución del portfolio, y dos
+ * tablas paginadas y filtrables: las tenencias actuales (posiciones abiertas) y el
+ * historial de operaciones realizadas. También permite comprar, vender y reiniciar
+ * la simulación.
+ */
 @Component({
   selector: 'app-portfolio',
   standalone: true,
@@ -28,13 +37,13 @@ import {
 })
 export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
-  // ─── Loading states ──────────────────────────────────────────────────────────
+  // ── Estados de carga ──
   loadingSummary = false;
   loadingCharts = false;
   loadingPositions = false;
   loadingOperations = false;
 
-  // ─── Summary cards ──────────────────────────────────────────────────────────
+  // ── Tarjetas de resumen ──
   portfolioSummary: PortfolioBalanceCards = {
     initialBalance: 0,
     currentBalance: 0,
@@ -45,12 +54,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     lastMarketCloseDate: '',
   };
 
-  // ─── Holdings ────────────────────────────────────────────────────────────────
+  // ── Tenencias (posiciones abiertas) ──
   positions: any[] = [];
   totalPositions: number = 0;
   emptyHoldingRows: number[] = [];
-
-  // Holdings filters & pagination
   symbolFilter: string = '';
   positionStatusFilter: string = '';
   sortBy: string = 'profitLoss';
@@ -58,12 +65,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   positionsPage: number = 1;
   positionsPageSize: number = 5;
 
-  // ─── Operations ──────────────────────────────────────────────────────────────
+  // ── Operaciones (historial de transacciones) ──
   operations: PortfolioTransaction[] = [];
   totalOperations: number = 0;
   emptyOperationRows: number[] = [];
-
-  // Operations filters & pagination
   operationSymbolFilter: string = '';
   operationTypeFilter: number | null = null;
   operationDaysFilter: number | null = null;
@@ -71,18 +76,16 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   operationsPage: number = 1;
   operationsPageSize: number = 10;
 
-  // ─── UI state ────────────────────────────────────────────────────────────────
+  // ── Estado de la interfaz ──
   showHoldingsFilters = false;
   showOperationsFilters = false;
 
-  // ─── Charts ──────────────────────────────────────────────────────────────────
+  // ── Gráficos ──
   pieChartData: PortfolioPieChartItem[] = [];
   lineChartData: PortfolioLineChartItem[] = [];
   topAssets: Array<{ ticker: string; percentage: number }> = [];
-
   pieChart: Chart | null = null;
   lineChart: Chart | null = null;
-
   selectedPeriod = '1m';
   timePeriods = [
     { value: '7d', label: '7 días' },
@@ -92,10 +95,9 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     { value: '1y', label: '1 año' },
   ];
 
-  // ─── Internal ────────────────────────────────────────────────────────────────
+  // ── Internos ──
   private chartRequestsInProgress = 0;
   private viewInitialized = false;
-  private subscription: Subscription | null = null;
 
   private readonly PIE_COLORS = [
     '#A9C455', '#4DA3F5', '#FF6E40',
@@ -112,38 +114,52 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     Chart.register(...registerables);
   }
 
-  // ─── Lifecycle ───────────────────────────────────────────────────────────────
+  // ── Ciclo de vida ──
 
+  /** Carga toda la información del portfolio (resumen, gráficos, tenencias y operaciones). */
   ngOnInit(): void {
     this.refreshPortfolioData();
   }
 
+  /** Marca la vista como lista y dispara el renderizado de los gráficos si ya hay datos cargados. */
   ngAfterViewInit(): void {
     this.viewInitialized = true;
     this.renderChartsWhenReady();
   }
 
+  /** Destruye los gráficos de Chart.js para liberar sus recursos al salir de la pantalla. */
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
     this.pieChart?.destroy();
     this.lineChart?.destroy();
   }
 
-  // ─── Computed: total pages ───────────────────────────────────────────────────
+  // ── Computados ──
 
+  /** @returns La cantidad total de páginas de la tabla de tenencias, según el tamaño de página actual. */
   get totalPositionsPages(): number {
     return Math.max(1, Math.ceil(this.totalPositions / this.positionsPageSize));
   }
 
+  /** @returns La cantidad total de páginas de la tabla de operaciones, según el tamaño de página actual. */
   get totalOperationsPages(): number {
     return Math.max(1, Math.ceil(this.totalOperations / this.operationsPageSize));
   }
 
-  // ─── Pagination: page number arrays ─────────────────────────────────────────
+  // ── Paginación: numeración de páginas ──
 
+  /** @returns Los números de página a mostrar en el paginador de tenencias, centrados en la página actual. */
   getPositionPageNumbers(): number[] { return this.buildPageNumbers(this.positionsPage, this.totalPositionsPages); }
+
+  /** @returns Los números de página a mostrar en el paginador de operaciones, centrados en la página actual. */
   getOperationPageNumbers(): number[] { return this.buildPageNumbers(this.operationsPage, this.totalOperationsPages); }
 
+  /**
+   * Calcula una ventana de hasta 5 números de página centrada en la página actual,
+   * ajustándola para que no se salga del rango `[1, total]`.
+   * @param current Página actualmente seleccionada.
+   * @param total Cantidad total de páginas disponibles.
+   * @returns Arreglo con los números de página a mostrar en el paginador.
+   */
   private buildPageNumbers(current: number, total: number): number[] {
     const maxVisible = 5;
     let start = Math.max(1, current - Math.floor(maxVisible / 2));
@@ -152,73 +168,97 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
-  // ─── Pagination: holdings navigation ────────────────────────────────────────
+  // ── Paginación: navegación de tenencias ──
 
+  /** Retrocede una página en la tabla de tenencias y vuelve a cargarla. */
   previousPositionsPage(): void {
     if (this.positionsPage <= 1) return;
     this.positionsPage--;
     this.loadPositions();
   }
 
+  /** Avanza una página en la tabla de tenencias y vuelve a cargarla. */
   nextPositionsPage(): void {
     if (this.positionsPage >= this.totalPositionsPages) return;
     this.positionsPage++;
     this.loadPositions();
   }
 
+  /**
+   * Salta a una página específica de la tabla de tenencias.
+   * @param page Número de página de destino.
+   */
   goToPositionsPage(page: number): void {
     this.positionsPage = page;
     this.loadPositions();
   }
 
+  /** Vuelve a la primera página de tenencias y recarga la tabla al cambiar el tamaño de página. */
   onPositionsPageSizeChange(): void {
     this.positionsPage = 1;
     this.loadPositions();
   }
 
-  // ─── Pagination: operations navigation ──────────────────────────────────────
+  // ── Paginación: navegación de operaciones ──
 
+  /** Retrocede una página en la tabla de operaciones y vuelve a cargarla. */
   previousOperationsPage(): void {
     if (this.operationsPage <= 1) return;
     this.operationsPage--;
     this.loadOperations();
   }
 
+  /** Avanza una página en la tabla de operaciones y vuelve a cargarla. */
   nextOperationsPage(): void {
     if (this.operationsPage >= this.totalOperationsPages) return;
     this.operationsPage++;
     this.loadOperations();
   }
 
+  /**
+   * Salta a una página específica de la tabla de operaciones.
+   * @param page Número de página de destino.
+   */
   goToOperationsPage(page: number): void {
     this.operationsPage = page;
     this.loadOperations();
   }
 
+  /** Vuelve a la primera página de operaciones y recarga la tabla al cambiar el tamaño de página. */
   onOperationsPageSizeChange(): void {
     this.operationsPage = 1;
     this.loadOperations();
   }
 
-  // ─── Filter handlers ─────────────────────────────────────────────────────────
+  // ── Manejadores de filtros ──
 
+  /** Reinicia la paginación de tenencias a la primera página y recarga la tabla con los filtros actuales. */
   onPositionFiltersChange(): void {
     this.positionsPage = 1;
     this.loadPositions();
   }
 
+  /** Reinicia la paginación de operaciones a la primera página y recarga la tabla con los filtros actuales. */
   onOperationFiltersChange(): void {
     this.operationsPage = 1;
     this.loadOperations();
   }
 
+  /**
+   * Cambia el período seleccionado para el gráfico de evolución y vuelve a cargarlo.
+   * @param event Evento de cambio del `<select>` de período.
+   */
   onPeriodChange(event: Event): void {
     this.selectedPeriod = (event.target as HTMLSelectElement).value;
     this.loadLineChart();
   }
 
-  // ─── Modal handlers ──────────────────────────────────────────────────────────
+  // ── Modales de compra/venta ──
 
+  /**
+   * Abre el modal de compra y, si la operación se confirma, ejecuta la compra.
+   * @param symbol Símbolo del activo a comprar (opcional, para precargarlo en el modal).
+   */
   openBuyModal(symbol?: string): void {
     const dialogRef = this.dialog.open(PortfolioModal, {
       width: '560px',
@@ -235,6 +275,11 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  /**
+   * Abre el modal de venta para el símbolo indicado y, si la operación se confirma,
+   * ejecuta la venta de la posición.
+   * @param symbol Símbolo del activo a vender.
+   */
   openSellModal(symbol: string): void {
     const dialogRef = this.dialog.open(PortfolioModal, {
       width: '560px',
@@ -251,8 +296,9 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  // ─── Data loading ────────────────────────────────────────────────────────────
+  // ── Carga de datos ──
 
+  /** Vuelve a cargar todas las secciones del portfolio: resumen, gráficos, tenencias y operaciones. */
   private refreshPortfolioData(): void {
     this.loadBalanceCards();
     this.loadCharts();
@@ -260,6 +306,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.loadOperations();
   }
 
+  /** Carga las tarjetas de resumen (saldo inicial/actual, ganancia o pérdida y operaciones del día). */
   loadBalanceCards(): void {
     this.loadingSummary = true;
     this.portfolioService.getBalanceCards()
@@ -272,6 +319,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  /**
+   * Carga en paralelo los datos del gráfico de distribución (torta) y del de evolución
+   * (línea), arma el ranking de "Top Activos" y vuelve a renderizar ambos gráficos.
+   */
   loadCharts(): void {
     this.beginChartLoading();
     forkJoin({
@@ -295,6 +346,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  /** Vuelve a cargar únicamente el gráfico de evolución para el período seleccionado. */
   loadLineChart(): void {
     this.beginChartLoading();
     this.portfolioService.getLineChart(this.selectedPeriod)
@@ -311,6 +363,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  /** Carga la página actual de tenencias (posiciones abiertas) según los filtros y el orden seleccionados. */
   loadPositions(): void {
     this.loadingPositions = true;
     const filter = {
@@ -336,6 +389,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  /** Carga la página actual del historial de operaciones según los filtros y el orden seleccionados. */
   loadOperations(): void {
     this.loadingOperations = true;
     const filter: TransactionFilter = {
@@ -361,8 +415,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  // ─── Chart creation ──────────────────────────────────────────────────────────
+  // ── Creación de gráficos ──
 
+  /**
+   * Crea (o recrea) el gráfico de torta ("Distribución") en el `<canvas>` del template,
+   * a partir de `pieChartData`. No hace nada si el `<canvas>` todavía no está disponible.
+   */
   createPieChart(): void {
     const canvas = document.getElementById('pieChart') as HTMLCanvasElement;
     if (!canvas) return;
@@ -393,6 +451,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  /**
+   * Crea (o recrea) el gráfico de línea ("Evolución") en el `<canvas>` del template,
+   * a partir de `lineChartData`. Da formato a las fechas de los ejes y de los tooltips
+   * según el período seleccionado (corto: día y mes; largo: mes y año). No hace nada
+   * si el `<canvas>` todavía no está disponible.
+   */
   createLineChart(): void {
     const canvas = document.getElementById('lineChart') as HTMLCanvasElement;
     if (!canvas) return;
@@ -495,8 +559,13 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.lineChart = new Chart(canvas, config);
   }
 
-  // ─── Buy / Sell actions ──────────────────────────────────────────────────────
+  // ── Acciones de compra / venta ──
 
+  /**
+   * Confirma la compra del activo a través del servicio de portfolio, notifica el
+   * resultado al usuario y, si fue exitosa, recarga todos los datos del portfolio.
+   * @param data Datos de la compra confirmados en el modal (símbolo y cantidad).
+   */
   onBuyComplete(data: BuyData): void {
     this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
       next: (res) => {
@@ -511,6 +580,11 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  /**
+   * Confirma la venta de la posición a través del servicio de portfolio, notifica el
+   * resultado al usuario y, si fue exitosa, recarga todos los datos del portfolio.
+   * @param data Datos de la venta confirmados en el modal (símbolo y cantidad).
+   */
   sellPosition(data: SellData): void {
     this.portfolioService.sell(data).subscribe({
       next: (res) => {
@@ -525,40 +599,12 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────────
+  // ── Reinicio de la simulación ──
 
-  getAssetColor(index: number): string {
-    return this.TOP_ASSET_COLORS[index % this.TOP_ASSET_COLORS.length];
-  }
-
-  private renderChartsWhenReady(): void {
-    if (!this.viewInitialized) return;
-    setTimeout(() => {
-      this.createPieChart();
-      this.createLineChart();
-    }, 0);
-  }
-
-  private beginChartLoading(): void {
-    this.chartRequestsInProgress++;
-    this.loadingCharts = true;
-  }
-
-  private endChartLoading(): void {
-    this.chartRequestsInProgress = Math.max(0, this.chartRequestsInProgress - 1);
-    this.loadingCharts = this.chartRequestsInProgress > 0;
-  }
-
-  private updateEmptyHoldingRows(): void {
-    const missing = Math.max(0, this.positionsPageSize - this.positions.length);
-    this.emptyHoldingRows = Array(missing).fill(0);
-  }
-
-  private updateEmptyOperationRows(): void {
-    const missing = Math.max(0, this.operationsPageSize - this.operations.length);
-    this.emptyOperationRows = Array(missing).fill(0);
-  }
-
+  /**
+   * Pide confirmación al usuario antes de reiniciar la simulación (carga el diálogo
+   * de confirmación de forma diferida) y, si confirma, ejecuta el reinicio.
+   */
   async confirmResetSimulation(): Promise<void> {
     const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
 
@@ -578,6 +624,11 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.resetSimulation();
   }
 
+  /**
+   * Reinicia la simulación a través del servicio de portfolio (vuelve al saldo inicial
+   * y borra tenencias, operaciones e historial), notifica el resultado al usuario y,
+   * si fue exitoso, recarga todos los datos del portfolio.
+   */
   resetSimulation(): void {
     this.portfolioService.resetSimulation().subscribe({
       next: response => {
@@ -593,5 +644,49 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         this.snackBarService.error(error.error?.message ?? 'Error al reiniciar el portfolio');
       }
     });
+  }
+
+  // ── Helpers ──
+
+  /**
+   * Color asignado a un activo dentro del ranking de "Top Activos", reciclando la
+   * paleta `TOP_ASSET_COLORS` cuando hay más activos que colores disponibles.
+   * @param index Posición del activo en el ranking (basada en cero).
+   */
+  getAssetColor(index: number): string {
+    return this.TOP_ASSET_COLORS[index % this.TOP_ASSET_COLORS.length];
+  }
+
+  /** Renderiza (o vuelve a renderizar) los gráficos de torta y línea, una vez que la vista está lista. */
+  private renderChartsWhenReady(): void {
+    if (!this.viewInitialized) return;
+    setTimeout(() => {
+      this.createPieChart();
+      this.createLineChart();
+    }, 0);
+  }
+
+  /** Marca el inicio de una petición de gráficos, activando el indicador de carga correspondiente. */
+  private beginChartLoading(): void {
+    this.chartRequestsInProgress++;
+    this.loadingCharts = true;
+  }
+
+  /** Marca el fin de una petición de gráficos, apagando el indicador de carga cuando no quedan pendientes. */
+  private endChartLoading(): void {
+    this.chartRequestsInProgress = Math.max(0, this.chartRequestsInProgress - 1);
+    this.loadingCharts = this.chartRequestsInProgress > 0;
+  }
+
+  /** Recalcula las filas vacías a agregar en la tabla de tenencias para mantener una altura constante. */
+  private updateEmptyHoldingRows(): void {
+    const missing = Math.max(0, this.positionsPageSize - this.positions.length);
+    this.emptyHoldingRows = Array(missing).fill(0);
+  }
+
+  /** Recalcula las filas vacías a agregar en la tabla de operaciones para mantener una altura constante. */
+  private updateEmptyOperationRows(): void {
+    const missing = Math.max(0, this.operationsPageSize - this.operations.length);
+    this.emptyOperationRows = Array(missing).fill(0);
   }
 }

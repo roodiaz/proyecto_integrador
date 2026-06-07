@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTACT FORM — Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :host {
   display: block;
 }
@@ -10,29 +14,17 @@
   overflow: hidden;
 }
 
-/* HERO */
+/* ── Hero ── */
 
 .hero-section {
   flex: 1;
-
   display: flex;
-
   align-items: center;
   justify-content: flex-start;
-
   padding: 0 80px;
-
   background:
-    radial-gradient(
-      circle at top right,
-      rgba(0,185,84,.15),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(77,142,255,.15),
-      transparent 40%
-    );
+    radial-gradient(circle at top right,   rgba(0, 185, 84, 0.15),  transparent 40%),
+    radial-gradient(circle at bottom left, rgba(77, 142, 255, 0.15), transparent 40%);
 }
 
 .hero-content {
@@ -43,12 +35,11 @@
 .hero-title {
   font-size: 56px;
   line-height: 1.1;
-
   margin-bottom: 24px;
 }
 
 .hero-title span {
-  color: #4D8EFF;
+  color: #4d8eff;
 }
 
 .hero-description {
@@ -58,7 +49,7 @@
   margin-bottom: 48px;
 }
 
-/* INFO ITEMS */
+/* ── Info items ── */
 
 .hero-cards {
   display: flex;
@@ -75,22 +66,17 @@
 .hero-icon {
   width: 48px;
   height: 48px;
-
   border-radius: 12px;
-
-  background: rgba(255,255,255,.03);
-
-  border: 1px solid rgba(255,255,255,.06);
-
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
 }
 
 .hero-icon mat-icon {
-  color: #4D8EFF;
+  color: #4d8eff;
 }
 
 .hero-card h4 {
@@ -104,31 +90,24 @@
   margin: 0;
 }
 
-/* STATUS */
+/* ── Status ── */
 
 .status-card {
   margin-top: 60px;
-
   display: flex;
   align-items: center;
   gap: 14px;
-
   padding: 20px;
-
   border-radius: 16px;
-
-  background: rgba(255,255,255,.03);
-
-  border: 1px solid rgba(255,255,255,.05);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .status-dot {
   width: 10px;
   height: 10px;
-
   border-radius: 50%;
   background: #4ae176;
-
   box-shadow: 0 0 12px #4ae176;
 }
 
@@ -141,22 +120,22 @@
   color: #a6adbb;
 }
 
-/* FORM */
+/* ── Form ── */
 
 .contact-section {
   width: 600px;
-
   flex-shrink: 0;
-
   background: #131313;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   padding: 40px;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-  border-left: 1px solid rgba(255,255,255,.05);
+.contact-wrapper {
+  width: 100%;
+  max-width: 500px;
 }
 
 .contact-header {
@@ -179,7 +158,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  
 }
 
 .form-row {
@@ -198,64 +176,49 @@
   resize: none;
 }
 
-/* BUTTON */
+/* ── Button ── */
 
 .contact-button {
   height: 52px !important;
-
   margin-top: 18px;
-
   border-radius: 12px !important;
-
-  background: #4D8EFF !important;
+  background: #4d8eff !important;
   color: white !important;
 }
 
 .contact-button:hover {
-  box-shadow:
-    0 0 20px rgba(77,142,255,.4);
+  box-shadow: 0 0 20px rgba(77, 142, 255, 0.4);
 }
 
-.contact-wrapper {
-  width: 100%;
-  max-width: 500px;
-}
+/* ── Material overrides ── */
 
-/* MATERIAL */
-
-::ng-deep .mat-mdc-form-field {
-  width: 100%;
-}
+::ng-deep .mat-mdc-form-field { width: 100%; }
 
 ::ng-deep .mdc-text-field--outlined {
   background: #6363631a !important;
   border-radius: 12px !important;
+  overflow: hidden !important;
 }
 
-::ng-deep .mat-mdc-input-element {
-  color: white !important;
+::ng-deep .mat-mdc-input-element { color: white !important; }
+
+::ng-deep .mdc-floating-label { color: #9ca3af !important; }
+
+::ng-deep .mdc-notched-outline__leading,
+::ng-deep .mdc-notched-outline__notch,
+::ng-deep .mdc-notched-outline__trailing { border-color: transparent !important; }
+
+::ng-deep .mdc-text-field--outlined .mdc-floating-label--float-above {
+  transform: translateY(-30px) scale(0.75) !important;
 }
 
-::ng-deep textarea.mat-mdc-input-element {
-  color: white !important;
-}
+::ng-deep .mat-mdc-form-field-icon-suffix { color: #9ca3af; }
 
-::ng-deep .mdc-floating-label {
-  color: #9ca3af !important;
-}
+::ng-deep .mat-mdc-form-field-error { color: #ff6b6b; }
 
-::ng-deep .mat-mdc-form-field-icon-suffix {
-  color: #9ca3af;
-}
-
-::ng-deep .mat-mdc-form-field-error {
-  color: #ff6b6b;
-}
-
-/* MOBILE */
+/* ── Responsive ── */
 
 @media (max-width: 1024px) {
-
   .contact-layout {
     flex-direction: column;
     height: auto;
@@ -268,12 +231,11 @@
   .contact-section {
     width: 100%;
     min-height: calc(100vh - 72px);
-
     border-left: none;
   }
 }
-@media (max-width: 600px) {
 
+@media (max-width: 600px) {
   .contact-section {
     padding: 24px;
   }
@@ -281,23 +243,4 @@
   .contact-header h2 {
     font-size: 32px;
   }
-}
-
-::ng-deep .mdc-text-field--outlined {
-  border-radius: 12px !important;
-  overflow: hidden !important;
-}
-
-::ng-deep .mdc-notched-outline__leading,
-::ng-deep .mdc-notched-outline__notch,
-::ng-deep .mdc-notched-outline__trailing {
-  border-color: transparent !important;
-}
-
-::ng-deep .mdc-floating-label {
-  color: #9ca3af !important;
-}
-
-::ng-deep .mdc-text-field--outlined .mdc-floating-label--float-above {
-  transform: translateY(-30px) scale(0.75) !important;
 }

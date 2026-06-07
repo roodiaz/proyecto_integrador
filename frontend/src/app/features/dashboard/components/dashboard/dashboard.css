@@ -24,9 +24,7 @@
   box-sizing: border-box;
 }
 
-/* ========================= */
-/* HEADER */
-/* ========================= */
+/* ── Header ── */
 
 .dashboard-header {
   margin-bottom: 32px;
@@ -66,15 +64,12 @@
   gap: 16px;
   transition: .25s;
   min-width: 0;
+  position: relative;
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
-}
-
-.stat-card.positive {
-  border-color: rgba(74, 225, 118, .35);
 }
 
 .stat-icon {
@@ -117,9 +112,7 @@
   font-size: 13px;
 }
 
-/* ========================= */
-/* CHART */
-/* ========================= */
+/* ── Chart ── */
 
 .chart-section {
   background: #201F1F;
@@ -227,9 +220,7 @@
   height: 100% !important;
 }
 
-/* ========================= */
-/* GRID */
-/* ========================= */
+/* ── Grid ── */
 
 .dashboard-grid {
   display: grid;
@@ -269,28 +260,18 @@
   margin: 0;
 }
 
-.stat-card {
-  position: relative;
-}
-
 .stat-help {
   position: absolute;
   top: 10px;
   right: 10px;
 }
 
-/* ========================= */
-/* DISTRIBUCION */
-/* ========================= */
+/* ── Distribución ── */
 
 .allocation-list {
   display: flex;
   flex-direction: column;
   gap: 18px;
-}
-
-.allocation-item {
-  margin-bottom: 18px;
 }
 
 .allocation-header {
@@ -445,20 +426,6 @@
   .chart-container {
     height: 320px;
   }
-}
-
-.profit-percent {
-  font-size: 0.85rem;
-  font-weight: 600;
-  opacity: 0.85;
-  margin-left: 4px;
-}
-
-.profit-percent {
-  font-size: 0.85rem;
-  font-weight: 600;
-  opacity: 0.85;
-  margin-left: 4px;
 }
 
 .stat-card.positive {

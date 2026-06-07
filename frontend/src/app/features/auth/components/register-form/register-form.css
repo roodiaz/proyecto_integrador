@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGISTER FORM — Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :host {
   display: block;
 }
@@ -5,36 +9,21 @@
 .register-layout {
   display: flex;
   height: calc(100vh - 72px);
-
   background: #0e1117;
   color: white;
-
   overflow: hidden;
 }
 
-/* HERO */
-
+/* ── Hero ── */
 .hero-section {
   flex: 1;
-
   display: flex;
-
   align-items: center;
   justify-content: flex-start;
-
   padding: 0 80px;
-
   background:
-    radial-gradient(
-      circle at top right,
-      rgba(0, 185, 84, 0.15),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(77, 142, 255, 0.15),
-      transparent 40%
-    );
+    radial-gradient(circle at top right,   rgba(0, 185, 84, 0.15),   transparent 40%),
+    radial-gradient(circle at bottom left, rgba(77, 142, 255, 0.15), transparent 40%);
 }
 
 .hero-content {
@@ -70,7 +59,6 @@
   display: flex;
   align-items: flex-start;
   gap: 18px;
-
   padding: 0;
   background: transparent;
   border: none;
@@ -81,19 +69,13 @@
 .hero-card-icon {
   width: 58px;
   height: 58px;
-
   flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 16px;
-
   background: rgba(255, 255, 255, 0.03);
-
   border: 1px solid rgba(255, 255, 255, 0.08);
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 10px 30px rgba(0, 0, 0, 0.25);
@@ -112,24 +94,20 @@
 
 .hero-card h4 {
   margin: 0 0 8px;
-
   font-size: 22px;
   font-weight: 600;
-
   color: white;
 }
 
 .hero-card p {
   margin: 0;
-
   color: #a6adbb;
   font-size: 15px;
   line-height: 1.7;
-
   max-width: 520px;
 }
-/* FORM */
 
+/* ── Register form ── */
 .register-section {
   width: 520px;
   flex-shrink: 0;
@@ -170,16 +148,11 @@
   width: 100%;
 }
 
-/* BUTTON */
-
 .register-button {
   height: 52px !important;
-
   border-radius: 12px !important;
-
   background: #4d8eff !important;
   color: white !important;
-
   margin-top: 16px;
 }
 
@@ -187,13 +160,10 @@
   box-shadow: 0 0 20px rgba(77, 142, 255, 0.4);
 }
 
-/* TERMS */
-
+/* ── Terms ── */
 .terms-text {
   margin-top: 10px;
-
   color: #9ca3af;
-
   font-size: 14px;
   line-height: 1.6;
 }
@@ -207,13 +177,10 @@
   text-decoration: underline;
 }
 
-/* LOGIN LINK */
-
+/* ── Login link ── */
 .login-link {
   margin-top: 24px;
-
   text-align: center;
-
   color: #9ca3af;
 }
 
@@ -227,69 +194,56 @@
   text-decoration: underline;
 }
 
-/* ERROR */
-
+/* ── Error ── */
 .error-message {
   display: flex;
   align-items: center;
   gap: 8px;
-
   color: #ff6b6b;
-
   background: rgba(255, 0, 0, 0.08);
-
   padding: 12px;
   border-radius: 12px;
-
   margin-bottom: 16px;
 }
 
-/* LOADING */
-
+/* ── Loading ── */
 .loading-overlay {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-
   padding: 40px;
-
   border-radius: 16px;
-
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* MATERIAL */
-
-::ng-deep .mat-mdc-form-field {
-  width: 100%;
-}
+/* ── Material overrides ── */
+::ng-deep .mat-mdc-form-field { width: 100%; }
 
 ::ng-deep .mdc-text-field--outlined {
-  background: #6363631a !important; 
+  background: #6363631a !important;
   border-radius: 12px !important;
+  overflow: hidden !important;
 }
 
-::ng-deep .mat-mdc-input-element {
-  color: white !important;
+::ng-deep .mat-mdc-input-element { color: white !important; }
+
+::ng-deep .mdc-floating-label { color: #9ca3af !important; }
+
+::ng-deep .mdc-notched-outline__leading,
+::ng-deep .mdc-notched-outline__notch,
+::ng-deep .mdc-notched-outline__trailing { border-color: transparent !important; }
+
+::ng-deep .mdc-text-field--outlined .mdc-floating-label--float-above {
+  transform: translateY(-30px) scale(0.75) !important;
 }
 
-::ng-deep .mdc-floating-label {
-  color: #9ca3af !important;
-}
+::ng-deep .mat-mdc-form-field-icon-suffix { color: #9ca3af; }
 
-::ng-deep .mat-mdc-form-field-icon-suffix {
-  color: #9ca3af;
-}
+::ng-deep .mat-mdc-form-field-error { color: #ff6b6b; }
 
-::ng-deep .mat-mdc-form-field-error {
-  color: #ff6b6b;
-}
-
-/* MOBILE */
-
+/* ── Responsive ── */
 @media (max-width: 1024px) {
-
   .register-layout {
     flex-direction: column;
     height: auto;
@@ -302,7 +256,6 @@
   .register-section {
     width: 100%;
     min-height: calc(100vh - 72px);
-
     border-left: none;
   }
 }
@@ -315,23 +268,4 @@
   .register-header h2 {
     font-size: 32px;
   }
-}
-
-::ng-deep .mdc-text-field--outlined {
-  border-radius: 12px !important;
-  overflow: hidden !important;
-}
-
-::ng-deep .mdc-notched-outline__leading,
-::ng-deep .mdc-notched-outline__notch,
-::ng-deep .mdc-notched-outline__trailing {
-  border-color: transparent !important;
-}
-
-::ng-deep .mdc-floating-label {
-  color: #9ca3af !important;
-}
-
-::ng-deep .mdc-text-field--outlined .mdc-floating-label--float-above {
-  transform: translateY(-30px) scale(0.75) !important;
 }

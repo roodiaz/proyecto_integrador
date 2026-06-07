@@ -20,10 +20,14 @@ import { SnackBarService } from '../../../../core/services/snackbar.service';
   encapsulation: ViewEncapsulation.None
 })
 export class CreateAlertComponent implements OnInit {
+
+  // ── Estado del formulario ──────────────────────────────────────────────────
+  /** Formulario reactivo con los campos símbolo, condición, precio/porcentaje y estado. */
   alertForm: FormGroup;
+  /** Catálogo de condiciones disponibles para el selector. */
   conditions = ALERT_CONDITIONS;
+  /** Indica si el modal fue abierto para editar una alerta existente. */
   isEditMode = false;
-  title = 'Nueva Alerta';
 
   constructor(
     private fb: FormBuilder,
@@ -33,141 +37,125 @@ export class CreateAlertComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { alert?: Alert }
   ) {
     this.alertForm = this.fb.group({
-      symbol: ['', [Validators.required, Validators.pattern('^[A-Z]{1,5}$')]],
-      condition: ['<', Validators.required],
-      price: [null],
+      symbol:        ['', [Validators.required, Validators.pattern('^[A-Z]{1,5}$')]],
+      condition:     ['<', Validators.required],
+      price:         [null],
       percentChange: [null],
-      isActive: [true]
+      isActive:      [true]
     });
 
     if (data?.alert) {
       this.isEditMode = true;
-      this.title = 'Editar Alerta';
     }
   }
 
   ngOnInit(): void {
     if (this.data?.alert) {
-
       this.alertForm.patchValue({
-        symbol: this.data.alert.symbol ?? '',
-        condition: this.data.alert.condition ?? '<',
-        price: this.data.alert.price ?? null,
+        symbol:        this.data.alert.symbol        ?? '',
+        condition:     this.data.alert.condition     ?? '<',
+        price:         this.data.alert.price         ?? null,
         percentChange: this.data.alert.percentChange ?? null,
-        isActive: this.data.alert.isActive ?? true
+        isActive:      this.data.alert.isActive      ?? true
       });
-
     }
 
-    // Actualiza los validadores cuando cambia el tipo de condicion
+    // Ajusta los validadores de precio/porcentaje cuando cambia el tipo de condición
     this.alertForm.get('condition')?.valueChanges.subscribe(condition => {
-      const priceControl = this.alertForm.get('price');
-      const percentControl = this.alertForm.get('percentChange');
-
-      if (condition === '%>' || condition === '%<') {
-        priceControl?.clearValidators();
-        priceControl?.setValue(null);
-        percentControl?.setValidators([
-          Validators.required,
-          Validators.min(0.01),
-          Validators.max(100)
-        ]);
-      } else {
-        percentControl?.clearValidators();
-        percentControl?.setValue(null);
-        priceControl?.setValidators([
-          Validators.required,
-          Validators.min(0.01)
-        ]);
-      }
-
-      priceControl?.updateValueAndValidity();
-      percentControl?.updateValueAndValidity();
+      this.updateValueValidators(condition);
     });
   }
 
-  // Determina si la condicion seleccionada es de tipo porcentual
+  // ── Lógica del formulario ──────────────────────────────────────────────────
+
+  /**
+   * Determina si la condición seleccionada actualmente es de tipo porcentual (`%>` o `%<`).
+   * Se usa en el template para mostrar el campo de precio o el de porcentaje.
+   * @returns `true` si la condición es porcentual, `false` si es de precio absoluto.
+   */
   isPercentageCondition(): boolean {
     const condition = this.alertForm.get('condition')?.value;
     return condition === '%>' || condition === '%<';
   }
 
-  onSubmit(): void {
+  // ── Acciones ───────────────────────────────────────────────────────────────
 
-    if (!this.alertForm.valid)
-      return;
+  /**
+   * Valida el formulario y envía los datos al servicio correspondiente.
+   * En modo edición llama a `update`; en modo creación llama a `create`.
+   * Cierra el diálogo con `true` si la operación es exitosa.
+   */
+  onSubmit(): void {
+    if (!this.alertForm.valid) return;
 
     const formValue = this.alertForm.value;
 
     const dto: CreateAlertDto = {
-      symbol: formValue.symbol.toUpperCase(),
-      condition: formValue.condition,
-      price: formValue.price,
+      symbol:        formValue.symbol.toUpperCase(),
+      condition:     formValue.condition,
+      price:         formValue.price,
       percentChange: formValue.percentChange,
-      isActive: formValue.isActive
+      isActive:      formValue.isActive
     };
 
     if (this.isEditMode) {
+      const updateDto: UpdateAlertDto = { id: this.data.alert!.id, ...dto };
 
-      const updateDto: UpdateAlertDto = {
-        id: this.data.alert!.id,
-        ...dto
-      };
-
-      this.alertService.update(updateDto)
-        .subscribe({
-          next: () => {
-
-            this.snackBarService.success(
-              'Alerta actualizada correctamente'
-            );
-
-            this.dialogRef.close(true);
-          },
-          error: (error) => {
-
-            this.snackBarService.error(
-              error?.error?.message ??
-              'Error al actualizar la alerta'
-            );
-          }
-        });
+      this.alertService.update(updateDto).subscribe({
+        next: () => {
+          this.snackBarService.success('Alerta actualizada correctamente');
+          this.dialogRef.close(true);
+        },
+        error: error => {
+          this.snackBarService.error(error?.error?.message ?? 'Error al actualizar la alerta');
+        }
+      });
 
       return;
     }
-    else {
-      this.alertService.create(dto)
-        .subscribe({
-          next: () => {
 
-            this.snackBarService.success(
-              'Alerta creada correctamente'
-            );
-
-            this.dialogRef.close(true);
-          },
-          error: (error) => {
-
-            this.snackBarService.error(
-              error?.error?.message ??
-              'Error al crear la alerta'
-            );
-          }
-        });
-    }
+    this.alertService.create(dto).subscribe({
+      next: () => {
+        this.snackBarService.success('Alerta creada correctamente');
+        this.dialogRef.close(true);
+      },
+      error: error => {
+        this.snackBarService.error(error?.error?.message ?? 'Error al crear la alerta');
+      }
+    });
   }
 
+  /**
+   * Cierra el diálogo sin guardar cambios.
+   */
   onCancel(): void {
     this.dialogRef.close();
   }
 
-  getConditionDisplay(condition: string): string {
-    const conditionMap: { [key: string]: string } = {
-      '>': 'Mayor que',
-      '<': 'Menor que',
-      '%>': 'Aumento %',
-      '%<': 'Disminución %'
-    };
-    return conditionMap[condition] || condition;
+  // ── Métodos privados ───────────────────────────────────────────────────────
+
+  /**
+   * Actualiza los validadores de `price` y `percentChange` según el tipo de condición.
+   * Las condiciones porcentuales requieren un valor entre 0.01 y 100;
+   * las de precio absoluto requieren un valor mayor a 0.01.
+   * Limpia el valor del campo que queda fuera de uso para evitar datos residuales.
+   * @param condition Valor de condición recién seleccionado.
+   */
+  private updateValueValidators(condition: string): void {
+    const priceControl   = this.alertForm.get('price');
+    const percentControl = this.alertForm.get('percentChange');
+
+    if (condition === '%>' || condition === '%<') {
+      priceControl?.clearValidators();
+      priceControl?.setValue(null);
+      percentControl?.setValidators([Validators.required, Validators.min(0.01), Validators.max(100)]);
+    } else {
+      percentControl?.clearValidators();
+      percentControl?.setValue(null);
+      priceControl?.setValidators([Validators.required, Validators.min(0.01)]);
+    }
+
+    priceControl?.updateValueAndValidity();
+    percentControl?.updateValueAndValidity();
   }
 }

@@ -348,10 +348,6 @@
   color: var(--text);
 }
 
-.sparkline {
-  display: block;
-}
-
 .company-name {
   color: var(--text-sec);
   font-size: 0.9rem;

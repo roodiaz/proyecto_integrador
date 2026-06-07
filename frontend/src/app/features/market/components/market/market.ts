@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import Chart from 'chart.js/auto';
@@ -23,12 +22,19 @@ import {
   MarketNews,
   MarketAssetHistory,
   MarketComparisonHistory,
-  MarketHistoryPoint,
-  MarketHistorySeries
+  MarketHistoryPoint
 } from '../../models/market.model';
 
 Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcElement);
 
+/**
+ * Pantalla principal del mercado.
+ *
+ * Muestra un panorama general (índices y estado del mercado), permite buscar y analizar
+ * un activo en particular (precio, métricas, gráfico comparativo contra los principales
+ * índices), comprar/vender el activo y gestionarlo como favorito, y exhibe listas de
+ * tendencias, ganadores/perdedores del día y noticias del mercado.
+ */
 @Component({
   selector: 'app-market',
   standalone: true,
@@ -38,37 +44,38 @@ Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcEl
 })
 export class Market implements OnInit, AfterViewInit, OnDestroy {
 
-  // grafico
-  selectedSymbol = localStorage.getItem('lastMarketSymbol') || 'AAPL';
-  selectedTimeframe = '1m';
-  selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
-  marketData: MarketAsset[] = [];
-  currentTime = '';
-  assetHistory: MarketAssetHistory | null = null;
-  comparisonHistory: MarketComparisonHistory | null = null;
-  loadingChart = false;
-  lastComparisonRange = '';
-  private chart: Chart | null = null;
-  private clockInterval: any;
-
-  // cards superiores
-  marketIndices: MarketIndex[] = [];
+  // ── Estado general del mercado ──
   marketStatus: MarketStatus | null = null;
+  marketIndices: MarketIndex[] = [];
   loadingIndices = false;
   loadingOverview = false;
-  emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
-  emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
+  currentTime = '';
+  private clockInterval: any;
 
+  /** Tarjetas placeholder que se muestran cuando todavía no hay índices disponibles. */
+  emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
+
+  /** Textos explicativos de cada índice, usados en los tooltips informativos de las tarjetas. */
   readonly indexTooltips: Record<string, string> = {
     'S&P 500':   'El S&P 500 agrupa las 500 empresas más grandes de Estados Unidos. Es el índice más usado como referencia del mercado americano en general.',
     'NASDAQ':    'El NASDAQ concentra principalmente empresas tecnológicas como Apple, Google y Microsoft. Refleja cómo se comporta el sector tech del mercado.',
     'Dow Jones': 'El Dow Jones agrupa solo 30 grandes empresas industriales y tradicionales de EE.UU. Es uno de los índices más antiguos y conocidos del mundo.'
   };
 
-  getIndexTooltip(name: string): string {
-    return this.indexTooltips[name] ?? 'Este índice agrupa un conjunto de acciones para mostrar cómo se comporta una parte del mercado.';
-  }
+  // ── Activo seleccionado ──
+  selectedSymbol = localStorage.getItem('lastMarketSymbol') || 'AAPL';
+  selectedAsset: MarketAsset | null = null;
+  loadingAsset = false;
+  assetErrorMessage = '';
+  isFavorite = false;
+  favoriteLoading = false;
+  hasPositionForSelectedAsset = false;
+  loadingPositionStatus = false;
 
+  /** Etiquetas placeholder que se muestran cuando todavía no hay un activo seleccionado. */
+  emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
+
+  /** Textos explicativos de cada métrica del activo, usados en los tooltips informativos. */
   readonly statTooltips: Record<string, string> = {
     'Open':      'Precio al que abrió la acción al comienzo de la jornada de hoy.',
     'Volume':    'Cantidad de acciones negociadas hoy. Un volumen alto puede indicar mayor interés o actividad en el activo.',
@@ -79,18 +86,17 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     'P/E Ratio': 'Relación precio-ganancias: indica cuánto pagan los inversores por cada unidad de ganancia de la empresa. Un valor alto puede significar que el mercado espera mucho crecimiento.',
     'Div Yield': 'Rendimiento por dividendo: porcentaje que la empresa paga a sus accionistas sobre el precio actual. Es una forma de obtener ganancias además de la suba del precio.'
   };
-  hasPositionForSelectedAsset = false;
-  loadingPositionStatus = false;
 
-  // opciones card
-  isFavorite = false;
-  favoriteLoading = false;
+  // ── Gráfico comparativo ──
+  selectedTimeframe = '1m';
+  selectedChartType: 'line' | 'bar' | 'candlestick' = 'line';
+  assetHistory: MarketAssetHistory | null = null;
+  comparisonHistory: MarketComparisonHistory | null = null;
+  loadingChart = false;
+  private lastComparisonRange = '';
+  private chart: Chart | null = null;
 
-  selectedAsset: MarketAsset | null = null;
-  loadingAsset = false;
-  assetErrorMessage = '';
-
-  // cards inferiores
+  // ── Listas del mercado (tendencias, ganadores y perdedores) ──
   loadingTrending = false;
   loadingGainers = false;
   loadingLosers = false;
@@ -98,12 +104,12 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   dayGainers: MarketMover[] = [];
   dayLosers: MarketMover[] = [];
 
+  // ── Noticias ──
   activeNewsIndex = 0;
   loadingNews = false;
   marketNews: MarketNews[] = [];
 
   constructor(
-    private router: Router,
     private marketService: MarketService,
     private watchlistService: WatchlistService,
     private portfolioService: PortfolioService,
@@ -111,6 +117,13 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private dialog: MatDialog
   ) { }
 
+  // ── Ciclo de vida ──
+
+  /**
+   * Inicializa la pantalla: limpia el estado del activo, carga el panorama del mercado,
+   * las listas (tendencias/ganadores/perdedores), las noticias y el histórico comparativo,
+   * busca el último activo consultado y arranca el reloj del estado del mercado.
+   */
   ngOnInit(): void {
     this.loadMarketData();
     this.loadMarketOverview();
@@ -123,15 +136,26 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
   }
 
+  /**
+   * Una vez que la vista está lista, arma el gráfico comparativo en el siguiente ciclo
+   * de detección de cambios (para asegurar que el `<canvas>` ya esté en el DOM).
+   */
   ngAfterViewInit(): void {
     setTimeout(() => this.setupChart(), 0);
   }
 
+  /** Destruye el gráfico y detiene el reloj del estado del mercado al salir de la pantalla. */
   ngOnDestroy(): void {
     if (this.chart) this.chart.destroy();
     if (this.clockInterval) clearInterval(this.clockInterval);
   }
 
+  // ── Getters ──
+
+  /**
+   * Noticia actualmente mostrada en el carrusel de "Market Intelligence".
+   * @returns La noticia activa según `activeNewsIndex`, o una noticia vacía si todavía no hay datos.
+   */
   get activeNews(): MarketNews {
     return this.marketNews[this.activeNewsIndex] ?? {
       id: '',
@@ -145,151 +169,29 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  private loadMarketLists(): void {
-    this.loadTrending();
-    this.loadGainers();
-    this.loadLosers();
+  /**
+   * Texto explicativo del gráfico comparativo, según el tipo de gráfico seleccionado.
+   * @returns Descripción del gráfico de velas o del gráfico de comparación contra el mercado.
+   */
+  get chartTooltipText(): string {
+    if (this.selectedChartType === 'candlestick')
+      return 'El gráfico de velas muestra el precio de apertura, cierre, máximo y mínimo de cada período. Es útil para analizar el movimiento interno del activo seleccionado.';
+    return 'Este gráfico compara el rendimiento del activo seleccionado frente al S&P 500, NASDAQ y Dow Jones. Te ayuda a ver si el activo se mueve mejor o peor que el mercado en general.';
   }
 
-  private loadComparisonHistory(): void {
-    if (this.lastComparisonRange === this.selectedTimeframe && this.comparisonHistory?.series?.length) {
-      this.setupChart();
-      return;
-    }
+  // ── Carga de datos ──
 
-    this.loadingChart = true;
-
-    this.marketService.getComparisonHistory(this.selectedTimeframe).subscribe({
-      next: response => {
-        this.comparisonHistory = response.success ? response.data ?? null : null;
-        this.lastComparisonRange = this.selectedTimeframe;
-        this.loadingChart = false;
-        this.setupChart();
-      },
-      error: error => {
-        console.error('Error al obtener histórico de comparación', error);
-        this.comparisonHistory = null;
-        this.loadingChart = false;
-        this.setupChart();
-      }
-    });
-  }
-
-  private loadAssetHistory(): void {
-    const symbol = this.selectedSymbol.trim().toUpperCase();
-
-    if (!symbol) {
-      this.assetHistory = null;
-      this.setupChart();
-      return;
-    }
-
-    this.loadingChart = true;
-
-    this.marketService.getAssetHistory(symbol, this.selectedTimeframe).subscribe({
-      next: response => {
-        this.assetHistory = response.success ? response.data ?? null : null;
-        this.loadingChart = false;
-        this.setupChart();
-      },
-      error: error => {
-        console.error('Error al obtener histórico del activo', error);
-        this.assetHistory = null;
-        this.loadingChart = false;
-        this.setupChart();
-      }
-    });
-  }
-
-  loadPositionStatus(symbol: string): void {
-    if (!symbol) {
-      this.hasPositionForSelectedAsset = false;
-      return;
-    }
-
-    this.loadingPositionStatus = true;
-
-    this.portfolioService.getPosition(symbol).subscribe({
-      next: response => {
-        this.loadingPositionStatus = false;
-        this.hasPositionForSelectedAsset = !!(response.success && response.data && response.data.quantity > 0);
-      },
-      error: () => {
-        this.loadingPositionStatus = false;
-        this.hasPositionForSelectedAsset = false;
-      }
-    });
-  }
-
-  loadFavoriteStatus(symbol: string): void {
-    if (!symbol) return;
-
-    this.watchlistService.existsFavorite(symbol).subscribe({
-      next: res => {
-        if (res.success) this.isFavorite = res.data!;
-      },
-      error: err => {
-        console.error('Error consultando favorito', err);
-        this.isFavorite = false;
-      }
-    });
-  }
-
-  private loadTrending(): void {
-    this.loadingTrending = true;
-
-    this.marketService.getTrending().subscribe({
-      next: response => {
-        this.trendingStocks = response.success ? response.data ?? [] : [];
-        this.loadingTrending = false;
-      },
-      error: error => {
-        console.error('Error al obtener tendencias', error);
-        this.trendingStocks = [];
-        this.loadingTrending = false;
-      }
-    });
-  }
-
-  private loadGainers(): void {
-    this.loadingGainers = true;
-
-    this.marketService.getGainers().subscribe({
-      next: response => {
-        this.dayGainers = response.success ? response.data ?? [] : [];
-        this.loadingGainers = false;
-      },
-      error: error => {
-        console.error('Error al obtener ganadores', error);
-        this.dayGainers = [];
-        this.loadingGainers = false;
-      }
-    });
-  }
-
-  private loadLosers(): void {
-    this.loadingLosers = true;
-
-    this.marketService.getLosers().subscribe({
-      next: response => {
-        this.dayLosers = response.success ? response.data ?? [] : [];
-        this.loadingLosers = false;
-      },
-      error: error => {
-        console.error('Error al obtener perdedores', error);
-        this.dayLosers = [];
-        this.loadingLosers = false;
-      }
-    });
-  }
-
+  /** Reinicia el estado del activo y de las tendencias antes de cargar la información inicial. */
   private loadMarketData(): void {
-    this.marketData = [];
     this.trendingStocks = [];
     this.selectedAsset = null;
     this.hasPositionForSelectedAsset = false;
   }
 
+  /**
+   * Obtiene el panorama general del mercado (estado e índices principales) y actualiza
+   * los indicadores de carga correspondientes.
+   */
   private loadMarketOverview(): void {
     this.loadingOverview = true;
     this.loadingIndices = true;
@@ -319,6 +221,65 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /** Dispara la carga de las tres listas inferiores: tendencias, ganadores y perdedores del día. */
+  private loadMarketLists(): void {
+    this.loadTrending();
+    this.loadGainers();
+    this.loadLosers();
+  }
+
+  /** Carga los activos con mayor actividad de trading del momento. */
+  private loadTrending(): void {
+    this.loadingTrending = true;
+
+    this.marketService.getTrending().subscribe({
+      next: response => {
+        this.trendingStocks = response.success ? response.data ?? [] : [];
+        this.loadingTrending = false;
+      },
+      error: error => {
+        console.error('Error al obtener tendencias', error);
+        this.trendingStocks = [];
+        this.loadingTrending = false;
+      }
+    });
+  }
+
+  /** Carga los activos que más subieron de precio durante el día. */
+  private loadGainers(): void {
+    this.loadingGainers = true;
+
+    this.marketService.getGainers().subscribe({
+      next: response => {
+        this.dayGainers = response.success ? response.data ?? [] : [];
+        this.loadingGainers = false;
+      },
+      error: error => {
+        console.error('Error al obtener ganadores', error);
+        this.dayGainers = [];
+        this.loadingGainers = false;
+      }
+    });
+  }
+
+  /** Carga los activos que más bajaron de precio durante el día. */
+  private loadLosers(): void {
+    this.loadingLosers = true;
+
+    this.marketService.getLosers().subscribe({
+      next: response => {
+        this.dayLosers = response.success ? response.data ?? [] : [];
+        this.loadingLosers = false;
+      },
+      error: error => {
+        console.error('Error al obtener perdedores', error);
+        this.dayLosers = [];
+        this.loadingLosers = false;
+      }
+    });
+  }
+
+  /** Carga las noticias del mercado y reinicia el carrusel de "Market Intelligence". */
   private loadNews(): void {
     this.loadingNews = true;
 
@@ -337,94 +298,203 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  buyAsset(symbol?: string): void {
-    const finalSymbol = symbol || this.selectedSymbol;
-
-    if (!finalSymbol) {
-      this.snackBarService.error('Primero seleccioná un activo');
+  /**
+   * Carga el histórico comparativo (activo vs. principales índices) para el rango de
+   * tiempo actualmente seleccionado. Si ya se cuenta con datos para ese mismo rango,
+   * evita la nueva petición y simplemente vuelve a armar el gráfico.
+   */
+  private loadComparisonHistory(): void {
+    if (this.lastComparisonRange === this.selectedTimeframe && this.comparisonHistory?.series?.length) {
+      this.setupChart();
       return;
     }
 
-    const dialogRef = this.dialog.open(PortfolioModal, {
-      width: '560px',
-      maxWidth: '95vw',
-      autoFocus: false,
-      restoreFocus: false,
-      backdropClass: 'blur-backdrop',
-      panelClass: 'portfolio-dialog-panel',
-      data: {
-        mode: 'buy',
-        symbol: finalSymbol
-      }
-    });
+    this.loadingChart = true;
 
-    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
-      if (!result || result.mode !== 'buy') return;
-      this.onBuyComplete(result.data);
+    this.marketService.getComparisonHistory(this.selectedTimeframe).subscribe({
+      next: response => {
+        this.comparisonHistory = response.success ? response.data ?? null : null;
+        this.lastComparisonRange = this.selectedTimeframe;
+        this.loadingChart = false;
+        this.setupChart();
+      },
+      error: error => {
+        console.error('Error al obtener histórico de comparación', error);
+        this.comparisonHistory = null;
+        this.loadingChart = false;
+        this.setupChart();
+      }
     });
   }
 
-  sellAsset(symbol?: string): void {
-    const finalSymbol = symbol || this.selectedSymbol;
+  /**
+   * Carga el histórico de precios del activo seleccionado para el rango de tiempo actual
+   * y vuelve a armar el gráfico al finalizar. Si no hay un símbolo válido, limpia el
+   * histórico existente.
+   */
+  private loadAssetHistory(): void {
+    const symbol = this.selectedSymbol.trim().toUpperCase();
 
-    if (!finalSymbol) {
-      this.snackBarService.error('Primero seleccioná un activo');
+    if (!symbol) {
+      this.assetHistory = null;
+      this.setupChart();
       return;
     }
 
-    const dialogRef = this.dialog.open(PortfolioModal, {
-      width: '560px',
-      maxWidth: '95vw',
-      autoFocus: false,
-      restoreFocus: false,
-      backdropClass: 'blur-backdrop',
-      panelClass: 'portfolio-dialog-panel',
-      data: {
-        mode: 'sell',
-        symbol: finalSymbol
-      }
-    });
+    this.loadingChart = true;
 
-    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
-      if (!result || result.mode !== 'sell') return;
-      this.sellPosition(result.data);
+    this.marketService.getAssetHistory(symbol, this.selectedTimeframe).subscribe({
+      next: response => {
+        this.assetHistory = response.success ? response.data ?? null : null;
+        this.loadingChart = false;
+        this.setupChart();
+      },
+      error: error => {
+        console.error('Error al obtener histórico del activo', error);
+        this.assetHistory = null;
+        this.loadingChart = false;
+        this.setupChart();
+      }
     });
   }
 
-  onBuyComplete(data: BuyData): void {
-    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+  /**
+   * Consulta si el usuario tiene una posición abierta (cantidad > 0) para el símbolo dado,
+   * para habilitar o deshabilitar el botón de venta.
+   * @param symbol Símbolo del activo a consultar.
+   */
+  loadPositionStatus(symbol: string): void {
+    if (!symbol) {
+      this.hasPositionForSelectedAsset = false;
+      return;
+    }
+
+    this.loadingPositionStatus = true;
+
+    this.portfolioService.getPosition(symbol).subscribe({
       next: response => {
-        if (!response.success) {
-          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
+        this.loadingPositionStatus = false;
+        this.hasPositionForSelectedAsset = !!(response.success && response.data && response.data.quantity > 0);
+      },
+      error: () => {
+        this.loadingPositionStatus = false;
+        this.hasPositionForSelectedAsset = false;
+      }
+    });
+  }
+
+  /**
+   * Consulta si el símbolo dado está en la lista de favoritos del usuario y actualiza
+   * el estado del botón de favorito.
+   * @param symbol Símbolo del activo a consultar.
+   */
+  loadFavoriteStatus(symbol: string): void {
+    if (!symbol) return;
+
+    this.watchlistService.existsFavorite(symbol).subscribe({
+      next: res => {
+        if (res.success) this.isFavorite = res.data!;
+      },
+      error: err => {
+        console.error('Error consultando favorito', err);
+        this.isFavorite = false;
+      }
+    });
+  }
+
+  // ── Acciones del usuario ──
+
+  /**
+   * Busca el activo cuyo símbolo está cargado en `selectedSymbol`, actualiza el activo
+   * seleccionado y dispara la carga de su histórico, estado de favorito y de posición.
+   * Si el símbolo está vacío, muestra un mensaje pidiendo que se ingrese uno.
+   */
+  searchAsset(): void {
+    const symbol = this.selectedSymbol.trim().toUpperCase();
+
+    if (!symbol) {
+      this.assetErrorMessage = 'Ingresá un símbolo para buscar';
+      this.selectedAsset = null;
+      this.hasPositionForSelectedAsset = false;
+      return;
+    }
+
+    this.selectedSymbol = symbol;
+    this.loadingAsset = true;
+    this.assetErrorMessage = '';
+
+    this.marketService.getAssetDetail(symbol).subscribe({
+      next: response => {
+        this.loadingAsset = false;
+
+        if (!response.success || !response.data) {
+          this.selectedAsset = null;
+          this.hasPositionForSelectedAsset = false;
+          this.assetErrorMessage = response.message || 'No se encontró información para el activo';
           return;
         }
 
-        this.snackBarService.success(response.message || 'Compra realizada correctamente');
+        this.selectedAsset = response.data;
+        this.selectedSymbol = response.data.symbol;
+        localStorage.setItem('lastMarketSymbol', response.data.symbol);
+        this.loadAssetHistory();
+        this.assetErrorMessage = '';
+        this.loadFavoriteStatus(this.selectedSymbol);
+        this.loadPositionStatus(this.selectedSymbol);
       },
       error: error => {
-        console.error('Error al realizar la compra', error);
-        this.snackBarService.error(error?.error?.message || 'Error al realizar la compra');
+        console.error('Error al obtener detalle del activo', error);
+        this.loadingAsset = false;
+        this.selectedAsset = null;
+        this.hasPositionForSelectedAsset = false;
+        this.assetErrorMessage = 'No se pudo obtener la información del activo';
       }
     });
   }
 
-  sellPosition(data: SellData): void {
-    this.portfolioService.sell(data).subscribe({
-      next: response => {
-        if (!response.success) {
-          this.snackBarService.info(response.message || 'No se pudo realizar la venta');
-          return;
-        }
+  /**
+   * Selecciona un nuevo activo (por ejemplo, al hacer clic en un ítem de una lista) y
+   * dispara la búsqueda correspondiente si el símbolo cambió.
+   * @param symbol Símbolo del activo a seleccionar.
+   */
+  selectAsset(symbol: string): void {
+    const normalizedSymbol = symbol.trim().toUpperCase();
 
-        this.snackBarService.success(response.message || 'Venta realizada correctamente');
-      },
-      error: error => {
-        console.error('Error al vender activo', error);
-        this.snackBarService.error(error?.error?.message || 'Error al vender activo');
-      }
-    });
+    if (!normalizedSymbol || normalizedSymbol === this.selectedSymbol)
+      return;
+
+    this.selectedSymbol = normalizedSymbol;
+    this.searchAsset();
   }
 
+  /**
+   * Cambia el rango de tiempo del gráfico comparativo y vuelve a cargar tanto el
+   * histórico comparativo como el del activo seleccionado para ese nuevo rango.
+   * @param timeframe Nuevo rango de tiempo (por ejemplo `'1d'`, `'1w'`, `'1m'`, `'1y'`).
+   */
+  changeTimeframe(timeframe: string): void {
+    if (timeframe === this.selectedTimeframe) return;
+
+    this.selectedTimeframe = timeframe;
+    this.loadComparisonHistory();
+    this.loadAssetHistory();
+  }
+
+  /**
+   * Cambia el tipo de gráfico (línea, barras o velas) y vuelve a armar el gráfico
+   * con los datos ya disponibles.
+   * @param type Nuevo tipo de gráfico.
+   */
+  changeChartType(type: 'line' | 'bar' | 'candlestick'): void {
+    this.selectedChartType = type;
+    this.setupChart();
+  }
+
+  /**
+   * Agrega o quita el activo de la lista de favoritos del usuario, optimizando la
+   * actualización visual y revirtiéndola si la petición falla.
+   * @param symbol Símbolo del activo a marcar/desmarcar como favorito.
+   */
   toggleFavorite(symbol: string): void {
     if (!symbol || this.favoriteLoading) return;
 
@@ -457,6 +527,408 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Abre el modal de compra para el activo indicado (o el seleccionado actualmente)
+   * y, si la operación se confirma, ejecuta la compra.
+   * @param symbol Símbolo del activo a comprar. Si no se especifica, se usa `selectedSymbol`.
+   */
+  buyAsset(symbol?: string): void {
+    const finalSymbol = symbol || this.selectedSymbol;
+
+    if (!finalSymbol) {
+      this.snackBarService.error('Primero seleccioná un activo');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PortfolioModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'blur-backdrop',
+      panelClass: 'portfolio-dialog-panel',
+      data: {
+        mode: 'buy',
+        symbol: finalSymbol
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
+      if (!result || result.mode !== 'buy') return;
+      this.onBuyComplete(result.data);
+    });
+  }
+
+  /**
+   * Abre el modal de venta para el activo indicado (o el seleccionado actualmente)
+   * y, si la operación se confirma, ejecuta la venta de la posición.
+   * @param symbol Símbolo del activo a vender. Si no se especifica, se usa `selectedSymbol`.
+   */
+  sellAsset(symbol?: string): void {
+    const finalSymbol = symbol || this.selectedSymbol;
+
+    if (!finalSymbol) {
+      this.snackBarService.error('Primero seleccioná un activo');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PortfolioModal, {
+      width: '560px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      restoreFocus: false,
+      backdropClass: 'blur-backdrop',
+      panelClass: 'portfolio-dialog-panel',
+      data: {
+        mode: 'sell',
+        symbol: finalSymbol
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
+      if (!result || result.mode !== 'sell') return;
+      this.sellPosition(result.data);
+    });
+  }
+
+  /**
+   * Confirma la compra del activo a través del servicio de portfolio y notifica
+   * el resultado al usuario mediante el snackbar.
+   * @param data Datos de la compra confirmados en el modal (símbolo y cantidad).
+   */
+  onBuyComplete(data: BuyData): void {
+    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+      next: response => {
+        if (!response.success) {
+          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
+          return;
+        }
+
+        this.snackBarService.success(response.message || 'Compra realizada correctamente');
+      },
+      error: error => {
+        console.error('Error al realizar la compra', error);
+        this.snackBarService.error(error?.error?.message || 'Error al realizar la compra');
+      }
+    });
+  }
+
+  /**
+   * Confirma la venta de la posición a través del servicio de portfolio y notifica
+   * el resultado al usuario mediante el snackbar.
+   * @param data Datos de la venta confirmados en el modal (símbolo y cantidad).
+   */
+  sellPosition(data: SellData): void {
+    this.portfolioService.sell(data).subscribe({
+      next: response => {
+        if (!response.success) {
+          this.snackBarService.info(response.message || 'No se pudo realizar la venta');
+          return;
+        }
+
+        this.snackBarService.success(response.message || 'Venta realizada correctamente');
+      },
+      error: error => {
+        console.error('Error al vender activo', error);
+        this.snackBarService.error(error?.error?.message || 'Error al vender activo');
+      }
+    });
+  }
+
+  /**
+   * Carga de manera diferida (lazy) el formulario de creación de alertas y lo abre
+   * en un modal para el activo indicado (o el seleccionado actualmente).
+   * @param symbol Símbolo del activo para el cual crear la alerta. Si no se especifica, se usa `selectedSymbol`.
+   */
+  async openCreateAlert(symbol?: string): Promise<void> {
+    const finalSymbol = symbol || this.selectedSymbol;
+
+    if (!finalSymbol) {
+      this.snackBarService.error('Primero seleccioná un activo');
+      return;
+    }
+
+    try {
+      const module = await import('../../../alerts/components/create-alert/create-alert');
+      const ModalComponent = module.CreateAlertComponent;
+
+      const dialogRef = this.dialog.open(ModalComponent, {
+        width: '600px',
+        backdropClass: 'blur-backdrop',
+        data: {
+          isEditing: false,
+          alert: { symbol: finalSymbol }
+        }
+      });
+
+      const result = await dialogRef.afterClosed().toPromise();
+
+      if (result)
+        this.snackBarService.success('Alerta creada correctamente');
+    }
+    catch (error) {
+      console.error('Error al abrir el modal de crear alerta', error);
+      this.snackBarService.error('No se pudo abrir el formulario de alerta');
+    }
+  }
+
+  /** Avanza a la siguiente noticia del carrusel de "Market Intelligence". */
+  nextNews(): void {
+    if (this.marketNews.length === 0) return;
+    this.activeNewsIndex = (this.activeNewsIndex + 1) % this.marketNews.length;
+  }
+
+  /** Retrocede a la noticia anterior del carrusel de "Market Intelligence". */
+  previousNews(): void {
+    if (this.marketNews.length === 0) return;
+    this.activeNewsIndex = this.activeNewsIndex === 0 ? this.marketNews.length - 1 : this.activeNewsIndex - 1;
+  }
+
+  /**
+   * Abre la URL de la noticia en una nueva pestaña.
+   * @param url Dirección de la noticia a abrir.
+   */
+  openNews(url: string): void {
+    if (!url) return;
+    window.open(url, '_blank');
+  }
+
+  // ── Helpers de presentación ──
+
+  /**
+   * Texto explicativo del índice indicado, usado en los tooltips informativos.
+   * @param name Nombre del índice (por ejemplo `'S&P 500'`).
+   * @returns Descripción del índice o un texto genérico si no hay uno específico.
+   */
+  getIndexTooltip(name: string): string {
+    return this.indexTooltips[name] ?? 'Este índice agrupa un conjunto de acciones para mostrar cómo se comporta una parte del mercado.';
+  }
+
+  /**
+   * Texto que describe el estado actual del mercado (abierto/cerrado, próxima apertura, etc.).
+   * @returns Texto de estado del mercado, o un mensaje genérico si no está disponible.
+   */
+  getMarketStatusText(): string {
+    return this.marketStatus?.statusText ?? 'Estado no disponible';
+  }
+
+  /**
+   * Hora a mostrar junto al estado del mercado.
+   * @returns La hora reportada por el servicio o, en su defecto, el reloj local.
+   */
+  getMarketStatusTime(): string {
+    return this.marketStatus?.marketTime ?? this.currentTime;
+  }
+
+  /** @returns `true` si el mercado se encuentra abierto en este momento. */
+  isMarketOpen(): boolean {
+    return this.marketStatus?.isOpen ?? false;
+  }
+
+  /**
+   * Variación absoluta de un índice respecto al cierre anterior.
+   * @param index Índice del cual calcular la variación.
+   * @returns La variación informada por el servicio o, en su defecto, la diferencia entre el valor actual y el cierre previo.
+   */
+  getIndexChange(index: MarketIndex): number {
+    return index.change ?? ((index.value ?? 0) - (index.previousClose ?? 0));
+  }
+
+  /** @returns El porcentaje de variación del activo seleccionado, o `0` si no hay uno. */
+  getAssetChangePercent(): number {
+    return this.selectedAsset?.changePercent ?? 0;
+  }
+
+  /**
+   * Porcentaje de variación de un activo de una lista (tendencias, ganadores o perdedores).
+   * @param stock Activo del cual obtener el porcentaje de variación.
+   */
+  getStockChangePercent(stock: MarketMover): number {
+    return stock.changePercent ?? 0;
+  }
+
+  /**
+   * Da formato a un número con dos decimales, en notación inglesa (con coma como separador de miles).
+   * @param value Valor numérico a formatear.
+   */
+  formatNumber(value: number): string {
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  /**
+   * Da formato a una capitalización de mercado, abreviando en billones (T), miles de
+   * millones (B) o millones (M) según corresponda.
+   * @param value Capitalización de mercado en dólares.
+   */
+  formatMarketCap(value: number): string {
+    if (value >= 1000000000000) return `$${(value / 1000000000000).toFixed(2)}T`;
+    if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    return `$${value.toLocaleString()}`;
+  }
+
+  /**
+   * Da formato a un volumen de operaciones, abreviando en millones (M) o miles (K) según corresponda.
+   * @param value Cantidad de acciones negociadas.
+   */
+  formatVolume(value: number): string {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toString();
+  }
+
+  /**
+   * Da formato a un valor monetario que puede no estar disponible.
+   * @param value Valor a formatear, o `null`/`undefined` si no hay dato.
+   * @returns El valor con el símbolo `$` y dos decimales, o `'--'` si no hay dato.
+   */
+  formatNullableCurrency(value: number | null | undefined): string {
+    return value == null ? '--' : `$${value.toFixed(2)}`;
+  }
+
+  /**
+   * Da formato a un valor numérico que puede no estar disponible.
+   * @param value Valor a formatear, o `null`/`undefined` si no hay dato.
+   * @returns El valor como texto, o `'--'` si no hay dato.
+   */
+  formatNullableNumber(value: number | null | undefined): string {
+    return value == null ? '--' : value.toString();
+  }
+
+  /**
+   * Da formato a un porcentaje que puede no estar disponible.
+   * @param value Valor a formatear, o `null`/`undefined` si no hay dato.
+   * @returns El valor con dos decimales seguido de `%`, o `'--'` si no hay dato.
+   */
+  formatNullablePercent(value: number | null | undefined): string {
+    return value == null ? '--' : `${value.toFixed(2)}%`;
+  }
+
+  // ── Gráfico (privados) ──
+
+  /** Actualiza la hora local que se muestra como respaldo del estado del mercado. */
+  private updateClock(): void {
+    this.currentTime = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  /**
+   * Da formato a la fecha de un punto del histórico según el rango de tiempo seleccionado,
+   * para usarla como etiqueta del eje horizontal del gráfico.
+   * @param date Fecha del punto, en formato ISO.
+   * @returns La fecha formateada (hora, día de la semana, día y mes, o mes y año, según el rango).
+   */
+  private formatChartLabel(date: string): string {
+    const value = new Date(date);
+
+    if (this.selectedTimeframe === '1d')
+      return value.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+    if (this.selectedTimeframe === '1w')
+      return value.toLocaleDateString('es-AR', { weekday: 'short' });
+
+    if (this.selectedTimeframe === '1m' || this.selectedTimeframe === '3m')
+      return value.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+
+    return value.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' });
+  }
+
+  /**
+   * Alinea los puntos de una serie comparativa con las etiquetas del activo principal,
+   * para que ambas series queden sincronizadas en el mismo eje horizontal.
+   * @param points Puntos del histórico de la serie comparativa.
+   * @param labels Etiquetas del eje horizontal generadas a partir del activo principal.
+   * @returns Un arreglo con el precio de cierre correspondiente a cada etiqueta (o `null` si no hay dato para esa fecha).
+   */
+  private alignSeriesToLabels(points: MarketHistoryPoint[], labels: string[]): number[] {
+    const map = new Map(points.map(x => [this.formatChartLabel(x.date), x.close]));
+    return labels.map(label => map.get(label) ?? null) as number[];
+  }
+
+  /**
+   * Color de línea/barra asignado a una serie comparativa según su símbolo.
+   * @param symbol Símbolo de la serie (por ejemplo `'^GSPC'` para el S&P 500).
+   */
+  private getSeriesColor(symbol: string): string {
+    return symbol === '^GSPC' ? '#10b981' : symbol === '^IXIC' ? '#f59e0b' : '#a78bfa';
+  }
+
+  /**
+   * Color de relleno (con transparencia) asignado a una serie comparativa según su símbolo,
+   * usado en el gráfico de tipo línea.
+   * @param symbol Símbolo de la serie (por ejemplo `'^GSPC'` para el S&P 500).
+   */
+  private getSeriesBackgroundColor(symbol: string): string {
+    return symbol === '^GSPC' ? 'rgba(16, 185, 129, 0.10)' : symbol === '^IXIC' ? 'rgba(245, 158, 11, 0.10)' : 'rgba(167, 139, 250, 0.10)';
+  }
+
+  /**
+   * Construye los datos (etiquetas y datasets) del gráfico comparativo según el tipo
+   * de gráfico seleccionado: para velas delega en `generateCandlestickChartData`, y
+   * para línea/barras arma el dataset del activo principal junto con uno por cada
+   * serie del histórico comparativo.
+   * @returns Objeto `{ labels, datasets }` listo para pasarle a Chart.js, o `{ datasets }` en el caso de velas.
+   */
+  private generateMarketChartData(): any {
+    if (this.selectedChartType === 'candlestick') return this.generateCandlestickChartData();
+
+    const labels = this.assetHistory?.series.points.map(x => this.formatChartLabel(x.date)) ?? [];
+
+    const datasets: any[] = [
+      {
+        label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
+        data: this.assetHistory?.series.points.map(x => x.close) ?? [],
+        borderColor: '#4a90e2',
+        backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.12)' : '#4a90e2',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: this.selectedChartType === 'line'
+      }
+    ];
+
+    this.comparisonHistory?.series.forEach(series => {
+      datasets.push({
+        label: series.name || series.symbol,
+        data: this.alignSeriesToLabels(series.points, labels),
+        borderColor: this.getSeriesColor(series.symbol),
+        backgroundColor: this.selectedChartType === 'line' ? this.getSeriesBackgroundColor(series.symbol) : this.getSeriesColor(series.symbol),
+        borderWidth: 2,
+        tension: 0.4,
+        fill: this.selectedChartType === 'line'
+      });
+    });
+
+    return { labels, datasets };
+  }
+
+  /**
+   * Construye el dataset de velas (OHLC) a partir del histórico del activo seleccionado.
+   * @returns Objeto `{ datasets }` con un único dataset de velas, listo para pasarle a Chart.js.
+   */
+  private generateCandlestickChartData(): any {
+    const candles = this.assetHistory?.series.points.map(x => ({
+      x: new Date(x.date).getTime(),
+      o: x.open,
+      h: x.high,
+      l: x.low,
+      c: x.close
+    })) ?? [];
+
+    return {
+      datasets: [
+        {
+          label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
+          data: candles
+        }
+      ]
+    };
+  }
+
+  /**
+   * Arma la configuración completa de Chart.js (tipo, datos, escalas, leyenda y tooltips)
+   * según el tipo de gráfico seleccionado.
+   * @param data Datos generados por `generateMarketChartData`.
+   * @returns Configuración lista para instanciar un `Chart` de Chart.js.
+   */
   private getMarketChartConfiguration(data: any): any {
     if (this.selectedChartType === 'candlestick') {
       return {
@@ -570,6 +1042,11 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  /**
+   * Crea (o recrea) el gráfico comparativo en el `<canvas>` del template, usando los
+   * datos y la configuración generados a partir del activo y del histórico actuales.
+   * No hace nada si todavía no hay activo/histórico seleccionado o si el `<canvas>` no está disponible.
+   */
   private setupChart(): void {
     if (!this.selectedAsset || !this.assetHistory)
       return;
@@ -586,260 +1063,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const config = this.getMarketChartConfiguration(data);
 
     this.chart = new Chart(ctx, config);
-  }
-
-  selectAsset(symbol: string): void {
-    const normalizedSymbol = symbol.trim().toUpperCase();
-
-    if (!normalizedSymbol || normalizedSymbol === this.selectedSymbol)
-      return;
-
-    this.selectedSymbol = normalizedSymbol;
-    this.searchAsset();
-  }
-
-  changeTimeframe(timeframe: string): void {
-    if (timeframe === this.selectedTimeframe) return;
-
-    this.selectedTimeframe = timeframe;
-    this.loadComparisonHistory();
-    this.loadAssetHistory();
-  }
-
-  nextNews(): void {
-    if (this.marketNews.length === 0) return;
-    this.activeNewsIndex = (this.activeNewsIndex + 1) % this.marketNews.length;
-  }
-
-  previousNews(): void {
-    if (this.marketNews.length === 0) return;
-    this.activeNewsIndex = this.activeNewsIndex === 0 ? this.marketNews.length - 1 : this.activeNewsIndex - 1;
-  }
-
-  openNews(url: string): void {
-    if (!url) return;
-    window.open(url, '_blank');
-  }
-
-  formatNumber(value: number): string {
-    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  formatMarketCap(value: number): string {
-    if (value >= 1000000000000) return `$${(value / 1000000000000).toFixed(2)}T`;
-    if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    return `$${value.toLocaleString()}`;
-  }
-
-  formatVolume(value: number): string {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
-    return value.toString();
-  }
-
-  private updateClock(): void {
-    this.currentTime = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
-
-  searchAsset(): void {
-    const symbol = this.selectedSymbol.trim().toUpperCase();
-
-    if (!symbol) {
-      this.assetErrorMessage = 'Ingresá un símbolo para buscar';
-      this.selectedAsset = null;
-      this.hasPositionForSelectedAsset = false;
-      return;
-    }
-
-    this.selectedSymbol = symbol;
-    this.loadingAsset = true;
-    this.assetErrorMessage = '';
-
-    this.marketService.getAssetDetail(symbol).subscribe({
-      next: response => {
-        this.loadingAsset = false;
-
-        if (!response.success || !response.data) {
-          this.selectedAsset = null;
-          this.hasPositionForSelectedAsset = false;
-          this.assetErrorMessage = response.message || 'No se encontró información para el activo';
-          return;
-        }
-
-        this.selectedAsset = response.data;
-        this.selectedSymbol = response.data.symbol;
-        localStorage.setItem('lastMarketSymbol', response.data.symbol);
-        this.loadAssetHistory();
-        this.assetErrorMessage = '';
-        this.loadFavoriteStatus(this.selectedSymbol);
-        this.loadPositionStatus(this.selectedSymbol);
-      },
-      error: error => {
-        console.error('Error al obtener detalle del activo', error);
-        this.loadingAsset = false;
-        this.selectedAsset = null;
-        this.hasPositionForSelectedAsset = false;
-        this.assetErrorMessage = 'No se pudo obtener la información del activo';
-      }
-    });
-  }
-
-  get chartTooltipText(): string {
-    if (this.selectedChartType === 'candlestick')
-      return 'El gráfico de velas muestra el precio de apertura, cierre, máximo y mínimo de cada período. Es útil para analizar el movimiento interno del activo seleccionado.';
-    return 'Este gráfico compara el rendimiento del activo seleccionado frente al S&P 500, NASDAQ y Dow Jones. Te ayuda a ver si el activo se mueve mejor o peor que el mercado en general.';
-  }
-
-  changeChartType(type: 'line' | 'bar' | 'candlestick'): void {
-    this.selectedChartType = type;
-    this.setupChart();
-  }
-  async openCreateAlert(symbol?: string): Promise<void> {
-    const finalSymbol = symbol || this.selectedSymbol;
-
-    if (!finalSymbol) {
-      this.snackBarService.error('Primero seleccioná un activo');
-      return;
-    }
-
-    try {
-      const module = await import('../../../alerts/components/create-alert/create-alert');
-      const ModalComponent = module.CreateAlertComponent;
-
-      const dialogRef = this.dialog.open(ModalComponent, {
-        width: '600px',
-        backdropClass: 'blur-backdrop',
-        data: {
-          isEditing: false,
-          alert: { symbol: finalSymbol }
-        }
-      });
-
-      const result = await dialogRef.afterClosed().toPromise();
-
-      if (result)
-        this.snackBarService.success('Alerta creada correctamente');
-    }
-    catch (error) {
-      console.error('Error al abrir el modal de crear alerta', error);
-      this.snackBarService.error('No se pudo abrir el formulario de alerta');
-    }
-  }
-
-  private generateMarketChartData(): any {
-    if (this.selectedChartType === 'candlestick') return this.generateCandlestickChartData();
-
-    const labels = this.assetHistory?.series.points.map(x => this.formatChartLabel(x.date)) ?? [];
-
-    const datasets: any[] = [
-      {
-        label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
-        data: this.assetHistory?.series.points.map(x => x.close) ?? [],
-        borderColor: '#4a90e2',
-        backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.12)' : '#4a90e2',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: this.selectedChartType === 'line'
-      }
-    ];
-
-    this.comparisonHistory?.series.forEach(series => {
-      datasets.push({
-        label: series.name || series.symbol,
-        data: this.alignSeriesToLabels(series.points, labels),
-        borderColor: this.getSeriesColor(series.symbol),
-        backgroundColor: this.selectedChartType === 'line' ? this.getSeriesBackgroundColor(series.symbol) : this.getSeriesColor(series.symbol),
-        borderWidth: 2,
-        tension: 0.4,
-        fill: this.selectedChartType === 'line'
-      });
-    });
-
-    return { labels, datasets };
-  }
-
-  private generateCandlestickChartData(): any {
-    const candles = this.assetHistory?.series.points.map(x => ({
-      x: new Date(x.date).getTime(),
-      o: x.open,
-      h: x.high,
-      l: x.low,
-      c: x.close
-    })) ?? [];
-
-    return {
-      datasets: [
-        {
-          label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
-          data: candles
-        }
-      ]
-    };
-  }
-
-  getMarketStatusText(): string {
-    return this.marketStatus?.statusText ?? 'Estado no disponible';
-  }
-
-  getMarketStatusTime(): string {
-    return this.marketStatus?.marketTime ?? this.currentTime;
-  }
-
-  isMarketOpen(): boolean {
-    return this.marketStatus?.isOpen ?? false;
-  }
-
-  getIndexChange(index: MarketIndex): number {
-    return index.change ?? ((index.value ?? 0) - (index.previousClose ?? 0));
-  }
-
-  formatNullableCurrency(value: number | null | undefined): string {
-    return value == null ? '--' : `$${value.toFixed(2)}`;
-  }
-
-  formatNullableNumber(value: number | null | undefined): string {
-    return value == null ? '--' : value.toString();
-  }
-
-  formatNullablePercent(value: number | null | undefined): string {
-    return value == null ? '--' : `${value.toFixed(2)}%`;
-  }
-
-  getAssetChangePercent(): number {
-    return this.selectedAsset?.changePercent ?? 0;
-  }
-
-  getStockChangePercent(stock: MarketMover): number {
-    return stock.changePercent ?? 0;
-  }
-
-  private formatChartLabel(date: string): string {
-    const value = new Date(date);
-
-    if (this.selectedTimeframe === '1d')
-      return value.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-
-    if (this.selectedTimeframe === '1w')
-      return value.toLocaleDateString('es-AR', { weekday: 'short' });
-
-    if (this.selectedTimeframe === '1m' || this.selectedTimeframe === '3m')
-      return value.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-
-    return value.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' });
-  }
-
-  private alignSeriesToLabels(points: MarketHistoryPoint[], labels: string[]): number[] {
-    const map = new Map(points.map(x => [this.formatChartLabel(x.date), x.close]));
-    return labels.map(label => map.get(label) ?? null) as number[];
-  }
-
-  private getSeriesColor(symbol: string): string {
-    return symbol === '^GSPC' ? '#10b981' : symbol === '^IXIC' ? '#f59e0b' : '#a78bfa';
-  }
-
-  private getSeriesBackgroundColor(symbol: string): string {
-    return symbol === '^GSPC' ? 'rgba(16, 185, 129, 0.10)' : symbol === '^IXIC' ? 'rgba(245, 158, 11, 0.10)' : 'rgba(167, 139, 250, 0.10)';
   }
 
 }

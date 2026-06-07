@@ -22,14 +22,18 @@ import { AuthService } from '../../services/auth.service';
 })
 export class RegisterForm {
 
-  // Formulario y campos
+  // ── Estado del formulario ──────────────────────────────────────────────────
+  /** Formulario reactivo con los campos de registro del usuario. */
   registerForm: FormGroup;
+  /** Controla la visibilidad del texto en el input de contraseña. */
   hidePassword = true;
+  /** Controla la visibilidad del texto en el input de confirmación de contraseña. */
   hideConfirmPassword = true;
 
-  // Estado de la vista
-  currentStep = 1;
+  // ── Estado de la vista ─────────────────────────────────────────────────────
+  /** Indica si se está procesando el registro para mostrar el spinner. */
   isLoading = false;
+  /** Mensaje de error a mostrar cuando el registro falla. */
   errorMessage: string | null = null;
 
   constructor(
@@ -38,51 +42,76 @@ export class RegisterForm {
     private authService: AuthService
   ) {
     this.registerForm = this.fb.group({
-      fullName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.pattern(/^[+]?[\d\s\-\(\)]+$/)]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      fullName:        ['', [Validators.required]],
+      email:           ['', [Validators.required, Validators.email]],
+      phone:           ['', [Validators.pattern(/^[+]?[\d\s\-\(\)]+$/)]],
+      password:        ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validator: this.passwordMatchValidator });
   }
 
-  // Accesos rapidos a los controles
-  get f() { return this.registerForm.controls; }
-  get fullName() { return this.registerForm.get('fullName'); }
-  get email() { return this.registerForm.get('email'); }
-  get phone() { return this.registerForm.get('phone'); }
-  get password() { return this.registerForm.get('password'); }
+  // ── Getters de acceso rápido ───────────────────────────────────────────────
+
+  /** Referencia al control `fullName` para acceder a sus errores de validación en el template. */
+  get fullName()        { return this.registerForm.get('fullName'); }
+
+  /** Referencia al control `email` para acceder a sus errores de validación en el template. */
+  get email()           { return this.registerForm.get('email'); }
+
+  /** Referencia al control `phone` para acceder a sus errores de validación en el template. */
+  get phone()           { return this.registerForm.get('phone'); }
+
+  /** Referencia al control `password` para acceder a sus errores de validación en el template. */
+  get password()        { return this.registerForm.get('password'); }
+
+  /** Referencia al control `confirmPassword` para acceder a sus errores de validación en el template. */
   get confirmPassword() { return this.registerForm.get('confirmPassword'); }
 
+  // ── Acciones ───────────────────────────────────────────────────────────────
+
+  /**
+   * Valida el formulario y envía los datos al servicio de registro.
+   * Si el formulario es inválido, marca todos los campos como tocados para
+   * mostrar los errores. Si el registro es exitoso, guarda el email en
+   * `localStorage` y redirige a la pantalla de confirmación.
+   */
   onFormSubmit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
     }
 
-    this.isLoading = true;
+    this.isLoading    = true;
     this.errorMessage = null;
 
     const request: RegisterRequest = { ...this.registerForm.value };
 
     this.authService.register(request).subscribe({
-      next: (response) => {
+      next: response => {
         this.isLoading = false;
 
         localStorage.setItem('registrationEmail', response.data!.email);
-        localStorage.setItem('emailSent', response.data!.emailSent.toString());
+        localStorage.setItem('emailSent',          response.data!.emailSent.toString());
 
         this.router.navigate(['/registration-success']);
       },
-      error: (error) => {
-        this.isLoading = false;
+      error: error => {
+        this.isLoading    = false;
         this.errorMessage = error.error?.message ?? 'Ocurrio un error al registrarse';
       }
     });
   }
 
+  // ── Validadores ────────────────────────────────────────────────────────────
+
+  /**
+   * Validador a nivel de grupo que compara los campos `password` y `confirmPassword`.
+   * Se aplica al `FormGroup` completo para acceder a ambos controles simultáneamente.
+   * @param control El `AbstractControl` del grupo de formulario.
+   * @returns `{ mismatch: true }` si las contraseñas no coinciden, o `null` si son iguales.
+   */
   private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password');
+    const password        = control.get('password');
     const confirmPassword = control.get('confirmPassword');
 
     if (!password || !confirmPassword) return null;

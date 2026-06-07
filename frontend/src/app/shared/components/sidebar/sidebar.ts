@@ -1,12 +1,20 @@
 import { Component, OnDestroy } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../../material.module';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
 import { Subscription, timer } from 'rxjs';
 import { MarketPriceStatusService } from '../../../shared/components/services/market-price-status.service';
 
+/**
+ * Barra lateral de navegación principal de la aplicación.
+ *
+ * Muestra los accesos a las distintas secciones (dashboard, mercado, portfolio,
+ * alertas, watchlist, configuración y cierre de sesión), puede colapsarse para
+ * ocupar menos espacio, y exhibe un indicador en tiempo real de hace cuánto se
+ * actualizaron por última vez los precios del mercado.
+ */
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -19,17 +27,29 @@ import { MarketPriceStatusService } from '../../../shared/components/services/ma
   styleUrls: ['./sidebar.css']
 })
 export class Sidebar implements OnDestroy {
+
+  // ── Estado de la barra lateral ──
   isCollapsed = false;
+
+  // ── Estado de actualización de precios ──
   pricesUpdatedAt: string | null = null;
   updatedText = 'Precios pendientes de actualización';
 
+  // ── Suscripciones ──
   private sidebarSub?: Subscription;
   private statusSub?: Subscription;
   private clockSub?: Subscription;
 
+  /**
+   * Suscribe la barra lateral al estado de colapso, al estado de actualización
+   * de precios del mercado, y arranca un reloj que recalcula cada segundo el
+   * texto de "hace cuánto se actualizaron los precios".
+   * @param sidebarService Servicio que expone y controla el estado de colapso de la barra lateral.
+   * @param authSessionService Servicio de sesión, usado para cerrar sesión.
+   * @param marketPriceStatusService Servicio que informa la fecha de la última actualización de precios.
+   */
   constructor(
     private sidebarService: SidebarService,
-    private router: Router,
     private authSessionService: AuthSessionService,
     private marketPriceStatusService: MarketPriceStatusService
   ) {
@@ -47,20 +67,36 @@ export class Sidebar implements OnDestroy {
     });
   }
 
+  // ── Ciclo de vida ──
+
+  /** Cancela las suscripciones activas (colapso, estado de precios y reloj) al destruir el componente. */
   ngOnDestroy(): void {
     this.sidebarSub?.unsubscribe();
     this.statusSub?.unsubscribe();
     this.clockSub?.unsubscribe();
   }
 
+  // ── Acciones del usuario ──
+
+  /** Alterna el estado de colapso de la barra lateral a través del servicio compartido. */
   toggleSidebar() {
     this.sidebarService.toggle();
   }
 
+  /** Cierra la sesión del usuario actual. */
   logout() {
     this.authSessionService.logout();
   }
 
+  // ── Helpers privados ──
+
+  /**
+   * Construye el texto descriptivo de "hace cuánto" se actualizaron los precios
+   * del mercado, en español y con la unidad de tiempo más adecuada (segundos,
+   * minutos u horas) según el tiempo transcurrido desde `updatedAt`.
+   * @param updatedAt Fecha (ISO) de la última actualización de precios, o `null`/`undefined` si todavía no hay datos.
+   * @returns El texto a mostrar junto al ícono de estado de precios en la barra lateral.
+   */
   private getUpdatedAgoText(updatedAt?: string | null): string {
     if (!updatedAt) return 'Precios pendientes de actualización';
 

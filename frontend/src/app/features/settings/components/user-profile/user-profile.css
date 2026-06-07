@@ -91,11 +91,6 @@
   margin: 0 0 0.75rem;
 }
 
-.hero-badges {
-  display: flex;
-  gap: 0.5rem;
-}
-
 .coming-soon-inline {
   font-size: 0.65rem;
   color: var(--text-muted);
@@ -421,15 +416,6 @@
   color: var(--text-muted);
 }
 
-.notif-coming-soon {
-  margin-top: 0.875rem;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-style: italic;
-  text-align: center;
-  opacity: 0.55;
-}
-
 ::ng-deep .mat-mdc-slide-toggle .mdc-form-field label { display: none; }
 
 ::ng-deep .mat-mdc-slide-toggle .mdc-switch:enabled .mdc-switch__track::after {
@@ -565,6 +551,15 @@
   .profile-fields-skeleton {
     grid-template-columns: 1fr;
   }
+
+  .danger-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-delete-account {
+    width: 100%;
+  }
 }
 
 .danger-zone {
@@ -633,15 +628,4 @@
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
-}
-
-@media (max-width: 768px) {
-  .danger-content {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .btn-delete-account {
-    width: 100%;
-  }
 }

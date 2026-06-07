@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+/**
+ * Servicio que centraliza la presentación de notificaciones tipo "snackbar"
+ * (éxito, error e información) con un estilo y comportamiento consistentes
+ * en toda la aplicación.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -8,6 +13,11 @@ export class SnackBarService {
 
   private snackBar = inject(MatSnackBar);
 
+  /**
+   * Muestra una notificación de éxito (verde) durante 4 segundos, en la
+   * esquina superior derecha de la pantalla.
+   * @param message Mensaje a mostrar al usuario.
+   */
   success(message: string): void {
     this.snackBar.open(message, 'Cerrar', {
       duration: 4000,
@@ -17,6 +27,11 @@ export class SnackBarService {
     });
   }
 
+  /**
+   * Muestra una notificación de error (roja) durante 5 segundos, en la
+   * esquina superior derecha de la pantalla.
+   * @param message Mensaje a mostrar al usuario.
+   */
   error(message: string): void {
     this.snackBar.open(message, 'Cerrar', {
       duration: 5000,
@@ -26,6 +41,11 @@ export class SnackBarService {
     });
   }
 
+  /**
+   * Muestra una notificación informativa (azul) durante 4 segundos, en la
+   * esquina superior derecha de la pantalla.
+   * @param message Mensaje a mostrar al usuario.
+   */
   info(message: string): void {
     this.snackBar.open(message, 'Cerrar', {
       duration: 4000,

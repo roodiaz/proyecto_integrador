@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
-import { userProfileSelectOptions } from '../../models/user-profile.model';
 import { UserService } from '../../services/user.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -10,6 +9,13 @@ import { environment } from '../../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
+/**
+ * Pantalla de perfil de usuario, dentro de la sección de configuración.
+ *
+ * Permite ver y editar los datos personales y preferencias del usuario, cambiar
+ * la foto de perfil, cambiar la contraseña y eliminar la cuenta. Los datos se
+ * cargan al iniciar la pantalla y se guardan a través de `UserService`.
+ */
 @Component({
   selector: 'app-user-profile',
   standalone: true,
@@ -22,19 +28,32 @@ import { Router } from '@angular/router';
   styleUrls: ['./user-profile.css']
 })
 export class UserProfile implements OnInit {
+
+  // ── Formularios ──
   profileForm: FormGroup;
   passwordForm: FormGroup;
   hidePassword = true;
 
-  currencies = userProfileSelectOptions.currencies;
+  // ── Datos del perfil ──
   profileImageUrl = '';
 
+  // ── Estados de carga ──
   loadingProfile = false;
   savingProfile = false;
   changingPassword = false;
   uploadingImage = false;
   deletingAccount = false;
 
+  /**
+   * Crea los formularios reactivos de perfil y de cambio de contraseña, y
+   * suscribe la validación cruzada entre `newPassword` y `confirmPassword`
+   * para detectar que ambas contraseñas coincidan.
+   * @param fb Constructor de formularios reactivos de Angular.
+   * @param userService Servicio para obtener y actualizar los datos del usuario.
+   * @param notificationService Servicio para mostrar notificaciones al usuario.
+   * @param dialog Servicio de diálogos de Angular Material, usado para confirmar la eliminación de cuenta.
+   * @param router Router de Angular, usado para redirigir al login tras eliminar la cuenta.
+   */
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
@@ -66,10 +85,19 @@ export class UserProfile implements OnInit {
     });
   }
 
+  // ── Ciclo de vida ──
+
+  /** Carga los datos del usuario al iniciar la pantalla. */
   ngOnInit(): void {
     this.loadUserData();
   }
 
+  // ── Carga y guardado del perfil ──
+
+  /**
+   * Obtiene los datos del usuario autenticado y completa el formulario de
+   * perfil y la URL de la imagen de perfil con la información recibida.
+   */
   loadUserData(): void {
     this.loadingProfile = true;
 
@@ -98,6 +126,11 @@ export class UserProfile implements OnInit {
       });
   }
 
+  /**
+   * Valida y envía los cambios del formulario de perfil al servidor, y notifica
+   * al usuario el resultado de la operación. No hace nada si ya hay un guardado
+   * en curso o si el formulario es inválido.
+   */
   onSaveProfile(): void {
     if (this.savingProfile) return;
 
@@ -128,6 +161,14 @@ export class UserProfile implements OnInit {
       });
   }
 
+  // ── Cambio de contraseña ──
+
+  /**
+   * Valida que las contraseñas nueva y de confirmación coincidan, marcando un
+   * error de tipo `passwordMismatch` en el control `confirmPassword` cuando no
+   * coinciden. Si ambos campos están vacíos no marca ningún error.
+   * @param form Formulario de cambio de contraseña sobre el que se aplica la validación.
+   */
   passwordMatchValidator(form: FormGroup): void {
     const newPassword = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
@@ -144,6 +185,11 @@ export class UserProfile implements OnInit {
     }
   }
 
+  /**
+   * Valida y envía el formulario de cambio de contraseña al servidor, notifica
+   * al usuario el resultado y reinicia el formulario si la operación fue exitosa.
+   * No hace nada si ya hay un cambio en curso o si el formulario es inválido.
+   */
   onChangePassword(): void {
     if (this.changingPassword) return;
 
@@ -173,6 +219,14 @@ export class UserProfile implements OnInit {
       });
   }
 
+  // ── Imagen de perfil ──
+
+  /**
+   * Maneja la selección de un archivo desde el input de tipo `file` y lo sube
+   * como nueva imagen de perfil. Actualiza `profileImageUrl` con la imagen
+   * recibida y limpia el input al finalizar (con éxito o con error).
+   * @param event Evento `change` del input de archivo.
+   */
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
 
@@ -202,11 +256,18 @@ export class UserProfile implements OnInit {
       });
   }
 
+  /** Dispara el selector de archivos oculto al hacer clic sobre el avatar. */
   triggerFileInput(): void {
     const fileInput = document.getElementById('profileImage') as HTMLInputElement;
     fileInput.click();
   }
 
+  // ── Eliminación de cuenta ──
+
+  /**
+   * Pide confirmación al usuario antes de eliminar la cuenta (carga el diálogo
+   * de confirmación de forma diferida) y, si confirma, ejecuta la eliminación.
+   */
   async confirmDeleteAccount(): Promise<void> {
     const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
 
@@ -226,6 +287,11 @@ export class UserProfile implements OnInit {
     this.deleteAccount();
   }
 
+  /**
+   * Elimina la cuenta del usuario a través del servicio correspondiente, limpia
+   * el almacenamiento local y de sesión, y redirige al login. Notifica al usuario
+   * el resultado de la operación. No hace nada si ya hay una eliminación en curso.
+   */
   deleteAccount(): void {
     if (this.deletingAccount) return;
 

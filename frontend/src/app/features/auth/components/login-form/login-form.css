@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LOGIN FORM — Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :host {
   display: block;
 }
@@ -10,31 +14,17 @@
   overflow: hidden;
 }
 
-/* HERO */
-
+/* ── Hero ── */
 .hero-section {
   flex: 1;
-
   display: flex;
-
-  align-items: center;     /* centra verticalmente */
-  justify-content: flex-start; /* pega a la izquierda */
-
+  align-items: center;
+  justify-content: flex-start;
   padding: 0 80px;
-
   position: relative;
-
   background:
-    radial-gradient(
-      circle at top right,
-      rgba(0, 185, 84, 0.15),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(77, 142, 255, 0.15),
-      transparent 40%
-    );
+    radial-gradient(circle at top right,    rgba(0, 185, 84, 0.15),   transparent 40%),
+    radial-gradient(circle at bottom left,  rgba(77, 142, 255, 0.15), transparent 40%);
 }
 
 .hero-content {
@@ -44,17 +34,11 @@
 
 .hero-badge {
   display: inline-block;
-
   padding: 8px 16px;
-
   border-radius: 999px;
-
   background: rgba(0, 185, 84, 0.15);
-
   color: #4ae176;
-
   font-size: 13px;
-
   margin-bottom: 20px;
 }
 
@@ -62,7 +46,6 @@
   font-size: 56px;
   line-height: 1.1;
   font-weight: 700;
-
   margin-bottom: 24px;
 }
 
@@ -72,35 +55,27 @@
 
 .hero-description {
   color: #a6adbb;
-
   font-size: 18px;
   line-height: 1.8;
-
   margin-bottom: 40px;
 }
 
 .hero-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-
   gap: 20px;
 }
 
 .hero-card {
   background: rgba(255, 255, 255, 0.03);
-
   backdrop-filter: blur(16px);
-
   border: 1px solid rgba(255, 255, 255, 0.06);
-
   padding: 24px;
-
   border-radius: 16px;
 }
 
 .hero-card mat-icon {
   color: #4d8eff;
-
   margin-bottom: 10px;
 }
 
@@ -113,20 +88,15 @@
   line-height: 1.6;
 }
 
-/* AUTH */
-
+/* ── Auth ── */
 .auth-section {
   width: 500px;
   flex-shrink: 0;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   background: #131313;
-
   border-left: 1px solid rgba(255, 255, 255, 0.05);
-
   padding: 40px;
 }
 
@@ -142,7 +112,6 @@
 .auth-header h2 {
   font-size: 38px;
   font-weight: 700;
-
   margin-bottom: 8px;
 }
 
@@ -153,7 +122,6 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-
   gap: 18px;
 }
 
@@ -174,12 +142,9 @@
 
 .login-button {
   height: 52px;
-
   border-radius: 12px !important;
-
   background: #4d8eff !important;
   color: white !important;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,54 +158,36 @@
 .error-message {
   display: flex;
   align-items: center;
-
   gap: 8px;
-
   color: #ff6b6b;
-
   background: rgba(255, 0, 0, 0.08);
-
   padding: 12px;
-
   border-radius: 12px;
 }
 
-/* MATERIAL */
-
-::ng-deep .mat-mdc-form-field {
-  width: 100%;
-}
+/* ── Material overrides ── */
+::ng-deep .mat-mdc-form-field { width: 100%; }
 
 ::ng-deep .mdc-text-field--outlined {
   background: #6363631a !important;
-
   border-radius: 12px !important;
-
   overflow: hidden !important;
 }
 
-::ng-deep .mat-mdc-input-element {
-  color: white !important;
-}
+::ng-deep .mat-mdc-input-element { color: white !important; }
 
-::ng-deep .mdc-floating-label {
-  color: #9ca3af !important;
-}
+::ng-deep .mdc-floating-label { color: #9ca3af !important; }
 
 ::ng-deep .mdc-notched-outline__leading,
 ::ng-deep .mdc-notched-outline__notch,
-::ng-deep .mdc-notched-outline__trailing {
-  border-color: transparent !important;
-}
+::ng-deep .mdc-notched-outline__trailing { border-color: transparent !important; }
 
 ::ng-deep .mdc-text-field--outlined .mdc-floating-label--float-above {
   transform: translateY(-30px) scale(0.75) !important;
 }
 
-/* RESPONSIVE */
-
+/* ── Responsive ── */
 @media (max-width: 1024px) {
-
   .login-layout {
     flex-direction: column;
     height: auto;
@@ -253,7 +200,6 @@
   .auth-section {
     width: 100%;
     min-height: calc(100vh - 72px);
-
     border-left: none;
   }
 }

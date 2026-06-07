@@ -28,37 +28,41 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 })
 export class Alerts implements OnInit {
 
-  // Vista activa
+  // ── Vista ──────────────────────────────────────────────────────────────────
+  /** Tab activo: lista de alertas o historial de notificaciones. */
   activeView: 'alerts' | 'history' = 'alerts';
 
-  // Datos de alertas
+  // ── Alertas ────────────────────────────────────────────────────────────────
+  /** Lista de alertas cargadas según los filtros actuales. */
   alerts: Alert[] = [];
+  /** Total de alertas que coinciden con el filtro (sin paginar). */
   totalAlerts = 0;
+  /** Catálogo de condiciones disponibles para mostrar etiquetas legibles. */
   conditions = ALERT_CONDITIONS;
 
-  // Filtros
+  // ── Filtros ────────────────────────────────────────────────────────────────
   searchTerm = '';
   statusFilter = '';
   createdFrom = '';
   createdTo = '';
+  /** Controla la visibilidad del panel de filtros avanzados. */
   showAlertFilters = false;
 
-  // Contadores del panel superior
+  // ── Estadísticas del panel superior ───────────────────────────────────────
   usedAlerts = 0;
   activeAlerts = 0;
   pausedAlerts = 0;
   triggeredToday = 0;
   limitAlerts = 10;
-
-  // Notificaciones no leidas
+  /** Cantidad de notificaciones no leídas para el badge del tab. */
   unreadNotificationsCount = 0;
 
-  // Estados de carga
+  // ── Estados de carga ───────────────────────────────────────────────────────
   loadingAlerts = false;
   loadingStats = false;
   loadingUnreadNotifications = false;
 
-  // Paginacion
+  // ── Paginación ─────────────────────────────────────────────────────────────
   alertsPerPage = 10;
   currentPage = 1;
 
@@ -91,25 +95,33 @@ export class Alerts implements OnInit {
     });
   }
 
-  // Cambio de tab
+  // ── Navegación ─────────────────────────────────────────────────────────────
+
+  /**
+   * Cambia el tab activo entre la lista de alertas y el historial de notificaciones.
+   * Al cambiar a historial, recarga el contador de notificaciones no leídas para
+   * mantener el badge actualizado.
+   * @param view Tab de destino.
+   */
   setActiveView(view: 'alerts' | 'history'): void {
     this.activeView = view;
     if (view === 'history') this.loadUnreadNotificationsCount();
   }
 
-  // Toggle de activacion desde el checkbox
-  onToggleSwitch(alert: Alert, event: Event): void {
-    const target = event.target as HTMLInputElement;
-    if (!target) return;
-    this.toggleAlert(alert, target.checked);
-  }
+  // ── Filtros y paginación ───────────────────────────────────────────────────
 
-  // Filtros y paginacion
+  /**
+   * Aplica los filtros actuales reiniciando la paginación a la primera página.
+   * Se invoca cada vez que cambia cualquier campo del formulario de filtros.
+   */
   applyFilter(): void {
     this.currentPage = 1;
     this.loadAlerts();
   }
 
+  /**
+   * Limpia todos los campos de filtro y recarga la lista desde el inicio.
+   */
   clearSearch(): void {
     this.searchTerm = '';
     this.statusFilter = '';
@@ -118,20 +130,31 @@ export class Alerts implements OnInit {
     this.applyFilter();
   }
 
+  /**
+   * Navega a la página indicada si el número es válido dentro del rango disponible.
+   * @param page Número de página destino (basado en 1).
+   */
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
     this.loadAlerts();
   }
 
+  /** Avanza a la página siguiente. */
   nextPage(): void {
     this.goToPage(this.currentPage + 1);
   }
 
+  /** Retrocede a la página anterior. */
   previousPage(): void {
     this.goToPage(this.currentPage - 1);
   }
 
+  /**
+   * Calcula el rango de números de página visibles en el paginador.
+   * Muestra hasta 5 páginas centradas alrededor de la página actual.
+   * @returns Arreglo de números de página a renderizar.
+   */
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisiblePages = 5;
@@ -149,11 +172,17 @@ export class Alerts implements OnInit {
     return pages;
   }
 
+  /** Total de páginas calculado a partir del total de alertas y el tamaño de página. */
   get totalPages(): number {
     return Math.ceil(this.totalAlerts / this.alertsPerPage);
   }
 
-  // Carga de datos
+  // ── Carga de datos ─────────────────────────────────────────────────────────
+
+  /**
+   * Carga la lista de alertas del usuario aplicando los filtros y la paginación actuales.
+   * Mapea los DTOs del backend al modelo de dominio `Alert`.
+   */
   loadAlerts(): void {
     this.loadingAlerts = true;
 
@@ -202,6 +231,10 @@ export class Alerts implements OnInit {
       });
   }
 
+  /**
+   * Carga las estadísticas del panel superior: alertas activas, pausadas,
+   * disparadas hoy y el límite de alertas del plan del usuario.
+   */
   loadStats(): void {
     this.loadingStats = true;
 
@@ -223,6 +256,10 @@ export class Alerts implements OnInit {
       });
   }
 
+  /**
+   * Obtiene la cantidad de notificaciones no leídas para mostrar el badge en el tab
+   * de historial.
+   */
   loadUnreadNotificationsCount(): void {
     this.loadingUnreadNotifications = true;
 
@@ -238,7 +275,14 @@ export class Alerts implements OnInit {
       });
   }
 
-  // Acciones sobre alertas
+  // ── Acciones sobre alertas ─────────────────────────────────────────────────
+
+  /**
+   * Abre el modal de creación de alerta.
+   * Si se proporciona un símbolo (por ejemplo al navegar desde la pantalla de mercado
+   * con el query param `ticker`), lo pre-carga en el formulario.
+   * @param symbol Ticker del activo a pre-seleccionar (opcional).
+   */
   async createNewAlert(symbol?: string): Promise<void> {
     try {
       const module = await import('../create-alert/create-alert');
@@ -264,6 +308,11 @@ export class Alerts implements OnInit {
     }
   }
 
+  /**
+   * Abre el modal de edición con los datos de la alerta seleccionada.
+   * Recarga la lista y las estadísticas si el usuario confirma los cambios.
+   * @param alert Alerta a editar.
+   */
   async editAlert(alert: Alert): Promise<void> {
     const module = await import('../create-alert/create-alert');
     const ModalComponent = module.CreateAlertComponent;
@@ -281,6 +330,10 @@ export class Alerts implements OnInit {
     this.loadStats();
   }
 
+  /**
+   * Muestra un diálogo de confirmación y, si el usuario acepta, elimina la alerta.
+   * @param alert Alerta a eliminar.
+   */
   async deleteAlert(alert: Alert): Promise<void> {
     const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
 
@@ -309,6 +362,12 @@ export class Alerts implements OnInit {
       });
   }
 
+  /**
+   * Activa o pausa una alerta llamando al endpoint de toggle.
+   * Si la llamada falla, revierte el estado local para mantener la UI consistente.
+   * @param alert Alerta sobre la que se ejecuta la acción.
+   * @param isActive Nuevo estado deseado (`true` = activar, `false` = pausar).
+   */
   toggleAlert(alert: Alert, isActive: boolean): void {
     this.alertService.toggle(alert.id)
       .subscribe({
@@ -324,27 +383,51 @@ export class Alerts implements OnInit {
       });
   }
 
-  // Helpers de display
+  /**
+   * Captura el evento `change` del toggle switch y delega en `toggleAlert`.
+   * Necesario para extraer el valor booleano del `HTMLInputElement` nativo.
+   * @param alert Alerta asociada al switch.
+   * @param event Evento nativo del input checkbox.
+   */
+  onToggleSwitch(alert: Alert, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (!target) return;
+    this.toggleAlert(alert, target.checked);
+  }
+
+  // ── Helpers de presentación ────────────────────────────────────────────────
+
+  /**
+   * Devuelve la etiqueta legible para un valor de condición
+   * (por ejemplo: `'>'` → `'Mayor que'`).
+   * @param condition Valor interno de la condición.
+   * @returns Etiqueta para mostrar en la UI; si no hay coincidencia, devuelve el valor tal cual.
+   */
   getConditionDisplay(condition: string): string {
     const cond = this.conditions.find(c => c.value === condition);
     return cond ? cond.label : condition;
   }
 
+  /**
+   * Formatea el valor objetivo de la alerta según su tipo.
+   * Las condiciones de variación porcentual se muestran como `X%`,
+   * las de precio exacto como `$X.XX`.
+   * @param alert Alerta a formatear.
+   * @returns Cadena con el valor formateado para mostrar en la tabla.
+   */
   getTargetDisplay(alert: Alert): string {
     if (alert.condition === '%>' || alert.condition === '%<') return `${alert.percentChange}%`;
     return `$${alert.price?.toFixed(2)}`;
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'active': return 'status-active';
-      case 'paused': return 'status-paused';
-      case 'triggered': return 'status-triggered';
-      default: return '';
-    }
-  }
+  // ── Métodos privados ───────────────────────────────────────────────────────
 
-  // Mapeo de condicion desde el DTO del backend
+  /**
+   * Convierte los campos `conditionType` y `operator` del DTO del backend
+   * al tipo de condición unificado que usa el modelo `Alert` en el frontend.
+   * @param alert DTO recibido del backend.
+   * @returns Condición en formato interno (`'>'`, `'<'`, `'>='`, `'<='`, `'='`, `'%>'`, `'%<'`).
+   */
   private mapCondition(alert: AlertDto): Alert['condition'] {
     if (alert.conditionType === 2) return alert.operator === 1 ? '%>' : '%<';
 
