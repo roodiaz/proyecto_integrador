@@ -13,6 +13,10 @@ using static InvestLab.Models.Enums;
 
 namespace InvestLab.Tests.Business.Services.Api;
 
+/// <summary>
+/// Pruebas unitarias de <see cref="AlertService"/>, cubriendo los métodos invocados desde <c>AlertController</c>:
+/// creación, eliminación, activación/desactivación, listado, actualización y estadísticas de alertas.
+/// </summary>
 public class AlertServiceTests
 {
     private readonly Mock<IAlertRepository> _alertRepository = new();
@@ -37,6 +41,7 @@ public class AlertServiceTests
 
     // ---------- CreateAlertAsync ----------
 
+    /// <summary>Verifica que, con datos válidos, dentro del límite y con el activo existente, se cree la alerta y se devuelva una respuesta exitosa.</summary>
     [Fact]
     public async Task CreateAlertAsync_WhenDataIsValid_ShouldReturnSuccessResponse()
     {
@@ -51,6 +56,7 @@ public class AlertServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
+    /// <summary>Verifica que, si no existe configuración del usuario, se devuelva una respuesta de error sin crear la alerta.</summary>
     [Fact]
     public async Task CreateAlertAsync_WhenUserSettingsNotFound_ShouldReturnErrorResponse()
     {
@@ -63,6 +69,7 @@ public class AlertServiceTests
         _alertRepository.Verify(r => r.AddAsync(It.IsAny<Alert>()), Times.Never);
     }
 
+    /// <summary>Verifica que, si el usuario alcanzó el límite máximo de alertas, se devuelva una respuesta de error y no se consulte el activo.</summary>
     [Fact]
     public async Task CreateAlertAsync_WhenAlertLimitReached_ShouldReturnErrorResponse()
     {
@@ -75,6 +82,7 @@ public class AlertServiceTests
         _assetService.Verify(s => s.GetOrCreateAsync(It.IsAny<string>()), Times.Never);
     }
 
+    /// <summary>Verifica que, si el activo indicado no existe ni puede crearse, se devuelva una respuesta de error sin persistir la alerta.</summary>
     [Fact]
     public async Task CreateAlertAsync_WhenAssetIsNotFound_ShouldReturnErrorResponse()
     {
@@ -88,6 +96,7 @@ public class AlertServiceTests
         _alertRepository.Verify(r => r.AddAsync(It.IsAny<Alert>()), Times.Never);
     }
 
+    /// <summary>Verifica que las condiciones basadas en porcentaje (<c>%&gt;</c>/<c>%&lt;</c>) se mapeen correctamente al tipo "Porcentaje" y se cree la alerta.</summary>
     [Theory]
     [InlineData("%>", null, 5)]
     [InlineData("%<", null, 5)]
@@ -107,6 +116,7 @@ public class AlertServiceTests
         Assert.Equal(percent, added.Value);
     }
 
+    /// <summary>Verifica que una condición textual no soportada provoque una excepción controlada y se devuelva "Error interno".</summary>
     [Fact]
     public async Task CreateAlertAsync_WhenConditionIsInvalid_ShouldReturnErrorResponse()
     {
@@ -119,6 +129,7 @@ public class AlertServiceTests
         Assert.Equal("Error interno", result.Message);
     }
 
+    /// <summary>Verifica que, ante una excepción del repositorio, se registre el error y se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task CreateAlertAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
@@ -132,6 +143,7 @@ public class AlertServiceTests
 
     // ---------- DeleteAlertAsync ----------
 
+    /// <summary>Verifica que, si la alerta existe y pertenece al usuario, se elimine, se decremente el contador de alertas usadas y se devuelva éxito.</summary>
     [Fact]
     public async Task DeleteAlertAsync_WhenAlertExistsAndBelongsToUser_ShouldReturnSuccessResponse()
     {
@@ -147,6 +159,7 @@ public class AlertServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
+    /// <summary>Verifica que, si la alerta no existe, se devuelva una respuesta de error y no se intente eliminar nada.</summary>
     [Fact]
     public async Task DeleteAlertAsync_WhenAlertDoesNotExist_ShouldReturnErrorResponse()
     {
@@ -159,6 +172,7 @@ public class AlertServiceTests
         _alertRepository.Verify(r => r.DeleteAsync(It.IsAny<Alert>()), Times.Never);
     }
 
+    /// <summary>Verifica que, si la alerta pertenece a otro usuario, se devuelva una respuesta de error y no se elimine.</summary>
     [Fact]
     public async Task DeleteAlertAsync_WhenAlertBelongsToAnotherUser_ShouldReturnErrorResponse()
     {
@@ -172,6 +186,7 @@ public class AlertServiceTests
         _alertRepository.Verify(r => r.DeleteAsync(It.IsAny<Alert>()), Times.Never);
     }
 
+    /// <summary>Verifica el caso borde donde la configuración del usuario no existe: la alerta igualmente debe eliminarse correctamente.</summary>
     [Fact]
     public async Task DeleteAlertAsync_WhenUserSettingsNotFound_ShouldStillDeleteAlert()
     {
@@ -185,6 +200,7 @@ public class AlertServiceTests
         _alertRepository.Verify(r => r.DeleteAsync(alert), Times.Once);
     }
 
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task DeleteAlertAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
@@ -198,6 +214,7 @@ public class AlertServiceTests
 
     // ---------- ToggleAlertAsync ----------
 
+    /// <summary>Verifica que, si la alerta existe y pertenece al usuario, se invierta su estado <c>IsActive</c> y se devuelva éxito.</summary>
     [Fact]
     public async Task ToggleAlertAsync_WhenAlertExistsAndBelongsToUser_ShouldFlipIsActiveAndReturnSuccess()
     {
@@ -212,6 +229,7 @@ public class AlertServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
+    /// <summary>Verifica que, si la alerta no existe, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task ToggleAlertAsync_WhenAlertDoesNotExist_ShouldReturnErrorResponse()
     {
@@ -223,6 +241,7 @@ public class AlertServiceTests
         Assert.Equal("No encontrada", result.Message);
     }
 
+    /// <summary>Verifica que, si la alerta pertenece a otro usuario, se devuelva una respuesta de error sin modificar su estado.</summary>
     [Fact]
     public async Task ToggleAlertAsync_WhenAlertBelongsToAnotherUser_ShouldReturnErrorResponse()
     {
@@ -235,6 +254,7 @@ public class AlertServiceTests
         Assert.Equal("No encontrada", result.Message);
     }
 
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task ToggleAlertAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
@@ -248,6 +268,7 @@ public class AlertServiceTests
 
     // ---------- GetAlertsAsync ----------
 
+    /// <summary>Verifica que, cuando existen alertas, se devuelva una respuesta exitosa con los datos mapeados y el total.</summary>
     [Fact]
     public async Task GetAlertsAsync_WhenAlertsExist_ShouldReturnSuccessResponseWithData()
     {
@@ -260,6 +281,7 @@ public class AlertServiceTests
         Assert.NotNull(result.Data);
     }
 
+    /// <summary>Verifica que, cuando el usuario no tiene alertas, se devuelva una respuesta exitosa con una colección vacía.</summary>
     [Fact]
     public async Task GetAlertsAsync_WhenNoAlertsExist_ShouldReturnSuccessResponseWithEmptyData()
     {
@@ -271,6 +293,7 @@ public class AlertServiceTests
         Assert.NotNull(result.Data);
     }
 
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task GetAlertsAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
@@ -284,6 +307,7 @@ public class AlertServiceTests
 
     // ---------- UpdateAlertAsync ----------
 
+    /// <summary>Verifica que, con datos válidos y sin duplicados, se actualice la alerta y se devuelva una respuesta exitosa.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenDataIsValid_ShouldReturnSuccessResponse()
     {
@@ -299,6 +323,7 @@ public class AlertServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
+    /// <summary>Verifica que, si la alerta a actualizar no existe, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenAlertDoesNotExist_ShouldReturnErrorResponse()
     {
@@ -310,6 +335,7 @@ public class AlertServiceTests
         Assert.Equal("Alerta no encontrada", result.Message);
     }
 
+    /// <summary>Verifica que, si la alerta pertenece a otro usuario, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenAlertBelongsToAnotherUser_ShouldReturnErrorResponse()
     {
@@ -322,6 +348,7 @@ public class AlertServiceTests
         Assert.Equal("Alerta no encontrada", result.Message);
     }
 
+    /// <summary>Verifica que, si la condición no incluye el valor requerido según su tipo, se devuelva "Datos inválidos".</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenConditionIsInvalid_ShouldReturnErrorResponse()
     {
@@ -334,6 +361,7 @@ public class AlertServiceTests
         Assert.Equal("Datos inválidos", result.Message);
     }
 
+    /// <summary>Verifica que, si el activo indicado no existe, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenAssetIsNotFound_ShouldReturnErrorResponse()
     {
@@ -347,6 +375,7 @@ public class AlertServiceTests
         Assert.Equal("Activo no encontrado", result.Message);
     }
 
+    /// <summary>Verifica que, si ya existe otra alerta con la misma combinación de activo, condición, operador y valor, se devuelva un error de duplicado.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenDuplicateAlertExists_ShouldReturnErrorResponse()
     {
@@ -361,6 +390,7 @@ public class AlertServiceTests
         Assert.Equal("Ya existe una alerta igual", result.Message);
     }
 
+    /// <summary>Verifica el caso borde donde la "duplicada" detectada es la propia alerta sin cambios reales: debe permitirse la actualización.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenDuplicateMatchesSameAlert_ShouldReturnSuccessResponse()
     {
@@ -374,6 +404,7 @@ public class AlertServiceTests
         Assert.True(result.Success);
     }
 
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task UpdateAlertAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
@@ -387,6 +418,7 @@ public class AlertServiceTests
 
     // ---------- GetStatsAsync ----------
 
+    /// <summary>Verifica que, cuando el repositorio devuelve estadísticas, se construya una respuesta exitosa con los datos correspondientes.</summary>
     [Fact]
     public async Task GetStatsAsync_WhenRepositoryReturnsData_ShouldReturnSuccessResponse()
     {
@@ -398,6 +430,7 @@ public class AlertServiceTests
         Assert.NotNull(result.Data);
     }
 
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task GetStatsAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
