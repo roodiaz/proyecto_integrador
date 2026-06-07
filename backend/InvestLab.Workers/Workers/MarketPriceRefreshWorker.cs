@@ -10,12 +10,24 @@ namespace InvestLab.Workers
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<MarketPriceRefreshWorker> _logger;
 
+        /// <summary>
+        /// Inicializa una nueva instancia de <see cref="MarketPriceRefreshWorker"/>.
+        /// </summary>
+        /// <param name="scopeFactory">Fábrica utilizada para crear los scopes necesarios para resolver dependencias.</param>
+        /// <param name="logger">Logger utilizado para registrar información y errores del worker.</param>
         public MarketPriceRefreshWorker(IServiceScopeFactory scopeFactory, ILogger<MarketPriceRefreshWorker> logger)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Ejecuta el ciclo principal del worker, realizando una actualización inicial
+        /// del cache de precios de mercado y luego repitiendo la actualización cada
+        /// 60 segundos mediante un temporizador periódico, hasta que se solicite la cancelación.
+        /// </summary>
+        /// <param name="stoppingToken">Token utilizado para señalar la cancelación de la ejecución del worker.</param>
+        /// <returns>Una tarea que representa la ejecución asincrónica continua del worker.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Worker de actualización de precios de mercado iniciado");
@@ -39,6 +51,12 @@ namespace InvestLab.Workers
             }
         }
 
+        /// <summary>
+        /// Crea un scope de servicios y solicita la actualización del cache de precios
+        /// de mercado a través del servicio correspondiente, registrando el resultado
+        /// o el error producido durante la operación.
+        /// </summary>
+        /// <returns>Una tarea que representa la operación asincrónica de actualización del cache de precios.</returns>
         private async Task RefreshAsync()
         {
             try

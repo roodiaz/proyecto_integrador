@@ -22,6 +22,17 @@ namespace InvestLab.Business.Services.Api
         private readonly IAssetRepository _assetRepo;
         private readonly IUnitOfWork _uow;
 
+        /// <summary>
+        /// Inicializa una nueva instancia del servicio de favoritos.
+        /// </summary>
+        /// <param name="repo">Repositorio de favoritos.</param>
+        /// <param name="assetRepo">Repositorio de activos.</param>
+        /// <param name="uow">Unidad de trabajo para confirmar los cambios en la base de datos.</param>
+        /// <param name="logger">Registrador de eventos del servicio.</param>
+        /// <param name="options">Opciones de configuración con los límites del sistema.</param>
+        /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
+        /// <param name="assetService">Servicio de gestión de activos.</param>
+        /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
         public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, IOptions<LimitsOptions> options, IExternalProvider externalProvider, IAssetService assetService, IUserSettingRepository userSettingRepository)
         {
             _favoriteRepo = repo;
@@ -34,6 +45,13 @@ namespace InvestLab.Business.Services.Api
             _userSettingRepository = userSettingRepository;
         }
 
+        /// <summary>
+        /// Obtiene el listado paginado de activos favoritos de un usuario, incluyendo precios
+        /// y variaciones obtenidas del proveedor externo de datos de mercado.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="filter">Filtros de paginación a aplicar sobre el listado de favoritos.</param>
+        /// <returns>Respuesta con los favoritos del usuario, el total de registros y la información de límites configurados.</returns>
         public async Task<Response> GetAsync(int userId, FavoriteFilterDto filter)
         {
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
@@ -69,6 +87,13 @@ namespace InvestLab.Business.Services.Api
             });
         }
 
+        /// <summary>
+        /// Agrega un activo a la lista de favoritos del usuario, validando la configuración del usuario,
+        /// la existencia del activo, el límite máximo de favoritos y que no esté ya agregado.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="dto">Datos del favorito a agregar, incluyendo el símbolo del activo.</param>
+        /// <returns>Respuesta indicando si la operación fue exitosa o el motivo del error.</returns>
         public async Task<Response> AddAsync(int userId, AddFavoriteDto dto)
         {
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
@@ -101,6 +126,13 @@ namespace InvestLab.Business.Services.Api
             return Response.Ok(null);
         }
 
+        /// <summary>
+        /// Elimina un activo de la lista de favoritos del usuario, validando la configuración del usuario,
+        /// la existencia del activo y que el favorito esté registrado.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="symbol">Símbolo del activo a eliminar de favoritos.</param>
+        /// <returns>Respuesta indicando si la operación fue exitosa o el motivo del error.</returns>
         public async Task<Response> RemoveAsync(int userId, string symbol)
         {
             symbol = symbol.Trim().ToUpper();
@@ -129,6 +161,12 @@ namespace InvestLab.Business.Services.Api
             return Response.Ok(null);
         }
 
+        /// <summary>
+        /// Verifica si un activo identificado por su símbolo ya se encuentra entre los favoritos del usuario.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="symbol">Símbolo del activo a verificar.</param>
+        /// <returns>Respuesta indicando si el activo ya está marcado como favorito.</returns>
         public async Task<Response> ExistsAsync(int userId, string symbol)
         {
             if (string.IsNullOrWhiteSpace(symbol))

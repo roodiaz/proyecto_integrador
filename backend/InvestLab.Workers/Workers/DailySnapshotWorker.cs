@@ -22,12 +22,26 @@ public class DailySnapshotWorker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DailySnapshotWorker> _logger;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="DailySnapshotWorker"/>.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios utilizado para crear los scopes necesarios para resolver dependencias.</param>
+    /// <param name="logger">Logger utilizado para registrar información y errores del worker.</param>
     public DailySnapshotWorker(IServiceProvider serviceProvider, ILogger<DailySnapshotWorker> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Ejecuta el ciclo principal del worker, calculando la próxima hora de cierre
+    /// del mercado (16:05 hora de Nueva York, omitiendo fines de semana), esperando
+    /// hasta ese momento y luego generando el historial diario de mercado y los
+    /// snapshots diarios de portfolio. Ante errores inesperados, espera 5 minutos
+    /// antes de reintentar.
+    /// </summary>
+    /// <param name="stoppingToken">Token utilizado para señalar la cancelación de la ejecución del worker.</param>
+    /// <returns>Una tarea que representa la ejecución asincrónica continua del worker.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -100,6 +114,7 @@ public class DailySnapshotWorker : BackgroundService
     /// Obtiene la zona horaria de New York compatible
     /// con Windows y Linux/Docker.
     /// </summary>
+    /// <returns>La instancia de <see cref="TimeZoneInfo"/> correspondiente a la zona horaria de New York.</returns>
     private static TimeZoneInfo GetNewYorkTimeZone()
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

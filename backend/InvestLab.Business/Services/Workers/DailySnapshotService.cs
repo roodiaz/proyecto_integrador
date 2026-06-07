@@ -24,6 +24,17 @@ public class DailySnapshotService : IDailySnapshotWorker
 
     private readonly ILogger<DailySnapshotService> _logger;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del servicio de snapshots diarios,
+    /// inyectando los repositorios y servicios necesarios para su funcionamiento.
+    /// </summary>
+    /// <param name="userRepository">Repositorio de usuarios.</param>
+    /// <param name="portfolioRepository">Repositorio de portfolios.</param>
+    /// <param name="portfolioHistoryRepository">Repositorio de históricos de portfolio.</param>
+    /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
+    /// <param name="logger">Logger utilizado para registrar la actividad del servicio.</param>
+    /// <param name="priceHistoryRepository">Repositorio de históricos de precios.</param>
+    /// <param name="marketPriceService">Servicio encargado de obtener precios de mercado.</param>
     public DailySnapshotService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DailySnapshotService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketPriceService marketPriceService)
     {
         _userRepository = userRepository;
@@ -35,6 +46,15 @@ public class DailySnapshotService : IDailySnapshotWorker
         _marketPriceService = marketPriceService;
     }
 
+    /// <summary>
+    /// Genera el snapshot diario del valor de portfolio para cada usuario activo.
+    ///
+    /// Por cada usuario, calcula el valor actual de sus posiciones abiertas
+    /// utilizando los precios obtenidos del servicio de precios de mercado,
+    /// suma el saldo disponible y guarda un registro histórico del valor total,
+    /// evitando duplicar el snapshot si ya existe uno para el día actual.
+    /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     public async Task GenerateDailyPortfolioSnapshotsAsync()
     {
         // Obtiene todos los usuarios activos del sistema
@@ -118,6 +138,7 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// NO recupera históricos faltantes.
     /// NO carga activos nuevos.
     /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     public async Task SaveDailyMarketHistoryAsync()
     {
         _logger.LogInformation("Iniciando snapshot diario de mercado");
@@ -190,6 +211,7 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// La metadata se calcula a partir de Mongo,
     /// que es la fuente de verdad del sistema.
     /// No se consulta el proveedor externo.
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     private async Task UpdateMarketMetadataAsync()
     {
         var latestMarketDate = await _priceHistoryRepository.GetLatestDateAsync();

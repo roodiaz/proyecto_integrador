@@ -22,6 +22,19 @@ public class AuthService : IAuthService
     private readonly IUserSettingRepository _userSettingRepository;
     private readonly IUnitOfWork _unitOfWork;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="AuthService"/> con sus dependencias requeridas.
+    /// </summary>
+    /// <param name="userRepository">Repositorio de usuarios.</param>
+    /// <param name="tempRepository">Repositorio de credenciales temporales de usuario.</param>
+    /// <param name="refreshTokenRepository">Repositorio de tokens de actualización (refresh tokens).</param>
+    /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
+    /// <param name="unitOfWork">Unidad de trabajo para guardar cambios en la base de datos.</param>
+    /// <param name="jwtService">Servicio para la generación de tokens JWT.</param>
+    /// <param name="passwordHasher">Servicio de hash y verificación de contraseñas.</param>
+    /// <param name="logger">Logger para el registro de eventos del servicio.</param>
+    /// <param name="emailService">Servicio para el envío de correos electrónicos.</param>
+    /// <param name="limitsOptions">Opciones de configuración de límites de la aplicación.</param>
     public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailService emailService, IOptions<LimitsOptions> limitsOptions)
     {
         _userRepository = userRepository;
@@ -36,6 +49,12 @@ public class AuthService : IAuthService
         _limits = limitsOptions.Value;
     }
 
+    /// <summary>
+    /// Registra un nuevo usuario en el sistema, valida sus datos, crea su cuenta, configuración inicial
+    /// y credencial temporal de verificación, y envía un correo con el código de verificación.
+    /// </summary>
+    /// <param name="registerDto">Datos de registro del usuario, incluyendo email, contraseña y datos personales.</param>
+    /// <returns>Una respuesta indicando el resultado de la operación de registro.</returns>
     public async Task<Response> RegisterAsync(RegisterDto registerDto)
     {
         try
@@ -138,6 +157,11 @@ public class AuthService : IAuthService
         }
     }
 
+    /// <summary>
+    /// Verifica la cuenta de un usuario validando el código de verificación enviado por correo electrónico.
+    /// </summary>
+    /// <param name="dto">Datos necesarios para la verificación, incluyendo el email y el código.</param>
+    /// <returns>Una respuesta indicando si la verificación fue exitosa o el motivo del fallo.</returns>
     public async Task<Response> VerifyAsync(VerifyDto dto)
     {
         try
@@ -194,6 +218,11 @@ public class AuthService : IAuthService
         }
     }
 
+    /// <summary>
+    /// Reenvía el código de verificación a un usuario que aún no ha activado su cuenta.
+    /// </summary>
+    /// <param name="dto">Datos necesarios para el reenvío, incluyendo el email del usuario.</param>
+    /// <returns>Una respuesta indicando si el código fue reenviado correctamente.</returns>
     public async Task<Response> ResendCodeAsync(ResendCodeDto dto)
     {
         try
@@ -236,6 +265,12 @@ public class AuthService : IAuthService
         }
     }
 
+    /// <summary>
+    /// Autentica a un usuario validando sus credenciales, genera nuevos tokens de acceso y actualización,
+    /// y registra la fecha de su último inicio de sesión.
+    /// </summary>
+    /// <param name="dto">Credenciales de inicio de sesión del usuario (email y contraseña).</param>
+    /// <returns>Una respuesta con los tokens generados si el inicio de sesión es exitoso, o el motivo del fallo.</returns>
     public async Task<Response> LoginAsync(LoginDto dto)
     {
         try
@@ -278,6 +313,12 @@ public class AuthService : IAuthService
         }
     }
 
+    /// <summary>
+    /// Renueva los tokens de acceso y actualización de un usuario a partir de un token de actualización válido,
+    /// revocando el token anterior y generando uno nuevo.
+    /// </summary>
+    /// <param name="refreshToken">Token de actualización (refresh token) actual del usuario.</param>
+    /// <returns>Una respuesta con los nuevos tokens generados, o el motivo del fallo si el token es inválido o expiró.</returns>
     public async Task<Response> RefreshTokenAsync(string refreshToken)
     {
         try
@@ -316,6 +357,11 @@ public class AuthService : IAuthService
         }
     }
 
+    /// <summary>
+    /// Cierra la sesión de un usuario revocando su token de actualización (refresh token).
+    /// </summary>
+    /// <param name="refreshToken">Token de actualización a revocar.</param>
+    /// <returns>Una respuesta indicando si el cierre de sesión se realizó correctamente.</returns>
     public async Task<Response> LogoutAsync(string refreshToken)
     {
         try
@@ -343,6 +389,12 @@ public class AuthService : IAuthService
         }
     }
 
+    /// <summary>
+    /// Genera o actualiza el código de verificación temporal de un usuario y le envía un correo electrónico
+    /// con dicho código.
+    /// </summary>
+    /// <param name="user">Usuario al que se le generará y enviará el nuevo código de verificación.</param>
+    /// <returns><c>true</c> si el correo con el código fue enviado correctamente; en caso contrario, <c>false</c>.</returns>
     private async Task<bool> ResendCodeInternal(User user)
     {
         var code = new Random().Next(100000, 999999).ToString();

@@ -10,16 +10,29 @@ namespace InvestLab.Data.Repositories
     {
         private readonly InvestLabDbContext _context;
 
+        /// <summary>
+        /// Inicializa una nueva instancia del repositorio de alertas.
+        /// </summary>
+        /// <param name="context">Contexto de base de datos de InvestLab.</param>
         public AlertRepository(InvestLabDbContext context)
         {
             _context = context;
         }
 
+        /// <summary>
+        /// Agrega una nueva alerta al contexto para su posterior persistencia.
+        /// </summary>
+        /// <param name="alert">Alerta a insertar.</param>
         public async Task AddAsync(Alert alert)
         {
             await _context.Alerts.AddAsync(alert);
         }
 
+        /// <summary>
+        /// Busca una alerta por su identificador, incluyendo el activo asociado.
+        /// </summary>
+        /// <param name="id">Identificador de la alerta.</param>
+        /// <returns>La alerta encontrada con su activo asociado, o <c>null</c> si no existe.</returns>
         public async Task<Alert?> GetByIdAsync(int id)
         {
             return await _context.Alerts
@@ -27,17 +40,36 @@ namespace InvestLab.Data.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        /// <summary>
+        /// Elimina una alerta del contexto.
+        /// </summary>
+        /// <param name="alert">Alerta a eliminar.</param>
+        /// <returns>Una tarea completada que representa la operación de eliminación.</returns>
         public Task DeleteAsync(Alert alert)
         {
             _context.Alerts.Remove(alert);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Cuenta la cantidad de alertas pertenecientes a un usuario.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <returns>Cantidad de alertas del usuario.</returns>
         public async Task<int> CountByUserAsync(int userId)
         {
             return await _context.Alerts.CountAsync(x => x.UserId == userId);
         }
 
+        /// <summary>
+        /// Verifica si ya existe una alerta con la misma combinación de usuario, activo, tipo de condición, operador y valor.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="assetId">Identificador del activo.</param>
+        /// <param name="type">Tipo de condición de la alerta.</param>
+        /// <param name="op">Operador de comparación de la alerta.</param>
+        /// <param name="value">Valor de comparación de la alerta.</param>
+        /// <returns><c>true</c> si ya existe una alerta con esas características; en caso contrario, <c>false</c>.</returns>
         public async Task<bool> ExistsAsync(int userId, int assetId, ConditionType type, AlertOperator op, decimal value)
         {
             return await _context.Alerts.AnyAsync(x =>
@@ -48,6 +80,12 @@ namespace InvestLab.Data.Repositories
                 x.Value == value);
         }
 
+        /// <summary>
+        /// Obtiene las alertas de un usuario aplicando filtros de estado activo, búsqueda por símbolo y rango de fechas de creación, devolviendo los resultados paginados.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="filter">Criterios de filtrado y paginación a aplicar sobre la búsqueda.</param>
+        /// <returns>Tupla con la lista de alertas que cumplen el filtro y el total de registros encontrados.</returns>
         public async Task<(List<Alert>, int)> GetPagedAsync(int userId, AlertFilterDto filter)
         {
             var query = _context.Alerts
@@ -92,6 +130,11 @@ namespace InvestLab.Data.Repositories
             return (data, total);
         }
 
+        /// <summary>
+        /// Calcula estadísticas de las alertas de un usuario: cantidad activas, pausadas, disparadas hoy y total.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <returns>Tupla con la cantidad de alertas activas, pausadas, disparadas hoy y el total de alertas.</returns>
         public async Task<(int, int, int, int)> GetStatsAsync(int userId)
         {
             var query = _context.Alerts.Where(x => x.UserId == userId);
@@ -110,6 +153,10 @@ namespace InvestLab.Data.Repositories
             return (active, paused, triggeredToday, total);
         }
 
+        /// <summary>
+        /// Obtiene todas las alertas activas del sistema, incluyendo el activo asociado a cada una.
+        /// </summary>
+        /// <returns>Lista de alertas activas con su activo asociado.</returns>
         public async Task<List<Alert>> GetActiveAlertsAsync()
         {
             return await _context.Alerts.Include(x => x.Asset)
@@ -117,6 +164,11 @@ namespace InvestLab.Data.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Marca una alerta como modificada en el contexto para su posterior actualización.
+        /// </summary>
+        /// <param name="alert">Alerta a actualizar.</param>
+        /// <returns>Una tarea completada que representa la operación de actualización.</returns>
         public Task UpdateAsync(Alert alert)
         {
             _context.Alerts.Update(alert);
@@ -124,6 +176,12 @@ namespace InvestLab.Data.Repositories
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Obtiene las últimas alertas activas de un usuario, incluyendo el activo asociado, ordenadas por fecha de creación descendente.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="take">Cantidad máxima de alertas a obtener.</param>
+        /// <returns>Lista de las alertas activas más recientes del usuario.</returns>
         public async Task<List<Alert>> GetLatestActiveByUserAsync(int userId, int take)
         {
             return await _context.Alerts
@@ -134,6 +192,10 @@ namespace InvestLab.Data.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Elimina todas las alertas asociadas a un usuario.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario cuyas alertas se eliminarán.</param>
         public async Task DeleteByUserIdAsync(int userId)
         {
             await _context.Alerts.Where(x => x.UserId == userId).ExecuteDeleteAsync();

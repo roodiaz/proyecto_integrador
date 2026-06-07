@@ -14,6 +14,12 @@ namespace InvestLab.Business.Services
         private readonly IPriceHistoryRepository _priceHistoryRepository;
         private readonly IExternalProvider _externalProvider;
 
+        /// <summary>
+        /// Inicializa una nueva instancia del servicio de precios de mercado.
+        /// </summary>
+        /// <param name="logger">Registrador utilizado para registrar información y errores del servicio.</param>
+        /// <param name="priceHistoryRepository">Repositorio para acceder al historial de precios almacenado.</param>
+        /// <param name="externalProvider">Proveedor externo utilizado para consultar precios de mercado.</param>
         public MarketPriceService(ILogger<MarketPriceService> logger, IPriceHistoryRepository priceHistoryRepository, IExternalProvider externalProvider)
         {
             _priceHistoryRepository = priceHistoryRepository;
@@ -21,6 +27,13 @@ namespace InvestLab.Business.Services
             _externalProvider = externalProvider;
         }
 
+        /// <summary>
+        /// Obtiene los precios actuales para una lista de símbolos, utilizando primero
+        /// los datos almacenados en el repositorio histórico y consultando un proveedor
+        /// externo para aquellos símbolos cuyo precio no se encuentre disponible.
+        /// </summary>
+        /// <param name="symbols">Lista de símbolos de los cuales se desea obtener el precio.</param>
+        /// <returns>Un diccionario que asocia cada símbolo con su precio correspondiente.</returns>
         public async Task<Dictionary<string, decimal>> GetHistoricalPricesAsync(List<string> symbols)
         {
             // Obtiene los últimos precios históricos almacenados en Mongo

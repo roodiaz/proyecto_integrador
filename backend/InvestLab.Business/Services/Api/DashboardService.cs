@@ -22,6 +22,18 @@ public class DashboardService : IDashboardService
     private readonly ITransactionRepository _transactionRepository;
     private readonly INotificationRepository _notificationRepository;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="DashboardService"/> con los repositorios y servicios necesarios para construir la información del dashboard.
+    /// </summary>
+    /// <param name="userRepository">Repositorio de usuarios.</param>
+    /// <param name="portfolioRepository">Repositorio de carteras de inversión.</param>
+    /// <param name="portfolioHistoryRepository">Repositorio del historial de carteras.</param>
+    /// <param name="marketPriceCacheService">Servicio de caché de precios de mercado.</param>
+    /// <param name="logger">Logger para registrar información y errores del servicio.</param>
+    /// <param name="alertRepository">Repositorio de alertas.</param>
+    /// <param name="priceHistoryRepository">Repositorio del historial de precios.</param>
+    /// <param name="transactionRepository">Repositorio de transacciones.</param>
+    /// <param name="notificationRepository">Repositorio de notificaciones.</param>
     public DashboardService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IMarketPriceCacheService marketPriceCacheService, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository, INotificationRepository notificationRepository)
     {
         _logger = logger;
@@ -36,6 +48,11 @@ public class DashboardService : IDashboardService
         _notificationRepository = notificationRepository;
     }
 
+    /// <summary>
+    /// Obtiene las tarjetas superiores del dashboard con el valor total de la cartera, la ganancia del día, los activos activos y la cantidad de alertas activas del usuario.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con los datos de las tarjetas superiores del dashboard, o un mensaje de error si el usuario no existe o ocurre un fallo interno.</returns>
     public async Task<Response> GetTopCardsAsync(int userId)
     {
         try
@@ -102,6 +119,11 @@ public class DashboardService : IDashboardService
         }
     }
 
+    /// <summary>
+    /// Calcula la distribución de la cartera del usuario por sector, indicando el valor y el porcentaje que representa cada sector sobre el total invertido.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con la lista de distribución de la cartera por sector, o un mensaje de error si ocurre un fallo interno.</returns>
     public async Task<Response> GetPortfolioDistributionAsync(int userId)
     {
         try
@@ -155,6 +177,11 @@ public class DashboardService : IDashboardService
         }
     }
 
+    /// <summary>
+    /// Obtiene las cinco notificaciones más recientes del usuario para mostrarlas en el dashboard.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con la lista de notificaciones recientes, o un mensaje de error si ocurre un fallo interno.</returns>
     public async Task<Response> GetRecentNotificationsAsync(int userId)
     {
         try
@@ -178,6 +205,12 @@ public class DashboardService : IDashboardService
         }
     }
 
+    /// <summary>
+    /// Genera el gráfico de desempeño de la cartera del usuario comparándolo contra los índices S&amp;P 500 y NASDAQ en el período solicitado, calculando además el valor actual y la variación porcentual.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="filter">Filtro con el período del gráfico a generar (por ejemplo "1W", "1M", "3M" o "1Y").</param>
+    /// <returns>Una respuesta con los datos del gráfico de desempeño, o un mensaje de error si el usuario no existe, no hay datos suficientes o ocurre un fallo interno.</returns>
     public async Task<Response> GetPerformanceChartAsync(int userId, DashboardPerformanceChartFilterDto filter)
     {
         try
@@ -303,6 +336,11 @@ public class DashboardService : IDashboardService
         }
     }
 
+    /// <summary>
+    /// Obtiene las cinco operaciones más recientes realizadas por el usuario para mostrarlas en el dashboard.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con la lista de las últimas operaciones del usuario, o un mensaje de error si ocurre un fallo interno.</returns>
     public async Task<Response> GetLatestTransactionsAsync(int userId)
     {
         try
@@ -327,6 +365,11 @@ public class DashboardService : IDashboardService
 
     //
     // HELPERS
+    /// <summary>
+    /// Convierte un tipo de transacción en su representación textual en español.
+    /// </summary>
+    /// <param name="type">Tipo de transacción a convertir.</param>
+    /// <returns>La cadena "Compra", "Venta" o "-" según el tipo de transacción recibido.</returns>
     private static string BuildTransactionTypeText(TransactionType type)
     {
         return ((TransactionType)type) switch

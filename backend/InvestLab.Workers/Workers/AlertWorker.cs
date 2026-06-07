@@ -12,12 +12,24 @@ public class AlertWorker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AlertWorker> _logger;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="AlertWorker"/>.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios utilizado para crear los scopes necesarios para resolver dependencias.</param>
+    /// <param name="logger">Logger utilizado para registrar información y errores del worker.</param>
     public AlertWorker(IServiceProvider serviceProvider, ILogger<AlertWorker> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Ejecuta el ciclo principal del worker, procesando las alertas bursátiles
+    /// de forma periódica cada 5 minutos hasta que se solicite la cancelación.
+    /// En caso de error inesperado, espera 1 minuto antes de reintentar.
+    /// </summary>
+    /// <param name="stoppingToken">Token utilizado para señalar la cancelación de la ejecución del worker.</param>
+    /// <returns>Una tarea que representa la ejecución asincrónica continua del worker.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)

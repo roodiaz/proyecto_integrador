@@ -6,6 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 public static class DataServiceExtensions
 {
+    /// <summary>
+    /// Registra los servicios de datos (contexto de base de datos y repositorios) en el contenedor de inyección de dependencias.
+    /// </summary>
+    /// <param name="services">Colección de servicios a la cual se agregan las dependencias.</param>
+    /// <param name="connectionString">Cadena de conexión a la base de datos PostgreSQL.</param>
+    /// <returns>La colección de servicios con las dependencias de datos registradas.</returns>
     public static IServiceCollection AddDataServices(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<InvestLabDbContext>(options =>

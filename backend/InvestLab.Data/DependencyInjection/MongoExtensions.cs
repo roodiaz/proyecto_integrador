@@ -6,6 +6,12 @@ namespace InvestLab.Data.DependencyInjection
 {
     public static class MongoExtensions
     {
+        /// <summary>
+        /// Registra los servicios de MongoDB (cliente y base de datos) en el contenedor de inyección de dependencias, validando la configuración necesaria.
+        /// </summary>
+        /// <param name="services">Colección de servicios a la cual se agregan las dependencias.</param>
+        /// <param name="config">Configuración de la aplicación desde donde se obtienen los datos de conexión a Mongo.</param>
+        /// <returns>La colección de servicios con las dependencias de Mongo registradas.</returns>
         public static IServiceCollection AddMongoServices(this IServiceCollection services, IConfiguration config)
         {
             var connectionString = config["Mongo:ConnectionString"];

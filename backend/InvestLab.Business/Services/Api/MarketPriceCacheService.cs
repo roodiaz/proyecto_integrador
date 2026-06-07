@@ -13,12 +13,22 @@ namespace InvestLab.Business.Services.Api
         private const int CacheExpirationMinutes = 5;
         private const string LastUpdatedAtCacheKey = "market-prices:last-updated-at";
 
+        /// <summary>
+        /// Inicializa una nueva instancia de <see cref="MarketPriceCacheService"/> con la caché en memoria y el proveedor externo de precios.
+        /// </summary>
+        /// <param name="cache">Caché en memoria utilizada para almacenar los precios de mercado.</param>
+        /// <param name="marketPriceService">Proveedor externo encargado de obtener los precios de mercado.</param>
         public MarketPriceCacheService(IMemoryCache cache, IExternalProvider marketPriceService)
         {
             _cache = cache;
             _externalProvider = marketPriceService;
         }
 
+        /// <summary>
+        /// Obtiene el precio de mercado de un símbolo, devolviendo el valor cacheado si está disponible o consultando al proveedor externo y almacenándolo en caché en caso contrario.
+        /// </summary>
+        /// <param name="symbol">Símbolo del activo a consultar.</param>
+        /// <returns>El precio de mercado del símbolo, o <c>null</c> si el símbolo es inválido o no se pudo obtener información.</returns>
         public async Task<MarketPriceDto?> GetPriceAsync(string symbol)
         {
             if (string.IsNullOrWhiteSpace(symbol))
@@ -41,6 +51,11 @@ namespace InvestLab.Business.Services.Api
             return freshPrice;
         }
 
+        /// <summary>
+        /// Obtiene los precios de mercado de una lista de símbolos, utilizando los valores cacheados cuando existen y consultando al proveedor externo solo para los símbolos faltantes, actualizando luego la caché.
+        /// </summary>
+        /// <param name="symbols">Lista de símbolos de activos a consultar.</param>
+        /// <returns>Una respuesta con los precios de mercado encontrados y la fecha de la actualización más antigua entre ellos.</returns>
         public async Task<MarketPricesResponseDto> GetPricesAsync(List<string> symbols)
         {
             if (symbols == null || !symbols.Any())
@@ -85,6 +100,10 @@ namespace InvestLab.Business.Services.Api
             };
         }
 
+        /// <summary>
+        /// Refresca en la caché los precios de mercado de los símbolos indicados consultando directamente al proveedor externo, sin importar si ya existían valores cacheados, y actualiza la marca de tiempo de la última actualización.
+        /// </summary>
+        /// <param name="symbols">Lista de símbolos de activos cuyos precios deben refrescarse.</param>
         public async Task RefreshPricesAsync(List<string> symbols)
         {
             if (symbols == null || !symbols.Any())
@@ -108,6 +127,10 @@ namespace InvestLab.Business.Services.Api
             _cache.Set(LastUpdatedAtCacheKey, updatedAt, TimeSpan.FromMinutes(CacheExpirationMinutes));
         }
 
+        /// <summary>
+        /// Obtiene la fecha y hora de la última actualización de precios de mercado almacenada en la caché.
+        /// </summary>
+        /// <returns>La fecha y hora de la última actualización, o <c>null</c> si no hay información disponible en la caché.</returns>
         public Task<DateTime?> GetLastUpdatedAtAsync()
         {
             if (_cache.TryGetValue(LastUpdatedAtCacheKey, out DateTime updatedAt))
@@ -116,6 +139,11 @@ namespace InvestLab.Business.Services.Api
             return Task.FromResult<DateTime?>(null);
         }
 
+        /// <summary>
+        /// Genera la clave de caché correspondiente a un símbolo de activo, normalizándolo a mayúsculas y sin espacios.
+        /// </summary>
+        /// <param name="symbol">Símbolo del activo.</param>
+        /// <returns>La clave de caché generada para el símbolo indicado.</returns>
         private static string GetCacheKey(string symbol)
         {
             return $"market-price:{symbol.Trim().ToUpper()}";

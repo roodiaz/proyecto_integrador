@@ -26,12 +26,26 @@ public class MarketSeederWorker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<MarketSeederWorker> _logger;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del worker, recibiendo las dependencias necesarias
+    /// para crear ámbitos de servicios y registrar información de diagnóstico.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios utilizado para crear ámbitos de inyección de dependencias en cada ejecución.</param>
+    /// <param name="logger">Logger utilizado para registrar información, advertencias y errores del worker.</param>
     public MarketSeederWorker(IServiceProvider serviceProvider, ILogger<MarketSeederWorker> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Ejecuta el ciclo principal del worker en segundo plano: crea un ámbito de servicios,
+    /// invoca la carga de históricos faltantes para los activos sin información histórica
+    /// y espera un minuto antes de repetir el proceso, manejando cancelaciones y errores
+    /// de forma controlada hasta que se solicite la detención del servicio.
+    /// </summary>
+    /// <param name="stoppingToken">Token de cancelación que indica cuándo debe detenerse la ejecución del worker.</param>
+    /// <returns>Una tarea que representa la ejecución continua y asincrónica del worker.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Worker de carga inicial de históricos iniciado");

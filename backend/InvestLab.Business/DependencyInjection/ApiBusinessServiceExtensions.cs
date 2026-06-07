@@ -10,6 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 public static class ApiBusinessServiceExtensions
 {
+    /// <summary>
+    /// Registra en el contenedor de inyección de dependencias los servicios de negocio utilizados por la API.
+    /// </summary>
+    /// <param name="services">Colección de servicios a la que se agregan las dependencias.</param>
+    /// <returns>La colección de servicios con los servicios de la API registrados, permitiendo encadenar llamadas.</returns>
     public static IServiceCollection AddApiBusinessServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();

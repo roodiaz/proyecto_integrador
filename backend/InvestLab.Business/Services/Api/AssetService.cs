@@ -9,6 +9,12 @@ public class AssetService : IAssetService
     private readonly IExternalProvider _externalProvider;
     private readonly IUnitOfWork _unitOfWork;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="AssetService"/> inyectando el repositorio de activos, el proveedor externo de datos de mercado y la unidad de trabajo.
+    /// </summary>
+    /// <param name="assetRepository">Repositorio de activos.</param>
+    /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
+    /// <param name="unitOfWork">Unidad de trabajo para confirmar los cambios en la base de datos.</param>
     public AssetService(IAssetRepository assetRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork)
     {
         _assetRepository = assetRepository;
@@ -16,6 +22,11 @@ public class AssetService : IAssetService
         _unitOfWork = unitOfWork;
     }
 
+    /// <summary>
+    /// Busca un activo por su símbolo en el repositorio local; si no existe, obtiene su perfil desde el proveedor externo, lo crea y lo persiste.
+    /// </summary>
+    /// <param name="symbol">Símbolo del activo a buscar o crear.</param>
+    /// <returns>El activo encontrado o creado, o <c>null</c> si no se pudo obtener su perfil desde el proveedor externo.</returns>
     public async Task<Asset?> GetOrCreateAsync(string symbol)
     {
         symbol = symbol.Trim().ToUpper();

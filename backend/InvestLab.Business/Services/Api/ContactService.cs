@@ -11,6 +11,12 @@ public class ContactService : IContactService
     private readonly ContactOptions _contactOptions;
     private readonly ILogger<ContactService> _logger;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del servicio de contacto con sus dependencias.
+    /// </summary>
+    /// <param name="emailService">Servicio utilizado para el envío de correos electrónicos.</param>
+    /// <param name="contactOptions">Opciones de configuración de contacto, incluyendo la dirección de email destino.</param>
+    /// <param name="logger">Registrador de eventos para el servicio de contacto.</param>
     public ContactService(
         IEmailService emailService,
         IOptions<ContactOptions> contactOptions,
@@ -21,6 +27,11 @@ public class ContactService : IContactService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Envía un mensaje de contacto por correo electrónico a la dirección configurada del sistema.
+    /// </summary>
+    /// <param name="dto">Datos del mensaje de contacto, incluyendo nombre, email, teléfono y mensaje del remitente.</param>
+    /// <returns>Una respuesta indicando si el mensaje fue enviado correctamente o si ocurrió un error interno.</returns>
     public async Task<Response> SendAsync(ContactMessageDto dto)
     {
         try

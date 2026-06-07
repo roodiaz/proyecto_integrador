@@ -18,6 +18,16 @@ public class MarketHistoryService : IMarketHistoryService
     private readonly IMarketMetadataRepository _marketMetadataRepository;
     private readonly IUnitOfWork _unitOfWork;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del servicio de históricos de mercado,
+    /// inyectando los repositorios y servicios necesarios para su funcionamiento.
+    /// </summary>
+    /// <param name="repository">Repositorio de históricos de precios.</param>
+    /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
+    /// <param name="assetRepository">Repositorio de activos.</param>
+    /// <param name="unitOfWork">Unidad de trabajo utilizada para persistir los cambios.</param>
+    /// <param name="logger">Logger utilizado para registrar la actividad del servicio.</param>
+    /// <param name="marketMetadataRepository">Repositorio de metadata de mercado.</param>
     public MarketHistoryService(IPriceHistoryRepository repository, IExternalProvider externalProvider, IAssetRepository assetRepository, IUnitOfWork unitOfWork, ILogger<MarketHistoryService> logger, IMarketMetadataRepository marketMetadataRepository)
     {
         _priceHistoryRepository = repository;
@@ -38,6 +48,7 @@ public class MarketHistoryService : IMarketHistoryService
     ///
     /// NO guarda el cierre diario del mercado.
     /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     public async Task SeedMissingHistoryAsync()
     {
         _logger.LogInformation("Iniciando mantenimiento de históricos");
@@ -57,6 +68,7 @@ public class MarketHistoryService : IMarketHistoryService
     /// Carga un año de histórico para los activos
     /// que todavía no fueron inicializados.
     /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     private async Task LoadNewAssetsHistoryAsync()
     {
         var pendingAssets = await _assetRepository.GetPendingHistoryAsync();
@@ -111,6 +123,7 @@ public class MarketHistoryService : IMarketHistoryService
     /// El cierre del día actual es responsabilidad
     /// exclusiva del DailyMarketWorker.
     /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     private async Task RecoverMissingHistoryAsync()
     {
         var assets = await _assetRepository.GetAllAsync();
@@ -178,6 +191,7 @@ public class MarketHistoryService : IMarketHistoryService
     /// La metadata se calcula a partir de Mongo,
     /// que es la fuente de verdad del sistema.
     /// No se consulta el proveedor externo.
+    /// <returns>Una tarea que representa la operación asincrónica.</returns>
     private async Task UpdateMarketMetadataAsync()
     {
         var latestMarketDate = await _priceHistoryRepository.GetLatestDateAsync();

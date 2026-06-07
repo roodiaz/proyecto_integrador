@@ -26,6 +26,22 @@ public class UserService : IUserService
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserTempCredentialRepository _userTempCredentialRepository;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="UserService"/> con sus dependencias y repositorios.
+    /// </summary>
+    /// <param name="userRepository">Repositorio de usuarios.</param>
+    /// <param name="passwordHasher">Servicio para generar y verificar hashes de contraseñas.</param>
+    /// <param name="logger">Registrador de eventos del servicio.</param>
+    /// <param name="unitOfWork">Unidad de trabajo para confirmar cambios en la base de datos.</param>
+    /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
+    /// <param name="portfolioRepository">Repositorio de carteras de inversión.</param>
+    /// <param name="transactionRepository">Repositorio de transacciones.</param>
+    /// <param name="portfolioHistoryRepository">Repositorio del historial de carteras.</param>
+    /// <param name="notificationRepository">Repositorio de notificaciones.</param>
+    /// <param name="alertRepository">Repositorio de alertas.</param>
+    /// <param name="favoriteRepository">Repositorio de favoritos.</param>
+    /// <param name="refreshTokenRepository">Repositorio de tokens de actualización.</param>
+    /// <param name="userTempCredentialRepository">Repositorio de credenciales temporales de usuario.</param>
     public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IUnitOfWork unitOfWork,
        IUserSettingRepository userSettingRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository,  IPortfolioHistoryRepository portfolioHistoryRepository, INotificationRepository notificationRepository, IAlertRepository alertRepository, IFavoriteRepository favoriteRepository, IRefreshTokenRepository refreshTokenRepository, IUserTempCredentialRepository userTempCredentialRepository)
     {
@@ -46,6 +62,11 @@ public class UserService : IUserService
 
     }
 
+    /// <summary>
+    /// Obtiene el perfil del usuario junto con su configuración asociada.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con los datos del perfil del usuario o un mensaje de error si no se encuentra.</returns>
     public async Task<Response> GetProfileAsync(int userId)
     {
         try
@@ -80,6 +101,12 @@ public class UserService : IUserService
         }
     }
 
+    /// <summary>
+    /// Actualiza los datos del perfil y la configuración del usuario.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="dto">Datos actualizados del perfil del usuario.</param>
+    /// <returns>Una respuesta indicando si la actualización fue exitosa o el motivo del error.</returns>
     public async Task<Response> UpdateProfileAsync(int userId, UpdateProfileDto dto)
     {
         try
@@ -114,6 +141,12 @@ public class UserService : IUserService
         }
     }
 
+    /// <summary>
+    /// Cambia la contraseña del usuario, verificando previamente la contraseña actual.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="dto">Datos con la contraseña actual y la nueva contraseña.</param>
+    /// <returns>Una respuesta indicando si el cambio de contraseña fue exitoso o el motivo del error.</returns>
     public async Task<Response> ChangePasswordAsync(int userId, ChangePasswordDto dto)
     {
         try
@@ -151,6 +184,12 @@ public class UserService : IUserService
         }
     }
 
+    /// <summary>
+    /// Sube y reemplaza la imagen de perfil del usuario, eliminando la anterior si existía.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="file">Archivo de imagen a subir.</param>
+    /// <returns>Una respuesta con la nueva URL de la imagen de perfil o un mensaje de error.</returns>
     public async Task<Response> UploadProfileImageAsync(int userId, IFormFile file)
     {
         try
@@ -205,6 +244,12 @@ public class UserService : IUserService
         }
     }
 
+    /// <summary>
+    /// Elimina la cuenta del usuario y todos los datos relacionados (imagen de perfil, historial de carteras,
+    /// notificaciones, alertas, favoritos, transacciones, carteras, tokens y credenciales temporales).
+    /// </summary>
+    /// <param name="userId">Identificador del usuario a eliminar.</param>
+    /// <returns>Una respuesta indicando si la eliminación de la cuenta fue exitosa o el motivo del error.</returns>
     public async Task<Response> DeleteAccountAsync(int userId)
     {
         try

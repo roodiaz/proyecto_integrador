@@ -30,6 +30,22 @@ public class PortfolioService : IPortfolioService
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
     private readonly IMarketMetadataRepository _marketMetadataRepository;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="PortfolioService"/> inyectando los repositorios, opciones y servicios necesarios para gestionar el portfolio del usuario.
+    /// </summary>
+    /// <param name="userRepository">Repositorio de usuarios.</param>
+    /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
+    /// <param name="assetRepository">Repositorio de activos.</param>
+    /// <param name="portfolioRepository">Repositorio de portfolios.</param>
+    /// <param name="transactionRepository">Repositorio de transacciones.</param>
+    /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
+    /// <param name="unitOfWork">Unidad de trabajo para confirmar los cambios en la base de datos.</param>
+    /// <param name="portfolioHistoryRepository">Repositorio del historial de portfolio.</param>
+    /// <param name="limits">Opciones de límites de operaciones y balance inicial.</param>
+    /// <param name="logger">Logger para registrar información y errores del servicio.</param>
+    /// <param name="marketPriceService">Servicio de precios de mercado.</param>
+    /// <param name="marketMetadataRepository">Repositorio de metadatos de mercado.</param>
+    /// <param name="assetService">Servicio de activos.</param>
     public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService)
     {
         _userRepository = userRepository;
@@ -47,6 +63,12 @@ public class PortfolioService : IPortfolioService
         _assetService = assetService;
     }
 
+    /// <summary>
+    /// Realiza la compra de un activo para un usuario, validando saldo, límites diarios y disponibilidad del precio, y actualiza el portfolio y las transacciones correspondientes.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario que realiza la compra.</param>
+    /// <param name="dto">Datos de la operación de compra, incluyendo símbolo y cantidad.</param>
+    /// <returns>Una respuesta indicando si la compra se realizó correctamente o el motivo del error.</returns>
     public async Task<Response> BuyAsync(int userId, BuyAssetDto dto)
     {
         try
@@ -144,6 +166,12 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Realiza la venta de un activo perteneciente al portfolio de un usuario, validando cantidad disponible, límites diarios y disponibilidad del precio, y actualiza el portfolio y las transacciones correspondientes.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario que realiza la venta.</param>
+    /// <param name="dto">Datos de la operación de venta, incluyendo símbolo y cantidad.</param>
+    /// <returns>Una respuesta indicando si la venta se realizó correctamente o el motivo del error.</returns>
     public async Task<Response> SellAsync(int userId, SellAssetDto dto)
     {
         try
@@ -231,6 +259,12 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Obtiene la información de la posición actual de un usuario sobre un activo específico, incluyendo cantidad, precio promedio y precio actual de mercado, para utilizarse antes de una venta.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="symbol">Símbolo del activo a consultar.</param>
+    /// <returns>Una respuesta con los datos de la posición o el motivo del error si no se encuentra.</returns>
     public async Task<Response> GetPositionForSellAsync(int userId, string symbol)
     {
         try
@@ -276,6 +310,11 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Obtiene el precio actual de mercado de un activo a partir de su símbolo.
+    /// </summary>
+    /// <param name="symbol">Símbolo del activo cuyo precio se desea consultar.</param>
+    /// <returns>Una respuesta con el precio actual del activo o el motivo del error si no se pudo obtener.</returns>
     public async Task<Response> GetPriceAsync(string symbol)
     {
         try
@@ -312,6 +351,11 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Obtiene un resumen del estado financiero del portfolio del usuario, incluyendo balance actual, ganancia/pérdida, porcentaje de rentabilidad y cantidad de operaciones realizadas.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con las tarjetas de balance del portfolio o el motivo del error.</returns>
     public async Task<Response> GetBalanceCardsAsync(int userId)
     {
         try
@@ -378,6 +422,11 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Calcula la distribución porcentual del valor del portfolio del usuario por activo, para ser representada en un gráfico de torta.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con la lista de elementos del gráfico de torta del portfolio o el motivo del error.</returns>
     public async Task<Response> GetPieChartAsync(int userId)
     {
         try
@@ -431,6 +480,12 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Obtiene las posiciones abiertas del portfolio de un usuario, aplicando filtros de búsqueda, estado de ganancia/pérdida, ordenamiento y paginación.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="filter">Filtros de búsqueda, ordenamiento y paginación a aplicar sobre las posiciones.</param>
+    /// <returns>Una respuesta con el total de posiciones y la lista paginada de posiciones abiertas, o el motivo del error.</returns>
     public async Task<Response> GetOpenPositionsAsync(int userId, PortfolioOpenPositionsFilterDto filter)
     {
         try
@@ -513,6 +568,12 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Obtiene la evolución histórica del valor total del portfolio de un usuario dentro de un período determinado, para ser representada en un gráfico de líneas.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="filter">Filtro que indica el período de tiempo a consultar.</param>
+    /// <returns>Una respuesta con la lista de puntos del gráfico de líneas del portfolio o el motivo del error.</returns>
     public async Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter)
     {
         try
@@ -549,6 +610,11 @@ public class PortfolioService : IPortfolioService
         }
     }
 
+    /// <summary>
+    /// Reinicia la simulación del portfolio de un usuario, eliminando su historial, transacciones y posiciones, restableciendo el balance al valor inicial y reiniciando el contador de operaciones diarias.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario cuyo portfolio se desea reiniciar.</param>
+    /// <returns>Una respuesta indicando si el portfolio se reinició correctamente o el motivo del error.</returns>
     public async Task<Response> ResetSimulationAsync(int userId)
     {
         try

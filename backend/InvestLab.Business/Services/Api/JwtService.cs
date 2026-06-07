@@ -12,11 +12,21 @@ public class JwtService : IJwtService
 {
     private readonly JwtSettings _jwtSettings;
 
+    /// <summary>
+    /// Inicializa una nueva instancia de <see cref="JwtService"/> con la configuración de JWT proporcionada.
+    /// </summary>
+    /// <param name="jwtSettings">Opciones de configuración para la generación y validación de tokens JWT.</param>
     public JwtService(IOptions<JwtSettings> jwtSettings)
     {
         _jwtSettings = jwtSettings.Value;
     }
 
+    /// <summary>
+    /// Genera un token de acceso JWT y un token de actualización (refresh token) para el usuario indicado,
+    /// incluyendo sus claims principales (identificador, email y nombre de usuario).
+    /// </summary>
+    /// <param name="user">Usuario para el cual se generarán los tokens.</param>
+    /// <returns>Un objeto <see cref="TokenDto"/> con el token de acceso, el token de actualización y su fecha de expiración.</returns>
     public Task<TokenDto> GenerateTokensAsync(User user)
     {
         var claims = new List<Claim>
@@ -49,6 +59,10 @@ public class JwtService : IJwtService
         });
     }
 
+    /// <summary>
+    /// Genera un token de actualización (refresh token) seguro y aleatorio codificado en Base64.
+    /// </summary>
+    /// <returns>Una cadena con el token de actualización generado.</returns>
     private static string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];

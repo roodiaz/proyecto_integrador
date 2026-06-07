@@ -16,6 +16,13 @@ namespace InvestLab.Business.Services
         private readonly IAssetService _assetService;
         private readonly ILogger<MarketService> _logger;
 
+        /// <summary>
+        /// Inicializa una nueva instancia de <see cref="MarketService"/> con el proveedor externo de datos de mercado, el logger, el servicio de activos y el servicio de caché de precios.
+        /// </summary>
+        /// <param name="externalProvider">Proveedor externo de información de mercado (precios, perfiles, históricos y noticias).</param>
+        /// <param name="logger">Logger para registrar información y errores del servicio.</param>
+        /// <param name="assetService">Servicio para obtener o crear activos.</param>
+        /// <param name="marketPriceCacheService">Servicio de caché de precios de mercado.</param>
         public MarketService(IExternalProvider externalProvider, ILogger<MarketService> logger, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
         {
             _externalProvider = externalProvider;
@@ -24,6 +31,10 @@ namespace InvestLab.Business.Services
             _marketPriceCacheService = marketPriceCacheService;
         }
 
+        /// <summary>
+        /// Obtiene el panorama general del mercado, incluyendo el estado del mercado y los valores actuales de los principales índices (S&amp;P 500, NASDAQ y Dow Jones).
+        /// </summary>
+        /// <returns>Una respuesta con el panorama de mercado, o un mensaje de error si no se pudieron obtener los índices o ocurre un fallo interno.</returns>
         public async Task<Response> GetMarketOverviewAsync()
         {
             try
@@ -60,6 +71,11 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene el detalle completo de un activo a partir de su símbolo, combinando información de precio, perfil y otros indicadores de mercado.
+        /// </summary>
+        /// <param name="symbol">Símbolo del activo a consultar.</param>
+        /// <returns>Una respuesta con el detalle del activo solicitado, o un mensaje de error si el símbolo es inválido, el activo no existe, no hay información de precio o ocurre un fallo interno.</returns>
         public async Task<Response> GetAssetDetailAsync(string symbol)
         {
             try
@@ -110,6 +126,10 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene los activos en tendencia (más activos) del mercado.
+        /// </summary>
+        /// <returns>Una respuesta con la lista de activos en tendencia, o un mensaje de error si ocurre un fallo interno.</returns>
         public async Task<Response> GetTrendingAsync()
         {
             try
@@ -124,6 +144,10 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene los activos con mayor ganancia del día en el mercado.
+        /// </summary>
+        /// <returns>Una respuesta con la lista de activos ganadores del día, o un mensaje de error si ocurre un fallo interno.</returns>
         public async Task<Response> GetGainersAsync()
         {
             try
@@ -138,6 +162,10 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene los activos con mayor pérdida del día en el mercado.
+        /// </summary>
+        /// <returns>Una respuesta con la lista de activos perdedores del día, o un mensaje de error si ocurre un fallo interno.</returns>
         public async Task<Response> GetLosersAsync()
         {
             try
@@ -153,6 +181,10 @@ namespace InvestLab.Business.Services
 
         }
 
+        /// <summary>
+        /// Obtiene las noticias más recientes relacionadas con el mercado.
+        /// </summary>
+        /// <returns>Una respuesta con la lista de noticias del mercado, o un mensaje de error si ocurre un fallo interno.</returns>
         public async Task<Response> GetMarketNewsAsync()
         {
             try
@@ -167,6 +199,10 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene el estado de actualización de la caché de precios de mercado, indicando la fecha y hora de la última actualización.
+        /// </summary>
+        /// <returns>Una respuesta con el estado de la caché de precios, o un mensaje de error si ocurre un fallo interno.</returns>
         public async Task<Response> GetMarketPriceStatusAsync()
         {
             try
@@ -185,6 +221,12 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene el histórico de precios de un activo para un símbolo y rango de tiempo determinados.
+        /// </summary>
+        /// <param name="symbol">Símbolo del activo a consultar.</param>
+        /// <param name="range">Rango de tiempo del histórico solicitado (por ejemplo "1d", "1w", "1m", "3m", "6m" o "1y").</param>
+        /// <returns>Una respuesta con el histórico del activo solicitado, o un mensaje de error si el símbolo o el rango son inválidos, no se encuentran datos o ocurre un fallo interno.</returns>
         public async Task<Response> GetAssetHistoryAsync(string symbol, string range)
         {
             try
@@ -224,6 +266,11 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene el histórico de precios de los principales índices de mercado (S&amp;P 500, NASDAQ y Dow Jones) para un rango de tiempo determinado, a fin de compararlos.
+        /// </summary>
+        /// <param name="range">Rango de tiempo del histórico solicitado (por ejemplo "1d", "1w", "1m", "3m", "6m" o "1y").</param>
+        /// <returns>Una respuesta con el histórico de comparación de los índices, o un mensaje de error si el rango es inválido o ocurre un fallo interno.</returns>
         public async Task<Response> GetComparisonHistoryAsync(string range)
         {
             try
@@ -265,6 +312,10 @@ namespace InvestLab.Business.Services
 
 
         // Metodos auxiliares
+        /// <summary>
+        /// Determina el estado actual del mercado (abierto o cerrado) en función del horario y día de la semana de la zona horaria del Este de Estados Unidos.
+        /// </summary>
+        /// <returns>Un objeto con el estado del mercado, el texto descriptivo, la hora actual del mercado y los horarios de apertura y cierre.</returns>
         private static MarketStatusDto GetMarketStatus()
         {
             var timeZone = GetEasternTimeZone();
@@ -285,6 +336,10 @@ namespace InvestLab.Business.Services
             };
         }
 
+        /// <summary>
+        /// Obtiene la información de la zona horaria del Este de Estados Unidos, contemplando los distintos identificadores según el sistema operativo.
+        /// </summary>
+        /// <returns>La zona horaria correspondiente a "America/New_York" o, si no está disponible, a "Eastern Standard Time".</returns>
         private static TimeZoneInfo GetEasternTimeZone()
         {
             try
@@ -297,6 +352,11 @@ namespace InvestLab.Business.Services
             }
         }
 
+        /// <summary>
+        /// Traduce el símbolo de un índice de mercado a su nombre descriptivo.
+        /// </summary>
+        /// <param name="symbol">Símbolo del índice de mercado.</param>
+        /// <returns>El nombre descriptivo del índice (por ejemplo "S&amp;P 500", "NASDAQ" o "Dow Jones"), o el mismo símbolo si no se reconoce.</returns>
         private static string GetIndexName(string symbol)
         {
             return symbol switch
@@ -308,16 +368,31 @@ namespace InvestLab.Business.Services
             };
         }
 
+        /// <summary>
+        /// Normaliza el rango de histórico recibido, asignando un valor por defecto cuando viene vacío y convirtiéndolo a minúsculas sin espacios.
+        /// </summary>
+        /// <param name="range">Rango de tiempo a normalizar.</param>
+        /// <returns>El rango normalizado en minúsculas, o "1m" si el valor recibido es nulo o vacío.</returns>
         private static string NormalizeHistoryRange(string range)
         {
             return string.IsNullOrWhiteSpace(range) ? "1m" : range.Trim().ToLower();
         }
 
+        /// <summary>
+        /// Verifica si el rango de histórico recibido es uno de los valores permitidos.
+        /// </summary>
+        /// <param name="range">Rango de tiempo a validar.</param>
+        /// <returns><c>true</c> si el rango es válido ("1d", "1w", "1m", "3m", "6m" o "1y"); en caso contrario, <c>false</c>.</returns>
         private static bool IsValidHistoryRange(string range)
         {
             return range is "1d" or "1w" or "1m" or "3m" or "6m" or "1y";
         }
 
+        /// <summary>
+        /// Calcula la fecha de inicio del histórico a partir de la fecha y hora actuales, según el rango de tiempo solicitado.
+        /// </summary>
+        /// <param name="range">Rango de tiempo del histórico (por ejemplo "1d", "1w", "1m", "3m", "6m" o "1y").</param>
+        /// <returns>La fecha y hora de inicio correspondiente al rango indicado, calculada a partir de la fecha y hora actuales en UTC.</returns>
         private static DateTime GetHistoryFromDate(string range)
         {
             var now = DateTime.UtcNow;
@@ -334,6 +409,11 @@ namespace InvestLab.Business.Services
             };
         }
 
+        /// <summary>
+        /// Convierte un punto de precio histórico proveniente del proveedor externo en un punto de histórico de mercado para su uso en la respuesta del servicio.
+        /// </summary>
+        /// <param name="item">Punto de precio histórico a convertir.</param>
+        /// <returns>El punto de histórico de mercado equivalente, con la fecha, los valores de apertura, máximo, mínimo, cierre y volumen.</returns>
         private static MarketHistoryPointDto MapHistoryPoint(HistoricalPriceDto item)
         {
             return new MarketHistoryPointDto

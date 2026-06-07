@@ -19,12 +19,26 @@ public class UserDailyLimitsResetWorker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<UserDailyLimitsResetWorker> _logger;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del worker de reinicio de límites diarios, recibiendo
+    /// las dependencias necesarias para crear ámbitos de servicios y registrar logs.
+    /// </summary>
+    /// <param name="serviceProvider">Proveedor de servicios utilizado para crear ámbitos de inyección de dependencias en cada ejecución.</param>
+    /// <param name="logger">Logger utilizado para registrar información, advertencias y errores del worker.</param>
     public UserDailyLimitsResetWorker(IServiceProvider serviceProvider, ILogger<UserDailyLimitsResetWorker> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Ejecuta el ciclo principal del worker en segundo plano: calcula el tiempo restante
+    /// hasta la próxima medianoche UTC, espera hasta ese momento, crea un ámbito de servicios
+    /// y reinicia los límites diarios de todos los usuarios, manejando cancelaciones y
+    /// errores de forma controlada hasta que se solicite la detención del servicio.
+    /// </summary>
+    /// <param name="stoppingToken">Token de cancelación que indica cuándo debe detenerse la ejecución del worker.</param>
+    /// <returns>Una tarea que representa la ejecución continua y asincrónica del worker.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Worker de reinicio de límites diarios iniciado");

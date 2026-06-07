@@ -19,6 +19,15 @@ public class AlertProcessingService : IAlertProcessingService
     private readonly IExternalProvider _externalProvider;
     private readonly IEmailService _emailService;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del servicio de procesamiento de alertas.
+    /// </summary>
+    /// <param name="alertRepository">Repositorio utilizado para obtener y actualizar las alertas.</param>
+    /// <param name="userSettingRepository">Repositorio utilizado para obtener la configuración del usuario.</param>
+    /// <param name="notificationRepository">Repositorio utilizado para registrar las notificaciones generadas.</param>
+    /// <param name="externalProvider">Proveedor externo utilizado para obtener los precios de mercado.</param>
+    /// <param name="emailService">Servicio utilizado para el envío de correos electrónicos de notificación.</param>
+    /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
     public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IExternalProvider externalProvider, IEmailService emailService, IUnitOfWork unitOfWork)
     {
         _alertRepository = alertRepository;
@@ -29,6 +38,12 @@ public class AlertProcessingService : IAlertProcessingService
         _unitOfWork = unitOfWork;
     }
 
+    /// <summary>
+    /// Procesa las alertas activas: consulta el precio de mercado actual de cada activo,
+    /// evalúa si se cumple la condición configurada y, en caso afirmativo, genera una notificación,
+    /// actualiza la alerta y, si corresponde, envía un correo electrónico al usuario.
+    /// </summary>
+    /// <returns>Una tarea que representa la operación asincrónica de procesamiento de alertas.</returns>
     public async Task ProcessAlertsAsync()
     {
         var alerts = await _alertRepository.GetActiveAlertsAsync();
@@ -86,6 +101,14 @@ public class AlertProcessingService : IAlertProcessingService
             }
         }
     }
+    /// <summary>
+    /// Evalúa si el valor actual cumple la condición definida por el operador de la alerta
+    /// en comparación con el valor objetivo.
+    /// </summary>
+    /// <param name="currentValue">Valor actual obtenido del mercado (precio o variación porcentual).</param>
+    /// <param name="op">Operador de comparación configurado en la alerta.</param>
+    /// <param name="target">Valor objetivo contra el cual se compara el valor actual.</param>
+    /// <returns>true si la condición se cumple; en caso contrario, false.</returns>
     private static bool EvaluateCondition(decimal currentValue, AlertOperator op, decimal target)
     {
         return op switch
@@ -99,6 +122,13 @@ public class AlertProcessingService : IAlertProcessingService
         };
     }
 
+    /// <summary>
+    /// Construye el mensaje descriptivo de la notificación que se enviará al usuario
+    /// según el tipo de condición y el operador configurados en la alerta.
+    /// </summary>
+    /// <param name="alert">Alerta que se activó y para la cual se debe generar el mensaje.</param>
+    /// <param name="currentValue">Valor actual (precio o variación porcentual) que originó la activación de la alerta.</param>
+    /// <returns>El texto del mensaje de notificación correspondiente a la alerta activada.</returns>
     private static string BuildAlertMessage(Alert alert, decimal currentValue)
     {
         var symbol = alert.Asset.Symbol;

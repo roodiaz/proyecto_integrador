@@ -23,6 +23,16 @@ namespace InvestLab.Business.Services.Api
         private readonly IAssetService _assetService;
         private readonly ILogger<AlertService> _logger;
 
+        /// <summary>
+        /// Inicializa una nueva instancia de <see cref="AlertService"/> con sus dependencias y repositorios.
+        /// </summary>
+        /// <param name="alertRepository">Repositorio de alertas.</param>
+        /// <param name="assetRepository">Repositorio de activos financieros.</param>
+        /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
+        /// <param name="unitOfWork">Unidad de trabajo para confirmar cambios en la base de datos.</param>
+        /// <param name="logger">Registrador de eventos del servicio.</param>
+        /// <param name="options">Opciones de configuración con los límites del sistema.</param>
+        /// <param name="assetService">Servicio para obtener o crear activos financieros.</param>
         public AlertService(IAlertRepository alertRepository, IAssetRepository assetRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, ILogger<AlertService> logger, IOptions<LimitsOptions> options, IAssetService assetService)
         {
             _alertRepository = alertRepository;
@@ -34,6 +44,12 @@ namespace InvestLab.Business.Services.Api
             _assetService = assetService;
         }
 
+        /// <summary>
+        /// Crea una nueva alerta para el usuario, validando el límite de alertas y la existencia del activo.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="dto">Datos necesarios para crear la alerta.</param>
+        /// <returns>Una respuesta indicando si la alerta fue creada correctamente o el motivo del error.</returns>
         public async Task<Response> CreateAlertAsync(int userId, CreateAlertDto dto)
         {
             try
@@ -78,6 +94,12 @@ namespace InvestLab.Business.Services.Api
             }
         }
 
+        /// <summary>
+        /// Elimina una alerta del usuario y decrementa el contador de alertas usadas en su configuración.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario propietario de la alerta.</param>
+        /// <param name="id">Identificador de la alerta a eliminar.</param>
+        /// <returns>Una respuesta indicando si la eliminación fue exitosa o el motivo del error.</returns>
         public async Task<Response> DeleteAlertAsync(int userId, int id)
         {
             try
@@ -105,6 +127,12 @@ namespace InvestLab.Business.Services.Api
             }
         }
 
+        /// <summary>
+        /// Activa o desactiva el estado de una alerta perteneciente al usuario.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario propietario de la alerta.</param>
+        /// <param name="id">Identificador de la alerta a modificar.</param>
+        /// <returns>Una respuesta indicando si el cambio de estado fue exitoso o el motivo del error.</returns>
         public async Task<Response> ToggleAlertAsync(int userId, int id)
         {
             try
@@ -127,6 +155,12 @@ namespace InvestLab.Business.Services.Api
             }
         }
 
+        /// <summary>
+        /// Obtiene un listado paginado de alertas del usuario según los filtros indicados.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="filter">Criterios de filtrado y paginación a aplicar.</param>
+        /// <returns>Una respuesta con la lista de alertas y el total de resultados, o un mensaje de error.</returns>
         public async Task<Response> GetAlertsAsync(int userId, AlertFilterDto filter)
         {
             try
@@ -157,6 +191,12 @@ namespace InvestLab.Business.Services.Api
             }
         }
 
+        /// <summary>
+        /// Actualiza una alerta existente del usuario, validando los datos, el activo y la inexistencia de duplicados.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario propietario de la alerta.</param>
+        /// <param name="dto">Datos actualizados de la alerta.</param>
+        /// <returns>Una respuesta indicando si la actualización fue exitosa o el motivo del error.</returns>
         public async Task<Response> UpdateAlertAsync(int userId, UpdateAlertDto dto)
         {
             try
@@ -206,6 +246,12 @@ namespace InvestLab.Business.Services.Api
             }
         }
 
+        /// <summary>
+        /// Obtiene estadísticas de las alertas del usuario, incluyendo cantidades activas, pausadas,
+        /// disparadas en el día, total utilizadas y el límite máximo permitido.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <returns>Una respuesta con las estadísticas de alertas del usuario o un mensaje de error.</returns>
         public async Task<Response> GetStatsAsync(int userId)
         {
             try
@@ -230,6 +276,11 @@ namespace InvestLab.Business.Services.Api
         }
 
         // Helpers
+        /// <summary>
+        /// Valida que la condición de la alerta tenga el valor correspondiente según su tipo (precio o porcentaje).
+        /// </summary>
+        /// <param name="dto">Datos de la alerta a validar.</param>
+        /// <returns><c>true</c> si la condición es válida; en caso contrario, <c>false</c>.</returns>
         private bool IsValidCondition(CreateAlertDto dto)
         {
             return dto.Condition switch
@@ -240,6 +291,11 @@ namespace InvestLab.Business.Services.Api
             };
         }
 
+        /// <summary>
+        /// Convierte la condición textual de la alerta en su tipo, operador y valor correspondientes.
+        /// </summary>
+        /// <param name="dto">Datos de la alerta que contienen la condición a mapear.</param>
+        /// <returns>Una tupla con el tipo de condición, el operador y el valor numérico asociados.</returns>
         private (ConditionType, AlertOperator, decimal) MapCondition(CreateAlertDto dto)
         {
             return dto.Condition switch
