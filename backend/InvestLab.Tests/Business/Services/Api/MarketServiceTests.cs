@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace InvestLab.Tests.Business.Services;
+namespace InvestLab.Tests.Business.Services.Api;
 
 /// <summary>
 /// Pruebas unitarias de <see cref="MarketService"/>, cubriendo los métodos invocados desde <c>MarketController</c>

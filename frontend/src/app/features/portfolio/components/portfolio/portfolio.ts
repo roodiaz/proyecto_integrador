@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -118,7 +118,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   /** Carga toda la información del portfolio (resumen, gráficos, tenencias y operaciones). */
   ngOnInit(): void {
-    this.refreshPortfolioData();
+    this.refreshPortfolio();
   }
 
   /** Marca la vista como lista y dispara el renderizado de los gráficos si ya hay datos cargados. */
@@ -267,7 +267,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
       panelClass: 'portfolio-dialog-panel',
-      data: { mode: 'buy', symbol },
+      data: { mode: 'buy', symbol, currentBalance: this.portfolioSummary.currentBalance },
     });
 
     dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
@@ -299,9 +299,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   // ── Carga de datos ──
 
   /** Vuelve a cargar todas las secciones del portfolio: resumen, gráficos, tenencias y operaciones. */
-  private refreshPortfolioData(): void {
+  refreshPortfolio(): void {
     this.loadBalanceCards();
-    this.loadCharts();
+    this.loadPieChart();
+    this.loadLineChart();
     this.loadPositions();
     this.loadOperations();
   }
@@ -319,21 +320,14 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  /**
-   * Carga en paralelo los datos del gráfico de distribución (torta) y del de evolución
-   * (línea), arma el ranking de "Top Activos" y vuelve a renderizar ambos gráficos.
-   */
-  loadCharts(): void {
+  /** Carga el gráfico de distribución (torta), arma el ranking de "Top Activos" y lo renderiza. */
+  loadPieChart(): void {
     this.beginChartLoading();
-    forkJoin({
-      pie: this.portfolioService.getPieChart(),
-      line: this.portfolioService.getLineChart(this.selectedPeriod),
-    })
+    this.portfolioService.getPieChart()
       .pipe(finalize(() => this.endChartLoading()))
       .subscribe({
         next: (res) => {
-          this.pieChartData = res.pie.data ?? [];
-          this.lineChartData = res.line.data ?? [];
+          this.pieChartData = res.data ?? [];
           this.topAssets = this.pieChartData.slice(0, 3).map(x => ({
             ticker: x.symbol,
             percentage: x.percentage,
@@ -341,7 +335,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           this.renderChartsWhenReady();
         },
         error: (err) => {
-          console.error('Charts error', err);
+          console.error('Pie chart error', err);
+          this.snackBarService.error('No se pudo cargar la distribución del portfolio');
         },
       });
   }
@@ -571,7 +566,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       next: (res) => {
         if (res.success) {
           this.snackBarService.success(res.message || 'Compra realizada correctamente');
-          this.refreshPortfolioData();
+          this.refreshPortfolio();
         } else {
           this.snackBarService.info(res.message || 'No se pudo realizar la compra');
         }
@@ -590,7 +585,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       next: (res) => {
         if (res.success) {
           this.snackBarService.success(res.message || 'Venta realizada correctamente');
-          this.refreshPortfolioData();
+          this.refreshPortfolio();
         } else {
           this.snackBarService.info(res.message || 'No se pudo realizar la venta');
         }
@@ -634,7 +629,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       next: response => {
         if (response.success) {
           this.snackBarService.success(response.message || 'Portfolio reiniciado correctamente');
-          this.refreshPortfolioData();
+          this.refreshPortfolio();
           return;
         }
 

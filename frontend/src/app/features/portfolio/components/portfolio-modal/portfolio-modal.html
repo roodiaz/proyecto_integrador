@@ -28,7 +28,7 @@
           <div class="form-group">
             <label for="price">Precio mercado</label>
             <div class="price-display">
-              ${{ marketPrice.toFixed(2) }}
+              {{ marketPrice | currency:'USD' }}
               <span class="price-label">Precio actual del mercado</span>
             </div>
           </div>
@@ -90,7 +90,7 @@
           <div class="form-group">
             <label for="sellMarketPrice">Precio mercado</label>
             <div id="sellMarketPrice" class="price-display">
-              {{ position?.currentPrice | number:'1.2-2' }}
+              {{ position?.currentPrice | currency:'USD' }}
               <span class="price-label">Precio actual del mercado</span>
             </div>
           </div>

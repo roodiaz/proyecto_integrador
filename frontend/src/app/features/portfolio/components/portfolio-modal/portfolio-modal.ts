@@ -107,12 +107,13 @@ export class PortfolioModal implements OnInit {
    * petición, deja el precio en cero y notifica al usuario.
    */
   loadMarketPrice(): void {
-    if (!this.buyTicker.trim())
-      return;
+    const symbol = this.buyTicker.trim().toUpperCase();
+    if (!symbol) return;
+    this.buyTicker = symbol;
 
     this.isLoadingPrice = true;
 
-    this.portfolioService.getAssetPrice(this.buyTicker.trim().toUpperCase()).subscribe({
+    this.portfolioService.getAssetPrice(symbol).subscribe({
       next: response => {
         this.isLoadingPrice = false;
 
@@ -142,7 +143,7 @@ export class PortfolioModal implements OnInit {
 
   /** @returns El saldo disponible del usuario para realizar compras. */
   get currentBalance(): number {
-    return 10000;
+    return this.data.currentBalance ?? 0;
   }
 
   // ── Cálculos de compra ──

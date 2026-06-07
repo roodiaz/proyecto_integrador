@@ -18,6 +18,7 @@ export interface PortfolioPosition {
 export interface PortfolioModalData {
   mode: 'buy' | 'sell';
   symbol?: string;
+  currentBalance?: number;
 }
 
 export type PortfolioModalResult =

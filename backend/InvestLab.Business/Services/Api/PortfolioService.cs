@@ -4,6 +4,7 @@ using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
+using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.DTOs.Portfolio;
 using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ public class PortfolioService : IPortfolioService
     private readonly ILogger<PortfolioService> _logger;
     private readonly IExternalProvider _externalProvider;
     private readonly IMarketPriceService _marketPriceService;
+    private readonly IMarketPriceCacheService _marketPriceCacheService;
     private readonly IAssetService _assetService;
 
     // repositorios
@@ -46,7 +48,8 @@ public class PortfolioService : IPortfolioService
     /// <param name="marketPriceService">Servicio de precios de mercado.</param>
     /// <param name="marketMetadataRepository">Repositorio de metadatos de mercado.</param>
     /// <param name="assetService">Servicio de activos.</param>
-    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService)
+    /// <param name="marketPriceCacheService">Servicio de cache de precios de mercado para datos informativos.</param>
+    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
     {
         _userRepository = userRepository;
         _userSettingRepository = userSettingRepository;
@@ -61,6 +64,7 @@ public class PortfolioService : IPortfolioService
         _marketPriceService = marketPriceService;
         _marketMetadataRepository = marketMetadataRepository;
         _assetService = assetService;
+        _marketPriceCacheService = marketPriceCacheService;
     }
 
     /// <summary>
@@ -378,9 +382,8 @@ public class PortfolioService : IPortfolioService
 
             var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
 
-            // Obtiene precios en tiempo real desde Yahoo
-            var marketPrices = await _externalProvider.GetPricesAsync(symbols);
-            var pricesBySymbol = marketPrices.ToDictionary(x => x.Symbol, x => x.Price);
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             decimal holdingsValue = 0;
             foreach (var item in portfolio)
@@ -441,9 +444,8 @@ public class PortfolioService : IPortfolioService
 
             var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
 
-            var marketPrices = await _externalProvider.GetPricesAsync(symbols);
-
-            var pricesBySymbol = marketPrices.ToDictionary(x => x.Symbol, x => x.Price);
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             var positions = new List<(string Symbol, decimal Value)>();
             decimal totalPortfolioValue = 0;
@@ -494,9 +496,8 @@ public class PortfolioService : IPortfolioService
 
             var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
 
-            var marketPrices = await _externalProvider.GetPricesAsync(symbols);
-
-            var pricesBySymbol = marketPrices.ToDictionary(x => x.Symbol, x => x.Price);
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             var positions = new List<PortfolioOpenPositionDto>();
 
