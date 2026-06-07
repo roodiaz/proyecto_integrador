@@ -1,9 +1,9 @@
 ﻿using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
-using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Favorite;
+using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,8 +14,8 @@ namespace InvestLab.Business.Services.Api
     {
         private readonly ILogger<FavoriteService> _logger;
         private readonly LimitsOptions _limits;
-        private readonly IExternalProvider _externalProvider;
         private readonly IAssetService _assetService;
+        private readonly IMarketPriceCacheService _marketPriceCacheService;
 
         private readonly IUserSettingRepository _userSettingRepository;
         private readonly IFavoriteRepository _favoriteRepo;
@@ -30,24 +30,24 @@ namespace InvestLab.Business.Services.Api
         /// <param name="uow">Unidad de trabajo para confirmar los cambios en la base de datos.</param>
         /// <param name="logger">Registrador de eventos del servicio.</param>
         /// <param name="options">Opciones de configuración con los límites del sistema.</param>
-        /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
         /// <param name="assetService">Servicio de gestión de activos.</param>
         /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
-        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, IOptions<LimitsOptions> options, IExternalProvider externalProvider, IAssetService assetService, IUserSettingRepository userSettingRepository)
+        /// <param name="marketPriceCacheService">Servicio de cache de precios de mercado para datos informativos.</param>
+        public FavoriteService(IFavoriteRepository repo, IAssetRepository assetRepo, IUnitOfWork uow, ILogger<FavoriteService> logger, IOptions<LimitsOptions> options, IAssetService assetService, IUserSettingRepository userSettingRepository, IMarketPriceCacheService marketPriceCacheService)
         {
             _favoriteRepo = repo;
             _assetRepo = assetRepo;
             _uow = uow;
             _logger = logger;
             _limits = options.Value;
-            _externalProvider = externalProvider;
             _assetService = assetService;
             _userSettingRepository = userSettingRepository;
+            _marketPriceCacheService = marketPriceCacheService;
         }
 
         /// <summary>
         /// Obtiene el listado paginado de activos favoritos de un usuario, incluyendo precios
-        /// y variaciones obtenidas del proveedor externo de datos de mercado.
+        /// y variaciones obtenidas del cache de precios de mercado.
         /// </summary>
         /// <param name="userId">Identificador del usuario.</param>
         /// <param name="filter">Filtros de paginación a aplicar sobre el listado de favoritos.</param>
@@ -58,12 +58,13 @@ namespace InvestLab.Business.Services.Api
 
             var (list, total) = await _favoriteRepo.GetPagedAsync(userId, filter);
 
-            var symbols = list.Select(x => x.Asset.Symbol).ToList();
-            var marketData = await _externalProvider.GetPricesAsync(symbols);
+            var symbols = list.Select(x => x.Asset.Symbol).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+            var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
+            var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x, StringComparer.OrdinalIgnoreCase);
 
             var result = list.Select(fav =>
             {
-                var market = marketData.FirstOrDefault(x => x.Symbol == fav.Asset.Symbol);
+                pricesBySymbol.TryGetValue(fav.Asset.Symbol, out var market);
 
                 return new
                 {

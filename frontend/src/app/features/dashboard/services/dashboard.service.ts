@@ -21,7 +21,7 @@ export class DashboardService {
     getTopCards():
         Observable<ApiResponse<DashboardTopCards>> {
         return this.http.get<ApiResponse<DashboardTopCards>>(
-            `${environment.apiUrl}/dashboard/top-cards`
+            `${this.apiUrl}/top-cards`
         );
     }
 
@@ -29,28 +29,28 @@ export class DashboardService {
         Observable<ApiResponse<DashboardPerformanceChart>> {
         const filter: DashboardPerformanceChartFilter = { period };
         return this.http.post<ApiResponse<DashboardPerformanceChart>>(
-            `${environment.apiUrl}/dashboard/performance-chart`, filter
+            `${this.apiUrl}/performance-chart`, filter
         );
     }
 
     getLatestTransactions():
         Observable<ApiResponse<DashboardLatestTransaction[]>> {
         return this.http.get<ApiResponse<DashboardLatestTransaction[]>>(
-            `${environment.apiUrl}/dashboard/latest-transactions`
+            `${this.apiUrl}/latest-transactions`
         );
     }
 
     getRecentNotifications():
         Observable<ApiResponse<DashboardRecentNotification[]>> {
         return this.http.get<ApiResponse<DashboardRecentNotification[]>>(
-            `${environment.apiUrl}/dashboard/recent-notifications`
+            `${this.apiUrl}/recent-notifications`
         );
     }
 
     getPortfolioDistribution():
         Observable<ApiResponse<DashboardPortfolioDistribution[]>> {
         return this.http.get<ApiResponse<DashboardPortfolioDistribution[]>>(
-            `${environment.apiUrl}/dashboard/portfolio-distribution`
+            `${this.apiUrl}/portfolio-distribution`
         );
     }
 }

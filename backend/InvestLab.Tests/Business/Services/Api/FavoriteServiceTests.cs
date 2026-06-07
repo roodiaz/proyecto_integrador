@@ -2,7 +2,6 @@ using InvestLab.Business.Interfaces.Api;
 using InvestLab.Business.Services.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
-using InvestLab.Integrations.Interfaces;
 using InvestLab.Models.DTOs.Favorite;
 using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.Options;
@@ -23,12 +22,12 @@ public class FavoriteServiceTests
     private readonly Mock<IAssetRepository> _assetRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<ILogger<FavoriteService>> _logger = new();
-    private readonly Mock<IExternalProvider> _externalProvider = new();
     private readonly Mock<IAssetService> _assetService = new();
     private readonly Mock<IUserSettingRepository> _userSettingRepository = new();
+    private readonly Mock<IMarketPriceCacheService> _marketPriceCacheService = new();
     private readonly LimitsOptions _limits = new() { MaxFavorites = 5 };
 
-    private FavoriteService CreateService() => new(_favoriteRepository.Object, _assetRepository.Object, _unitOfWork.Object, _logger.Object, Options.Create(_limits), _externalProvider.Object, _assetService.Object, _userSettingRepository.Object);
+    private FavoriteService CreateService() => new(_favoriteRepository.Object, _assetRepository.Object, _unitOfWork.Object, _logger.Object, Options.Create(_limits), _assetService.Object, _userSettingRepository.Object, _marketPriceCacheService.Object);
 
     private static UserSetting Settings(int favoritesUsed = 0) => new() { Id = 1, UserId = 1, FavoritesUsed = favoritesUsed };
 
@@ -47,7 +46,7 @@ public class FavoriteServiceTests
 
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(favoritesUsed: 1));
         _favoriteRepository.Setup(r => r.GetPagedAsync(1, It.IsAny<FavoriteFilterDto>())).ReturnsAsync((favorites, 1));
-        _externalProvider.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new List<MarketPriceDto> { new() { Symbol = "AAPL", Price = 150, VariationPercent = 2.5m } });
+        _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [new() { Symbol = "AAPL", Price = 150, VariationPercent = 2.5m }] });
 
         var result = await CreateService().GetAsync(1, new FavoriteFilterDto());
 
@@ -61,13 +60,11 @@ public class FavoriteServiceTests
     {
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _favoriteRepository.Setup(r => r.GetPagedAsync(1, It.IsAny<FavoriteFilterDto>())).ReturnsAsync((new List<Favorite>(), 0));
-        _externalProvider.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new List<MarketPriceDto>());
-
         var result = await CreateService().GetAsync(1, new FavoriteFilterDto());
 
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
-        _externalProvider.Verify(p => p.GetPricesAsync(It.Is<List<string>>(s => s.Count == 0)), Times.Once);
+        _marketPriceCacheService.Verify(p => p.GetPricesAsync(It.IsAny<List<string>>()), Times.Never);
     }
 
     // ---------- AddAsync ----------

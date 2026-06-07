@@ -34,9 +34,10 @@ public class PortfolioServiceTests
     private readonly Mock<IMarketPriceService> _marketPriceService = new();
     private readonly Mock<IMarketMetadataRepository> _marketMetadataRepository = new();
     private readonly Mock<IAssetService> _assetService = new();
+    private readonly Mock<IMarketPriceCacheService> _marketPriceCacheService = new();
     private readonly LimitsOptions _limits = new() { MaxOperationsPerDay = 10, InitialBalance = 10000 };
 
-    private PortfolioService CreateService() => new(_userRepository.Object, _userSettingRepository.Object, _assetRepository.Object, _portfolioRepository.Object, _transactionRepository.Object, _externalProvider.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object);
+    private PortfolioService CreateService() => new(_userRepository.Object, _userSettingRepository.Object, _assetRepository.Object, _portfolioRepository.Object, _transactionRepository.Object, _externalProvider.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object, _marketPriceCacheService.Object);
 
     private static User UserEntity(int id = 1, decimal balance = 1000) => new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance };
 
@@ -479,7 +480,7 @@ public class PortfolioServiceTests
         _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity(balance: 9000));
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(operationsUsedToday: 2));
         _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolio);
-        _externalProvider.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new List<MarketPriceDto> { Price("AAPL", 150) });
+        _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 150)] });
         _marketMetadataRepository.Setup(r => r.GetAsync()).ReturnsAsync((MarketMetadata?)null);
 
         var result = await CreateService().GetBalanceCardsAsync(1);
@@ -506,7 +507,7 @@ public class PortfolioServiceTests
         Assert.True(result.Success);
         var data = Assert.IsType<List<PortfolioPieChartItemDto>>(result.Data);
         Assert.Empty(data);
-        _externalProvider.Verify(p => p.GetPricesAsync(It.IsAny<List<string>>()), Times.Never);
+        _marketPriceCacheService.Verify(p => p.GetPricesAsync(It.IsAny<List<string>>()), Times.Never);
     }
 
     /// <summary>Verifica que, con datos válidos, se calcule el valor actual y el porcentaje de participación de cada activo dentro del portfolio.</summary>
@@ -518,7 +519,7 @@ public class PortfolioServiceTests
         var portfolio = new List<Portfolio> { PortfolioEntity(aapl, quantity: 10), new() { Id = 2, UserId = 1, AssetId = msft.Id, Asset = msft, Quantity = 5, AvgPrice = 50 } };
 
         _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolio);
-        _externalProvider.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new List<MarketPriceDto> { Price("AAPL", 100), Price("MSFT", 50) });
+        _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 100), Price("MSFT", 50)] });
 
         var result = await CreateService().GetPieChartAsync(1);
 
@@ -541,7 +542,7 @@ public class PortfolioServiceTests
         var portfolio = new List<Portfolio> { PortfolioEntity(asset, quantity: 10, avgPrice: 100) };
 
         _portfolioRepository.Setup(r => r.GetPagedByUserAsync(1)).ReturnsAsync(portfolio);
-        _externalProvider.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new List<MarketPriceDto> { Price("AAPL", 120) });
+        _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 120)] });
 
         var result = await CreateService().GetOpenPositionsAsync(1, new PortfolioOpenPositionsFilterDto());
 
@@ -558,7 +559,7 @@ public class PortfolioServiceTests
         var portfolio = new List<Portfolio> { PortfolioEntity(aapl, quantity: 10, avgPrice: 100), new() { Id = 2, UserId = 1, AssetId = msft.Id, Asset = msft, Quantity = 5, AvgPrice = 50 } };
 
         _portfolioRepository.Setup(r => r.GetPagedByUserAsync(1)).ReturnsAsync(portfolio);
-        _externalProvider.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new List<MarketPriceDto> { Price("AAPL", 120), Price("MSFT", 60) });
+        _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 120), Price("MSFT", 60)] });
 
         var result = await CreateService().GetOpenPositionsAsync(1, new PortfolioOpenPositionsFilterDto { Symbol = "AAPL" });
 

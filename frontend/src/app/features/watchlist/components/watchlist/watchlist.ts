@@ -200,7 +200,8 @@ export class Watchlist implements OnInit {
    * @param symbol Símbolo del activo a mostrar en la pantalla de mercado.
    */
   goToMarket(symbol: string): void {
-    this.router.navigate(['/market'], { queryParams: { ticker: symbol } });
+    const normalizedSymbol = symbol.trim().toUpperCase();
+    this.router.navigate(['/market'], { queryParams: { ticker: normalizedSymbol } });
   }
 
   /**
@@ -208,7 +209,8 @@ export class Watchlist implements OnInit {
    * @param symbol Símbolo del activo para el cual crear la alerta.
    */
   goToAlerts(symbol: string): void {
-    this.router.navigate(['/alerts'], { queryParams: { ticker: symbol } });
+    const normalizedSymbol = symbol.trim().toUpperCase();
+    this.router.navigate(['/alerts'], { queryParams: { ticker: normalizedSymbol } });
   }
 
   // ── Acciones sobre favoritos ──
@@ -219,9 +221,16 @@ export class Watchlist implements OnInit {
    * @param symbol Símbolo del activo a eliminar de favoritos.
    */
   removeFromWatchlist(symbol: string): void {
-    this.watchlistService.removeFavorite(symbol).subscribe({
-      next: () => {
-        this.notificationService.success('Favorito eliminado correctamente');
+    const normalizedSymbol = symbol.trim().toUpperCase();
+
+    this.watchlistService.removeFavorite(normalizedSymbol).subscribe({
+      next: response => {
+        if (!response.success) {
+          this.notificationService.error(response.message || 'No se pudo eliminar el favorito');
+          return;
+        }
+
+        this.notificationService.success(response.message || 'Favorito eliminado correctamente');
         this.loadWatchlist();
       },
       error: err => {
@@ -245,8 +254,16 @@ export class Watchlist implements OnInit {
     dialogRef.afterClosed().subscribe(symbol => {
       if (!symbol) return;
 
-      this.watchlistService.addFavorite(symbol).subscribe({
+      const normalizedSymbol = symbol.trim().toUpperCase();
+      if (!normalizedSymbol) return;
+
+      this.watchlistService.addFavorite(normalizedSymbol).subscribe({
         next: res => {
+          if (!res.success) {
+            this.notificationService.error(res.message || 'No se pudo agregar el favorito');
+            return;
+          }
+
           this.notificationService.success(res.message || 'Favorito agregado correctamente');
           this.loadWatchlist();
         },
