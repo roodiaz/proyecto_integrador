@@ -1,268 +1,253 @@
 <div class="landing-page">
 
-    <!-- HEADER -->
+    <!-- TICKER -->
+    <div class="ticker-bar">
+        <div class="ticker-track">
+            @for (item of tickerItems; track item.symbol + '-a') {
+                <span class="ticker-item">
+                    <span class="ticker-symbol">{{ item.symbol }}</span>
+                    <span class="ticker-price">{{ item.price }}</span>
+                    <span class="ticker-change" [class.positive]="item.positive" [class.negative]="!item.positive">
+                        {{ item.change }}
+                    </span>
+                </span>
+            }
+            @for (item of tickerItems; track item.symbol + '-b') {
+                <span class="ticker-item" aria-hidden="true">
+                    <span class="ticker-symbol">{{ item.symbol }}</span>
+                    <span class="ticker-price">{{ item.price }}</span>
+                    <span class="ticker-change" [class.positive]="item.positive" [class.negative]="!item.positive">
+                        {{ item.change }}
+                    </span>
+                </span>
+            }
+        </div>
+    </div>
 
+    <!-- HEADER -->
     <header class="landing-header">
 
         <div class="brand-section">
-
             <img src="img/logo_name_v2.png" alt="InvestLab" class="logo-image">
-
         </div>
 
         <div class="header-actions">
-
-            <a class="login-link" routerLink="/login">
-
-                Ingresar
-
-            </a>
-
-            <a class="register-btn" routerLink="/registro">
-
-                Comenzar ahora
-
-            </a>
-
+            <a class="login-link" routerLink="/login">Ingresar</a>
+            <a class="register-btn" routerLink="/registro">Comenzar ahora</a>
         </div>
 
     </header>
 
     <!-- HERO -->
-
     <section class="hero-section">
 
         <div class="hero-background">
-
             <div class="grid-overlay"></div>
-
             <div class="hero-gradient"></div>
-
+            <div class="glow-orb orb-one"></div>
+            <div class="glow-orb orb-two"></div>
         </div>
 
         <div class="hero-content">
 
             <div class="hero-badge">
-
-                <span class="hero-badge-icon">
-                    ⌁
-                </span>
-
-                <span>
-                    Institutional Grade Simulator
-                </span>
-
+                <span class="hero-badge-icon hero-badge-pulse">⌁</span>
+                <span>Simulación de Inversiones Sin Riesgo</span>
             </div>
 
             <h1 class="hero-title">
-
                 Aprendé a invertir
-
                 <br>
-
-                <span class="highlight">
-                    sin arriesgar dinero real.
-                </span>
-
+                <span class="highlight">sin arriesgar dinero real.</span>
             </h1>
 
             <p class="hero-description">
-
                 Accedé a la terminal de grado institucional de InvestLab.
                 Operá en mercados reales con datos en vivo utilizando nuestro
                 simulador de alta precisión.
-
             </p>
 
             <div class="hero-actions">
-
-                <a class="primary-action" routerLink="/registro">
-
-                    Comenzar ahora →
-
-                </a>
-
-                <a class="secondary-action" routerLink="/contacto">
-
-                    Conocer más
-
-                </a>
-
+                <a class="primary-action" routerLink="/registro">Comenzar ahora →</a>
+                <a class="secondary-action" routerLink="/contacto">Conocer más</a>
             </div>
 
             <!-- STATS -->
-
             <div class="stats-grid">
-
-                <div class="stat-card">
-
-                    <span class="stat-label">
-                        Capital Inicial
-                    </span>
-
-                    <span class="stat-value">
-                        USD 10.000
-                    </span>
-
+                <div class="stat-card reveal">
+                    <span class="stat-label">Capital Virtual</span>
+                    <span class="stat-value">USD 10.000</span>
                 </div>
-
-                <div class="stat-card">
-
-                    <span class="stat-label">
-                        Activos Disponibles
-                    </span>
-
-                    <span class="stat-value">
-                        500+
-                    </span>
-
+                <div class="stat-card reveal">
+                    <span class="stat-label">Sin Riesgo Real</span>
+                    <span class="stat-value">Simulación educativa</span>
                 </div>
-
-                <div class="stat-card">
-
-                    <span class="stat-label">
-                        Alertas Inteligentes
-                    </span>
-
-                    <span class="stat-value">
-                        10
-                    </span>
-
+                <div class="stat-card reveal">
+                    <span class="stat-label">Alertas Configurables</span>
+                    <span class="stat-value">Precio y variación %</span>
                 </div>
-
-                <div class="stat-card">
-
-                    <span class="stat-label">
-                        Datos de Mercado
-                    </span>
-
-                    <span class="stat-value">
-                        Tiempo Real
-                    </span>
-
+                <div class="stat-card reveal">
+                    <span class="stat-label">Portfolio Personal</span>
+                    <span class="stat-value">Evolución y rendimiento</span>
                 </div>
-
             </div>
 
         </div>
 
-        <!-- HERO VISUAL -->
-
+        <!-- HERO VISUAL: terminal + cards flotantes -->
         <div class="hero-preview">
 
-            <div class="preview-card">
-
+            <div class="preview-card hero-preview-float">
                 <div class="preview-header">
-
                     <span class="dot red"></span>
                     <span class="dot yellow"></span>
                     <span class="dot green"></span>
-
                 </div>
-
                 <img src="img/dashboard-preview.png" alt="Dashboard Preview">
+            </div>
 
+            <div class="floating-cards">
+                @for (card of marketCards; track card.symbol) {
+                    <div class="market-card">
+                        <div class="market-card-top">
+                            <span class="market-card-symbol">{{ card.symbol }}</span>
+                            <span class="market-card-change" [class.positive]="card.positive" [class.negative]="!card.positive">
+                                {{ card.change }}
+                            </span>
+                        </div>
+                        <span class="market-card-name">{{ card.name }}</span>
+                        <span class="market-card-price">{{ card.price }}</span>
+                    </div>
+                }
             </div>
 
         </div>
 
     </section>
 
-    <!-- FEATURES -->
+    <!-- QUÉ PODÉS HACER -->
+    <section class="capabilities-section">
 
+        <div class="section-header reveal">
+            <h2>Todo lo que necesitás para empezar a invertir</h2>
+            <p>
+                InvestLab reúne en un solo lugar las herramientas de un inversor profesional,
+                pensadas para que aprendas practicando, sin poner en riesgo tu dinero.
+            </p>
+        </div>
+
+        <div class="capabilities-grid">
+            @for (capability of capabilities; track capability.title) {
+                <div class="capability-card reveal" [class]="'accent-' + capability.accent">
+                    <div class="capability-icon">
+                        <mat-icon>{{ capability.icon }}</mat-icon>
+                    </div>
+                    <h3>{{ capability.title }}</h3>
+                    <p>{{ capability.description }}</p>
+                </div>
+            }
+        </div>
+
+    </section>
+
+    <!-- BENEFICIOS (carrusel) -->
+    <section class="benefits-section">
+
+        <div class="benefits-layout">
+
+            <div class="benefits-copy reveal">
+                <p class="eyebrow">Por qué InvestLab</p>
+                <h2>Una experiencia pensada para que ganes confianza</h2>
+                <p class="benefits-description">
+                    Cada herramienta de la plataforma está diseñada para acercarte
+                    a la dinámica real del mercado financiero, sin la presión de
+                    arriesgar capital propio.
+                </p>
+
+                <div class="benefit-dots">
+                    @for (benefit of benefits; track benefit.title; let i = $index) {
+                        <button
+                            type="button"
+                            class="benefit-dot"
+                            [class.active]="i === activeBenefitIndex"
+                            (click)="selectBenefit(i)"
+                            [attr.aria-label]="'Ver beneficio: ' + benefit.title">
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="benefit-carousel reveal">
+                @for (benefit of benefits; track benefit.title; let i = $index) {
+                    <div class="benefit-slide" [class.active]="i === activeBenefitIndex">
+                        <div class="benefit-icon">
+                            <mat-icon>{{ benefit.icon }}</mat-icon>
+                        </div>
+                        <h3>{{ benefit.title }}</h3>
+                        <p>{{ benefit.description }}</p>
+                    </div>
+                }
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- FEATURES (terminal) -->
     <section class="features-section">
 
-        <div class="section-header">
-
-            <h2>
-                Diseñado para la precisión profesional
-            </h2>
-
+        <div class="section-header reveal">
+            <h2>Diseñado para la precisión profesional</h2>
             <p>
                 Nuestra plataforma no es un juego.
                 Es un entorno de entrenamiento riguroso que utiliza conceptos
                 y herramientas similares a las utilizadas en entornos financieros reales.
             </p>
-
         </div>
 
         <div class="features-layout">
 
             <div class="features-list">
 
-                <div class="feature-item">
-
-                    <div class="feature-icon">
-                        ✓
-                    </div>
-
+                <div class="feature-item reveal">
+                    <div class="feature-icon"><mat-icon>show_chart</mat-icon></div>
                     <div>
-
-                        <h3>
-                            Datos en tiempo real
-                        </h3>
-
+                        <h3>Datos en tiempo real</h3>
                         <p>
                             Visualizá movimientos del mercado actualizados y tomá decisiones
                             basadas en información relevante.
                         </p>
-
                     </div>
-
                 </div>
 
-                <div class="feature-item">
-
-                    <div class="feature-icon">
-                        ✓
-                    </div>
-
+                <div class="feature-item reveal">
+                    <div class="feature-icon"><mat-icon>notifications_active</mat-icon></div>
                     <div>
-
-                        <h3>
-                            Alertas Inteligentes
-                        </h3>
-
+                        <h3>Alertas Inteligentes</h3>
                         <p>
                             Configurá alertas de precio y porcentaje para no perder ninguna
                             oportunidad del mercado.
                         </p>
-
                     </div>
-
                 </div>
 
-                <div class="feature-item">
-
-                    <div class="feature-icon">
-                        ✓
-                    </div>
-
+                <div class="feature-item reveal">
+                    <div class="feature-icon"><mat-icon>account_balance_wallet</mat-icon></div>
                     <div>
-
-                        <h3>
-                            Portafolio Simulado
-                        </h3>
-
+                        <h3>Portafolio Simulado</h3>
                         <p>
                             Administrá inversiones virtuales y analizá tu rendimiento
                             como si estuvieras operando en un entorno real.
                         </p>
-
                     </div>
-
                 </div>
 
             </div>
 
-            <div class="terminal-preview">
-
+            <div class="terminal-preview reveal">
                 <div class="terminal-card">
-
                     <img src="img/terminal-preview.png" alt="InvestLab Terminal">
-
                 </div>
-
             </div>
 
         </div>
@@ -270,60 +255,29 @@
     </section>
 
     <!-- CTA -->
-
     <section class="cta-section">
-
-        <div class="cta-card">
-
-            <h2>
-                Transformá tu aprendizaje financiero
-            </h2>
-
+        <div class="cta-card reveal">
+            <h2>Transformá tu aprendizaje financiero</h2>
             <p>
                 Practicá estrategias, analizá mercados y adquirí experiencia sin
                 arriesgar dinero real.
             </p>
-
-            <a routerLink="/registro" class="cta-button">
-
-                Crear cuenta gratuita
-
-            </a>
-
+            <a routerLink="/registro" class="cta-button">Crear cuenta gratuita</a>
         </div>
-
     </section>
 
     <!-- FOOTER -->
-
     <footer class="landing-footer">
 
         <div class="footer-brand">
-
-            <h3>
-                InvestLab
-            </h3>
-
-            <p>
-                © 2026 InvestLab. Todos los derechos reservados.
-            </p>
-
+            <h3>InvestLab</h3>
+            <p>© 2026 InvestLab. Todos los derechos reservados.</p>
         </div>
 
         <div class="footer-links">
-
-            <a href="#">
-                Privacidad
-            </a>
-
-            <a href="#">
-                Términos
-            </a>
-
-            <a routerLink="/contacto">
-                Soporte
-            </a>
-
+            <a href="#">Privacidad</a>
+            <a href="#">Términos</a>
+            <a routerLink="/contacto">Soporte</a>
         </div>
 
     </footer>
