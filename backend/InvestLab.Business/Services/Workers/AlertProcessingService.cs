@@ -2,6 +2,7 @@
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
+using Microsoft.Extensions.Logging;
 using static InvestLab.Models.Enums;
 
 namespace InvestLab.Business.Services.Workers;
@@ -18,6 +19,7 @@ public class AlertProcessingService : IAlertProcessingService
     private readonly INotificationRepository _notificationRepository;
     private readonly IExternalProvider _externalProvider;
     private readonly IEmailService _emailService;
+    private readonly ILogger<AlertProcessingService> _logger;
 
     /// <summary>
     /// Inicializa una nueva instancia del servicio de procesamiento de alertas.
@@ -28,7 +30,8 @@ public class AlertProcessingService : IAlertProcessingService
     /// <param name="externalProvider">Proveedor externo utilizado para obtener los precios de mercado.</param>
     /// <param name="emailService">Servicio utilizado para el envío de correos electrónicos de notificación.</param>
     /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
-    public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IExternalProvider externalProvider, IEmailService emailService, IUnitOfWork unitOfWork)
+    /// <param name="logger">Registrador de eventos del servicio.</param>
+    public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IExternalProvider externalProvider, IEmailService emailService, IUnitOfWork unitOfWork, ILogger<AlertProcessingService> logger)
     {
         _alertRepository = alertRepository;
         _userSettingRepository = userSettingRepository;
@@ -36,6 +39,7 @@ public class AlertProcessingService : IAlertProcessingService
         _externalProvider = externalProvider;
         _emailService = emailService;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     /// <summary>
