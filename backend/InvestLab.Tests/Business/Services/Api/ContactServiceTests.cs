@@ -1,5 +1,6 @@
+using InvestLab.Integrations.Configuration;
+using InvestLab.Integrations.Interfaces;
 using InvestLab.Models.DTOs.Contact;
-using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -13,16 +14,21 @@ namespace InvestLab.Tests.Business.Services.Api;
 /// </summary>
 public class ContactServiceTests
 {
-    private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<IEmailProvider> _emailProvider = new();
+    private readonly Mock<IEmailProviderResolver> _emailProviderResolver = new();
     private readonly Mock<ILogger<ContactService>> _logger = new();
-    private readonly ContactOptions _options = new() { Email = "soporte@investlab.com" };
+    private readonly EmailOptions _options = new() { Gmail = new GmailOptions { Username = "soporte@investlab.com" } };
 
-    private ContactService CreateService() => new(_emailService.Object, Options.Create(_options), _logger.Object);
+    private ContactService CreateService()
+    {
+        _emailProviderResolver.Setup(x => x.GetProvider()).Returns(_emailProvider.Object);
+        return new(_emailProviderResolver.Object, Options.Create(_options), _logger.Object);
+    }
 
     private static ContactMessageDto Dto(string name = "Juan", string email = "juan@test.com", string? phone = "123", string message = "Hola, tengo una consulta") =>
         new() { Name = name, Email = email, Phone = phone, Message = message };
 
-    /// <summary>Verifica que, con datos válidos, el mensaje se envíe a la dirección de contacto configurada y se devuelva una respuesta exitosa.</summary>
+    /// <summary>Verifica que, con datos válidos, el mensaje se envíe a la cuenta de Gmail configurada y se devuelva una respuesta exitosa.</summary>
     [Fact]
     public async Task SendAsync_WhenDataIsValid_ShouldSendEmailToConfiguredAddressAndReturnSuccessResponse()
     {
@@ -32,14 +38,14 @@ public class ContactServiceTests
 
         Assert.True(result.Success);
         Assert.Equal("Mensaje enviado correctamente", result.Message);
-        _emailService.Verify(e => e.SendAsync(_options.Email, It.Is<string>(s => s.Contains(dto.Name)), It.Is<string>(b => b.Contains(dto.Email) && b.Contains(dto.Message))), Times.Once);
+        _emailProvider.Verify(e => e.SendAsync(_options.Gmail.Username, It.Is<string>(s => s.Contains(dto.Name)), It.Is<string>(b => b.Contains(dto.Email) && b.Contains(dto.Message))), Times.Once);
     }
 
-    /// <summary>Verifica que, ante un error del servicio de email, se registre la excepción y se devuelva una respuesta genérica de error.</summary>
+    /// <summary>Verifica que, ante un error del proveedor de email, se registre la excepción y se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task SendAsync_WhenEmailServiceThrows_ShouldReturnErrorResponse()
     {
-        _emailService.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
+        _emailProvider.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
 
         var result = await CreateService().SendAsync(Dto());
 
@@ -56,6 +62,6 @@ public class ContactServiceTests
         var result = await CreateService().SendAsync(dto);
 
         Assert.True(result.Success);
-        _emailService.Verify(e => e.SendAsync(_options.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _emailProvider.Verify(e => e.SendAsync(_options.Gmail.Username, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 }

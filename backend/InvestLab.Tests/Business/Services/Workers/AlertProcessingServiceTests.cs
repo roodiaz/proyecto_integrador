@@ -22,14 +22,16 @@ public class AlertProcessingServiceTests
     private readonly Mock<INotificationRepository> _notificationRepository = new();
     private readonly Mock<IExternalProvider> _externalProvider = new();
     private readonly Mock<IMarketProviderResolver> _providerResolver = new();
-    private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<IEmailProvider> _emailProvider = new();
+    private readonly Mock<IEmailProviderResolver> _emailProviderResolver = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<ILogger<AlertProcessingService>> _logger = new();
 
     private AlertProcessingService CreateService()
     {
         _providerResolver.Setup(x => x.GetProvider()).Returns(_externalProvider.Object);
-        return new(_alertRepository.Object, _userSettingRepository.Object, _notificationRepository.Object, _providerResolver.Object, _emailService.Object, _unitOfWork.Object, _logger.Object);
+        _emailProviderResolver.Setup(x => x.GetProvider()).Returns(_emailProvider.Object);
+        return new(_alertRepository.Object, _userSettingRepository.Object, _notificationRepository.Object, _providerResolver.Object, _emailProviderResolver.Object, _unitOfWork.Object, _logger.Object);
     }
 
     private static Asset AssetEntity(string symbol = "AAPL") => new() { Id = 1, Symbol = symbol };
@@ -119,7 +121,7 @@ public class AlertProcessingServiceTests
 
         await CreateService().ProcessAlertsAsync();
 
-        _emailService.Verify(e => e.SendAsync(It.IsAny<string>(), "Alerta InvestLab", It.IsAny<string>()), Times.Once);
+        _emailProvider.Verify(e => e.SendAsync(It.IsAny<string>(), "Alerta InvestLab", It.IsAny<string>()), Times.Once);
     }
 
     /// <summary>Verifica que, si el usuario no tiene habilitadas las notificaciones por correo, no se envíe ningún email.</summary>
@@ -132,7 +134,7 @@ public class AlertProcessingServiceTests
 
         await CreateService().ProcessAlertsAsync();
 
-        _emailService.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _emailProvider.Verify(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     /// <summary>Verifica que, si el envío del email de alerta falla, el error se registre sin interrumpir el procesamiento de la alerta.</summary>
@@ -143,7 +145,7 @@ public class AlertProcessingServiceTests
         _alertRepository.Setup(r => r.GetActiveAlertsAsync()).ReturnsAsync(new List<Alert> { alert });
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price(price: 150));
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(emailNotifications: true));
-        _emailService.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
+        _emailProvider.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
 
         var exception = await Record.ExceptionAsync(() => CreateService().ProcessAlertsAsync());
 

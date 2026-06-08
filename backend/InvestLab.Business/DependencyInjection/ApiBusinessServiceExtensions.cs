@@ -22,7 +22,6 @@ public static class ApiBusinessServiceExtensions
         services.AddScoped<IAlertService, AlertService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPortfolioService, PortfolioService>();
         services.AddScoped<IDashboardService, DashboardService>();

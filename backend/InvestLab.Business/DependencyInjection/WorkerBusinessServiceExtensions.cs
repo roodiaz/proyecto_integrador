@@ -20,7 +20,6 @@ public static class WorkerBusinessServiceExtensions
         services.AddScoped<IMarketHistoryCleanupService, MarketHistoryCleanupService>();
         services.AddScoped<IDailySnapshotWorker, DailySnapshotService>();
         services.AddScoped<IAssetService, AssetService>();
-        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IMarketPriceService, MarketPriceService>();
 
         return services;

@@ -1,5 +1,6 @@
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
+using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.Options;
 using Microsoft.AspNetCore.Identity;
@@ -24,11 +25,15 @@ public class AuthServiceTests
     private readonly Mock<IJwtService> _jwtService = new();
     private readonly Mock<IPasswordHasher<User>> _passwordHasher = new();
     private readonly Mock<ILogger<AuthService>> _logger = new();
-    private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<IEmailProvider> _emailProvider = new();
+    private readonly Mock<IEmailProviderResolver> _emailProviderResolver = new();
     private readonly LimitsOptions _limits = new() { InitialBalance = 10000 };
 
-    private AuthService CreateService() =>
-        new(_userRepository.Object, _tempRepository.Object, _refreshTokenRepository.Object, _userSettingRepository.Object, _unitOfWork.Object, _jwtService.Object, _passwordHasher.Object, _logger.Object, _emailService.Object, Options.Create(_limits));
+    private AuthService CreateService()
+    {
+        _emailProviderResolver.Setup(x => x.GetProvider()).Returns(_emailProvider.Object);
+        return new(_userRepository.Object, _tempRepository.Object, _refreshTokenRepository.Object, _userSettingRepository.Object, _unitOfWork.Object, _jwtService.Object, _passwordHasher.Object, _logger.Object, _emailProviderResolver.Object, Options.Create(_limits));
+    }
 
     private static User UserEntity(int id = 1, string email = "user@test.com", bool isActive = true, string passwordHash = "hash") =>
         new() { Id = id, Username = "user", Email = email, PasswordHash = passwordHash, Phone = "123", IsActive = isActive, CreatedAt = DateTime.UtcNow };
@@ -55,7 +60,7 @@ public class AuthServiceTests
 
         Assert.True(result.Success);
         _userRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
-        _emailService.Verify(e => e.SendAsync("new@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _emailProvider.Verify(e => e.SendAsync("new@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
@@ -95,7 +100,7 @@ public class AuthServiceTests
 
         Assert.True(result.Success);
         _userRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
-        _emailService.Verify(e => e.SendAsync(existing.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _emailProvider.Verify(e => e.SendAsync(existing.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     /// <summary>Verifica el caso borde donde el envío del correo de verificación falla: la cuenta debe crearse igual y la respuesta seguir siendo exitosa con <c>emailSent = false</c>.</summary>
@@ -104,7 +109,7 @@ public class AuthServiceTests
     {
         _userRepository.Setup(r => r.GetByEmailAsync("new@test.com")).ReturnsAsync((User?)null);
         _passwordHasher.Setup(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashed");
-        _emailService.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
+        _emailProvider.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
 
         var result = await CreateService().RegisterAsync(RegisterDtoOf());
 
@@ -255,7 +260,7 @@ public class AuthServiceTests
         var result = await CreateService().ResendCodeAsync(new ResendCodeDto { Email = user.Email });
 
         Assert.True(result.Success);
-        _emailService.Verify(e => e.SendAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _emailProvider.Verify(e => e.SendAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
     }
 
     /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta de error.</summary>

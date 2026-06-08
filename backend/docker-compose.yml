@@ -37,8 +37,12 @@ x-common-environment: &common-environment
   # EMAIL
   # ===============================
   Email__Provider: ${Email__Provider}
-  Email__ApiKey: ${Email__ApiKey}
-  Email__From: ${Email__From}
+  Email__Gmail__Host: ${Email__Gmail__Host}
+  Email__Gmail__Port: ${Email__Gmail__Port}
+  Email__Gmail__Username: ${Email__Gmail__Username}
+  Email__Gmail__Password: ${Email__Gmail__Password}
+  Email__Resend__ApiKey: ${Email__Resend__ApiKey}
+  Email__Resend__From: ${Email__Resend__From}
 
 x-common-service: &common-service
   restart: always

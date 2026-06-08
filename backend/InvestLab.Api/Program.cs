@@ -5,7 +5,6 @@ using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.Options;
 using InvestLab.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Resend;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,15 +22,9 @@ builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddCustomHealthChecks(builder.Configuration);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddExternalProviders(builder.Configuration);
+builder.Services.AddEmailProviders(builder.Configuration);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
-builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
-builder.Services.Configure<ContactOptions>(builder.Configuration.GetSection("Contact"));
-builder.Services.AddResend(options =>
-{
-    options.ApiToken = builder.Configuration["Email:ApiKey"]!;
-});
-
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<MarketPriceRefreshWorker>();

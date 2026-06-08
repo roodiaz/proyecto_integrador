@@ -1,6 +1,7 @@
 ﻿using InvestLab.Data;
 using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
+using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.Options;
 using Microsoft.AspNetCore.Identity;
@@ -15,7 +16,7 @@ public class AuthService : IAuthService
     private readonly IJwtService _jwtService;
     private readonly IPasswordHasher<InvestLab.Data.User> _passwordHasher;
     private readonly ILogger<AuthService> _logger;
-    private readonly IEmailService _emailService;
+    private readonly IEmailProviderResolver _emailProviderResolver;
     private readonly IUserRepository _userRepository;
     private readonly IUserTempCredentialRepository _tempRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -33,9 +34,9 @@ public class AuthService : IAuthService
     /// <param name="jwtService">Servicio para la generación de tokens JWT.</param>
     /// <param name="passwordHasher">Servicio de hash y verificación de contraseñas.</param>
     /// <param name="logger">Logger para el registro de eventos del servicio.</param>
-    /// <param name="emailService">Servicio para el envío de correos electrónicos.</param>
+    /// <param name="emailProviderResolver">Resolver utilizado para obtener el proveedor de envío de correos electrónicos activo.</param>
     /// <param name="limitsOptions">Opciones de configuración de límites de la aplicación.</param>
-    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailService emailService, IOptions<LimitsOptions> limitsOptions)
+    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailProviderResolver emailProviderResolver, IOptions<LimitsOptions> limitsOptions)
     {
         _userRepository = userRepository;
         _tempRepository = tempRepository;
@@ -45,7 +46,7 @@ public class AuthService : IAuthService
         _jwtService = jwtService;
         _passwordHasher = passwordHasher;
         _logger = logger;
-        _emailService = emailService;
+        _emailProviderResolver = emailProviderResolver;
         _limits = limitsOptions.Value;
     }
 
@@ -124,7 +125,7 @@ public class AuthService : IAuthService
 
             try
             {
-                await _emailService.SendAsync(
+                await _emailProviderResolver.GetProvider().SendAsync(
                    user.Email,
                    "Verificación de cuenta",
                    EmailTemplates.VerificationCode(code)
@@ -425,7 +426,7 @@ public class AuthService : IAuthService
 
         try
         {
-            await _emailService.SendAsync(
+            await _emailProviderResolver.GetProvider().SendAsync(
                 user.Email,
                 "Verificación de cuenta",
                 EmailTemplates.VerificationCode(code)

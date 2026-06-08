@@ -1,34 +1,35 @@
-﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Interfaces.Api;
+using InvestLab.Integrations.Configuration;
+using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Contact;
-using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 public class ContactService : IContactService
 {
-    private readonly IEmailService _emailService;
-    private readonly ContactOptions _contactOptions;
+    private readonly IEmailProviderResolver _emailProviderResolver;
+    private readonly EmailOptions _emailOptions;
     private readonly ILogger<ContactService> _logger;
 
     /// <summary>
     /// Inicializa una nueva instancia del servicio de contacto con sus dependencias.
     /// </summary>
-    /// <param name="emailService">Servicio utilizado para el envío de correos electrónicos.</param>
-    /// <param name="contactOptions">Opciones de configuración de contacto, incluyendo la dirección de email destino.</param>
+    /// <param name="emailProviderResolver">Resolver utilizado para obtener el proveedor de envío de correos electrónicos activo.</param>
+    /// <param name="emailOptions">Opciones de configuración de correo electrónico, utilizadas para determinar la cuenta destino del formulario de contacto.</param>
     /// <param name="logger">Registrador de eventos para el servicio de contacto.</param>
     public ContactService(
-        IEmailService emailService,
-        IOptions<ContactOptions> contactOptions,
+        IEmailProviderResolver emailProviderResolver,
+        IOptions<EmailOptions> emailOptions,
         ILogger<ContactService> logger)
     {
-        _emailService = emailService;
-        _contactOptions = contactOptions.Value;
+        _emailProviderResolver = emailProviderResolver;
+        _emailOptions = emailOptions.Value;
         _logger = logger;
     }
 
     /// <summary>
-    /// Envía un mensaje de contacto por correo electrónico a la dirección configurada del sistema.
+    /// Envía un mensaje de contacto por correo electrónico a la cuenta de correo configurada del sistema.
     /// </summary>
     /// <param name="dto">Datos del mensaje de contacto, incluyendo nombre, email, teléfono y mensaje del remitente.</param>
     /// <returns>Una respuesta indicando si el mensaje fue enviado correctamente o si ocurrió un error interno.</returns>
@@ -36,7 +37,7 @@ public class ContactService : IContactService
     {
         try
         {
-            await _emailService.SendAsync(_contactOptions.Email,
+            await _emailProviderResolver.GetProvider().SendAsync(_emailOptions.Gmail.Username,
                 $"Nuevo mensaje de contacto - {dto.Name}",
                 $"""
                     <h2>Nuevo mensaje de contacto</h2>

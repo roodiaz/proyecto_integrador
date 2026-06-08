@@ -18,7 +18,7 @@ public class AlertProcessingService : IAlertProcessingService
     private readonly IUserSettingRepository _userSettingRepository;
     private readonly INotificationRepository _notificationRepository;
     private readonly IMarketProviderResolver _providerResolver;
-    private readonly IEmailService _emailService;
+    private readonly IEmailProviderResolver _emailProviderResolver;
     private readonly ILogger<AlertProcessingService> _logger;
 
     /// <summary>
@@ -28,16 +28,16 @@ public class AlertProcessingService : IAlertProcessingService
     /// <param name="userSettingRepository">Repositorio utilizado para obtener la configuración del usuario.</param>
     /// <param name="notificationRepository">Repositorio utilizado para registrar las notificaciones generadas.</param>
     /// <param name="externalProvider">Proveedor externo utilizado para obtener los precios de mercado.</param>
-    /// <param name="emailService">Servicio utilizado para el envío de correos electrónicos de notificación.</param>
+    /// <param name="emailProviderResolver">Resolver utilizado para obtener el proveedor de envío de correos electrónicos de notificación.</param>
     /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
     /// <param name="logger">Registrador de eventos del servicio.</param>
-    public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IMarketProviderResolver providerResolver, IEmailService emailService, IUnitOfWork unitOfWork, ILogger<AlertProcessingService> logger)
+    public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IMarketProviderResolver providerResolver, IEmailProviderResolver emailProviderResolver, IUnitOfWork unitOfWork, ILogger<AlertProcessingService> logger)
     {
         _alertRepository = alertRepository;
         _userSettingRepository = userSettingRepository;
         _notificationRepository = notificationRepository;
         _providerResolver = providerResolver;
-        _emailService = emailService;
+        _emailProviderResolver = emailProviderResolver;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -91,7 +91,7 @@ public class AlertProcessingService : IAlertProcessingService
                 {
                     try
                     {
-                        await _emailService.SendAsync("mail@test.com", "Alerta InvestLab", notification.Message);
+                        await _emailProviderResolver.GetProvider().SendAsync("mail@test.com", "Alerta InvestLab", notification.Message);
                     }
                     catch (Exception ex)
                     {

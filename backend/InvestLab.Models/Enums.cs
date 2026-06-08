@@ -32,5 +32,11 @@ namespace InvestLab.Models
             Yahoo = 1,
             EodHistoricalData = 2
         }
+
+        public enum EmailProviderType
+        {
+            Gmail = 1,
+            Resend = 2
+        }
     }
 }
