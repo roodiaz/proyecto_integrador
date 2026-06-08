@@ -36,6 +36,14 @@ public partial class Transaction
     [Precision(18, 2)]
     public decimal Total { get; set; }
 
+    [Column("balance_before")]
+    [Precision(18, 2)]
+    public decimal BalanceBefore { get; set; }
+
+    [Column("balance_after")]
+    [Precision(18, 2)]
+    public decimal BalanceAfter { get; set; }
+
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
 

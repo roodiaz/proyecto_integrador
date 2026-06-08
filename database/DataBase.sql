@@ -87,6 +87,8 @@ CREATE TABLE transactions (
     quantity DECIMAL(18,6) NOT NULL,
     price DECIMAL(18,4) NOT NULL,
     total DECIMAL(18,2) NOT NULL,
+    balance_before DECIMAL(18,2) NOT NULL DEFAULT 0,
+    balance_after  DECIMAL(18,2) NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users(id),

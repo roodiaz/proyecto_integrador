@@ -164,7 +164,11 @@ public class PortfolioServiceTests
         Assert.Equal(250, user.Balance);
         Assert.Equal(1, settings.OperationsUsedToday);
         _portfolioRepository.Verify(r => r.InsertAsync(It.Is<Portfolio>(p => p.Quantity == 5 && p.AvgPrice == 150)), Times.Once);
-        _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t => t.Type == TransactionType.Buy && t.Total == 750)), Times.Once);
+        _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
+            t.Type == TransactionType.Buy &&
+            t.Total == 750 &&
+            t.BalanceBefore == 1000 &&
+            t.BalanceAfter == 250)), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
@@ -315,7 +319,11 @@ public class PortfolioServiceTests
         Assert.Equal(1, settings.OperationsUsedToday);
         _portfolioRepository.Verify(r => r.DeleteAsync(portfolio), Times.Once);
         _portfolioRepository.Verify(r => r.UpdateAsync(It.IsAny<Portfolio>()), Times.Never);
-        _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t => t.Type == TransactionType.Sell && t.Total == 750)), Times.Once);
+        _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
+            t.Type == TransactionType.Sell &&
+            t.Total == 750 &&
+            t.BalanceBefore == 0 &&
+            t.BalanceAfter == 750)), Times.Once);
     }
 
     /// <summary>Verifica que, con datos válidos y vendiendo una parte de la posición, se actualice la cantidad restante en el portfolio en lugar de eliminarla.</summary>
@@ -337,6 +345,51 @@ public class PortfolioServiceTests
         Assert.Equal(6, portfolio.Quantity);
         _portfolioRepository.Verify(r => r.UpdateAsync(portfolio), Times.Once);
         _portfolioRepository.Verify(r => r.DeleteAsync(It.IsAny<Portfolio>()), Times.Never);
+    }
+
+    // ---------- Balance audit (BalanceBefore / BalanceAfter) ----------
+
+    /// <summary>Verifica que la transacción de compra registre correctamente el balance previo y posterior a la operación.</summary>
+    [Fact]
+    public async Task BuyAsync_WhenPurchaseIsSuccessful_ShouldRecordBalanceBeforeAndAfterInTransaction()
+    {
+        var user = UserEntity(balance: 10000);
+        var asset = AssetEntity();
+
+        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
+        _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync(asset);
+        _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 122.936m));
+        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync((Portfolio?)null);
+
+        // Qty=5, Price=122.936 → Total=614.68
+        await CreateService().BuyAsync(1, BuyDto(quantity: 5));
+
+        _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
+            t.BalanceBefore == 10000m &&
+            t.BalanceAfter  == 10000m - (5 * 122.936m))), Times.Once);
+    }
+
+    /// <summary>Verifica que la transacción de venta registre correctamente el balance previo y posterior a la operación.</summary>
+    [Fact]
+    public async Task SellAsync_WhenSaleIsSuccessful_ShouldRecordBalanceBeforeAndAfterInTransaction()
+    {
+        var user = UserEntity(balance: 9385.32m);
+        var asset = AssetEntity();
+        var portfolio = PortfolioEntity(asset, quantity: 5, avgPrice: 122.936m);
+
+        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
+        _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
+        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 160m));
+
+        // Qty=5, Price=160 → Total=800
+        await CreateService().SellAsync(1, SellDto(quantity: 5));
+
+        _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
+            t.BalanceBefore == 9385.32m &&
+            t.BalanceAfter  == 9385.32m + 800m)), Times.Once);
     }
 
     // ---------- GetPositionForSellAsync ----------

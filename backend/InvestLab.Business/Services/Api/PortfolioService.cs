@@ -140,6 +140,9 @@ public class PortfolioService : IPortfolioService
                 await _portfolioRepository.UpdateAsync(portfolio);
             }
 
+            var balanceBefore = user.Balance;
+            user.Balance -= total;
+
             var transaction = new Transaction
             {
                 UserId = userId,
@@ -148,12 +151,12 @@ public class PortfolioService : IPortfolioService
                 Quantity = dto.Quantity,
                 Price = market.Price,
                 Total = total,
+                BalanceBefore = balanceBefore,
+                BalanceAfter = user.Balance,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _transactionRepository.InsertAsync(transaction);
-
-            user.Balance -= total;
             settings.OperationsUsedToday++;
 
             await _unitOfWork.SaveChangesAsync();
@@ -233,6 +236,9 @@ public class PortfolioService : IPortfolioService
             else
                 await _portfolioRepository.UpdateAsync(portfolio);
 
+            var balanceBefore = user.Balance;
+            user.Balance += total;
+
             var transaction = new Transaction
             {
                 UserId = userId,
@@ -241,12 +247,12 @@ public class PortfolioService : IPortfolioService
                 Quantity = dto.Quantity,
                 Price = market.Price,
                 Total = total,
+                BalanceBefore = balanceBefore,
+                BalanceAfter = user.Balance,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _transactionRepository.InsertAsync(transaction);
-
-            user.Balance += total;
             settings.OperationsUsedToday++;
 
             await _unitOfWork.SaveChangesAsync();

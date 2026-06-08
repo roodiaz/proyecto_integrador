@@ -24,7 +24,7 @@ namespace InvestLab.Workers
         /// <summary>
         /// Ejecuta el ciclo principal del worker, realizando una actualización inicial
         /// del cache de precios de mercado y luego repitiendo la actualización cada
-        /// 60 segundos mediante un temporizador periódico, hasta que se solicite la cancelación.
+        /// N segundos mediante un temporizador periódico, hasta que se solicite la cancelación.
         /// </summary>
         /// <param name="stoppingToken">Token utilizado para señalar la cancelación de la ejecución del worker.</param>
         /// <returns>Una tarea que representa la ejecución asincrónica continua del worker.</returns>
