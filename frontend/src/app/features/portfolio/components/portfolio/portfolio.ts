@@ -61,9 +61,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   totalPositions: number = 0;
   emptyHoldingRows: number[] = [];
   symbolFilter: string = '';
-  positionStatusFilter: string = '';
-  sortBy: string = 'profitLoss';
-  sortDirection: string = 'desc';
+  sortField: string | null = null;
+  sortDirection: 'asc' | 'desc' | null = null;
   positionsPage: number = 1;
   positionsPageSize: number = 5;
 
@@ -79,7 +78,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   operationsPageSize: number = 10;
 
   // ── Estado de la interfaz ──
-  showHoldingsFilters = false;
   showOperationsFilters = false;
 
   // ── Gráficos ──
@@ -240,6 +238,35 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.loadPositions();
   }
 
+  /**
+   * Alterna el ordenamiento de la tabla de tenencias al hacer click en un encabezado de columna.
+   * Ciclo: sin orden → ascendente → descendente → sin orden.
+   * @param field Campo por el cual ordenar (debe coincidir con el nombre esperado por el backend).
+   */
+  onSortPositions(field: string): void {
+    if (this.sortField !== field) {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    } else if (this.sortDirection === 'asc') {
+      this.sortDirection = 'desc';
+    } else {
+      this.sortField = null;
+      this.sortDirection = null;
+    }
+
+    this.positionsPage = 1;
+    this.loadPositions();
+  }
+
+  /**
+   * Devuelve el ícono que representa el estado de ordenamiento de una columna de tenencias.
+   * @param field Campo de la columna a consultar.
+   */
+  getSortIcon(field: string): string {
+    if (this.sortField !== field) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
   /** Reinicia la paginación de operaciones a la primera página y recarga la tabla con los filtros actuales. */
   onOperationFiltersChange(): void {
     this.operationsPage = 1;
@@ -373,9 +400,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       page: this.positionsPage,
       pageSize: this.positionsPageSize,
       symbol: this.symbolFilter,
-      status: this.positionStatusFilter,
-      sortBy: this.sortBy,
-      sortDirection: this.sortDirection,
+      sortBy: this.sortField ?? undefined,
+      sortDirection: this.sortDirection ?? undefined,
     };
 
     this.portfolioService.getOpenPositions(filter)

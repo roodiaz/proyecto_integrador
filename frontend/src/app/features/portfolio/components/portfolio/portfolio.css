@@ -597,6 +597,39 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.th-sortable:hover {
+  color: var(--accent-primary);
+}
+
+.sort-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: 4px;
+  color: var(--text-secondary);
+  opacity: 0.85;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.th-sortable:hover .sort-icon {
+  color: var(--accent-primary);
+  opacity: 1;
+}
+
+.th-sortable.sort-active .sort-icon {
+  color: var(--accent-primary);
+  opacity: 1;
+}
+
 .shared-table td {
   padding: 14px 16px;
   color: var(--text-primary);

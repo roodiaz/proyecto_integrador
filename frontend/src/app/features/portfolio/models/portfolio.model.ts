@@ -44,7 +44,6 @@ export interface OpenPositionsFilter {
   page: number;
   pageSize: number;
   symbol?: string;
-  status?: string;
   sortBy?: string;
   sortDirection?: string;
 }

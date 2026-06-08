@@ -217,43 +217,8 @@
             <input type="text" class="search-input" placeholder="Buscar ticker..." [(ngModel)]="symbolFilter"
               (ngModelChange)="onPositionFiltersChange()">
           </div>
-          <button class="btn-filter" (click)="showHoldingsFilters = !showHoldingsFilters">
-            <mat-icon>tune</mat-icon>
-            Filtrar
-            <mat-icon class="chevron" [class.open]="showHoldingsFilters">expand_more</mat-icon>
-          </button>
         </div>
       </div>
-
-      @if (showHoldingsFilters) {
-        <div class="advanced-filters">
-          <div class="filter-group">
-            <label class="filter-label">Estado</label>
-            <select class="filter-select" [(ngModel)]="positionStatusFilter" (ngModelChange)="onPositionFiltersChange()">
-              <option value="">Todas</option>
-              <option value="gain">Con ganancia</option>
-              <option value="loss">Con pérdida</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label class="filter-label">Ordenar por</label>
-            <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="onPositionFiltersChange()">
-              <option value="symbol">Ticker</option>
-              <option value="quantity">Cantidad</option>
-              <option value="currentValue">Valor Actual</option>
-              <option value="variation">Variación %</option>
-              <option value="profitLoss">Ganancia/Pérdida</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label class="filter-label">Dirección</label>
-            <select class="filter-select" [(ngModel)]="sortDirection" (ngModelChange)="onPositionFiltersChange()">
-              <option value="asc">Ascendente</option>
-              <option value="desc">Descendente</option>
-            </select>
-          </div>
-        </div>
-      }
 
       @if (loadingPositions) {
         <div class="portfolio-table-skeleton">
@@ -267,45 +232,45 @@
         <table class="shared-table">
           <thead>
             <tr>
-              <th style="width:11%">
+              <th style="width:11%" class="th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSortPositions('symbol')">
                 <div class="th-with-help">
-                  <span>Ticker</span>
+                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>Ticker</span>
                   <app-info-tooltip text="El símbolo único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
                 </div>
               </th>
-              <th style="width:13%">
+              <th style="width:13%" class="th-sortable" [class.sort-active]="sortField === 'sector'" (click)="onSortPositions('sector')">
                 <div class="th-with-help">
-                  <span>Sector</span>
+                  <span class="sort-icon">{{ getSortIcon('sector') }}</span><span>Sector</span>
                   <app-info-tooltip text="El sector de la economía al que pertenece la empresa, como tecnología, energía o finanzas." />
                 </div>
               </th>
-              <th style="width:9%">
+              <th style="width:9%" class="th-sortable" [class.sort-active]="sortField === 'quantity'" (click)="onSortPositions('quantity')">
                 <div class="th-with-help">
-                  <span>Cantidad</span>
+                  <span class="sort-icon">{{ getSortIcon('quantity') }}</span><span>Cantidad</span>
                   <app-info-tooltip text="El número de acciones que tenés de este activo en tu portfolio simulado." />
                 </div>
               </th>
-              <th style="width:14%">
+              <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'averagePrice'" (click)="onSortPositions('averagePrice')">
                 <div class="th-with-help">
-                  <span>Precio Compra</span>
+                  <span class="sort-icon">{{ getSortIcon('averagePrice') }}</span><span>Precio Compra</span>
                   <app-info-tooltip text="El precio promedio al que compraste las acciones de este activo." />
                 </div>
               </th>
-              <th style="width:14%">
+              <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'currentPrice'" (click)="onSortPositions('currentPrice')">
                 <div class="th-with-help">
-                  <span>Precio Actual</span>
+                  <span class="sort-icon">{{ getSortIcon('currentPrice') }}</span><span>Precio Actual</span>
                   <app-info-tooltip text="El precio de mercado actual de este activo, actualizado en tiempo real." />
                 </div>
               </th>
-              <th style="width:12%">
+              <th style="width:12%" class="th-sortable" [class.sort-active]="sortField === 'variationPercent'" (click)="onSortPositions('variationPercent')">
                 <div class="th-with-help">
-                  <span>Variación</span>
+                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>Variación</span>
                   <app-info-tooltip text="El porcentaje de cambio entre el precio de compra y el precio actual. Si es positivo, el activo subió de valor desde que lo compraste." />
                 </div>
               </th>
-              <th style="width:18%">
+              <th style="width:18%" class="th-sortable" [class.sort-active]="sortField === 'profitLoss'" (click)="onSortPositions('profitLoss')">
                 <div class="th-with-help">
-                  <span>Ganancia/Pérdida</span>
+                  <span class="sort-icon">{{ getSortIcon('profitLoss') }}</span><span>Ganancia/Pérdida</span>
                   <app-info-tooltip text="La diferencia en dinero entre lo que pagaste y lo que vale ahora. Un número positivo es ganancia, negativo es pérdida." />
                 </div>
               </th>
@@ -318,7 +283,7 @@
             </tr>
           </thead>
           <tbody>
-            @if (positions.length === 0 && !symbolFilter && !positionStatusFilter) {
+            @if (positions.length === 0 && !symbolFilter) {
               <tr>
                 <td class="td-empty" colspan="8">
                   <div class="empty-state">

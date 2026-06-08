@@ -534,22 +534,21 @@ public class PortfolioService : IPortfolioService
                     .ToList();
             }
 
-            if (filter.Status == "gain")
-                positions = positions.Where(x => x.ProfitLoss > 0).ToList();
-            else if (filter.Status == "loss")
-                positions = positions.Where(x => x.ProfitLoss < 0).ToList();
-
             var desc = string.Equals(filter.SortDirection, "desc", StringComparison.OrdinalIgnoreCase);
 
             positions = filter.SortBy switch
             {
                 "symbol" => desc ? positions.OrderByDescending(x => x.Symbol).ToList() : positions.OrderBy(x => x.Symbol).ToList(),
 
+                "sector" => desc ? positions.OrderByDescending(x => x.Sector).ToList() : positions.OrderBy(x => x.Sector).ToList(),
+
                 "quantity" => desc ? positions.OrderByDescending(x => x.Quantity).ToList() : positions.OrderBy(x => x.Quantity).ToList(),
 
-                "currentValue" => desc ? positions.OrderByDescending(x => x.CurrentPrice * x.Quantity).ToList() : positions.OrderBy(x => x.CurrentPrice * x.Quantity).ToList(),
+                "averagePrice" => desc ? positions.OrderByDescending(x => x.AveragePrice).ToList() : positions.OrderBy(x => x.AveragePrice).ToList(),
 
-                "variation" => desc ? positions.OrderByDescending(x => x.VariationPercent).ToList() : positions.OrderBy(x => x.VariationPercent).ToList(),
+                "currentPrice" => desc ? positions.OrderByDescending(x => x.CurrentPrice).ToList() : positions.OrderBy(x => x.CurrentPrice).ToList(),
+
+                "variationPercent" => desc ? positions.OrderByDescending(x => x.VariationPercent).ToList() : positions.OrderBy(x => x.VariationPercent).ToList(),
 
                 "profitLoss" => desc ? positions.OrderByDescending(x => x.ProfitLoss).ToList() : positions.OrderBy(x => x.ProfitLoss).ToList(),
 
