@@ -220,7 +220,7 @@
         </div>
       </div>
 
-      @if (loadingPositions) {
+      @if (loadingPositions && positions.length === 0) {
         <div class="portfolio-table-skeleton">
           <div class="skeleton skeleton-list-item"></div>
           <div class="skeleton skeleton-list-item"></div>
@@ -229,7 +229,7 @@
           <div class="skeleton skeleton-list-item"></div>
         </div>
       } @else {
-        <table class="shared-table">
+        <table class="shared-table" [class.table-loading]="loadingPositions">
           <thead>
             <tr>
               <th style="width:11%" class="th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSortPositions('symbol')">
@@ -401,27 +401,17 @@
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">Período</label>
-            <select class="filter-select" [(ngModel)]="operationDaysFilter" (change)="onOperationFiltersChange()">
-              <option [ngValue]="null">Todo</option>
-              <option [ngValue]="7">Últimos 7 días</option>
-              <option [ngValue]="30">Últimos 30 días</option>
-              <option [ngValue]="90">Últimos 90 días</option>
-              <option [ngValue]="365">Último año</option>
-            </select>
+            <label class="filter-label">Desde</label>
+            <input type="date" class="filter-date" [(ngModel)]="operationFromDate" (ngModelChange)="onOperationFiltersChange()">
           </div>
           <div class="filter-group">
-            <label class="filter-label">Ordenar por</label>
-            <select class="filter-select" [(ngModel)]="operationOrderBy" (input)="onOperationFiltersChange()">
-              <option value="date">Fecha</option>
-              <option value="symbol">Ticker</option>
-              <option value="amount">Monto</option>
-            </select>
+            <label class="filter-label">Hasta</label>
+            <input type="date" class="filter-date" [(ngModel)]="operationToDate" (ngModelChange)="onOperationFiltersChange()">
           </div>
         </div>
       }
 
-      @if (loadingOperations) {
+      @if (loadingOperations && operations.length === 0) {
         <div class="portfolio-table-skeleton">
           <div class="skeleton skeleton-list-item"></div>
           <div class="skeleton skeleton-list-item"></div>
@@ -430,24 +420,24 @@
           <div class="skeleton skeleton-list-item"></div>
         </div>
       } @else {
-        <table class="shared-table">
+        <table class="shared-table" [class.table-loading]="loadingOperations">
           <thead>
             <tr>
-              <th style="width:18%">
+              <th style="width:18%" class="th-sortable" [class.sort-active]="operationSortField === 'date'" (click)="onSortOperations('date')">
                 <div class="th-with-help">
-                  <span>Fecha</span>
+                  <span class="sort-icon">{{ getOperationSortIcon('date') }}</span><span>Fecha</span>
                   <app-info-tooltip text="La fecha y hora exacta en que se realizó la operación de compra o venta." />
                 </div>
               </th>
-              <th style="width:12%">
+              <th style="width:12%" class="th-sortable" [class.sort-active]="operationSortField === 'symbol'" (click)="onSortOperations('symbol')">
                 <div class="th-with-help">
-                  <span>Ticker</span>
+                  <span class="sort-icon">{{ getOperationSortIcon('symbol') }}</span><span>Ticker</span>
                   <app-info-tooltip text="El símbolo de la acción operada. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
                 </div>
               </th>
-              <th style="width:13%">
+              <th style="width:13%" class="th-sortable" [class.sort-active]="operationSortField === 'sector'" (click)="onSortOperations('sector')">
                 <div class="th-with-help">
-                  <span>Sector</span>
+                  <span class="sort-icon">{{ getOperationSortIcon('sector') }}</span><span>Sector</span>
                   <app-info-tooltip text="El sector de la economía al que pertenece la empresa, como tecnología, energía o finanzas." />
                 </div>
               </th>
@@ -457,28 +447,28 @@
                   <app-info-tooltip text="Indica si fue una compra (adquiriste acciones) o una venta (las vendiste)." />
                 </div>
               </th>
-              <th style="width:10%">
+              <th style="width:10%" class="th-sortable" [class.sort-active]="operationSortField === 'quantity'" (click)="onSortOperations('quantity')">
                 <div class="th-with-help">
-                  <span>Cantidad</span>
+                  <span class="sort-icon">{{ getOperationSortIcon('quantity') }}</span><span>Cantidad</span>
                   <app-info-tooltip text="El número de acciones que compraste o vendiste en esa operación." />
                 </div>
               </th>
-              <th style="width:16%">
+              <th style="width:16%" class="th-sortable" [class.sort-active]="operationSortField === 'price'" (click)="onSortOperations('price')">
                 <div class="th-with-help">
-                  <span>Precio</span>
+                  <span class="sort-icon">{{ getOperationSortIcon('price') }}</span><span>Precio</span>
                   <app-info-tooltip text="El precio por acción al momento de realizar la operación." />
                 </div>
               </th>
-              <th style="width:20%">
+              <th style="width:20%" class="th-sortable" [class.sort-active]="operationSortField === 'total'" (click)="onSortOperations('total')">
                 <div class="th-with-help">
-                  <span>Total</span>
+                  <span class="sort-icon">{{ getOperationSortIcon('total') }}</span><span>Total</span>
                   <app-info-tooltip text="El monto total de la operación: precio de la acción multiplicado por la cantidad comprada o vendida." />
                 </div>
               </th>
             </tr>
           </thead>
           <tbody>
-            @if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null && operationDaysFilter === null) {
+            @if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null && !operationFromDate && !operationToDate) {
               <tr>
                 <td class="td-empty" colspan="7">
                   <div class="empty-state">

@@ -575,11 +575,31 @@
   color: var(--text-primary);
 }
 
+.filter-date {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.filter-date:focus { border-color: var(--accent-primary); }
+
 /* ─── Shared Table ───────────────────────────────────────────────────────────── */
 .shared-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+}
+
+.shared-table.table-loading tbody {
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
 }
 
 .shared-table thead {

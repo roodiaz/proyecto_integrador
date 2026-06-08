@@ -58,8 +58,10 @@ export interface TransactionFilter {
   pageSize: number;
   symbol?: string;
   type?: number | null;
-  days?: number | null;
-  orderBy?: string;
+  fromDate?: string;
+  toDate?: string;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 export interface PortfolioTransaction {

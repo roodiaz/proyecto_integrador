@@ -1,3 +1,4 @@
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
@@ -27,12 +28,13 @@ public class AuthServiceTests
     private readonly Mock<ILogger<AuthService>> _logger = new();
     private readonly Mock<IEmailProvider> _emailProvider = new();
     private readonly Mock<IEmailProviderResolver> _emailProviderResolver = new();
+    private readonly Mock<IVerificationCodeService> _verificationCodeService = new();
     private readonly LimitsOptions _limits = new() { InitialBalance = 10000 };
 
     private AuthService CreateService()
     {
         _emailProviderResolver.Setup(x => x.GetProvider()).Returns(_emailProvider.Object);
-        return new(_userRepository.Object, _tempRepository.Object, _refreshTokenRepository.Object, _userSettingRepository.Object, _unitOfWork.Object, _jwtService.Object, _passwordHasher.Object, _logger.Object, _emailProviderResolver.Object, Options.Create(_limits));
+        return new(_userRepository.Object, _tempRepository.Object, _refreshTokenRepository.Object, _userSettingRepository.Object, _unitOfWork.Object, _jwtService.Object, _passwordHasher.Object, _logger.Object, _emailProviderResolver.Object, _verificationCodeService.Object, Options.Create(_limits));
     }
 
     private static User UserEntity(int id = 1, string email = "user@test.com", bool isActive = true, string passwordHash = "hash") =>

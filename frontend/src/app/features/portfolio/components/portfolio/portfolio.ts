@@ -72,8 +72,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   emptyOperationRows: number[] = [];
   operationSymbolFilter: string = '';
   operationTypeFilter: number | null = null;
-  operationDaysFilter: number | null = null;
-  operationOrderBy: string = 'date';
+  operationFromDate: string = '';
+  operationToDate: string = '';
+  operationSortField: string | null = null;
+  operationSortDirection: 'asc' | 'desc' | null = null;
   operationsPage: number = 1;
   operationsPageSize: number = 10;
 
@@ -274,6 +276,35 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
+   * Alterna el ordenamiento de la tabla de operaciones al hacer click en un encabezado de columna.
+   * Ciclo: sin orden → ascendente → descendente → sin orden.
+   * @param field Campo por el cual ordenar (debe coincidir con el nombre esperado por el backend).
+   */
+  onSortOperations(field: string): void {
+    if (this.operationSortField !== field) {
+      this.operationSortField = field;
+      this.operationSortDirection = 'asc';
+    } else if (this.operationSortDirection === 'asc') {
+      this.operationSortDirection = 'desc';
+    } else {
+      this.operationSortField = null;
+      this.operationSortDirection = null;
+    }
+
+    this.operationsPage = 1;
+    this.loadOperations();
+  }
+
+  /**
+   * Devuelve el ícono que representa el estado de ordenamiento de una columna de operaciones.
+   * @param field Campo de la columna a consultar.
+   */
+  getOperationSortIcon(field: string): string {
+    if (this.operationSortField !== field) return '↕';
+    return this.operationSortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  /**
    * Cambia el período seleccionado para el gráfico de evolución y vuelve a cargarlo.
    * @param event Evento de cambio del `<select>` de período.
    */
@@ -426,8 +457,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       pageSize: this.operationsPageSize,
       symbol: this.operationSymbolFilter,
       type: this.operationTypeFilter,
-      days: this.operationDaysFilter,
-      orderBy: this.operationOrderBy,
+      fromDate: this.operationFromDate || undefined,
+      toDate: this.operationToDate || undefined,
+      sortBy: this.operationSortField ?? undefined,
+      sortDirection: this.operationSortDirection ?? undefined,
     };
 
     this.portfolioService.getTransactionHistory(filter)

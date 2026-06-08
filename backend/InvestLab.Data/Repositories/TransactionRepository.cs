@@ -60,16 +60,27 @@ namespace InvestLab.Data.Repositories
             if (filter.Type.HasValue)
                 query = query.Where(x => x.Type == filter.Type.Value);
 
-            if (filter.Days.HasValue)
-            {
-                var fromDate = DateTime.UtcNow.AddDays(-filter.Days.Value);
-                query = query.Where(x => x.CreatedAt >= fromDate);
-            }
+            if (filter.FromDate.HasValue)
+                query = query.Where(x => x.CreatedAt >= filter.FromDate.Value);
+            if (filter.ToDate.HasValue)
+                query = query.Where(x => x.CreatedAt <= filter.ToDate.Value);
 
-            query = filter.OrderBy?.ToLower() switch
+            var desc = string.Equals(filter.SortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+
+            query = filter.SortBy switch
             {
-                "symbol" => query.OrderBy(x => x.Asset.Symbol),
-                "amount" => query.OrderByDescending(x => x.Total),
+                "date" => desc ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt),
+
+                "symbol" => desc ? query.OrderByDescending(x => x.Asset.Symbol) : query.OrderBy(x => x.Asset.Symbol),
+
+                "sector" => desc ? query.OrderByDescending(x => x.Asset.Sector) : query.OrderBy(x => x.Asset.Sector),
+
+                "quantity" => desc ? query.OrderByDescending(x => x.Quantity) : query.OrderBy(x => x.Quantity),
+
+                "price" => desc ? query.OrderByDescending(x => x.Price) : query.OrderBy(x => x.Price),
+
+                "total" => desc ? query.OrderByDescending(x => x.Total) : query.OrderBy(x => x.Total),
+
                 _ => query.OrderByDescending(x => x.CreatedAt)
             };
 

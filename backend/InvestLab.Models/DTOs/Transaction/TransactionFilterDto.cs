@@ -12,8 +12,14 @@ namespace InvestLab.Models.DTOs.Transaction
 
         public TransactionType? Type { get; set; }
 
-        public int? Days { get; set; }
+        public DateTime? FromDate { get; set; }
 
-        public string? OrderBy { get; set; } = "date";
+        public DateTime? ToDate { get; set; }
+
+        // date | symbol | sector | quantity | price | total
+        public string? SortBy { get; set; }
+
+        // asc | desc
+        public string? SortDirection { get; set; }
     }
 }

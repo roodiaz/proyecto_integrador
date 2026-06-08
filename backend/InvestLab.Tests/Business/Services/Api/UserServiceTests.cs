@@ -1,3 +1,4 @@
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models.DTOs.Auth;
@@ -29,10 +30,11 @@ public class UserServiceTests
     private readonly Mock<IFavoriteRepository> _favoriteRepository = new();
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepository = new();
     private readonly Mock<IUserTempCredentialRepository> _userTempCredentialRepository = new();
+    private readonly Mock<IVerificationCodeService> _verificationCodeService = new();
 
     private UserService CreateService() => new(_userRepository.Object, _passwordHasher.Object, _logger.Object, _unitOfWork.Object, _userSettingRepository.Object,
         _portfolioRepository.Object, _transactionRepository.Object, _portfolioHistoryRepository.Object, _notificationRepository.Object, _alertRepository.Object,
-        _favoriteRepository.Object, _refreshTokenRepository.Object, _userTempCredentialRepository.Object);
+        _favoriteRepository.Object, _refreshTokenRepository.Object, _userTempCredentialRepository.Object, _verificationCodeService.Object);
 
     private static UserSetting Settings(int userId = 1) => new() { Id = 1, UserId = userId, Currency = "USD", EmailNotifications = true };
 
