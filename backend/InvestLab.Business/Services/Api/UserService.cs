@@ -25,6 +25,7 @@ public class UserService : IUserService
     private readonly IFavoriteRepository _favoriteRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserTempCredentialRepository _userTempCredentialRepository;
+    private readonly IVerificationCodeService _verificationCodeService;
 
     /// <summary>
     /// Inicializa una nueva instancia de <see cref="UserService"/> con sus dependencias y repositorios.
@@ -43,7 +44,7 @@ public class UserService : IUserService
     /// <param name="refreshTokenRepository">Repositorio de tokens de actualización.</param>
     /// <param name="userTempCredentialRepository">Repositorio de credenciales temporales de usuario.</param>
     public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IUnitOfWork unitOfWork,
-       IUserSettingRepository userSettingRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository,  IPortfolioHistoryRepository portfolioHistoryRepository, INotificationRepository notificationRepository, IAlertRepository alertRepository, IFavoriteRepository favoriteRepository, IRefreshTokenRepository refreshTokenRepository, IUserTempCredentialRepository userTempCredentialRepository)
+       IUserSettingRepository userSettingRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository,  IPortfolioHistoryRepository portfolioHistoryRepository, INotificationRepository notificationRepository, IAlertRepository alertRepository, IFavoriteRepository favoriteRepository, IRefreshTokenRepository refreshTokenRepository, IUserTempCredentialRepository userTempCredentialRepository, IVerificationCodeService verificationCodeService)
     {
         _passwordHasher = passwordHasher;
         _logger = logger;
@@ -59,6 +60,7 @@ public class UserService : IUserService
         _favoriteRepository = favoriteRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _userTempCredentialRepository = userTempCredentialRepository;
+        _verificationCodeService = verificationCodeService;
 
     }
 
@@ -121,7 +123,9 @@ public class UserService : IUserService
 
             user.Username = dto.UserName;
             user.Phone = dto.Phone;
-            user.BirthDate = dto.BirthDate;
+            user.BirthDate = dto.BirthDate.HasValue
+                ? new DateTimeOffset(DateTime.SpecifyKind(dto.BirthDate.Value, DateTimeKind.Utc))
+                : null;
             user.UpdateAt = DateTime.UtcNow;
 
             user.UserSetting.Currency = dto.Currency;
@@ -180,6 +184,112 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en ChangePasswordAsync {UserId}", userId);
+            return Response.Fail("Error interno del servidor");
+        }
+    }
+
+    /// <summary>
+    /// Inicia el proceso de cambio de email del usuario: valida que el nuevo email no esté en uso
+    /// por otra cuenta y envía un código de verificación a esa dirección reutilizando la
+    /// infraestructura de generación y envío de códigos de <see cref="IVerificationCodeService"/>.
+    /// El email del usuario no se modifica hasta que el código sea confirmado.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="dto">Datos con el nuevo email a verificar.</param>
+    /// <returns>Una respuesta indicando si el código fue enviado correctamente o el motivo del error.</returns>
+    public async Task<Response> RequestEmailChangeAsync(int userId, RequestEmailChangeDto dto)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("RequestEmailChange: usuario no encontrado {UserId}", userId);
+                return Response.Fail("Usuario no encontrado");
+            }
+
+            if (string.Equals(user.Email, dto.NewEmail, StringComparison.OrdinalIgnoreCase))
+                return Response.Fail("El nuevo email debe ser distinto al actual");
+
+            var existingUser = await _userRepository.GetByEmailAsync(dto.NewEmail);
+
+            if (existingUser != null)
+                return Response.Fail("Ya existe una cuenta registrada con ese email");
+
+            var emailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Verificación de cambio de email", dto.NewEmail);
+
+            if (!emailSent)
+            {
+                _logger.LogWarning("RequestEmailChange: no se pudo enviar el código {UserId}", userId);
+                return Response.Fail("No pudimos enviar el código de verificación. Intentá nuevamente.");
+            }
+
+            _logger.LogInformation("Código de cambio de email enviado {UserId}", userId);
+
+            return Response.Ok(new { newEmail = dto.NewEmail }, "Te enviamos un código de verificación a tu nuevo email");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en RequestEmailChangeAsync {UserId}", userId);
+            return Response.Fail("Error interno del servidor");
+        }
+    }
+
+    /// <summary>
+    /// Confirma el cambio de email del usuario validando el código de verificación enviado al nuevo
+    /// email. Si el código es correcto, actualiza el email del usuario; en caso contrario, no
+    /// realiza ningún cambio y permite reintentar.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="dto">Datos con el código de verificación ingresado.</param>
+    /// <returns>Una respuesta indicando si el email fue actualizado o el motivo del error.</returns>
+    public async Task<Response> ConfirmEmailChangeAsync(int userId, ConfirmEmailChangeDto dto)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("ConfirmEmailChange: usuario no encontrado {UserId}", userId);
+                return Response.Fail("Usuario no encontrado");
+            }
+
+            var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
+
+            if (!validation.Success)
+            {
+                _logger.LogWarning("ConfirmEmailChange: {Reason} {UserId}", validation.ErrorMessage, userId);
+                return Response.Fail(validation.ErrorMessage!);
+            }
+
+            var credential = validation.Credential!;
+
+            if (string.IsNullOrEmpty(credential.PendingEmail))
+            {
+                _logger.LogWarning("ConfirmEmailChange: no hay un email pendiente de confirmación {UserId}", userId);
+                return Response.Fail("No hay un cambio de email pendiente de confirmación");
+            }
+
+            var newEmail = credential.PendingEmail;
+
+            credential.IsUsed = true;
+            credential.PendingEmail = null;
+
+            user.Email = newEmail;
+            user.UpdateAt = DateTime.UtcNow;
+
+            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Email actualizado correctamente {UserId}", userId);
+
+            return Response.Ok(new { email = newEmail }, "Email actualizado correctamente");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en ConfirmEmailChangeAsync {UserId}", userId);
             return Response.Fail("Error interno del servidor");
         }
     }

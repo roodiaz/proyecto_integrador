@@ -100,6 +100,62 @@ public class UserController : BaseController
     }
 
     /// <summary>
+    /// Inicia el proceso de cambio de email del usuario autenticado, enviando un código de
+    /// verificación al nuevo email indicado. El email actual no se modifica hasta confirmar el código.
+    /// </summary>
+    /// <param name="dto">Datos con el nuevo email a verificar.</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Código de verificación enviado correctamente</response>
+    /// <response code="400">Datos inválidos, email en uso o error al enviar el código</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("request-email-change")]
+    public async Task<IActionResult> RequestEmailChange([FromBody] RequestEmailChangeDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _logger.LogInformation("Solicitud de cambio de email para usuario {UserId}", UserId);
+
+        var result = await _userService.RequestEmailChangeAsync(UserId, dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al solicitar cambio de email: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Confirma el cambio de email del usuario autenticado validando el código de verificación
+    /// enviado al nuevo email. Si el código es correcto, actualiza el email del usuario.
+    /// </summary>
+    /// <param name="dto">Datos con el código de verificación ingresado.</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Email actualizado correctamente</response>
+    /// <response code="400">Código inválido, expirado o ya utilizado</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("confirm-email-change")]
+    public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _logger.LogInformation("Confirmación de cambio de email para usuario {UserId}", UserId);
+
+        var result = await _userService.ConfirmEmailChangeAsync(UserId, dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al confirmar cambio de email: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Permite subir o actualizar la imagen de perfil del usuario autenticado.
     /// </summary>
     /// <param name="file">Archivo de imagen a subir</param>

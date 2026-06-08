@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
 import { UserService } from '../../services/user.service';
@@ -22,6 +22,7 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MaterialModule
   ],
   templateUrl: './user-profile.html',
@@ -36,6 +37,7 @@ export class UserProfile implements OnInit {
 
   // ── Datos del perfil ──
   profileImageUrl = '';
+  currentEmail = '';
 
   // ── Estados de carga ──
   loadingProfile = false;
@@ -43,6 +45,16 @@ export class UserProfile implements OnInit {
   changingPassword = false;
   uploadingImage = false;
   deletingAccount = false;
+
+  // ── Verificación de cambio de email ──
+  /** Estados posibles del flujo independiente de verificación de email. */
+  emailVerificationStatus: 'idle' | 'sending' | 'codeSent' | 'verifying' | 'verified' | 'error' = 'idle';
+  /** Mensaje de error a mostrar cuando `emailVerificationStatus` es 'error'. */
+  emailVerificationError = '';
+  /** Código de verificación ingresado por el usuario. */
+  emailVerificationCode = '';
+  /** Nuevo email pendiente de verificación (al que se envió el código). */
+  pendingEmail = '';
 
   /**
    * Crea los formularios reactivos de perfil y de cambio de contraseña, y
@@ -119,6 +131,8 @@ export class UserProfile implements OnInit {
           });
 
           this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
+          this.currentEmail = profile.email;
+          this.resetEmailVerification();
         },
         error: error => {
           console.error('Error cargando perfil de usuario', error);
@@ -159,6 +173,107 @@ export class UserProfile implements OnInit {
           this.notificationService.error(error.error?.message ?? 'Error al actualizar perfil');
         }
       });
+  }
+
+  // ── Verificación de cambio de email ──
+
+  /**
+   * Indica si el email ingresado en el formulario difiere del actual y tiene formato válido,
+   * condición necesaria para habilitar el botón "Verificar Email".
+   */
+  get canRequestEmailChange(): boolean {
+    const control = this.profileForm.get('email');
+    const newEmail = (control?.value ?? '').trim();
+
+    return !!newEmail
+      && !control?.hasError('email')
+      && newEmail.toLowerCase() !== this.currentEmail.toLowerCase();
+  }
+
+  /** Reinicia el flujo de verificación de email a su estado inicial. */
+  private resetEmailVerification(): void {
+    this.emailVerificationStatus = 'idle';
+    this.emailVerificationError = '';
+    this.emailVerificationCode = '';
+    this.pendingEmail = '';
+  }
+
+  /**
+   * Inicia la verificación del nuevo email ingresado: el backend valida el formato, que no
+   * pertenezca a otro usuario y envía un código de verificación a esa dirección. El email
+   * actual del usuario no se modifica en este paso.
+   */
+  onVerifyEmail(): void {
+    if (!this.canRequestEmailChange || this.emailVerificationStatus === 'sending') return;
+
+    const newEmail = (this.profileForm.value.email ?? '').trim();
+
+    this.emailVerificationStatus = 'sending';
+    this.emailVerificationError = '';
+
+    this.userService.requestEmailChange({ newEmail })
+      .subscribe({
+        next: response => {
+          if (!response.success) {
+            this.emailVerificationStatus = 'error';
+            this.emailVerificationError = response.message || 'No se pudo enviar el código de verificación';
+            return;
+          }
+
+          this.pendingEmail = newEmail;
+          this.emailVerificationCode = '';
+          this.emailVerificationStatus = 'codeSent';
+          this.notificationService.success(response.message);
+        },
+        error: error => {
+          this.emailVerificationStatus = 'error';
+          this.emailVerificationError = error.error?.message ?? 'No se pudo enviar el código de verificación';
+        }
+      });
+  }
+
+  /**
+   * Valida el código de verificación ingresado por el usuario. Si es correcto, el backend
+   * actualiza el email del usuario; se refresca la información del perfil y se ocultan los
+   * controles de verificación. Si es incorrecto, muestra el error y permite reintentar.
+   */
+  onValidateEmailCode(): void {
+    if (this.emailVerificationStatus === 'verifying' || !this.emailVerificationCode.trim()) return;
+
+    this.emailVerificationStatus = 'verifying';
+    this.emailVerificationError = '';
+
+    this.userService.confirmEmailChange({ code: this.emailVerificationCode.trim() })
+      .subscribe({
+        next: response => {
+          if (!response.success) {
+            this.emailVerificationStatus = 'error';
+            this.emailVerificationError = response.message || 'Código inválido';
+            return;
+          }
+
+          this.notificationService.success(response.message || 'Email actualizado correctamente');
+          this.emailVerificationStatus = 'verified';
+          this.loadUserData();
+        },
+        error: error => {
+          this.emailVerificationStatus = 'error';
+          this.emailVerificationError = error.error?.message ?? 'Código inválido';
+        }
+      });
+  }
+
+  /** Permite reintentar el ingreso del código tras un error, sin perder el email pendiente. */
+  retryEmailCode(): void {
+    this.emailVerificationCode = '';
+    this.emailVerificationStatus = 'codeSent';
+    this.emailVerificationError = '';
+  }
+
+  /** Cancela el flujo de verificación en curso y restaura el email actual en el formulario. */
+  cancelEmailVerification(): void {
+    this.profileForm.get('email')?.setValue(this.currentEmail);
+    this.resetEmailVerification();
   }
 
   // ── Cambio de contraseña ──

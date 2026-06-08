@@ -629,3 +629,92 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* ─── Verificación de cambio de email ─── */
+.field-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+
+.hint-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.email-verify-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.verify-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.verify-status mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.verify-status-pending {
+  background: rgba(255, 193, 7, 0.12);
+  color: #ffc107;
+}
+
+.verify-status-success {
+  background: var(--green-container, #00b954);
+  color: #ffffff;
+}
+
+.verify-status-error {
+  background: rgba(255, 180, 171, 0.12);
+  color: #ffb4ab;
+}
+
+.verify-code-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.code-input-wrap {
+  max-width: 220px;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.78rem;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-btn:hover {
+  color: var(--text);
+}

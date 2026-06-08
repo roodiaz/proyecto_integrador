@@ -35,6 +35,7 @@ CREATE TABLE user_temp_credentials (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     temp_password_hash VARCHAR(256) NOT NULL,
+    pending_email VARCHAR(100),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL ,
     is_used BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

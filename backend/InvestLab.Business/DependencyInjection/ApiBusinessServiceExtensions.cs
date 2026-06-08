@@ -18,6 +18,7 @@ public static class ApiBusinessServiceExtensions
     public static IServiceCollection AddApiBusinessServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IVerificationCodeService, VerificationCodeService>();
         services.AddScoped<IMarketService, MarketService>();
         services.AddScoped<IAlertService, AlertService>();
         services.AddScoped<IUserService, UserService>();

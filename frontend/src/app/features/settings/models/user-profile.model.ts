@@ -14,6 +14,14 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface RequestEmailChangeRequest {
+  newEmail: string;
+}
+
+export interface ConfirmEmailChangeRequest {
+  code: string;
+}
+
 export interface ProfileData {
   id: number;
   username: string;

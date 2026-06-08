@@ -62,12 +62,12 @@
             }
           </div>
 
-          <div class="field-group">
+          <div class="field-group email-field-group">
             <label class="field-label">Correo Electrónico *</label>
 
             <div class="field-input-wrap">
               <input matInput formControlName="email" type="email" class="field-input"
-                placeholder="ejemplo@dominio.com">
+                placeholder="ejemplo@dominio.com" [readonly]="emailVerificationStatus === 'codeSent' || emailVerificationStatus === 'verifying'">
               <mat-icon class="field-icon">mail</mat-icon>
             </div>
 
@@ -76,6 +76,97 @@
               Por favor ingresá un correo válido
             </span>
             }
+
+            <p class="field-hint">
+              <mat-icon class="hint-icon">info</mat-icon>
+              El email es tu credencial de acceso: para cambiarlo necesitás verificar que sos el dueño de la nueva dirección.
+            </p>
+
+            <!-- Flujo de verificación de cambio de email -->
+            <div class="email-verify-box">
+
+              @switch (emailVerificationStatus) {
+
+                @case ('idle') {
+                  <button class="btn btn-secondary btn-sm" type="button"
+                    [disabled]="!canRequestEmailChange"
+                    (click)="onVerifyEmail()">
+                    <mat-icon>mark_email_unread</mat-icon>
+                    Verificar Email
+                  </button>
+                }
+
+                @case ('sending') {
+                  <button class="btn btn-secondary btn-sm" type="button" disabled>
+                    <mat-icon>mark_email_unread</mat-icon>
+                    Enviando código...
+                  </button>
+                }
+
+                @case ('codeSent') {
+                  <div class="verify-status verify-status-pending">
+                    <mat-icon>mark_email_read</mat-icon>
+                    Te enviamos un código de verificación a <strong>{{ pendingEmail }}</strong>
+                  </div>
+
+                  <div class="verify-code-row">
+                    <div class="field-input-wrap code-input-wrap">
+                      <input class="field-input" type="text" inputmode="numeric" maxlength="6"
+                        placeholder="Código de Verificación" [(ngModel)]="emailVerificationCode"
+                        [ngModelOptions]="{standalone: true}">
+                      <mat-icon class="field-icon">pin</mat-icon>
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" type="button"
+                      [disabled]="!emailVerificationCode.trim()"
+                      (click)="onValidateEmailCode()">
+                      Validar Código
+                    </button>
+                  </div>
+
+                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">Cancelar</button>
+                }
+
+                @case ('verifying') {
+                  <div class="verify-status verify-status-pending">
+                    <mat-icon>hourglass_top</mat-icon>
+                    Validando código...
+                  </div>
+                }
+
+                @case ('verified') {
+                  <div class="verify-status verify-status-success">
+                    <mat-icon>verified</mat-icon>
+                    Email verificado correctamente
+                  </div>
+                }
+
+                @case ('error') {
+                  <div class="verify-status verify-status-error">
+                    <mat-icon>error</mat-icon>
+                    {{ emailVerificationError }}
+                  </div>
+
+                  <div class="verify-code-row">
+                    <div class="field-input-wrap code-input-wrap">
+                      <input class="field-input" type="text" inputmode="numeric" maxlength="6"
+                        placeholder="Código de Verificación" [(ngModel)]="emailVerificationCode"
+                        [ngModelOptions]="{standalone: true}">
+                      <mat-icon class="field-icon">pin</mat-icon>
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" type="button"
+                      [disabled]="!emailVerificationCode.trim()"
+                      (click)="onValidateEmailCode()">
+                      Reintentar
+                    </button>
+                  </div>
+
+                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">Cancelar</button>
+                }
+              }
+
+            </div>
           </div>
 
           <div class="field-group">

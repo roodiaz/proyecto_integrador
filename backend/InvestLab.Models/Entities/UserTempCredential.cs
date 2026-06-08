@@ -20,6 +20,10 @@ public partial class UserTempCredential
     [StringLength(256)]
     public string TempPasswordHash { get; set; } = null!;
 
+    [Column("pending_email")]
+    [StringLength(100)]
+    public string? PendingEmail { get; set; }
+
     [Column("expires_at")]
     public DateTime ExpiresAt { get; set; }
 

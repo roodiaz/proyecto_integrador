@@ -1,4 +1,5 @@
-﻿using InvestLab.Data;
+﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Data;
 using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
@@ -17,6 +18,7 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher<InvestLab.Data.User> _passwordHasher;
     private readonly ILogger<AuthService> _logger;
     private readonly IEmailProviderResolver _emailProviderResolver;
+    private readonly IVerificationCodeService _verificationCodeService;
     private readonly IUserRepository _userRepository;
     private readonly IUserTempCredentialRepository _tempRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -36,7 +38,7 @@ public class AuthService : IAuthService
     /// <param name="logger">Logger para el registro de eventos del servicio.</param>
     /// <param name="emailProviderResolver">Resolver utilizado para obtener el proveedor de envío de correos electrónicos activo.</param>
     /// <param name="limitsOptions">Opciones de configuración de límites de la aplicación.</param>
-    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailProviderResolver emailProviderResolver, IOptions<LimitsOptions> limitsOptions)
+    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailProviderResolver emailProviderResolver, IVerificationCodeService verificationCodeService, IOptions<LimitsOptions> limitsOptions)
     {
         _userRepository = userRepository;
         _tempRepository = tempRepository;
@@ -47,6 +49,7 @@ public class AuthService : IAuthService
         _passwordHasher = passwordHasher;
         _logger = logger;
         _emailProviderResolver = emailProviderResolver;
+        _verificationCodeService = verificationCodeService;
         _limits = limitsOptions.Value;
     }
 
@@ -108,29 +111,12 @@ public class AuthService : IAuthService
 
             await _userSettingRepository.AddAsync(userProfile);
 
-            var code = new Random().Next(100000, 999999).ToString();
-            var codeHash = _passwordHasher.HashPassword(user, code);
-
-            var tempCredential = new UserTempCredential
-            {
-                User = user,
-                TempPasswordHash = codeHash,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                IsUsed = false
-            };
-
-            await _tempRepository.AddAsync(tempCredential);
-
             await _unitOfWork.SaveChangesAsync();
 
-            try
-            {
-                await _emailProviderResolver.GetProvider().SendAsync(
-                   user.Email,
-                   "Verificación de cuenta",
-                   EmailTemplates.VerificationCode(code)
-                );
+            var verificationEmailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Verificación de cuenta");
 
+            if (verificationEmailSent)
+            {
                 return Response.Ok(new
                 {
                     requiresVerification = true,
@@ -138,18 +124,14 @@ public class AuthService : IAuthService
                     emailSent = true
                 });
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "No se pudo enviar email de verificación");
 
-                return Response.Ok(new
-                {
-                    requiresVerification = true,
-                    email = user.Email,
-                    emailSent = false
-                },
-                "La cuenta fue creada correctamente, pero no pudimos enviar el correo de verificación. Intente reenviar el código.");
-            }
+            return Response.Ok(new
+            {
+                requiresVerification = true,
+                email = user.Email,
+                emailSent = false
+            },
+            "La cuenta fue creada correctamente, pero no pudimos enviar el correo de verificación. Intente reenviar el código.");
         }
         catch (Exception ex)
         {
@@ -178,32 +160,15 @@ public class AuthService : IAuthService
                 return Response.Ok(null, "La cuenta ya se encuentra verificada");
             }
 
-            var temp = await _tempRepository.GetByUserIdAsync(user.Id);
-            if (temp == null)
+            var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
+
+            if (!validation.Success)
             {
-                _logger.LogWarning("Verify: código no encontrado {UserId}", user.Id);
-                return Response.Fail("Código no encontrado");
-            }
-            if (temp.ExpiresAt < DateTime.UtcNow)
-            {
-                _logger.LogWarning("Verify: código expirado {UserId}", user.Id);
-                return Response.Fail("Código expirado");
-            }
-            if (temp.IsUsed)
-            {
-                _logger.LogWarning("Verify: código ya utilizado {UserId}", user.Id);
-                return Response.Fail("El código ya fue utilizado");
+                _logger.LogWarning("Verify: {Reason} {UserId}", validation.ErrorMessage, user.Id);
+                return Response.Fail(validation.ErrorMessage!);
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(user, temp.TempPasswordHash, dto.Code);
-
-            if (result == PasswordVerificationResult.Failed)
-            {
-                _logger.LogWarning("Verify: código inválido {UserId}", user.Id);
-                return Response.Fail("Código inválido");
-            }
-
-            temp.IsUsed = true;
+            validation.Credential!.IsUsed = true;
             user.IsActive = true;
 
             await _unitOfWork.SaveChangesAsync();
@@ -396,48 +361,8 @@ public class AuthService : IAuthService
     /// </summary>
     /// <param name="user">Usuario al que se le generará y enviará el nuevo código de verificación.</param>
     /// <returns><c>true</c> si el correo con el código fue enviado correctamente; en caso contrario, <c>false</c>.</returns>
-    private async Task<bool> ResendCodeInternal(User user)
+    private Task<bool> ResendCodeInternal(User user)
     {
-        var code = new Random().Next(100000, 999999).ToString();
-        var codeHash = _passwordHasher.HashPassword(user, code);
-
-        var oldCode = await _tempRepository.GetByUserIdAsync(user.Id);
-
-        if (oldCode is null)
-        {
-            var tempCredential = new UserTempCredential
-            {
-                UserId = user.Id,
-                TempPasswordHash = codeHash,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-                IsUsed = false
-            };
-
-            await _tempRepository.AddAsync(tempCredential);
-        }
-        else
-        {
-            oldCode.TempPasswordHash = codeHash;
-            oldCode.ExpiresAt = DateTime.UtcNow.AddMinutes(15);
-            oldCode.IsUsed = false;
-        }
-
-        await _unitOfWork.SaveChangesAsync();
-
-        try
-        {
-            await _emailProviderResolver.GetProvider().SendAsync(
-                user.Email,
-                "Verificación de cuenta",
-                EmailTemplates.VerificationCode(code)
-            );
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,"No se pudo reenviar el código para {Email}",user.Email);
-            return false;
-        }
+        return _verificationCodeService.GenerateAndSendCodeAsync(user, "Verificación de cuenta");
     }
 }

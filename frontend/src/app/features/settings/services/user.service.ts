@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/models/api-response.model';
-import { ChangePasswordRequest, ProfileResponse, UpdateProfileRequest } from '../models/user-profile.model';
+import { ChangePasswordRequest, ConfirmEmailChangeRequest, ProfileResponse, RequestEmailChangeRequest, UpdateProfileRequest } from '../models/user-profile.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +22,14 @@ export class UserService {
 
   changePassword(request: ChangePasswordRequest): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.apiUrl}/change-password`, request);
+  }
+
+  requestEmailChange(request: RequestEmailChangeRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/request-email-change`, request);
+  }
+
+  confirmEmailChange(request: ConfirmEmailChangeRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/confirm-email-change`, request);
   }
 
   uploadProfileImage(file: File): Observable<ApiResponse> {

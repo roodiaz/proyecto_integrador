@@ -13,6 +13,10 @@ namespace InvestLab.Business.Interfaces.Api
 
         Task<Response> ChangePasswordAsync(int userId, ChangePasswordDto dto);
 
+        Task<Response> RequestEmailChangeAsync(int userId, RequestEmailChangeDto dto);
+
+        Task<Response> ConfirmEmailChangeAsync(int userId, ConfirmEmailChangeDto dto);
+
         Task<Response> UploadProfileImageAsync(int userId, IFormFile file);
 
         Task<Response> DeleteAccountAsync(int userId);
