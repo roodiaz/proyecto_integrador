@@ -17,7 +17,7 @@ public class PortfolioService : IPortfolioService
 {
     private readonly LimitsOptions _limits;
     private readonly ILogger<PortfolioService> _logger;
-    private readonly IExternalProvider _externalProvider;
+    private readonly IMarketProviderResolver _providerResolver;
     private readonly IMarketPriceService _marketPriceService;
     private readonly IMarketPriceCacheService _marketPriceCacheService;
     private readonly IAssetService _assetService;
@@ -49,14 +49,14 @@ public class PortfolioService : IPortfolioService
     /// <param name="marketMetadataRepository">Repositorio de metadatos de mercado.</param>
     /// <param name="assetService">Servicio de activos.</param>
     /// <param name="marketPriceCacheService">Servicio de cache de precios de mercado para datos informativos.</param>
-    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
+    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IMarketProviderResolver providerResolver, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
     {
         _userRepository = userRepository;
         _userSettingRepository = userSettingRepository;
         _assetRepository = assetRepository;
         _portfolioRepository = portfolioRepository;
         _transactionRepository = transactionRepository;
-        _externalProvider = externalProvider;
+        _providerResolver = providerResolver;
         _unitOfWork = unitOfWork;
         _portfolioHistoryRepository = portfolioHistoryRepository;
         _limits = limits.Value;
@@ -101,7 +101,7 @@ public class PortfolioService : IPortfolioService
             if (asset == null)
                 return Response.Fail("Activo no encontrado");
 
-            var market = await _externalProvider.GetPriceAsync(asset.Symbol);
+            var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", asset.Symbol);
@@ -218,7 +218,7 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Cantidad insuficiente");
             }
 
-            var market = await _externalProvider.GetPriceAsync(asset.Symbol);
+            var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", asset.Symbol);
@@ -287,7 +287,7 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Posición no encontrada");
             }
 
-            var market = await _externalProvider.GetPriceAsync(asset.Symbol);
+            var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", asset.Symbol);
@@ -330,7 +330,7 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Activo no encontrado");
             }
 
-            var market = await _externalProvider.GetPriceAsync(asset.Symbol);
+            var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", symbol);

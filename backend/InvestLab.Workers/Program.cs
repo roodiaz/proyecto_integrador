@@ -1,7 +1,5 @@
 using InvestLab.Workers.Extensions;
-using InvestLab.Integrations.Configuration;
-using InvestLab.Integrations.Interfaces;
-using InvestLab.Integrations.Providers;
+using InvestLab.Integrations.DependencyInjection;
 using InvestLab.Models.Options;
 using InvestLab.Workers;
 using InvestLab.Workers.Workers;
@@ -11,11 +9,8 @@ var builder = Host.CreateApplicationBuilder(args);
 
 // Application services
 builder.Services.AddWorkerApplicationServices(builder.Configuration);
-//builder.Services.AddHttpClient<IExternalProvider, FinnhubMarketProvider>();
-builder.Services.AddHttpClient<IExternalProvider, YahooMarketProvider>();
+builder.Services.AddExternalProviders(builder.Configuration);
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
-builder.Services.Configure<YahooOptions>(builder.Configuration.GetSection("Yahoo"));
-builder.Services.Configure<FinnhubOptions>(builder.Configuration.GetSection("Finnhub"));
 builder.Services.AddResend(options =>
 {
     options.ApiToken = builder.Configuration["Email:ApiKey"]!;

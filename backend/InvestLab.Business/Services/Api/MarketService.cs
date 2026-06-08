@@ -12,7 +12,7 @@ namespace InvestLab.Business.Services
     public class MarketService : IMarketService
     {
         private readonly IMarketPriceCacheService _marketPriceCacheService;
-        private readonly IExternalProvider _externalProvider;
+        private readonly IMarketProviderResolver _providerResolver;
         private readonly IAssetService _assetService;
         private readonly ILogger<MarketService> _logger;
 
@@ -23,9 +23,9 @@ namespace InvestLab.Business.Services
         /// <param name="logger">Logger para registrar información y errores del servicio.</param>
         /// <param name="assetService">Servicio para obtener o crear activos.</param>
         /// <param name="marketPriceCacheService">Servicio de caché de precios de mercado.</param>
-        public MarketService(IExternalProvider externalProvider, ILogger<MarketService> logger, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
+        public MarketService(IMarketProviderResolver providerResolver, ILogger<MarketService> logger, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
         {
-            _externalProvider = externalProvider;
+            _providerResolver = providerResolver;
             _logger = logger;
             _assetService = assetService;
             _marketPriceCacheService = marketPriceCacheService;
@@ -95,7 +95,7 @@ namespace InvestLab.Business.Services
                 if (price == null)
                     return Response.Fail("No se encontró información de precio para el activo solicitado");
 
-                var profile = await _externalProvider.GetProfileAsync(symbol);
+                var profile = await _providerResolver.GetProvider().GetProfileAsync(symbol);
                 var change = Math.Round(price.Price - price.PreviousClose, 2);
 
                 var result = new MarketAssetDetailDto
@@ -134,7 +134,7 @@ namespace InvestLab.Business.Services
         {
             try
             {
-                var result = await _externalProvider.GetMarketMoversAsync("most_actives", 6);
+                var result = await _providerResolver.GetProvider().GetMarketMoversAsync("most_actives", 6);
                 return Response.Ok(result, "Tendencias obtenidas correctamente");
             }
             catch (Exception ex)
@@ -152,7 +152,7 @@ namespace InvestLab.Business.Services
         {
             try
             {
-                var result = await _externalProvider.GetMarketMoversAsync("day_gainers", 6);
+                var result = await _providerResolver.GetProvider().GetMarketMoversAsync("day_gainers", 6);
                 return Response.Ok(result, "Ganadores obtenidos correctamente");
             }
             catch (Exception ex)
@@ -170,7 +170,7 @@ namespace InvestLab.Business.Services
         {
             try
             {
-                var result = await _externalProvider.GetMarketMoversAsync("day_losers", 6);
+                var result = await _providerResolver.GetProvider().GetMarketMoversAsync("day_losers", 6);
                 return Response.Ok(result, "Perdedores obtenidos correctamente");
             }
             catch (Exception ex)
@@ -189,7 +189,7 @@ namespace InvestLab.Business.Services
         {
             try
             {
-                var result = await _externalProvider.GetMarketNewsAsync(6);
+                var result = await _providerResolver.GetProvider().GetMarketNewsAsync(6);
                 return Response.Ok(result, "Noticias obtenidas correctamente");
             }
             catch (Exception ex)
@@ -240,7 +240,7 @@ namespace InvestLab.Business.Services
                 if (!IsValidHistoryRange(range))
                     return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y");
 
-                var history = await _externalProvider.GetChartHistoryAsync(symbol, range);
+                var history = await _providerResolver.GetProvider().GetChartHistoryAsync(symbol, range);
 
                 if (history == null || history.Count == 0)
                     return Response.Fail("No se encontraron datos históricos para el activo");
@@ -285,7 +285,7 @@ namespace InvestLab.Business.Services
 
                 foreach (var symbol in symbols)
                 {
-                    var history = await _externalProvider.GetChartHistoryAsync(symbol, range);
+                    var history = await _providerResolver.GetProvider().GetChartHistoryAsync(symbol, range);
 
                     series.Add(new MarketHistorySeriesDto
                     {

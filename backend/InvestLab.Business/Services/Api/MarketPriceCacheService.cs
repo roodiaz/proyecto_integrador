@@ -9,7 +9,7 @@ namespace InvestLab.Business.Services.Api
     public class MarketPriceCacheService : IMarketPriceCacheService
     {
         private readonly IMemoryCache _cache;
-        private readonly IExternalProvider _externalProvider;
+        private readonly IMarketProviderResolver _providerResolver;
         private const int CacheExpirationMinutes = 5;
         private const string LastUpdatedAtCacheKey = "market-prices:last-updated-at";
 
@@ -18,10 +18,10 @@ namespace InvestLab.Business.Services.Api
         /// </summary>
         /// <param name="cache">Caché en memoria utilizada para almacenar los precios de mercado.</param>
         /// <param name="marketPriceService">Proveedor externo encargado de obtener los precios de mercado.</param>
-        public MarketPriceCacheService(IMemoryCache cache, IExternalProvider marketPriceService)
+        public MarketPriceCacheService(IMemoryCache cache, IMarketProviderResolver providerResolver)
         {
             _cache = cache;
-            _externalProvider = marketPriceService;
+            _providerResolver = providerResolver;
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace InvestLab.Business.Services.Api
             if (_cache.TryGetValue(GetCacheKey(symbol), out MarketPriceDto? cachedPrice) && cachedPrice != null)
                 return cachedPrice;
 
-            var freshPrice = await _externalProvider.GetPriceAsync(symbol);
+            var freshPrice = await _providerResolver.GetProvider().GetPriceAsync(symbol);
 
             if (freshPrice == null)
                 return null;
@@ -79,7 +79,7 @@ namespace InvestLab.Business.Services.Api
 
             if (missingSymbols.Any())
             {
-                var freshPrices = await _externalProvider.GetPricesAsync(missingSymbols);
+                var freshPrices = await _providerResolver.GetProvider().GetPricesAsync(missingSymbols);
                 var updatedAt = DateTime.UtcNow;
 
                 foreach (var price in freshPrices)
@@ -114,7 +114,7 @@ namespace InvestLab.Business.Services.Api
             if (!cleanSymbols.Any())
                 return;
 
-            var freshPrices = await _externalProvider.GetPricesAsync(cleanSymbols);
+            var freshPrices = await _providerResolver.GetProvider().GetPricesAsync(cleanSymbols);
             var updatedAt = DateTime.UtcNow;
 
             foreach (var price in freshPrices)

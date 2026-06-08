@@ -12,7 +12,7 @@ namespace InvestLab.Business.Services
     {
         private readonly ILogger<MarketPriceService> _logger;
         private readonly IPriceHistoryRepository _priceHistoryRepository;
-        private readonly IExternalProvider _externalProvider;
+        private readonly IMarketProviderResolver _providerResolver;
 
         /// <summary>
         /// Inicializa una nueva instancia del servicio de precios de mercado.
@@ -20,11 +20,11 @@ namespace InvestLab.Business.Services
         /// <param name="logger">Registrador utilizado para registrar información y errores del servicio.</param>
         /// <param name="priceHistoryRepository">Repositorio para acceder al historial de precios almacenado.</param>
         /// <param name="externalProvider">Proveedor externo utilizado para consultar precios de mercado.</param>
-        public MarketPriceService(ILogger<MarketPriceService> logger, IPriceHistoryRepository priceHistoryRepository, IExternalProvider externalProvider)
+        public MarketPriceService(ILogger<MarketPriceService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketProviderResolver providerResolver)
         {
             _priceHistoryRepository = priceHistoryRepository;
             _logger = logger;
-            _externalProvider = externalProvider;
+            _providerResolver = providerResolver;
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace InvestLab.Business.Services
             // Para los símbolos faltantes consulta el proveedor externo
             foreach (var symbol in missingSymbols)
             {
-                var market = await _externalProvider.GetPriceAsync(symbol);
+                var market = await _providerResolver.GetProvider().GetPriceAsync(symbol);
 
                 if (market != null)
                     prices[symbol] = market.Price;

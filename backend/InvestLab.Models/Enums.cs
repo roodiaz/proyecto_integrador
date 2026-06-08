@@ -26,5 +26,11 @@ namespace InvestLab.Models
             Buy = 1,
             Sell = 2
         }
+
+        public enum MarketProviderType
+        {
+            Yahoo = 1,
+            EodHistoricalData = 2
+        }
     }
 }

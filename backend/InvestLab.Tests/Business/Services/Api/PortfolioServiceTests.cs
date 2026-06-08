@@ -28,6 +28,7 @@ public class PortfolioServiceTests
     private readonly Mock<IPortfolioRepository> _portfolioRepository = new();
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<IExternalProvider> _externalProvider = new();
+    private readonly Mock<IMarketProviderResolver> _providerResolver = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IPortfolioHistoryRepository> _portfolioHistoryRepository = new();
     private readonly Mock<ILogger<PortfolioService>> _logger = new();
@@ -37,7 +38,11 @@ public class PortfolioServiceTests
     private readonly Mock<IMarketPriceCacheService> _marketPriceCacheService = new();
     private readonly LimitsOptions _limits = new() { MaxOperationsPerDay = 10, InitialBalance = 10000 };
 
-    private PortfolioService CreateService() => new(_userRepository.Object, _userSettingRepository.Object, _assetRepository.Object, _portfolioRepository.Object, _transactionRepository.Object, _externalProvider.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object, _marketPriceCacheService.Object);
+    private PortfolioService CreateService()
+    {
+        _providerResolver.Setup(x => x.GetProvider()).Returns(_externalProvider.Object);
+        return new(_userRepository.Object, _userSettingRepository.Object, _assetRepository.Object, _portfolioRepository.Object, _transactionRepository.Object, _providerResolver.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object, _marketPriceCacheService.Object);
+    }
 
     private static User UserEntity(int id = 1, decimal balance = 1000) => new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance };
 

@@ -19,7 +19,7 @@ public class DailySnapshotService : IDailySnapshotWorker
     private readonly IMarketMetadataRepository _marketMetadataRepository;
 
     private readonly IMarketPriceService _marketPriceService;
-    private readonly IExternalProvider _externalProvider;
+    private readonly IMarketProviderResolver _providerResolver;
     private readonly IUnitOfWork _unitOfWork;
 
     private readonly ILogger<DailySnapshotService> _logger;
@@ -38,12 +38,12 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// <param name="assetRepository">Repositorio de activos.</param>
     /// <param name="marketMetadataRepository">Repositorio de metadata de mercado.</param>
     /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
-    public DailySnapshotService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IExternalProvider externalProvider, ILogger<DailySnapshotService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketPriceService marketPriceService, IAssetRepository assetRepository, IMarketMetadataRepository marketMetadataRepository, IUnitOfWork unitOfWork)
+    public DailySnapshotService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IMarketProviderResolver providerResolver, ILogger<DailySnapshotService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketPriceService marketPriceService, IAssetRepository assetRepository, IMarketMetadataRepository marketMetadataRepository, IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository;
         _portfolioRepository = portfolioRepository;
         _portfolioHistoryRepository = portfolioHistoryRepository;
-        _externalProvider = externalProvider;
+        _providerResolver = providerResolver;
         _logger = logger;
         _priceHistoryRepository = priceHistoryRepository;
         _marketPriceService = marketPriceService;
@@ -161,7 +161,7 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                 // Obtiene únicamente la información
                 // correspondiente al último día bursátil.
-                var historical = await _externalProvider.GetHistoricalAsync(asset.Symbol, today.AddDays(-1), today);
+                var historical = await _providerResolver.GetProvider().GetHistoricalAsync(asset.Symbol, today.AddDays(-1), today);
 
                 if (!historical.Any())
                 {

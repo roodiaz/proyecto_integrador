@@ -19,10 +19,15 @@ public class MarketServiceTests
 {
     private readonly Mock<IMarketPriceCacheService> _marketPriceCacheService = new();
     private readonly Mock<IExternalProvider> _externalProvider = new();
+    private readonly Mock<IMarketProviderResolver> _providerResolver = new();
     private readonly Mock<IAssetService> _assetService = new();
     private readonly Mock<ILogger<MarketService>> _logger = new();
 
-    private MarketService CreateService() => new(_externalProvider.Object, _logger.Object, _assetService.Object, _marketPriceCacheService.Object);
+    private MarketService CreateService()
+    {
+        _providerResolver.Setup(x => x.GetProvider()).Returns(_externalProvider.Object);
+        return new(_providerResolver.Object, _logger.Object, _assetService.Object, _marketPriceCacheService.Object);
+    }
 
     private static MarketPriceDto Price(string symbol, decimal price = 100, decimal previousClose = 95, decimal variationPercent = 5) =>
         new() { Symbol = symbol, Price = price, PreviousClose = previousClose, VariationPercent = variationPercent };

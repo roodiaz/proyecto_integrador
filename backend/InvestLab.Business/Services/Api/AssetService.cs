@@ -6,7 +6,7 @@ using InvestLab.Integrations.Interfaces;
 public class AssetService : IAssetService
 {
     private readonly IAssetRepository _assetRepository;
-    private readonly IExternalProvider _externalProvider;
+    private readonly IMarketProviderResolver _providerResolver;
     private readonly IUnitOfWork _unitOfWork;
 
     /// <summary>
@@ -15,10 +15,10 @@ public class AssetService : IAssetService
     /// <param name="assetRepository">Repositorio de activos.</param>
     /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
     /// <param name="unitOfWork">Unidad de trabajo para confirmar los cambios en la base de datos.</param>
-    public AssetService(IAssetRepository assetRepository, IExternalProvider externalProvider, IUnitOfWork unitOfWork)
+    public AssetService(IAssetRepository assetRepository, IMarketProviderResolver providerResolver, IUnitOfWork unitOfWork)
     {
         _assetRepository = assetRepository;
-        _externalProvider = externalProvider;
+        _providerResolver = providerResolver;
         _unitOfWork = unitOfWork;
     }
 
@@ -35,7 +35,7 @@ public class AssetService : IAssetService
         if (asset != null)
             return asset;
 
-        var profile = await _externalProvider.GetProfileAsync(symbol);
+        var profile = await _providerResolver.GetProvider().GetProfileAsync(symbol);
         if (profile == null)
             return null;
 

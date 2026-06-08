@@ -1,10 +1,13 @@
 ﻿using InvestLab.Models.DTOs;
 using InvestLab.Models.DTOs.Market;
+using static InvestLab.Models.Enums;
 
 namespace InvestLab.Integrations.Interfaces;
 
 public interface IExternalProvider
 {
+    MarketProviderType ProviderType { get; }
+
     Task<MarketPriceDto?> GetPriceAsync(string symbol);
 
     Task<List<MarketPriceDto>> GetPricesAsync(List<string> symbols);

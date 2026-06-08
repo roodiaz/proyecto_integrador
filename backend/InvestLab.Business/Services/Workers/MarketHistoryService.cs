@@ -13,7 +13,7 @@ public class MarketHistoryService : IMarketHistoryService
 {
     private readonly ILogger<MarketHistoryService> _logger;
     private readonly IPriceHistoryRepository _priceHistoryRepository;
-    private readonly IExternalProvider _externalProvider;
+    private readonly IMarketProviderResolver _providerResolver;
     private readonly IAssetRepository _assetRepository;
     private readonly IMarketMetadataRepository _marketMetadataRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -28,10 +28,10 @@ public class MarketHistoryService : IMarketHistoryService
     /// <param name="unitOfWork">Unidad de trabajo utilizada para persistir los cambios.</param>
     /// <param name="logger">Logger utilizado para registrar la actividad del servicio.</param>
     /// <param name="marketMetadataRepository">Repositorio de metadata de mercado.</param>
-    public MarketHistoryService(IPriceHistoryRepository repository, IExternalProvider externalProvider, IAssetRepository assetRepository, IUnitOfWork unitOfWork, ILogger<MarketHistoryService> logger, IMarketMetadataRepository marketMetadataRepository)
+    public MarketHistoryService(IPriceHistoryRepository repository, IMarketProviderResolver providerResolver, IAssetRepository assetRepository, IUnitOfWork unitOfWork, ILogger<MarketHistoryService> logger, IMarketMetadataRepository marketMetadataRepository)
     {
         _priceHistoryRepository = repository;
-        _externalProvider = externalProvider;
+        _providerResolver = providerResolver;
         _assetRepository = assetRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -81,7 +81,7 @@ public class MarketHistoryService : IMarketHistoryService
             {
                 _logger.LogInformation("Cargando histórico inicial para {Symbol}", asset.Symbol);
 
-                var historical = await _externalProvider.GetHistoricalAsync(asset.Symbol, DateTime.UtcNow.AddYears(-1), DateTime.UtcNow.Date.AddDays(-1));
+                var historical = await _providerResolver.GetProvider().GetHistoricalAsync(asset.Symbol, DateTime.UtcNow.AddYears(-1), DateTime.UtcNow.Date.AddDays(-1));
                 if (!historical.Any())
                 {
                     _logger.LogWarning("No se encontraron históricos para {Symbol}", asset.Symbol);
@@ -150,7 +150,7 @@ public class MarketHistoryService : IMarketHistoryService
 
                 _logger.LogInformation("Recuperando históricos para {Symbol}. Desde {From} hasta {To}", asset.Symbol, fromDate, toDate);
 
-                var historical = await _externalProvider.GetHistoricalAsync(asset.Symbol, fromDate, toDate);
+                var historical = await _providerResolver.GetProvider().GetHistoricalAsync(asset.Symbol, fromDate, toDate);
 
                 if (!historical.Any())
                     continue;

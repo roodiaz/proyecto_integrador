@@ -18,12 +18,17 @@ public class MarketHistoryServiceTests
 {
     private readonly Mock<IPriceHistoryRepository> _priceHistoryRepository = new();
     private readonly Mock<IExternalProvider> _externalProvider = new();
+    private readonly Mock<IMarketProviderResolver> _providerResolver = new();
     private readonly Mock<IAssetRepository> _assetRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<ILogger<MarketHistoryService>> _logger = new();
     private readonly Mock<IMarketMetadataRepository> _marketMetadataRepository = new();
 
-    private MarketHistoryService CreateService() => new(_priceHistoryRepository.Object, _externalProvider.Object, _assetRepository.Object, _unitOfWork.Object, _logger.Object, _marketMetadataRepository.Object);
+    private MarketHistoryService CreateService()
+    {
+        _providerResolver.Setup(x => x.GetProvider()).Returns(_externalProvider.Object);
+        return new(_priceHistoryRepository.Object, _providerResolver.Object, _assetRepository.Object, _unitOfWork.Object, _logger.Object, _marketMetadataRepository.Object);
+    }
 
     private static Asset AssetEntity(int id = 1, string symbol = "AAPL", bool historyLoaded = false) => new() { Id = id, Symbol = symbol, HistoryLoaded = historyLoaded };
 

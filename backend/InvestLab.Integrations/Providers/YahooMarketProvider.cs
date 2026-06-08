@@ -7,20 +7,23 @@ using Microsoft.Extensions.Options;
 using NodaTime;
 using System.Text.Json;
 using YahooQuotesApi;
+using static InvestLab.Models.Enums;
 
 namespace InvestLab.Integrations.Providers
 {
     public class YahooMarketProvider : IExternalProvider
     {
-        private readonly YahooOptions _options;
+        private readonly MarketProviderOptions _options;
         private readonly IConfiguration _config;
         private readonly YahooQuotes _yahooQuotes;
         private readonly HttpClient _httpClient;
 
-        public YahooMarketProvider(HttpClient httpClient, IConfiguration config, IOptions<YahooOptions> options)
+        public MarketProviderType ProviderType => MarketProviderType.Yahoo;
+
+        public YahooMarketProvider(HttpClient httpClient, IConfiguration config, IOptions<MarketDataOptions> options)
         {
             _config = config;
-            _options = options.Value;
+            _options = options.Value.Providers.Yahoo;
             _yahooQuotes = new YahooQuotesBuilder().Build();
             _httpClient = httpClient;
         }

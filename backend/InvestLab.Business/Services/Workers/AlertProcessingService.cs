@@ -17,7 +17,7 @@ public class AlertProcessingService : IAlertProcessingService
     private readonly IAlertRepository _alertRepository;
     private readonly IUserSettingRepository _userSettingRepository;
     private readonly INotificationRepository _notificationRepository;
-    private readonly IExternalProvider _externalProvider;
+    private readonly IMarketProviderResolver _providerResolver;
     private readonly IEmailService _emailService;
     private readonly ILogger<AlertProcessingService> _logger;
 
@@ -31,12 +31,12 @@ public class AlertProcessingService : IAlertProcessingService
     /// <param name="emailService">Servicio utilizado para el envío de correos electrónicos de notificación.</param>
     /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
     /// <param name="logger">Registrador de eventos del servicio.</param>
-    public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IExternalProvider externalProvider, IEmailService emailService, IUnitOfWork unitOfWork, ILogger<AlertProcessingService> logger)
+    public AlertProcessingService(IAlertRepository alertRepository, IUserSettingRepository userSettingRepository, INotificationRepository notificationRepository, IMarketProviderResolver providerResolver, IEmailService emailService, IUnitOfWork unitOfWork, ILogger<AlertProcessingService> logger)
     {
         _alertRepository = alertRepository;
         _userSettingRepository = userSettingRepository;
         _notificationRepository = notificationRepository;
-        _externalProvider = externalProvider;
+        _providerResolver = providerResolver;
         _emailService = emailService;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -56,7 +56,7 @@ public class AlertProcessingService : IAlertProcessingService
         {
             try
             {
-                var market = await _externalProvider.GetPriceAsync(alert.Asset.Symbol);
+                var market = await _providerResolver.GetProvider().GetPriceAsync(alert.Asset.Symbol);
                 if (market == null)
                     continue;
 

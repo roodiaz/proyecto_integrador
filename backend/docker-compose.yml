@@ -24,9 +24,14 @@ x-common-environment: &common-environment
   Jwt__Audience: ${Jwt__Audience}
 
   # ===============================
-  # YAHOO
+  # MARKET DATA PROVIDERS
   # ===============================
-  Yahoo__BaseUrl: ${Yahoo__BaseUrl}
+  MarketData__DefaultProvider: ${MarketData__DefaultProvider}
+  MarketData__Providers__Yahoo__Enabled: ${MarketData__Providers__Yahoo__Enabled}
+  MarketData__Providers__Yahoo__BaseUrl: ${MarketData__Providers__Yahoo__BaseUrl}
+  MarketData__Providers__EodHistoricalData__Enabled: ${MarketData__Providers__EodHistoricalData__Enabled}
+  MarketData__Providers__EodHistoricalData__BaseUrl: ${MarketData__Providers__EodHistoricalData__BaseUrl}
+  MarketData__Providers__EodHistoricalData__ApiKey: ${MarketData__Providers__EodHistoricalData__ApiKey}
 
   # ===============================
   # EMAIL

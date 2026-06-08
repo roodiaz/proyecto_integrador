@@ -21,11 +21,16 @@ public class AlertProcessingServiceTests
     private readonly Mock<IUserSettingRepository> _userSettingRepository = new();
     private readonly Mock<INotificationRepository> _notificationRepository = new();
     private readonly Mock<IExternalProvider> _externalProvider = new();
+    private readonly Mock<IMarketProviderResolver> _providerResolver = new();
     private readonly Mock<IEmailService> _emailService = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<ILogger<AlertProcessingService>> _logger = new();
 
-    private AlertProcessingService CreateService() => new(_alertRepository.Object, _userSettingRepository.Object, _notificationRepository.Object, _externalProvider.Object, _emailService.Object, _unitOfWork.Object, _logger.Object);
+    private AlertProcessingService CreateService()
+    {
+        _providerResolver.Setup(x => x.GetProvider()).Returns(_externalProvider.Object);
+        return new(_alertRepository.Object, _userSettingRepository.Object, _notificationRepository.Object, _providerResolver.Object, _emailService.Object, _unitOfWork.Object, _logger.Object);
+    }
 
     private static Asset AssetEntity(string symbol = "AAPL") => new() { Id = 1, Symbol = symbol };
 
