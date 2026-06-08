@@ -56,13 +56,13 @@ namespace InvestLab.Business.Services.Api
         {
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
 
-            var (list, total) = await _favoriteRepo.GetPagedAsync(userId, filter);
+            var favorites = await _favoriteRepo.GetFilteredAsync(userId, filter);
 
-            var symbols = list.Select(x => x.Asset.Symbol).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+            var symbols = favorites.Select(x => x.Asset.Symbol).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x, StringComparer.OrdinalIgnoreCase);
 
-            var result = list.Select(fav =>
+            var items = favorites.Select(fav =>
             {
                 pricesBySymbol.TryGetValue(fav.Asset.Symbol, out var market);
 
@@ -73,13 +73,31 @@ namespace InvestLab.Business.Services.Api
                     Name = fav.Asset.Name,
                     Price = market?.Price ?? 0,
                     VariationPercent = market?.VariationPercent ?? 0,
-
                 };
-            });
+            }).ToList();
+
+            var desc = string.Equals(filter.SortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+
+            items = filter.SortBy switch
+            {
+                "symbol" => desc ? items.OrderByDescending(x => x.Symbol).ToList() : items.OrderBy(x => x.Symbol).ToList(),
+
+                "name" => desc ? items.OrderByDescending(x => x.Name).ToList() : items.OrderBy(x => x.Name).ToList(),
+
+                "price" => desc ? items.OrderByDescending(x => x.Price).ToList() : items.OrderBy(x => x.Price).ToList(),
+
+                "variationPercent" => desc ? items.OrderByDescending(x => x.VariationPercent).ToList() : items.OrderBy(x => x.VariationPercent).ToList(),
+
+                _ => items.OrderBy(x => x.Symbol).ToList()
+            };
+
+            var total = items.Count;
+
+            var paged = items.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToList();
 
             return Response.Ok(new
             {
-                Items = result,
+                Items = paged,
                 Total = total,
                 Page = filter.Page,
                 PageSize = filter.PageSize,

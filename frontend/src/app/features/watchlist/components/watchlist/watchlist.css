@@ -184,7 +184,6 @@
 }
 
 /* Botones toolbar */
-.btn-sort,
 .btn-add {
   display: inline-flex;
   align-items: center;
@@ -198,22 +197,10 @@
   white-space: nowrap;
 }
 
-.btn-sort mat-icon,
 .btn-add mat-icon {
   font-size: 17px;
   width: 17px;
   height: 17px;
-}
-
-.btn-sort {
-  border: 1px solid var(--border-focus);
-  background: var(--surface);
-  color: var(--text);
-}
-
-.btn-sort:hover {
-  background: var(--surface-high);
-  border-color: var(--accent);
 }
 
 .btn-add {
@@ -241,6 +228,11 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+}
+
+.watchlist-table.table-loading tbody {
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
 }
 
 /* Anchos fijos — th y td usan la misma clase */
@@ -278,6 +270,39 @@
   letter-spacing: 0.09em;
   color: var(--text-muted);
   text-align: center;
+}
+
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.th-sortable:hover {
+  color: var(--accent);
+}
+
+.sort-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: 4px;
+  color: var(--text-muted);
+  opacity: 0.85;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.th-sortable:hover .sort-icon {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.th-sortable.sort-active .sort-icon {
+  color: var(--accent);
+  opacity: 1;
 }
 
 

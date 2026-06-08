@@ -37,6 +37,10 @@ export class Watchlist implements OnInit {
   // ── Búsqueda ──
   searchTerm = '';
 
+  // ── Ordenamiento ──
+  sortField: string | null = null;
+  sortDirection: 'asc' | 'desc' | null = null;
+
   // ── Paginación ──
   readonly pageSize = 7;
   currentPage = 1;
@@ -76,7 +80,9 @@ export class Watchlist implements OnInit {
     const filter = {
       page: this.currentPage,
       pageSize: this.pageSize,
-      search: ''
+      search: '',
+      sortBy: this.sortField ?? undefined,
+      sortDirection: this.sortDirection ?? undefined,
     };
 
     this.watchlistService.getFavorites(filter)
@@ -117,34 +123,30 @@ export class Watchlist implements OnInit {
 
   // ── Ordenamiento ──
 
-  /** Ordena la lista de favoritos por símbolo, de la A a la Z. */
-  sortBySymbol(): void {
-    this.watchlistItems.sort((a, b) => a.symbol.localeCompare(b.symbol));
-    this.applySearch();
+  /**
+   * Ordena la tabla por la columna indicada, ciclando entre ascendente,
+   * descendente y sin orden, y recarga la lista desde el servidor.
+   * @param field Campo de ordenamiento (symbol | name | price | variationPercent).
+   */
+  onSort(field: string): void {
+    if (this.sortField !== field) {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    } else if (this.sortDirection === 'asc') {
+      this.sortDirection = 'desc';
+    } else {
+      this.sortField = null;
+      this.sortDirection = null;
+    }
+
+    this.currentPage = 1;
+    this.loadWatchlist();
   }
 
-  /** Ordena la lista de favoritos por precio, de mayor a menor. */
-  sortByPriceDesc(): void {
-    this.watchlistItems.sort((a, b) => b.price - a.price);
-    this.applySearch();
-  }
-
-  /** Ordena la lista de favoritos por precio, de menor a mayor. */
-  sortByPriceAsc(): void {
-    this.watchlistItems.sort((a, b) => a.price - b.price);
-    this.applySearch();
-  }
-
-  /** Ordena la lista de favoritos por variación porcentual, de mayor a menor. */
-  sortByVariationDesc(): void {
-    this.watchlistItems.sort((a, b) => b.variationPercent - a.variationPercent);
-    this.applySearch();
-  }
-
-  /** Ordena la lista de favoritos por variación porcentual, de menor a mayor. */
-  sortByVariationAsc(): void {
-    this.watchlistItems.sort((a, b) => a.variationPercent - b.variationPercent);
-    this.applySearch();
+  /** @returns El ícono de ordenamiento correspondiente al estado actual de la columna indicada. */
+  getSortIcon(field: string): string {
+    if (this.sortField !== field) return '↕';
+    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
   // ── Paginación ──

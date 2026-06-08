@@ -21,6 +21,8 @@ export interface FavoriteFilter {
   page: number;
   pageSize: number;
   search?: string;
+  sortBy?: string;
+  sortDirection?: string;
 }
 
 export type FavoriteListResponse = ApiResponse<FavoriteListData>;

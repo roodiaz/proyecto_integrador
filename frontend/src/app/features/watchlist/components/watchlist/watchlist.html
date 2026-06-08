@@ -28,7 +28,7 @@
         <div class="favorites-counter">
           <span class="counter-label">★ FAVORITOS</span>
 
-          @if (!loadingWatchlist) {
+          @if (!loadingWatchlist || maxFavorites > 0) {
             <span class="counter-value">{{ currentFavorites }} / {{ maxFavorites }}</span>
 
             <div class="favorites-progress">
@@ -40,11 +40,6 @@
           }
         </div>
 
-        <button class="btn-sort" type="button" [matMenuTriggerFor]="sortMenu">
-          <mat-icon>filter_list</mat-icon>
-          Ordenar
-        </button>
-
         <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
           <mat-icon>add</mat-icon>
           Agregar Activo
@@ -53,37 +48,10 @@
 
     </div>
 
-    <mat-menu #sortMenu="matMenu">
-      <button mat-menu-item type="button" (click)="sortBySymbol()">
-        <mat-icon>sort_by_alpha</mat-icon>
-        <span>Símbolo (A-Z)</span>
-      </button>
-
-      <button mat-menu-item type="button" (click)="sortByPriceDesc()">
-        <mat-icon>trending_up</mat-icon>
-        <span>Precio (Mayor a Menor)</span>
-      </button>
-
-      <button mat-menu-item type="button" (click)="sortByPriceAsc()">
-        <mat-icon>trending_down</mat-icon>
-        <span>Precio (Menor a Mayor)</span>
-      </button>
-
-      <button mat-menu-item type="button" (click)="sortByVariationDesc()">
-        <mat-icon>arrow_upward</mat-icon>
-        <span>Variación (+ a -)</span>
-      </button>
-
-      <button mat-menu-item type="button" (click)="sortByVariationAsc()">
-        <mat-icon>arrow_downward</mat-icon>
-        <span>Variación (- a +)</span>
-      </button>
-    </mat-menu>
-
     <!-- ── Tabla ── -->
     <div class="watchlist-table-container">
 
-      @if (loadingWatchlist) {
+      @if (loadingWatchlist && watchlistItems.length === 0) {
         <div class="watchlist-table-skeleton">
           <div class="skeleton skeleton-list-item"></div>
           <div class="skeleton skeleton-list-item"></div>
@@ -94,30 +62,30 @@
           <div class="skeleton skeleton-list-item"></div>
         </div>
       } @else {
-        <table class="watchlist-table">
+        <table class="watchlist-table" [class.table-loading]="loadingWatchlist">
           <thead>
             <tr>
-              <th class="col-symbol">
+              <th class="col-symbol th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSort('symbol')">
                 <div class="th-with-help">
-                  <span>Símbolo</span>
+                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>Símbolo</span>
                   <app-info-tooltip text="El código único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
                 </div>
               </th>
-              <th class="col-company">
+              <th class="col-company th-sortable" [class.sort-active]="sortField === 'name'" (click)="onSort('name')">
                 <div class="th-with-help">
-                  <span>Empresa</span>
+                  <span class="sort-icon">{{ getSortIcon('name') }}</span><span>Empresa</span>
                   <app-info-tooltip text="El nombre completo de la empresa emisora de la acción." />
                 </div>
               </th>
-              <th class="col-price">
+              <th class="col-price th-sortable" [class.sort-active]="sortField === 'price'" (click)="onSort('price')">
                 <div class="th-with-help">
-                  <span>Precio Actual</span>
+                  <span class="sort-icon">{{ getSortIcon('price') }}</span><span>Precio Actual</span>
                   <app-info-tooltip text="El precio de mercado más reciente de la acción, actualizado en tiempo real." />
                 </div>
               </th>
-              <th class="col-variation">
+              <th class="col-variation th-sortable" [class.sort-active]="sortField === 'variationPercent'" (click)="onSort('variationPercent')">
                 <div class="th-with-help">
-                  <span>Variación %</span>
+                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>Variación %</span>
                   <app-info-tooltip text="El porcentaje de cambio del precio respecto al cierre del día anterior. Verde significa que subió, rojo que bajó." />
                 </div>
               </th>
@@ -200,7 +168,7 @@
     </div>
 
     <!-- ── Paginación ── -->
-    @if (!loadingWatchlist && watchlistItems.length > 0) {
+    @if (watchlistItems.length > 0) {
       <div class="wl-pagination">
         <div class="page-info">
           <span class="page-label">{{ getStartRecord() }} – {{ getEndRecord() }} de {{ totalRecords }}</span>

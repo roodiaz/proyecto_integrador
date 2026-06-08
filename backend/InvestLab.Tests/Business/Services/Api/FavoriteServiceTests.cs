@@ -45,7 +45,7 @@ public class FavoriteServiceTests
         var favorites = new List<Favorite> { FavoriteEntity(asset) };
 
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(favoritesUsed: 1));
-        _favoriteRepository.Setup(r => r.GetPagedAsync(1, It.IsAny<FavoriteFilterDto>())).ReturnsAsync((favorites, 1));
+        _favoriteRepository.Setup(r => r.GetFilteredAsync(1, It.IsAny<FavoriteFilterDto>())).ReturnsAsync(favorites);
         _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [new() { Symbol = "AAPL", Price = 150, VariationPercent = 2.5m }] });
 
         var result = await CreateService().GetAsync(1, new FavoriteFilterDto());
@@ -59,7 +59,7 @@ public class FavoriteServiceTests
     public async Task GetAsync_WhenUserHasNoFavorites_ShouldReturnSuccessResponseWithEmptyData()
     {
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
-        _favoriteRepository.Setup(r => r.GetPagedAsync(1, It.IsAny<FavoriteFilterDto>())).ReturnsAsync((new List<Favorite>(), 0));
+        _favoriteRepository.Setup(r => r.GetFilteredAsync(1, It.IsAny<FavoriteFilterDto>())).ReturnsAsync(new List<Favorite>());
         var result = await CreateService().GetAsync(1, new FavoriteFilterDto());
 
         Assert.True(result.Success);

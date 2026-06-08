@@ -85,12 +85,14 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
-        /// Obtiene una página de favoritos de un usuario aplicando filtros de búsqueda, orden y paginación.
+        /// Obtiene los favoritos de un usuario que cumplen el filtro de búsqueda, sin paginar ni ordenar
+        /// (el precio actual y la variación dependen del cache de mercado, por lo que el ordenamiento
+        /// y la paginación finales se resuelven en el servicio).
         /// </summary>
         /// <param name="userId">Identificador del usuario.</param>
-        /// <param name="filter">Datos de filtrado y paginación a aplicar sobre los favoritos.</param>
-        /// <returns>Una tupla con la lista de favoritos de la página solicitada y el total de elementos que cumplen el filtro.</returns>
-        public async Task<(List<Favorite>, int)> GetPagedAsync(int userId, FavoriteFilterDto filter)
+        /// <param name="filter">Datos de filtrado a aplicar sobre los favoritos.</param>
+        /// <returns>La lista de favoritos que cumplen el filtro de búsqueda.</returns>
+        public async Task<List<Favorite>> GetFilteredAsync(int userId, FavoriteFilterDto filter)
         {
             var query = _context.Favorites.Include(x => x.Asset).Where(x => x.UserId == userId);
 
@@ -103,15 +105,7 @@ namespace InvestLab.Data.Repositories
                     x.Asset.Name.Contains(search));
             }
 
-            var total = await query.CountAsync();
-
-            var items = await query
-                .OrderBy(x => x.Asset.Symbol)
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Take(filter.PageSize)
-                .ToListAsync();
-
-            return (items, total);
+            return await query.ToListAsync();
         }
 
         /// <summary>
