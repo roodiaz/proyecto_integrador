@@ -29,6 +29,7 @@ export interface ProfileData {
   phone?: string;
   birthDate?: string | null;
   profileImageUrl?: string | null;
+  lastLoginAt?: string | null;
 
   settings: {
     currency: string;

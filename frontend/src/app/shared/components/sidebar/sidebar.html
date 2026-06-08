@@ -29,9 +29,6 @@
       [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
       <mat-icon class="nav-icon">notifications</mat-icon>
       <span class="nav-label">Alertas</span>
-      @if (unreadNotificationsCount > 0) {
-        <span class="nav-badge">{{ unreadNotificationsCount }}</span>
-      }
     </a>
 
     <a class="nav-item" routerLink="/watchlist" routerLinkActive="active" [matTooltip]="'Lista de Seguimiento'"

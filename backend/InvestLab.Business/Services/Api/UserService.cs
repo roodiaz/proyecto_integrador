@@ -89,6 +89,7 @@ public class UserService : IUserService
                 user.Phone,
                 user.BirthDate,
                 user.ProfileImageUrl,
+                user.LastLoginAt,
                 settings = new
                 {
                     user.UserSetting.Currency,

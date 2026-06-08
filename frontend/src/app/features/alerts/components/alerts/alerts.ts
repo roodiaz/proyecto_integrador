@@ -85,9 +85,13 @@ export class Alerts implements OnInit, OnDestroy {
       this.unreadNotificationsCount = count;
     });
 
-    // Abre el modal de nueva alerta si viene con un ticker por query param
+    // Abre el modal de nueva alerta si viene con un ticker por query param,
+    // o el historial de notificaciones si viene con view=history (p. ej. desde la campana del Header)
     this.route.queryParams.subscribe(params => {
       const ticker = params['ticker'];
+      const view = params['view'];
+
+      if (view === 'history') this.setActiveView('history');
       if (!ticker) return;
 
       this.createNewAlert(ticker);

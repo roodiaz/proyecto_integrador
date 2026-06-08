@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { SidebarService } from '../core/services/sidebar.service';
 import { RouterOutlet } from '@angular/router';
 import { Sidebar } from '../shared/components/sidebar/sidebar';
+import { Header } from '../shared/components/header/header';
 
 /**
  * Layout principal de la aplicación: combina la barra lateral de navegación
@@ -14,7 +15,7 @@ import { Sidebar } from '../shared/components/sidebar/sidebar';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, Sidebar],
+  imports: [RouterOutlet, Sidebar, Header],
   templateUrl: './layout-sidebar.html',
   styleUrls: ['./layout-sidebar.css']
 })

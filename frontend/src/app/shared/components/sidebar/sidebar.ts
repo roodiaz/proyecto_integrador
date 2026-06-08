@@ -8,7 +8,6 @@ import { Subscription, timer } from 'rxjs';
 import { MarketPriceStatusService } from '../../../shared/components/services/market-price-status.service';
 import { MarketStatusService } from '../../../shared/components/services/market-status.service';
 import { MarketStatus } from '../../../features/market/models/market.model';
-import { UnreadNotificationsService } from '../../../features/alerts/services/unread-notifications.service';
 
 /**
  * Barra lateral de navegación principal de la aplicación.
@@ -41,15 +40,11 @@ export class Sidebar implements OnDestroy {
   // ── Estado global del mercado ──
   marketStatus: MarketStatus | null = null;
 
-  // ── Notificaciones sin leer ──
-  unreadNotificationsCount = 0;
-
   // ── Suscripciones ──
   private sidebarSub?: Subscription;
   private statusSub?: Subscription;
   private clockSub?: Subscription;
   private marketStatusSub?: Subscription;
-  private unreadNotificationsSub?: Subscription;
 
   /**
    * Suscribe la barra lateral al estado de colapso, al estado de actualización
@@ -65,8 +60,7 @@ export class Sidebar implements OnDestroy {
     private sidebarService: SidebarService,
     private authSessionService: AuthSessionService,
     private marketPriceStatusService: MarketPriceStatusService,
-    public marketStatusService: MarketStatusService,
-    private unreadNotificationsService: UnreadNotificationsService
+    public marketStatusService: MarketStatusService
   ) {
     this.sidebarSub = this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
       this.isCollapsed = isCollapsed;
@@ -84,10 +78,6 @@ export class Sidebar implements OnDestroy {
     this.marketStatusSub = this.marketStatusService.watchStatus().subscribe(status => {
       this.marketStatus = status;
     });
-
-    this.unreadNotificationsSub = this.unreadNotificationsService.watchCount().subscribe(count => {
-      this.unreadNotificationsCount = count;
-    });
   }
 
   // ── Ciclo de vida ──
@@ -97,7 +87,6 @@ export class Sidebar implements OnDestroy {
     this.sidebarSub?.unsubscribe();
     this.statusSub?.unsubscribe();
     this.marketStatusSub?.unsubscribe();
-    this.unreadNotificationsSub?.unsubscribe();
     this.clockSub?.unsubscribe();
   }
 
