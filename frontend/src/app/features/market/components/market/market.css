@@ -47,41 +47,6 @@
   font-size: 0.875rem;
 }
 
-.market-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 9px 14px;
-  border: 1px solid rgba(66, 71, 84, 0.75);
-  border-radius: 999px;
-  background: rgba(28, 27, 27, 0.75);
-  color: #c2c6d6;
-  font-size: 12px;
-}
-
-.market-state strong {
-  color: #adc6ff;
-  font-weight: 700;
-}
-
-.market-state.closed .state-dot {
-  background: #ff5451;
-  box-shadow: 0 0 14px rgba(255, 84, 81, 0.75);
-}
-
-.market-state.closed strong {
-  color: #ffb4ab;
-}
-
-.state-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #4ae176;
-  box-shadow: 0 0 14px rgba(74, 225, 118, 0.75);
-}
-
 /* ── Índices ── */
 
 .indices-grid {
@@ -1061,11 +1026,6 @@
 
   .terminal-heading h1 {
     font-size: 26px;
-  }
-
-  .market-state {
-    font-size: 11px;
-    padding: 7px 10px;
   }
 
   .indices-grid {

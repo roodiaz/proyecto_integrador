@@ -6,6 +6,8 @@ import { MaterialModule } from '../../material.module';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
 import { Subscription, timer } from 'rxjs';
 import { MarketPriceStatusService } from '../../../shared/components/services/market-price-status.service';
+import { MarketStatusService } from '../../../shared/components/services/market-status.service';
+import { MarketStatus } from '../../../features/market/models/market.model';
 
 /**
  * Barra lateral de navegación principal de la aplicación.
@@ -35,23 +37,30 @@ export class Sidebar implements OnDestroy {
   pricesUpdatedAt: string | null = null;
   updatedText = 'Precios pendientes de actualización';
 
+  // ── Estado global del mercado ──
+  marketStatus: MarketStatus | null = null;
+
   // ── Suscripciones ──
   private sidebarSub?: Subscription;
   private statusSub?: Subscription;
   private clockSub?: Subscription;
+  private marketStatusSub?: Subscription;
 
   /**
    * Suscribe la barra lateral al estado de colapso, al estado de actualización
-   * de precios del mercado, y arranca un reloj que recalcula cada segundo el
-   * texto de "hace cuánto se actualizaron los precios".
+   * de precios del mercado, al estado global del mercado (abierto/cerrado), y
+   * arranca un reloj que recalcula cada segundo el texto de "hace cuánto se
+   * actualizaron los precios".
    * @param sidebarService Servicio que expone y controla el estado de colapso de la barra lateral.
    * @param authSessionService Servicio de sesión, usado para cerrar sesión.
    * @param marketPriceStatusService Servicio que informa la fecha de la última actualización de precios.
+   * @param marketStatusService Servicio compartido que informa el estado global del mercado (abierto/cerrado).
    */
   constructor(
     private sidebarService: SidebarService,
     private authSessionService: AuthSessionService,
-    private marketPriceStatusService: MarketPriceStatusService
+    private marketPriceStatusService: MarketPriceStatusService,
+    public marketStatusService: MarketStatusService
   ) {
     this.sidebarSub = this.sidebarService.isCollapsed$.subscribe(isCollapsed => {
       this.isCollapsed = isCollapsed;
@@ -65,15 +74,35 @@ export class Sidebar implements OnDestroy {
     this.clockSub = timer(0, 1000).subscribe(() => {
       this.updatedText = this.getUpdatedAgoText(this.pricesUpdatedAt);
     });
+
+    this.marketStatusSub = this.marketStatusService.watchStatus().subscribe(status => {
+      this.marketStatus = status;
+    });
   }
 
   // ── Ciclo de vida ──
 
-  /** Cancela las suscripciones activas (colapso, estado de precios y reloj) al destruir el componente. */
+  /** Cancela las suscripciones activas (colapso, estado de precios, estado de mercado y reloj) al destruir el componente. */
   ngOnDestroy(): void {
     this.sidebarSub?.unsubscribe();
     this.statusSub?.unsubscribe();
+    this.marketStatusSub?.unsubscribe();
     this.clockSub?.unsubscribe();
+  }
+
+  /** @returns El texto combinado (estado del mercado + actualización de precios) a mostrar como tooltip cuando la barra está colapsada. */
+  getStatusTooltip(): string {
+    return `${this.marketStatusService.getStatusText(this.marketStatus)} · ${this.updatedText}`;
+  }
+
+  /** @returns La hora de la última actualización de precios formateada como reloj (p. ej. "17:00 hs"), o un texto de respaldo si todavía no hay datos. */
+  getLastUpdateTimeText(): string {
+    if (!this.pricesUpdatedAt) return 'Sin datos disponibles';
+
+    const updatedDate = new Date(this.pricesUpdatedAt);
+    const hours = updatedDate.getHours().toString().padStart(2, '0');
+    const minutes = updatedDate.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes} hs`;
   }
 
   // ── Acciones del usuario ──

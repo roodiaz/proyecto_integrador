@@ -3,12 +3,6 @@
     <div class="terminal-title-block">
       <h1>Mercado</h1>
       <p>Analisis institucional y comparacion de activos.</p>
-
-      <div class="market-state" [class.closed]="!isMarketOpen()">
-        <span class="state-dot"></span>
-        <span>{{ getMarketStatusText() }}</span>
-        <strong>{{ getMarketStatusTime() }}</strong>
-      </div>
     </div>
   </section>
 

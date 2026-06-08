@@ -16,7 +16,6 @@ import { BuyData, SellData, PortfolioModalResult } from '../../../portfolio/mode
 
 import {
   MarketIndex,
-  MarketStatus,
   MarketAsset,
   MarketMover,
   MarketNews,
@@ -44,13 +43,9 @@ Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcEl
 })
 export class Market implements OnInit, AfterViewInit, OnDestroy {
 
-  // ── Estado general del mercado ──
-  marketStatus: MarketStatus | null = null;
   marketIndices: MarketIndex[] = [];
   loadingIndices = false;
   loadingOverview = false;
-  currentTime = '';
-  private clockInterval: any;
 
   /** Tarjetas placeholder que se muestran cuando todavía no hay índices disponibles. */
   emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
@@ -129,11 +124,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.loadMarketOverview();
     this.loadMarketLists();
     this.loadNews();
-    this.updateClock();
     this.loadComparisonHistory();
     this.searchAsset();
-
-    this.clockInterval = setInterval(() => this.updateClock(), 1000);
   }
 
   /**
@@ -144,10 +136,9 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => this.setupChart(), 0);
   }
 
-  /** Destruye el gráfico y detiene el reloj del estado del mercado al salir de la pantalla. */
+  /** Destruye el gráfico al salir de la pantalla. */
   ngOnDestroy(): void {
     if (this.chart) this.chart.destroy();
-    if (this.clockInterval) clearInterval(this.clockInterval);
   }
 
   // ── Getters ──
@@ -198,22 +189,12 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
     this.marketService.getMarketOverview().subscribe({
       next: response => {
-        if (!response.success || !response.data) {
-          this.marketStatus = null;
-          this.marketIndices = [];
-          this.loadingOverview = false;
-          this.loadingIndices = false;
-          return;
-        }
-
-        this.marketStatus = response.data.marketStatus;
-        this.marketIndices = response.data.indices ?? [];
+        this.marketIndices = response.success && response.data ? (response.data.indices ?? []) : [];
         this.loadingOverview = false;
         this.loadingIndices = false;
       },
       error: error => {
         console.error('Error al obtener panorama de mercado', error);
-        this.marketStatus = null;
         this.marketIndices = [];
         this.loadingOverview = false;
         this.loadingIndices = false;
@@ -705,27 +686,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Texto que describe el estado actual del mercado (abierto/cerrado, próxima apertura, etc.).
-   * @returns Texto de estado del mercado, o un mensaje genérico si no está disponible.
-   */
-  getMarketStatusText(): string {
-    return this.marketStatus?.statusText ?? 'Estado no disponible';
-  }
-
-  /**
-   * Hora a mostrar junto al estado del mercado.
-   * @returns La hora reportada por el servicio o, en su defecto, el reloj local.
-   */
-  getMarketStatusTime(): string {
-    return this.marketStatus?.marketTime ?? this.currentTime;
-  }
-
-  /** @returns `true` si el mercado se encuentra abierto en este momento. */
-  isMarketOpen(): boolean {
-    return this.marketStatus?.isOpen ?? false;
-  }
-
-  /**
    * Variación absoluta de un índice respecto al cierre anterior.
    * @param index Índice del cual calcular la variación.
    * @returns La variación informada por el servicio o, en su defecto, la diferencia entre el valor actual y el cierre previo.
@@ -805,11 +765,6 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Gráfico (privados) ──
-
-  /** Actualiza la hora local que se muestra como respaldo del estado del mercado. */
-  private updateClock(): void {
-    this.currentTime = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }
 
   /**
    * Da formato a la fecha de un punto del histórico según el rango de tiempo seleccionado,
