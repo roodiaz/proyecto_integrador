@@ -13,5 +13,7 @@ namespace InvestLab.Data.Interfaces
         Task DeleteByUserIdAsync(int userId);
 
         Task<List<Transaction>> GetByUserAfterDateAsync(int userId, DateTime fromUtc);
+
+        Task<List<TransactionDto>> GetAllForExportAsync(int userId, TransactionFilterDto filter);
     }
 }

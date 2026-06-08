@@ -222,6 +222,9 @@
             <input type="text" class="search-input" placeholder="Buscar ticker..." [(ngModel)]="symbolFilter"
               (ngModelChange)="onPositionFiltersChange()">
           </div>
+          <button class="btn-export" [disabled]="downloadingHoldings" (click)="downloadHoldings()" title="Descargar Excel">
+            <mat-icon>download</mat-icon>
+          </button>
         </div>
       </div>
 
@@ -391,6 +394,9 @@
             <mat-icon>tune</mat-icon>
             Filtrar
             <mat-icon class="chevron" [class.open]="showOperationsFilters">expand_more</mat-icon>
+          </button>
+          <button class="btn-export" [disabled]="downloadingTransactions" (click)="downloadTransactions()" title="Descargar Excel">
+            <mat-icon>download</mat-icon>
           </button>
         </div>
       </div>

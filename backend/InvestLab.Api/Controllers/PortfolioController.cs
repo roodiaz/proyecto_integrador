@@ -277,6 +277,28 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
+    /// Genera y descarga un archivo Excel con las tenencias actuales del usuario.
+    /// </summary>
+    [HttpPost("export/holdings")]
+    public async Task<IActionResult> ExportHoldings([FromBody] PortfolioOpenPositionsFilterDto filter)
+    {
+        _logger.LogInformation("Exportando tenencias a Excel: UserId={UserId}", UserId);
+        var bytes = await _portfolioService.ExportHoldingsToExcelAsync(UserId, filter);
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "tenencias.xlsx");
+    }
+
+    /// <summary>
+    /// Genera y descarga un archivo Excel con el historial de operaciones del usuario.
+    /// </summary>
+    [HttpPost("export/transactions")]
+    public async Task<IActionResult> ExportTransactions([FromBody] TransactionFilterDto filter)
+    {
+        _logger.LogInformation("Exportando operaciones a Excel: UserId={UserId}", UserId);
+        var bytes = await _transactionService.ExportTransactionsToExcelAsync(UserId, filter);
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "operaciones.xlsx");
+    }
+
+    /// <summary>
     /// Reinicia la simulación del portfolio del usuario autenticado.
     /// </summary>
     /// <remarks>

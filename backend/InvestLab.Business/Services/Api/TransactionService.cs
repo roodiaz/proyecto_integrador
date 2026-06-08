@@ -1,8 +1,10 @@
-﻿using InvestLab.Business.Interfaces.Api;
+﻿using ClosedXML.Excel;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Transaction;
 using Microsoft.Extensions.Logging;
+using static InvestLab.Models.Enums;
 
 namespace InvestLab.Business.Services.Api
 {
@@ -49,6 +51,52 @@ namespace InvestLab.Business.Services.Api
                 _logger.LogError(ex, "Error obteniendo transacciones para usuario {UserId}", userId);
                 return Response.Fail("Error al obtener las transacciones");
             }
+        }
+
+        public async Task<byte[]> ExportTransactionsToExcelAsync(int userId, TransactionFilterDto filter)
+        {
+            var transactions = await _transactionRepository.GetAllForExportAsync(userId, filter);
+
+            using var workbook = new XLWorkbook();
+            var sheet = workbook.Worksheets.Add("Operaciones");
+
+            string[] headers = ["Fecha", "Ticker", "Sector", "Tipo", "Cantidad", "Precio (USD)", "Total (USD)"];
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = sheet.Cell(1, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1F3864");
+                cell.Style.Font.FontColor = XLColor.White;
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            }
+
+            for (int r = 0; r < transactions.Count; r++)
+            {
+                var t = transactions[r];
+                int row = r + 2;
+                sheet.Cell(row, 1).Value = t.OperationDate.ToString("dd/MM/yyyy HH:mm");
+                sheet.Cell(row, 2).Value = t.Symbol;
+                sheet.Cell(row, 3).Value = t.Sector ?? "-";
+                sheet.Cell(row, 4).Value = t.Type == TransactionType.Buy ? "Compra" : "Venta";
+                sheet.Cell(row, 5).Value = t.Quantity;
+                sheet.Cell(row, 6).Value = t.BuyPrice;
+                sheet.Cell(row, 7).Value = t.Total;
+
+                for (int c = 1; c <= 7; c++)
+                    sheet.Cell(row, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                var typeCell = sheet.Cell(row, 4);
+                typeCell.Style.Font.FontColor = t.Type == TransactionType.Buy
+                    ? XLColor.FromHtml("#1B8436")
+                    : XLColor.FromHtml("#C0392B");
+            }
+
+            sheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return stream.ToArray();
         }
     }
 }

@@ -22,5 +22,7 @@ namespace InvestLab.Business.Interfaces.Api
         Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter);
 
         Task<Response> ResetSimulationAsync(int userId);
+
+        Task<byte[]> ExportHoldingsToExcelAsync(int userId, PortfolioOpenPositionsFilterDto filter);
     }
 }

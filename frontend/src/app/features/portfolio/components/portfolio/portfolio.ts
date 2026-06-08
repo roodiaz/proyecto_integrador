@@ -81,6 +81,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   // ── Estado de la interfaz ──
   showOperationsFilters = false;
+  downloadingHoldings = false;
+  downloadingTransactions = false;
 
   // ── Gráficos ──
   pieChartData: PortfolioPieChartItem[] = [];
@@ -475,6 +477,54 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           console.error('Operations error', err);
         },
       });
+  }
+
+  // ── Exportación a Excel ──
+
+  downloadHoldings(): void {
+    if (this.downloadingHoldings) return;
+    this.downloadingHoldings = true;
+    const filter = {
+      page: 1, pageSize: 9999,
+      symbol: this.symbolFilter,
+      sortBy: this.sortField ?? undefined,
+      sortDirection: this.sortDirection ?? undefined,
+    };
+    this.portfolioService.exportHoldings(filter)
+      .pipe(finalize(() => this.downloadingHoldings = false))
+      .subscribe({
+        next: (blob) => this.triggerDownload(blob, 'tenencias.xlsx'),
+        error: () => this.snackBarService.error('Error al exportar las tenencias'),
+      });
+  }
+
+  downloadTransactions(): void {
+    if (this.downloadingTransactions) return;
+    this.downloadingTransactions = true;
+    const filter: TransactionFilter = {
+      page: 1, pageSize: 9999,
+      symbol: this.operationSymbolFilter,
+      type: this.operationTypeFilter,
+      fromDate: this.operationFromDate || undefined,
+      toDate: this.operationToDate || undefined,
+      sortBy: this.operationSortField ?? undefined,
+      sortDirection: this.operationSortDirection ?? undefined,
+    };
+    this.portfolioService.exportTransactions(filter)
+      .pipe(finalize(() => this.downloadingTransactions = false))
+      .subscribe({
+        next: (blob) => this.triggerDownload(blob, 'operaciones.xlsx'),
+        error: () => this.snackBarService.error('Error al exportar las operaciones'),
+      });
+  }
+
+  private triggerDownload(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // ── Creación de gráficos ──

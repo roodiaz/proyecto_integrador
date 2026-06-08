@@ -121,6 +121,51 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
+        /// Devuelve todas las transacciones de un usuario que coincidan con los filtros indicados,
+        /// sin aplicar paginación. Se usa para generar el archivo de exportación.
+        /// </summary>
+        public async Task<List<TransactionDto>> GetAllForExportAsync(int userId, TransactionFilterDto filter)
+        {
+            var query = _context.Transactions
+                .AsNoTracking()
+                .Include(x => x.Asset)
+                .Where(x => x.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(filter.Symbol))
+                query = query.Where(x => EF.Functions.ILike(x.Asset.Symbol, $"%{filter.Symbol}%"));
+            if (filter.Type.HasValue)
+                query = query.Where(x => x.Type == filter.Type.Value);
+            if (filter.FromDate.HasValue)
+                query = query.Where(x => x.CreatedAt >= filter.FromDate.Value);
+            if (filter.ToDate.HasValue)
+                query = query.Where(x => x.CreatedAt <= filter.ToDate.Value);
+
+            var desc = string.Equals(filter.SortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+            query = filter.SortBy switch
+            {
+                "symbol"   => desc ? query.OrderByDescending(x => x.Asset.Symbol)  : query.OrderBy(x => x.Asset.Symbol),
+                "sector"   => desc ? query.OrderByDescending(x => x.Asset.Sector)  : query.OrderBy(x => x.Asset.Sector),
+                "quantity" => desc ? query.OrderByDescending(x => x.Quantity)       : query.OrderBy(x => x.Quantity),
+                "price"    => desc ? query.OrderByDescending(x => x.Price)          : query.OrderBy(x => x.Price),
+                "total"    => desc ? query.OrderByDescending(x => x.Total)          : query.OrderBy(x => x.Total),
+                _          => query.OrderByDescending(x => x.CreatedAt)
+            };
+
+            return await query
+                .Select(x => new TransactionDto
+                {
+                    OperationDate = x.CreatedAt,
+                    Symbol        = x.Asset.Symbol,
+                    Sector        = x.Asset.Sector,
+                    Type          = x.Type,
+                    Quantity      = x.Quantity,
+                    BuyPrice      = x.Price,
+                    Total         = x.Total
+                })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Elimina todas las transacciones asociadas a un usuario.
         /// </summary>
         /// <param name="userId">Identificador del usuario cuyas transacciones se eliminarán.</param>

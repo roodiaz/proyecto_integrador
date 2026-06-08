@@ -58,6 +58,14 @@ export class PortfolioService {
     return this.http.post<ApiResponse>(`${this.apiUrl}/sell`, data);
   }
 
+  exportHoldings(filter: OpenPositionsFilter): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/export/holdings`, filter, { responseType: 'blob' });
+  }
+
+  exportTransactions(filter: TransactionFilter): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/export/transactions`, filter, { responseType: 'blob' });
+  }
+
   resetSimulation(): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/reset-simulation`, {});
   }

@@ -550,6 +550,23 @@
 .btn-filter .chevron.open { transform: rotate(180deg); }
 .btn-filter:hover { border-color: var(--accent-primary); }
 
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-export mat-icon { font-size: 18px; width: 18px; height: 18px; }
+.btn-export:hover:not([disabled]) { border-color: var(--accent-primary); color: var(--accent-primary); }
+.btn-export[disabled] { opacity: 0.4; cursor: not-allowed; }
+
 .advanced-filters {
   display: flex;
   gap: 1rem;

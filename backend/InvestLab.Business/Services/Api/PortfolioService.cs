@@ -1,4 +1,5 @@
-﻿using InvestLab.Business.Interfaces;
+﻿using ClosedXML.Excel;
+using InvestLab.Business.Interfaces;
 using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
@@ -620,6 +621,95 @@ public class PortfolioService : IPortfolioService
 
             return Response.Fail("Error interno");
         }
+    }
+
+    /// <summary>
+    /// Exporta las posiciones abiertas del portfolio a un archivo Excel (.xlsx),
+    /// aplicando los mismos filtros y orden que la vista paginada pero sin límite de filas.
+    /// </summary>
+    public async Task<byte[]> ExportHoldingsToExcelAsync(int userId, PortfolioOpenPositionsFilterDto filter)
+    {
+        var portfolio = await _portfolioRepository.GetPagedByUserAsync(userId);
+
+        var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
+        var marketPricesResponse = symbols.Count == 0
+            ? new MarketPricesResponseDto()
+            : await _marketPriceCacheService.GetPricesAsync(symbols);
+        var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
+
+        var positions = new List<PortfolioOpenPositionDto>();
+        foreach (var item in portfolio)
+        {
+            if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice)) continue;
+            var variationPercent = ((currentPrice - item.AvgPrice) / item.AvgPrice) * 100;
+            var profitLoss = (currentPrice - item.AvgPrice) * item.Quantity;
+            positions.Add(new PortfolioOpenPositionDto
+            {
+                Symbol          = item.Asset.Symbol,
+                Sector          = item.Asset.Sector,
+                Quantity        = item.Quantity,
+                AveragePrice    = Math.Round(item.AvgPrice, 2),
+                CurrentPrice    = Math.Round(currentPrice, 2),
+                VariationPercent = Math.Round(variationPercent, 2),
+                ProfitLoss      = Math.Round(profitLoss, 2),
+                IsOpen          = true
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Symbol))
+            positions = positions.Where(x => x.Symbol.Contains(filter.Symbol, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        var desc = string.Equals(filter.SortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        positions = filter.SortBy switch
+        {
+            "symbol"          => desc ? positions.OrderByDescending(x => x.Symbol).ToList()          : positions.OrderBy(x => x.Symbol).ToList(),
+            "sector"          => desc ? positions.OrderByDescending(x => x.Sector).ToList()          : positions.OrderBy(x => x.Sector).ToList(),
+            "quantity"        => desc ? positions.OrderByDescending(x => x.Quantity).ToList()        : positions.OrderBy(x => x.Quantity).ToList(),
+            "averagePrice"    => desc ? positions.OrderByDescending(x => x.AveragePrice).ToList()    : positions.OrderBy(x => x.AveragePrice).ToList(),
+            "currentPrice"    => desc ? positions.OrderByDescending(x => x.CurrentPrice).ToList()    : positions.OrderBy(x => x.CurrentPrice).ToList(),
+            "variationPercent"=> desc ? positions.OrderByDescending(x => x.VariationPercent).ToList(): positions.OrderBy(x => x.VariationPercent).ToList(),
+            "profitLoss"      => desc ? positions.OrderByDescending(x => x.ProfitLoss).ToList()      : positions.OrderBy(x => x.ProfitLoss).ToList(),
+            _                 => positions
+        };
+
+        using var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Tenencias");
+
+        string[] headers = ["Ticker", "Sector", "Cantidad", "Precio Compra (USD)", "Precio Actual (USD)", "Variación %", "Ganancia/Pérdida (USD)"];
+        for (int i = 0; i < headers.Length; i++)
+        {
+            var cell = sheet.Cell(1, i + 1);
+            cell.Value = headers[i];
+            cell.Style.Font.Bold = true;
+            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1F3864");
+            cell.Style.Font.FontColor = XLColor.White;
+            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        }
+
+        for (int r = 0; r < positions.Count; r++)
+        {
+            var p = positions[r];
+            int row = r + 2;
+            sheet.Cell(row, 1).Value = p.Symbol;
+            sheet.Cell(row, 2).Value = p.Sector ?? "-";
+            sheet.Cell(row, 3).Value = p.Quantity;
+            sheet.Cell(row, 4).Value = p.AveragePrice;
+            sheet.Cell(row, 5).Value = p.CurrentPrice;
+            sheet.Cell(row, 6).Value = p.VariationPercent;
+            sheet.Cell(row, 7).Value = p.ProfitLoss;
+
+            for (int c = 1; c <= 7; c++)
+                sheet.Cell(row, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            var profitCell = sheet.Cell(row, 7);
+            profitCell.Style.Font.FontColor = p.ProfitLoss >= 0 ? XLColor.FromHtml("#1B8436") : XLColor.FromHtml("#C0392B");
+        }
+
+        sheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
     }
 
     /// <summary>
