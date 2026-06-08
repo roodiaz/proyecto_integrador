@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { NotificationService } from '../../services/notification.service';
+import { UnreadNotificationsService } from '../../services/unread-notifications.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
@@ -41,7 +42,8 @@ export class Notifications implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private unreadNotificationsService: UnreadNotificationsService
   ) { }
 
   ngOnInit(): void {
@@ -176,6 +178,7 @@ export class Notifications implements OnInit {
     this.notificationService.markAllAsRead().subscribe({
       next: () => {
         this.notificationList.forEach(n => n.isRead = true);
+        this.unreadNotificationsService.refresh();
       },
       error: error => {
         console.error('Error marcando todas las notificaciones', error);
@@ -195,6 +198,7 @@ export class Notifications implements OnInit {
     this.notificationService.markAsRead(notification.id).subscribe({
       next: () => {
         notification.isRead = true;
+        this.unreadNotificationsService.refresh();
       },
       error: error => {
         console.error('Error marcando notificación', error);
@@ -225,6 +229,7 @@ export class Notifications implements OnInit {
     this.notificationService.delete(notification.id).subscribe({
       next: () => {
         this.loadNotificationList();
+        this.unreadNotificationsService.refresh();
       },
       error: error => {
         console.error('Error eliminando notificación', error);

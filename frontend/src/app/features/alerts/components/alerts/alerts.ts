@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { Alert, AlertDto, AlertFilterDto, ALERT_CONDITIONS } from '../../models/alert.model';
 import { Notifications } from '../notifications/notifications';
-import { NotificationService } from '../../services/notification.service';
+import { UnreadNotificationsService } from '../../services/unread-notifications.service';
 import { AlertService } from '../../services/alert.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,7 +26,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']
 })
-export class Alerts implements OnInit {
+export class Alerts implements OnInit, OnDestroy {
 
   // ── Vista ──────────────────────────────────────────────────────────────────
   /** Tab activo: lista de alertas o historial de notificaciones. */
@@ -54,21 +54,23 @@ export class Alerts implements OnInit {
   pausedAlerts = 0;
   triggeredToday = 0;
   limitAlerts = 10;
-  /** Cantidad de notificaciones no leídas para el badge del tab. */
+  /** Cantidad de notificaciones no leídas para el badge del tab, sincronizada con el servicio compartido. */
   unreadNotificationsCount = 0;
 
   // ── Estados de carga ───────────────────────────────────────────────────────
   loadingAlerts = false;
   loadingStats = false;
-  loadingUnreadNotifications = false;
 
   // ── Paginación ─────────────────────────────────────────────────────────────
   alertsPerPage = 10;
   currentPage = 1;
 
+  /** Suscripción al contador compartido de notificaciones no leídas. */
+  private unreadNotificationsSub?: Subscription;
+
   constructor(
     private dialog: MatDialog,
-    private notificationService: NotificationService,
+    private unreadNotificationsService: UnreadNotificationsService,
     private alertService: AlertService,
     private snackBarService: SnackBarService,
     private route: ActivatedRoute,
@@ -78,7 +80,10 @@ export class Alerts implements OnInit {
   ngOnInit(): void {
     this.loadAlerts();
     this.loadStats();
-    this.loadUnreadNotificationsCount();
+
+    this.unreadNotificationsSub = this.unreadNotificationsService.watchCount().subscribe(count => {
+      this.unreadNotificationsCount = count;
+    });
 
     // Abre el modal de nueva alerta si viene con un ticker por query param
     this.route.queryParams.subscribe(params => {
@@ -95,17 +100,21 @@ export class Alerts implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.unreadNotificationsSub?.unsubscribe();
+  }
+
   // ── Navegación ─────────────────────────────────────────────────────────────
 
   /**
    * Cambia el tab activo entre la lista de alertas y el historial de notificaciones.
-   * Al cambiar a historial, recarga el contador de notificaciones no leídas para
-   * mantener el badge actualizado.
+   * Al cambiar a historial, refresca el contador compartido de notificaciones no
+   * leídas para mantener el badge actualizado.
    * @param view Tab de destino.
    */
   setActiveView(view: 'alerts' | 'history'): void {
     this.activeView = view;
-    if (view === 'history') this.loadUnreadNotificationsCount();
+    if (view === 'history') this.unreadNotificationsService.refresh();
   }
 
   // ── Filtros y paginación ───────────────────────────────────────────────────
@@ -252,25 +261,6 @@ export class Alerts implements OnInit {
         },
         error: error => {
           console.error('Error cargando estadisticas de alertas', error);
-        }
-      });
-  }
-
-  /**
-   * Obtiene la cantidad de notificaciones no leídas para mostrar el badge en el tab
-   * de historial.
-   */
-  loadUnreadNotificationsCount(): void {
-    this.loadingUnreadNotifications = true;
-
-    this.notificationService.getUnreadCount()
-      .pipe(finalize(() => this.loadingUnreadNotifications = false))
-      .subscribe({
-        next: response => {
-          this.unreadNotificationsCount = response.data!.count;
-        },
-        error: error => {
-          console.error('Error obteniendo notificaciones no leidas', error);
         }
       });
   }
