@@ -20,7 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 80px;
+  padding: clamp(16px, 5vh, 80px) clamp(32px, 6vw, 80px);
+  overflow-y: auto;
   background:
     radial-gradient(circle at top right,   rgba(0, 185, 84, 0.15),   transparent 40%),
     radial-gradient(circle at bottom left, rgba(77, 142, 255, 0.15), transparent 40%);
@@ -32,7 +33,7 @@
 }
 
 .hero-title {
-  font-size: 56px;
+  font-size: clamp(24px, min(4vw, 6vh), 48px);
   line-height: 1.05;
   max-width: 650px;
 }
@@ -43,16 +44,16 @@
 
 .hero-description {
   color: #a6adbb;
-  font-size: 18px;
-  line-height: 1.8;
-  margin-bottom: 40px;
+  font-size: clamp(13px, min(1.4vw, 2.2vh), 16px);
+  line-height: 1.5;
+  margin-bottom: clamp(12px, 2.6vh, 32px);
 }
 
 .hero-cards {
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  margin-top: 50px;
+  gap: clamp(10px, 2vh, 22px);
+  margin-top: clamp(12px, 3vh, 36px);
 }
 
 .hero-card {
@@ -94,7 +95,7 @@
 
 .hero-card h4 {
   margin: 0 0 8px;
-  font-size: 22px;
+  font-size: clamp(16px, 1.8vw, 22px);
   font-weight: 600;
   color: white;
 }
@@ -102,21 +103,22 @@
 .hero-card p {
   margin: 0;
   color: #a6adbb;
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: clamp(12px, 1.3vw, 15px);
+  line-height: 1.5;
   max-width: 520px;
 }
 
 /* ── Register form ── */
 .register-section {
-  width: 520px;
+  width: 500px;
   flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   background: #131313;
   border-left: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 40px;
+  padding: clamp(20px, 5vh, 40px);
+  overflow-y: auto;
 }
 
 .register-wrapper {
@@ -125,11 +127,11 @@
 }
 
 .register-header {
-  margin-bottom: 32px;
+  margin-bottom: clamp(16px, 4vh, 32px);
 }
 
 .register-header h2 {
-  font-size: 38px;
+  font-size: clamp(24px, 3.5vw, 38px);
   font-weight: 700;
   margin-bottom: 8px;
 }
@@ -141,7 +143,7 @@
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(4px, 0.8vh, 6px);
 }
 
 .full-width {
@@ -149,11 +151,11 @@
 }
 
 .register-button {
-  height: 52px !important;
+  height: clamp(44px, 8vh, 52px) !important;
   border-radius: 12px !important;
   background: #4d8eff !important;
   color: white !important;
-  margin-top: 16px;
+  margin-top: clamp(8px, 2vh, 16px);
 }
 
 .register-button:hover {
@@ -226,9 +228,23 @@
   overflow: hidden !important;
 }
 
-::ng-deep .mat-mdc-input-element { color: white !important; }
+::ng-deep .mat-mdc-text-field-wrapper { height: auto !important; }
 
-::ng-deep .mdc-floating-label { color: #9ca3af !important; }
+::ng-deep .mat-mdc-form-field-infix {
+  min-height: clamp(38px, 6.5vh, 56px) !important;
+  padding-top: clamp(6px, 1.2vh, 16px) !important;
+  padding-bottom: clamp(6px, 1.2vh, 16px) !important;
+}
+
+::ng-deep .mat-mdc-input-element {
+  color: white !important;
+  font-size: clamp(13px, 1.4vw, 16px) !important;
+}
+
+::ng-deep .mdc-floating-label {
+  color: #9ca3af !important;
+  font-size: clamp(12px, 1.2vw, 14px) !important;
+}
 
 ::ng-deep .mdc-notched-outline__leading,
 ::ng-deep .mdc-notched-outline__notch,
@@ -247,6 +263,7 @@
   .register-layout {
     flex-direction: column;
     height: auto;
+    overflow: visible;
   }
 
   .hero-section {
@@ -256,6 +273,8 @@
   .register-section {
     width: 100%;
     min-height: calc(100vh - 72px);
+    align-items: flex-start;
+    padding-top: 56px;
     border-left: none;
   }
 }
@@ -263,9 +282,5 @@
 @media (max-width: 600px) {
   .register-section {
     padding: 24px;
-  }
-
-  .register-header h2 {
-    font-size: 32px;
   }
 }

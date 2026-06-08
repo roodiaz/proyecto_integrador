@@ -21,7 +21,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 80px;
+  padding: clamp(16px, 5vh, 80px) clamp(32px, 6vw, 80px);
+  overflow-y: auto;
   background:
     radial-gradient(circle at top right,   rgba(0, 185, 84, 0.15),  transparent 40%),
     radial-gradient(circle at bottom left, rgba(77, 142, 255, 0.15), transparent 40%);
@@ -33,9 +34,9 @@
 }
 
 .hero-title {
-  font-size: 56px;
+  font-size: clamp(24px, min(4vw, 6vh), 48px);
   line-height: 1.1;
-  margin-bottom: 24px;
+  margin-bottom: clamp(8px, 2vh, 20px);
 }
 
 .hero-title span {
@@ -44,9 +45,9 @@
 
 .hero-description {
   color: #a6adbb;
-  font-size: 18px;
-  line-height: 1.8;
-  margin-bottom: 48px;
+  font-size: clamp(13px, min(1.4vw, 2.2vh), 16px);
+  line-height: 1.5;
+  margin-bottom: clamp(12px, 3vh, 36px);
 }
 
 /* ── Info items ── */
@@ -54,7 +55,7 @@
 .hero-cards {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: clamp(10px, 2vh, 22px);
 }
 
 .hero-card {
@@ -81,19 +82,20 @@
 
 .hero-card h4 {
   margin: 0 0 6px;
-  font-size: 20px;
+  font-size: clamp(15px, 1.7vw, 20px);
 }
 
 .hero-card p {
   color: #a6adbb;
-  line-height: 1.6;
+  font-size: clamp(12px, 1.3vw, 15px);
+  line-height: 1.5;
   margin: 0;
 }
 
 /* ── Status ── */
 
 .status-card {
-  margin-top: 60px;
+  margin-top: clamp(14px, 3vh, 40px);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -123,27 +125,28 @@
 /* ── Form ── */
 
 .contact-section {
-  width: 600px;
+  width: 500px;
   flex-shrink: 0;
   background: #131313;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px;
+  padding: clamp(20px, 5vh, 40px);
   border-left: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-y: auto;
 }
 
 .contact-wrapper {
   width: 100%;
-  max-width: 500px;
+  max-width: 430px;
 }
 
 .contact-header {
-  margin-bottom: 32px;
+  margin-bottom: clamp(16px, 4vh, 32px);
 }
 
 .contact-header h2 {
-  font-size: 32px;
+  font-size: clamp(22px, 3vw, 32px);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -157,7 +160,7 @@
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(10px, 2vh, 20px);
 }
 
 .form-row {
@@ -179,8 +182,8 @@
 /* ── Button ── */
 
 .contact-button {
-  height: 52px !important;
-  margin-top: 18px;
+  height: clamp(44px, 8vh, 52px) !important;
+  margin-top: clamp(8px, 2vh, 18px);
   border-radius: 12px !important;
   background: #4d8eff !important;
   color: white !important;
@@ -200,9 +203,23 @@
   overflow: hidden !important;
 }
 
-::ng-deep .mat-mdc-input-element { color: white !important; }
+::ng-deep .mat-mdc-text-field-wrapper { height: auto !important; }
 
-::ng-deep .mdc-floating-label { color: #9ca3af !important; }
+::ng-deep .mat-mdc-form-field-infix {
+  min-height: clamp(36px, 6vh, 56px) !important;
+  padding-top: clamp(6px, 1.1vh, 16px) !important;
+  padding-bottom: clamp(6px, 1.1vh, 16px) !important;
+}
+
+::ng-deep .mat-mdc-input-element {
+  color: white !important;
+  font-size: clamp(13px, 1.4vw, 16px) !important;
+}
+
+::ng-deep .mdc-floating-label {
+  color: #9ca3af !important;
+  font-size: clamp(12px, 1.2vw, 14px) !important;
+}
 
 ::ng-deep .mdc-notched-outline__leading,
 ::ng-deep .mdc-notched-outline__notch,
@@ -222,6 +239,7 @@
   .contact-layout {
     flex-direction: column;
     height: auto;
+    overflow: visible;
   }
 
   .hero-section {
@@ -231,6 +249,8 @@
   .contact-section {
     width: 100%;
     min-height: calc(100vh - 72px);
+    align-items: flex-start;
+    padding-top: 56px;
     border-left: none;
   }
 }
@@ -238,9 +258,5 @@
 @media (max-width: 600px) {
   .contact-section {
     padding: 24px;
-  }
-
-  .contact-header h2 {
-    font-size: 32px;
   }
 }

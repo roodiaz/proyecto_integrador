@@ -20,7 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 80px;
+  padding: clamp(16px, 5vh, 80px) clamp(32px, 6vw, 80px);
+  overflow-y: auto;
   position: relative;
   background:
     radial-gradient(circle at top right,    rgba(0, 185, 84, 0.15),   transparent 40%),
@@ -34,19 +35,19 @@
 
 .hero-badge {
   display: inline-block;
-  padding: 8px 16px;
+  padding: clamp(6px, 1vh, 8px) 16px;
   border-radius: 999px;
   background: rgba(0, 185, 84, 0.15);
   color: #4ae176;
   font-size: 13px;
-  margin-bottom: 20px;
+  margin-bottom: clamp(10px, 2vh, 20px);
 }
 
 .hero-title {
-  font-size: 56px;
+  font-size: clamp(24px, min(4vw, 6vh), 48px);
   line-height: 1.1;
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: clamp(8px, 2vh, 20px);
 }
 
 .hero-title span {
@@ -55,22 +56,22 @@
 
 .hero-description {
   color: #a6adbb;
-  font-size: 18px;
-  line-height: 1.8;
-  margin-bottom: 40px;
+  font-size: clamp(13px, min(1.4vw, 2.2vh), 16px);
+  line-height: 1.5;
+  margin-bottom: clamp(12px, 3vh, 32px);
 }
 
 .hero-cards {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: clamp(8px, 1.6vh, 16px);
 }
 
 .hero-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 24px;
+  padding: clamp(10px, 2vh, 20px);
   border-radius: 16px;
 }
 
@@ -80,12 +81,14 @@
 }
 
 .hero-card h4 {
+  font-size: clamp(15px, 1.7vw, 18px);
   margin-bottom: 8px;
 }
 
 .hero-card p {
   color: #a6adbb;
-  line-height: 1.6;
+  font-size: clamp(12px, 1.3vw, 14px);
+  line-height: 1.5;
 }
 
 /* ── Auth ── */
@@ -97,20 +100,21 @@
   align-items: center;
   background: #131313;
   border-left: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 40px;
+  padding: clamp(20px, 5vh, 40px);
+  overflow-y: auto;
 }
 
 .auth-container {
   width: 100%;
-  max-width: 420px;
+  max-width: 430px;
 }
 
 .auth-header {
-  margin-bottom: 32px;
+  margin-bottom: clamp(16px, 4vh, 32px);
 }
 
 .auth-header h2 {
-  font-size: 38px;
+  font-size: clamp(24px, 3.5vw, 38px);
   font-weight: 700;
   margin-bottom: 8px;
 }
@@ -122,7 +126,7 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: clamp(10px, 2vh, 18px);
 }
 
 .full-width {
@@ -141,7 +145,7 @@
 }
 
 .login-button {
-  height: 52px;
+  height: clamp(44px, 8vh, 52px);
   border-radius: 12px !important;
   background: #4d8eff !important;
   color: white !important;
@@ -174,9 +178,23 @@
   overflow: hidden !important;
 }
 
-::ng-deep .mat-mdc-input-element { color: white !important; }
+::ng-deep .mat-mdc-text-field-wrapper { height: auto !important; }
 
-::ng-deep .mdc-floating-label { color: #9ca3af !important; }
+::ng-deep .mat-mdc-form-field-infix {
+  min-height: clamp(40px, 7vh, 56px) !important;
+  padding-top: clamp(8px, 1.4vh, 16px) !important;
+  padding-bottom: clamp(8px, 1.4vh, 16px) !important;
+}
+
+::ng-deep .mat-mdc-input-element {
+  color: white !important;
+  font-size: clamp(13px, 1.4vw, 16px) !important;
+}
+
+::ng-deep .mdc-floating-label {
+  color: #9ca3af !important;
+  font-size: clamp(12px, 1.2vw, 14px) !important;
+}
 
 ::ng-deep .mdc-notched-outline__leading,
 ::ng-deep .mdc-notched-outline__notch,
@@ -191,6 +209,7 @@
   .login-layout {
     flex-direction: column;
     height: auto;
+    overflow: visible;
   }
 
   .hero-section {
@@ -200,6 +219,14 @@
   .auth-section {
     width: 100%;
     min-height: calc(100vh - 72px);
+    align-items: flex-start;
+    padding-top: 56px;
     border-left: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-section {
+    padding: 24px;
   }
 }
