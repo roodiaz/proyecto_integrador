@@ -105,6 +105,22 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
+        /// Obtiene todas las transacciones de un usuario posteriores a una fecha UTC dada.
+        /// Se utiliza para reconstruir el estado del portfolio al cierre del mercado
+        /// cuando el snapshot se genera de forma retroactiva.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="fromUtc">Fecha/hora UTC de referencia (exclusiva). Se devuelven transacciones con CreatedAt estrictamente mayor.</param>
+        /// <returns>Lista de transacciones posteriores a la fecha indicada.</returns>
+        public async Task<List<Transaction>> GetByUserAfterDateAsync(int userId, DateTime fromUtc)
+        {
+            return await _context.Transactions
+                .AsNoTracking()
+                .Where(x => x.UserId == userId && x.CreatedAt > fromUtc)
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Elimina todas las transacciones asociadas a un usuario.
         /// </summary>
         /// <param name="userId">Identificador del usuario cuyas transacciones se eliminarán.</param>

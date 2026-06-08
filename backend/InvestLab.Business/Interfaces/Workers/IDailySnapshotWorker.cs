@@ -2,7 +2,7 @@
 {
     public interface IDailySnapshotWorker
     {
-        Task GenerateDailyPortfolioSnapshotsAsync();
+        Task GenerateDailyPortfolioSnapshotsAsync(DateTime marketCloseUtc);
 
         Task SaveDailyMarketHistoryAsync();
     }

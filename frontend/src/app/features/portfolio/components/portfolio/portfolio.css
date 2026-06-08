@@ -284,6 +284,24 @@
   letter-spacing: 0.3px;
 }
 
+.chart-market-hours-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.chart-market-hours-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  flex-shrink: 0;
+}
+
 .period-select {
   padding: 6px 10px;
   border: 1px solid var(--border-color);

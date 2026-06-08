@@ -1,4 +1,3 @@
-﻿using DnsClient.Internal;
 using InvestLab.Business.Interfaces.Workers;
 using System.Runtime.InteropServices;
 
@@ -16,17 +15,18 @@ namespace InvestLab.Workers.Workers;
 ///
 /// Por este motivo NO se debe utilizar una hora UTC fija.
 /// El worker calcula siempre las 16:05 de New York y convierte a UTC.
+///
+/// Al iniciar, el worker ejecuta un catch-up automático:
+/// verifica si existe el snapshot del último cierre bursátil y lo genera
+/// en caso de que falte (por ejemplo, si el worker estuvo apagado al momento
+/// del cierre). Las operaciones realizadas después del cierre quedan excluidas
+/// del snapshot del día y se reflejan en el siguiente día bursátil.
 /// </summary>
 public class DailySnapshotWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DailySnapshotWorker> _logger;
 
-    /// <summary>
-    /// Inicializa una nueva instancia de <see cref="DailySnapshotWorker"/>.
-    /// </summary>
-    /// <param name="serviceProvider">Proveedor de servicios utilizado para crear los scopes necesarios para resolver dependencias.</param>
-    /// <param name="logger">Logger utilizado para registrar información y errores del worker.</param>
     public DailySnapshotWorker(IServiceProvider serviceProvider, ILogger<DailySnapshotWorker> logger)
     {
         _serviceProvider = serviceProvider;
@@ -34,22 +34,20 @@ public class DailySnapshotWorker : BackgroundService
     }
 
     /// <summary>
-    /// Ejecuta el ciclo principal del worker, calculando la próxima hora de cierre
-    /// del mercado (16:05 hora de Nueva York, omitiendo fines de semana), esperando
-    /// hasta ese momento y luego generando el historial diario de mercado y los
-    /// snapshots diarios de portfolio. Ante errores inesperados, espera 5 minutos
-    /// antes de reintentar.
+    /// Ejecuta el ciclo principal del worker.
+    /// Primero realiza un catch-up del último cierre bursátil,
+    /// luego entra al loop que espera al próximo cierre (16:05 NY) para generar
+    /// el historial diario de mercado y los snapshots de portfolio.
     /// </summary>
-    /// <param name="stoppingToken">Token utilizado para señalar la cancelación de la ejecución del worker.</param>
-    /// <returns>Una tarea que representa la ejecución asincrónica continua del worker.</returns>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await RunCatchUpAsync(stoppingToken);
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 var nyTimeZone = GetNewYorkTimeZone();
-
                 var nowUtc = DateTime.UtcNow;
                 var nowNy = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, nyTimeZone);
 
@@ -69,7 +67,6 @@ public class DailySnapshotWorker : BackgroundService
                 await Task.Delay(delay, stoppingToken);
 
                 using var scope = _serviceProvider.CreateScope();
-
                 var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
 
                 try
@@ -83,7 +80,7 @@ public class DailySnapshotWorker : BackgroundService
 
                 try
                 {
-                    await service.GenerateDailyPortfolioSnapshotsAsync();
+                    await service.GenerateDailyPortfolioSnapshotsAsync(nextRunUtc);
                 }
                 catch (Exception ex)
                 {
@@ -111,10 +108,62 @@ public class DailySnapshotWorker : BackgroundService
     }
 
     /// <summary>
-    /// Obtiene la zona horaria de New York compatible
-    /// con Windows y Linux/Docker.
+    /// Ejecuta una única vez al iniciar el worker.
+    /// Determina el último cierre bursátil ocurrido y genera el snapshot si falta,
+    /// garantizando que no queden días sin registro aunque el worker haya estado apagado.
     /// </summary>
-    /// <returns>La instancia de <see cref="TimeZoneInfo"/> correspondiente a la zona horaria de New York.</returns>
+    private async Task RunCatchUpAsync(CancellationToken stoppingToken)
+    {
+        if (stoppingToken.IsCancellationRequested) return;
+
+        try
+        {
+            var nyTimeZone = GetNewYorkTimeZone();
+            var nowUtc = DateTime.UtcNow;
+            var nowNy = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, nyTimeZone);
+
+            var lastCloseNy = GetLastMarketCloseNy(nowNy);
+            var lastCloseUtc = TimeZoneInfo.ConvertTimeToUtc(lastCloseNy, nyTimeZone);
+
+            _logger.LogInformation("Catch-up: verificando snapshot para el cierre del {LastCloseNy} NY ({LastCloseUtc} UTC)", lastCloseNy, lastCloseUtc);
+
+            using var scope = _serviceProvider.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
+
+            await service.GenerateDailyPortfolioSnapshotsAsync(lastCloseUtc);
+
+            _logger.LogInformation("Catch-up completado");
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error durante el catch-up de snapshots al iniciar el worker");
+        }
+    }
+
+    /// <summary>
+    /// Retorna la fecha/hora NY del último cierre bursátil que ya ocurrió.
+    /// Si el mercado ya cerró hoy (día hábil, 16:05+ NY), devuelve las 16:05 de hoy.
+    /// En caso contrario, retrocede al último día hábil anterior.
+    /// </summary>
+    private static DateTime GetLastMarketCloseNy(DateTime nowNy)
+    {
+        if (nowNy.DayOfWeek != DayOfWeek.Saturday && nowNy.DayOfWeek != DayOfWeek.Sunday)
+        {
+            var closeToday = nowNy.Date.AddHours(16).AddMinutes(5);
+            if (nowNy >= closeToday) return closeToday;
+        }
+
+        var candidate = nowNy.Date.AddDays(-1);
+        while (candidate.DayOfWeek == DayOfWeek.Saturday || candidate.DayOfWeek == DayOfWeek.Sunday)
+            candidate = candidate.AddDays(-1);
+
+        return candidate.AddHours(16).AddMinutes(5);
+    }
+
+    /// <summary>
+    /// Obtiene la zona horaria de New York compatible con Windows y Linux/Docker.
+    /// </summary>
     private static TimeZoneInfo GetNewYorkTimeZone()
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

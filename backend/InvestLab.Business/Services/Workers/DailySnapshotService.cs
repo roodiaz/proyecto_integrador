@@ -1,10 +1,11 @@
-﻿using InvestLab.Business.Interfaces;
+using InvestLab.Business.Interfaces;
 using InvestLab.Business.Interfaces.Workers;
 using InvestLab.Data.Interfaces;
 using InvestLab.Data.Repositories;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models.Documents;
 using Microsoft.Extensions.Logging;
+using static InvestLab.Models.Enums;
 
 namespace InvestLab.Business.Services.Workers;
 
@@ -17,6 +18,7 @@ public class DailySnapshotService : IDailySnapshotWorker
     private readonly IPriceHistoryRepository _priceHistoryRepository;
     private readonly IAssetRepository _assetRepository;
     private readonly IMarketMetadataRepository _marketMetadataRepository;
+    private readonly ITransactionRepository _transactionRepository;
 
     private readonly IMarketPriceService _marketPriceService;
     private readonly IMarketProviderResolver _providerResolver;
@@ -28,17 +30,18 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// Inicializa una nueva instancia del servicio de snapshots diarios,
     /// inyectando los repositorios y servicios necesarios para su funcionamiento.
     /// </summary>
-    /// <param name="userRepository">Repositorio de usuarios.</param>
-    /// <param name="portfolioRepository">Repositorio de portfolios.</param>
-    /// <param name="portfolioHistoryRepository">Repositorio de históricos de portfolio.</param>
-    /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
-    /// <param name="logger">Logger utilizado para registrar la actividad del servicio.</param>
-    /// <param name="priceHistoryRepository">Repositorio de históricos de precios.</param>
-    /// <param name="marketPriceService">Servicio encargado de obtener precios de mercado.</param>
-    /// <param name="assetRepository">Repositorio de activos.</param>
-    /// <param name="marketMetadataRepository">Repositorio de metadata de mercado.</param>
-    /// <param name="unitOfWork">Unidad de trabajo utilizada para confirmar los cambios en la base de datos.</param>
-    public DailySnapshotService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IMarketProviderResolver providerResolver, ILogger<DailySnapshotService> logger, IPriceHistoryRepository priceHistoryRepository, IMarketPriceService marketPriceService, IAssetRepository assetRepository, IMarketMetadataRepository marketMetadataRepository, IUnitOfWork unitOfWork)
+    public DailySnapshotService(
+        IUserRepository userRepository,
+        IPortfolioRepository portfolioRepository,
+        IPortfolioHistoryRepository portfolioHistoryRepository,
+        IMarketProviderResolver providerResolver,
+        ILogger<DailySnapshotService> logger,
+        IPriceHistoryRepository priceHistoryRepository,
+        IMarketPriceService marketPriceService,
+        IAssetRepository assetRepository,
+        IMarketMetadataRepository marketMetadataRepository,
+        IUnitOfWork unitOfWork,
+        ITransactionRepository transactionRepository)
     {
         _userRepository = userRepository;
         _portfolioRepository = portfolioRepository;
@@ -50,78 +53,93 @@ public class DailySnapshotService : IDailySnapshotWorker
         _assetRepository = assetRepository;
         _marketMetadataRepository = marketMetadataRepository;
         _unitOfWork = unitOfWork;
+        _transactionRepository = transactionRepository;
     }
 
     /// <summary>
     /// Genera el snapshot diario del valor de portfolio para cada usuario activo.
     ///
-    /// Por cada usuario, calcula el valor actual de sus posiciones abiertas
-    /// utilizando los precios obtenidos del servicio de precios de mercado,
-    /// suma el saldo disponible y guarda un registro histórico del valor total,
-    /// evitando duplicar el snapshot si ya existe uno para el día actual.
+    /// Recibe el momento exacto del cierre bursátil (16:05 NY en UTC) para:
+    /// - Identificar la fecha del snapshot de forma precisa e independiente del reloj actual.
+    /// - Reconstruir el estado del portfolio al cierre cuando el worker se ejecuta de forma
+    ///   retroactiva (catch-up): las operaciones realizadas después del cierre se revierten
+    ///   para reflejar el estado real al momento del cierre del mercado.
+    ///
+    /// El snapshot es idempotente: si ya existe uno para la fecha indicada, se omite.
     /// </summary>
-    /// <returns>Una tarea que representa la operación asincrónica.</returns>
-    public async Task GenerateDailyPortfolioSnapshotsAsync()
+    /// <param name="marketCloseUtc">Fecha/hora UTC del cierre del mercado (16:05 NY convertido a UTC).</param>
+    public async Task GenerateDailyPortfolioSnapshotsAsync(DateTime marketCloseUtc)
     {
-        // Obtiene todos los usuarios activos del sistema
         var users = await _userRepository.GetAllAsync();
+        var snapshotDate = marketCloseUtc.Date;
 
         foreach (var user in users)
         {
             try
             {
                 // Evita generar más de un snapshot por día para el mismo usuario
-                var exists = await _portfolioHistoryRepository.ExistsByDateAsync(user.Id, DateTime.UtcNow.Date);
-
+                var exists = await _portfolioHistoryRepository.ExistsByDateAsync(user.Id, snapshotDate);
                 if (exists)
                 {
-                    _logger.LogInformation("Snapshot ya existe para UserId={UserId}", user.Id);
+                    _logger.LogInformation("Snapshot ya existe para UserId={UserId} Fecha={Date}", user.Id, snapshotDate);
                     continue;
                 }
 
-                // Obtiene las posiciones abiertas del usuario
+                // Obtiene transacciones posteriores al cierre para reconstruir el estado al momento del mercado.
+                // En una ejecución normal (16:05 NY) esta lista estará vacía.
+                // En un catch-up (ej: worker reiniciado a las 20:00) puede contener operaciones post-cierre
+                // que deben excluirse del snapshot del día.
+                var postCloseTransactions = await _transactionRepository.GetByUserAfterDateAsync(user.Id, marketCloseUtc);
+
+                // Reconstruye el balance al cierre revirtiendo las operaciones post-cierre
+                var balanceAtClose = user.Balance;
+                foreach (var tx in postCloseTransactions)
+                {
+                    if (tx.Type == TransactionType.Buy)  balanceAtClose += tx.Total;
+                    if (tx.Type == TransactionType.Sell) balanceAtClose -= tx.Total;
+                }
+
+                // Obtiene las posiciones actuales y calcula el ajuste de cantidad por activo
                 var portfolio = await _portfolioRepository.GetByUserAsync(user.Id);
-
-                // Obtiene los símbolos necesarios para calcular el valor actual
-                var symbols = portfolio
-                    .Select(x => x.Asset.Symbol)
-                    .Distinct()
-                    .ToList();
-
-                // Obtiene precios desde Mongo y realiza fallback al proveedor externo
-                // cuando no existe información histórica
+                var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
                 var pricesBySymbol = await _marketPriceService.GetHistoricalPricesAsync(symbols);
 
-                decimal holdingsValue = 0;
+                // Calcula delta de cantidad por activo derivado de operaciones post-cierre
+                var quantityDelta = postCloseTransactions
+                    .GroupBy(tx => tx.AssetId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Sum(tx => tx.Type == TransactionType.Buy ? -tx.Quantity : tx.Quantity)
+                    );
 
+                decimal holdingsValue = 0;
                 foreach (var item in portfolio)
                 {
-                    // Si no existe precio disponible para el símbolo,
-                    // se omite del cálculo
                     if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var price))
                     {
                         _logger.LogWarning("Sin precio disponible para {Symbol}", item.Asset.Symbol);
                         continue;
                     }
 
-                    // Calcula el valor actual de la posición
-                    holdingsValue += item.Quantity * price;
+                    var delta = quantityDelta.TryGetValue(item.AssetId, out var d) ? d : 0;
+                    var quantityAtClose = item.Quantity + delta;
+                    if (quantityAtClose <= 0) continue;
+
+                    holdingsValue += quantityAtClose * price;
                 }
 
-                // Valor total = efectivo disponible + valor de posiciones abiertas
-                var totalValue = user.Balance + holdingsValue;
+                var totalValue = balanceAtClose + holdingsValue;
 
-                // Guarda una foto diaria del portfolio para gráficos históricos
                 var history = new PortfolioHistory
                 {
                     UserId = user.Id,
-                    Date = DateTime.UtcNow,
+                    Date = snapshotDate,
                     TotalValue = Math.Round(totalValue, 2)
                 };
 
                 await _portfolioHistoryRepository.InsertAsync(history);
 
-                _logger.LogInformation("Snapshot portfolio generado: UserId={UserId} Valor={TotalValue}", user.Id, totalValue);
+                _logger.LogInformation("Snapshot portfolio generado: UserId={UserId} Fecha={Date} Valor={TotalValue}", user.Id, snapshotDate, totalValue);
             }
             catch (Exception ex)
             {
@@ -212,7 +230,7 @@ public class DailySnapshotService : IDailySnapshotWorker
     ///
     /// Si no existen históricos cargados, no realiza ninguna acción.
     /// </summary>
-    /// 
+    ///
     /// /// IMPORTANTE:
     /// La metadata se calcula a partir de Mongo,
     /// que es la fuente de verdad del sistema.
