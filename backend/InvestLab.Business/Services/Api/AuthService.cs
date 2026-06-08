@@ -4,6 +4,7 @@ using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models;
+using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -351,6 +352,98 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en LogoutAsync");
+            return Response.Fail("Error interno del servidor");
+        }
+    }
+
+    /// <summary>
+    /// Inicia el proceso de recuperación de contraseña: valida que exista una cuenta asociada
+    /// al email indicado, genera un código de recuperación reutilizando la infraestructura de
+    /// códigos de verificación, y lo envía por correo electrónico.
+    /// </summary>
+    /// <param name="dto">Datos necesarios para iniciar la recuperación, incluyendo el email del usuario.</param>
+    /// <returns>Una respuesta indicando si el código de recuperación fue enviado correctamente.</returns>
+    public async Task<Response> ForgotPasswordAsync(ForgotPasswordDto dto)
+    {
+        try
+        {
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
+
+            if (user == null)
+            {
+                _logger.LogWarning("ForgotPassword: usuario no encontrado {Email}", dto.Email);
+                return Response.Fail("No existe una cuenta asociada a ese email");
+            }
+
+            var emailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Recuperación de contraseña");
+
+            if (emailSent)
+                _logger.LogInformation("Código de recuperación enviado a {Email}", user.Email);
+            else
+                _logger.LogWarning("No se pudo enviar el código de recuperación a {Email}", user.Email);
+
+            return Response.Ok(new
+            {
+                email = user.Email,
+                emailSent
+            },
+            emailSent
+                ? "Se envió un código de recuperación a tu correo electrónico"
+                : "No pudimos enviar el correo de recuperación. Intente nuevamente.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en ForgotPasswordAsync para {Email}", dto.Email);
+            return Response.Fail("Error interno del servidor");
+        }
+    }
+
+    /// <summary>
+    /// Restablece la contraseña de un usuario validando el código de recuperación enviado por correo,
+    /// actualiza el hash de contraseña, invalida el código utilizado y revoca las sesiones activas
+    /// (refresh tokens) para mantener la consistencia con el flujo de autenticación actual.
+    /// </summary>
+    /// <param name="dto">Datos necesarios para restablecer la contraseña: email, código, nueva contraseña y su confirmación.</param>
+    /// <returns>Una respuesta indicando si la contraseña fue restablecida correctamente o el motivo del fallo.</returns>
+    public async Task<Response> ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        try
+        {
+            if (dto.NewPassword != dto.ConfirmPassword)
+                return Response.Fail("Las contraseñas no coinciden");
+
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
+
+            if (user == null)
+            {
+                _logger.LogWarning("ResetPassword: usuario no encontrado {Email}", dto.Email);
+                return Response.Fail("Usuario no encontrado");
+            }
+
+            var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
+
+            if (!validation.Success)
+            {
+                _logger.LogWarning("ResetPassword: {Reason} {UserId}", validation.ErrorMessage, user.Id);
+                return Response.Fail(validation.ErrorMessage!);
+            }
+
+            validation.Credential!.IsUsed = true;
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
+            user.PasswordChangedAt = DateTime.UtcNow;
+
+            await _refreshTokenRepository.DeleteByUserIdAsync(user.Id);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Contraseña restablecida correctamente para {Email}", user.Email);
+
+            return Response.Ok(null, "Contraseña actualizada correctamente");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en ResetPasswordAsync para {Email}", dto.Email);
             return Response.Fail("Error interno del servidor");
         }
     }

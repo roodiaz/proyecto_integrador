@@ -3,6 +3,7 @@ import { PublicLayout } from './features/home/components/public-layout/public-la
 import { LoginForm } from './features/auth/components/login-form/login-form';
 import { RegisterForm } from './features/auth/components/register-form/register-form';
 import { RegistrationSuccess } from './features/auth/components/registration-success/registration-success';
+import { ForgotPasswordForm } from './features/auth/components/forgot-password-form/forgot-password-form';
 import { ContactForm } from './features/home/components/contact-form/contact-form';
 import { Dashboard } from './features/dashboard/components/dashboard/dashboard';
 import { UserProfile } from './features/settings/components/user-profile/user-profile';
@@ -31,6 +32,7 @@ export const routes: Routes = [
       { path: 'login', component: LoginForm },
       { path: 'registro', component: RegisterForm },
       { path: 'registration-success', component: RegistrationSuccess },
+      { path: 'recuperar-contrasena', component: ForgotPasswordForm },
       { path: 'contacto', component: ContactForm },
     ],
   },

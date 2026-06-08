@@ -1,4 +1,5 @@
 using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models.DTOs.Auth;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
@@ -57,12 +58,13 @@ public class AuthServiceTests
     {
         _userRepository.Setup(r => r.GetByEmailAsync("new@test.com")).ReturnsAsync((User?)null);
         _passwordHasher.Setup(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashed");
+        _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), "Verificación de cuenta", null)).ReturnsAsync(true);
 
         var result = await CreateService().RegisterAsync(RegisterDtoOf());
 
         Assert.True(result.Success);
         _userRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
-        _emailProvider.Verify(e => e.SendAsync("new@test.com", It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), "Verificación de cuenta", null), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
@@ -95,14 +97,13 @@ public class AuthServiceTests
     {
         var existing = UserEntity(isActive: false);
         _userRepository.Setup(r => r.GetByEmailAsync("new@test.com")).ReturnsAsync(existing);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(existing.Id)).ReturnsAsync((UserTempCredential?)null!);
-        _passwordHasher.Setup(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashed");
+        _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(existing, "Verificación de cuenta", null)).ReturnsAsync(true);
 
         var result = await CreateService().RegisterAsync(RegisterDtoOf());
 
         Assert.True(result.Success);
         _userRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
-        _emailProvider.Verify(e => e.SendAsync(existing.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(existing, "Verificación de cuenta", null), Times.Once);
     }
 
     /// <summary>Verifica el caso borde donde el envío del correo de verificación falla: la cuenta debe crearse igual y la respuesta seguir siendo exitosa con <c>emailSent = false</c>.</summary>
@@ -111,7 +112,7 @@ public class AuthServiceTests
     {
         _userRepository.Setup(r => r.GetByEmailAsync("new@test.com")).ReturnsAsync((User?)null);
         _passwordHasher.Setup(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashed");
-        _emailProvider.Setup(e => e.SendAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception("smtp error"));
+        _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), "Verificación de cuenta", null)).ReturnsAsync(false);
 
         var result = await CreateService().RegisterAsync(RegisterDtoOf());
 
@@ -140,8 +141,7 @@ public class AuthServiceTests
         var user = UserEntity(isActive: false);
         var temp = TempCredential(user.Id);
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(user.Id)).ReturnsAsync(temp);
-        SetupHasher(PasswordVerificationResult.Success);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "123456")).ReturnsAsync(VerificationCodeResult.Ok(temp));
 
         var result = await CreateService().VerifyAsync(new VerifyDto { Email = user.Email, Code = "123456" });
 
@@ -182,7 +182,7 @@ public class AuthServiceTests
     {
         var user = UserEntity(isActive: false);
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(user.Id)).ReturnsAsync((UserTempCredential?)null!);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "123456")).ReturnsAsync(VerificationCodeResult.Fail("Código no encontrado"));
 
         var result = await CreateService().VerifyAsync(new VerifyDto { Email = user.Email, Code = "123456" });
 
@@ -195,9 +195,8 @@ public class AuthServiceTests
     public async Task VerifyAsync_WhenCodeIsExpired_ShouldReturnErrorResponse()
     {
         var user = UserEntity(isActive: false);
-        var temp = TempCredential(user.Id, expiresAt: DateTime.UtcNow.AddMinutes(-1));
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(user.Id)).ReturnsAsync(temp);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "123456")).ReturnsAsync(VerificationCodeResult.Fail("Código expirado"));
 
         var result = await CreateService().VerifyAsync(new VerifyDto { Email = user.Email, Code = "123456" });
 
@@ -210,9 +209,8 @@ public class AuthServiceTests
     public async Task VerifyAsync_WhenCodeWasAlreadyUsed_ShouldReturnErrorResponse()
     {
         var user = UserEntity(isActive: false);
-        var temp = TempCredential(user.Id, used: true);
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(user.Id)).ReturnsAsync(temp);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "123456")).ReturnsAsync(VerificationCodeResult.Fail("El código ya fue utilizado"));
 
         var result = await CreateService().VerifyAsync(new VerifyDto { Email = user.Email, Code = "123456" });
 
@@ -225,10 +223,8 @@ public class AuthServiceTests
     public async Task VerifyAsync_WhenCodeIsInvalid_ShouldReturnErrorResponse()
     {
         var user = UserEntity(isActive: false);
-        var temp = TempCredential(user.Id);
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(user.Id)).ReturnsAsync(temp);
-        SetupHasher(PasswordVerificationResult.Failed);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "wrong")).ReturnsAsync(VerificationCodeResult.Fail("Código inválido"));
 
         var result = await CreateService().VerifyAsync(new VerifyDto { Email = user.Email, Code = "wrong" });
 
@@ -256,13 +252,12 @@ public class AuthServiceTests
     {
         var user = UserEntity(isActive: false);
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
-        _tempRepository.Setup(r => r.GetByUserIdAsync(user.Id)).ReturnsAsync((UserTempCredential?)null!);
-        _passwordHasher.Setup(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashed");
+        _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(user, "Verificación de cuenta", null)).ReturnsAsync(true);
 
         var result = await CreateService().ResendCodeAsync(new ResendCodeDto { Email = user.Email });
 
         Assert.True(result.Success);
-        _emailProvider.Verify(e => e.SendAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(user, "Verificación de cuenta", null), Times.Once);
     }
 
     /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta de error.</summary>
@@ -463,6 +458,137 @@ public class AuthServiceTests
         _refreshTokenRepository.Setup(r => r.GetByTokenAsync(It.IsAny<string>())).ThrowsAsync(new Exception("db error"));
 
         var result = await CreateService().LogoutAsync("tok");
+
+        Assert.False(result.Success);
+        Assert.Equal("Error interno del servidor", result.Message);
+    }
+
+    // ---------- ForgotPasswordAsync ----------
+
+    /// <summary>Verifica que, si no existe una cuenta asociada al email indicado, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task ForgotPasswordAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
+
+        var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = "x@test.com" });
+
+        Assert.False(result.Success);
+        Assert.Equal("No existe una cuenta asociada a ese email", result.Message);
+        _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), It.IsAny<string>(), null), Times.Never);
+    }
+
+    /// <summary>Verifica que, si el usuario existe y el correo se envía correctamente, se devuelva una respuesta exitosa indicando que el código fue enviado.</summary>
+    [Fact]
+    public async Task ForgotPasswordAsync_WhenEmailIsSentSuccessfully_ShouldReturnSuccessResponseWithEmailSentTrue()
+    {
+        var user = UserEntity();
+        _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
+        _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(user, "Recuperación de contraseña", null)).ReturnsAsync(true);
+
+        var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = user.Email });
+
+        Assert.True(result.Success);
+        Assert.Equal("Se envió un código de recuperación a tu correo electrónico", result.Message);
+        _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(user, "Recuperación de contraseña", null), Times.Once);
+    }
+
+    /// <summary>Verifica que, si el envío del correo falla, se devuelva igualmente una respuesta exitosa pero indicando que el correo no pudo enviarse.</summary>
+    [Fact]
+    public async Task ForgotPasswordAsync_WhenEmailSendingFails_ShouldReturnSuccessResponseWithEmailSentFalse()
+    {
+        var user = UserEntity();
+        _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
+        _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(user, "Recuperación de contraseña", null)).ReturnsAsync(false);
+
+        var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = user.Email });
+
+        Assert.True(result.Success);
+        Assert.Equal("No pudimos enviar el correo de recuperación. Intente nuevamente.", result.Message);
+    }
+
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
+    [Fact]
+    public async Task ForgotPasswordAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
+    {
+        _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ThrowsAsync(new Exception("db error"));
+
+        var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = "x@test.com" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Error interno del servidor", result.Message);
+    }
+
+    // ---------- ResetPasswordAsync ----------
+
+    /// <summary>Verifica que, si la nueva contraseña y su confirmación no coinciden, se devuelva una respuesta de error sin consultar al repositorio.</summary>
+    [Fact]
+    public async Task ResetPasswordAsync_WhenPasswordsDoNotMatch_ShouldReturnErrorResponse()
+    {
+        var dto = new ResetPasswordDto { Email = "user@test.com", Code = "123456", NewPassword = "secret1", ConfirmPassword = "secret2" };
+
+        var result = await CreateService().ResetPasswordAsync(dto);
+
+        Assert.False(result.Success);
+        Assert.Equal("Las contraseñas no coinciden", result.Message);
+        _userRepository.Verify(r => r.GetByEmailAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task ResetPasswordAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
+
+        var result = await CreateService().ResetPasswordAsync(new ResetPasswordDto { Email = "x@test.com", Code = "123456", NewPassword = "secret1", ConfirmPassword = "secret1" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Usuario no encontrado", result.Message);
+    }
+
+    /// <summary>Verifica que, si el código de verificación es inválido o expirado, se devuelva la respuesta de error informada por el servicio de validación.</summary>
+    [Fact]
+    public async Task ResetPasswordAsync_WhenCodeIsInvalid_ShouldReturnErrorResponse()
+    {
+        var user = UserEntity();
+        _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "wrong")).ReturnsAsync(VerificationCodeResult.Fail("Código inválido"));
+
+        var result = await CreateService().ResetPasswordAsync(new ResetPasswordDto { Email = user.Email, Code = "wrong", NewPassword = "secret1", ConfirmPassword = "secret1" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Código inválido", result.Message);
+        _passwordHasher.Verify(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, con un código válido, se actualice la contraseña, se marque la credencial como usada, se revoquen los refresh tokens y se devuelva éxito.</summary>
+    [Fact]
+    public async Task ResetPasswordAsync_WhenCodeIsValid_ShouldUpdatePasswordRevokeTokensAndReturnSuccessResponse()
+    {
+        var user = UserEntity();
+        var temp = TempCredential(user.Id);
+        _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
+        _verificationCodeService.Setup(v => v.ValidateCodeAsync(user, "123456")).ReturnsAsync(VerificationCodeResult.Ok(temp));
+        _passwordHasher.Setup(h => h.HashPassword(user, "newSecret1")).Returns("newHashedPassword");
+
+        var result = await CreateService().ResetPasswordAsync(new ResetPasswordDto { Email = user.Email, Code = "123456", NewPassword = "newSecret1", ConfirmPassword = "newSecret1" });
+
+        Assert.True(result.Success);
+        Assert.Equal("Contraseña actualizada correctamente", result.Message);
+        Assert.True(temp.IsUsed);
+        Assert.Equal("newHashedPassword", user.PasswordHash);
+        Assert.NotNull(user.PasswordChangedAt);
+        _refreshTokenRepository.Verify(r => r.DeleteByUserIdAsync(user.Id), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
+    [Fact]
+    public async Task ResetPasswordAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
+    {
+        _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ThrowsAsync(new Exception("db error"));
+
+        var result = await CreateService().ResetPasswordAsync(new ResetPasswordDto { Email = "x@test.com", Code = "123456", NewPassword = "secret1", ConfirmPassword = "secret1" });
 
         Assert.False(result.Success);
         Assert.Equal("Error interno del servidor", result.Message);

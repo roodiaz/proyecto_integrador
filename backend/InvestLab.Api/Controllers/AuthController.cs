@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using InvestLab.Models.DTOs.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
@@ -135,6 +136,54 @@ public class AuthController : BaseController
         }
 
         _logger.LogInformation("Refresh exitoso");
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Inicia el proceso de recuperación de contraseña enviando un código al email del usuario.
+    /// </summary>
+    /// <param name="dto">Email del usuario que olvidó su contraseña</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Código de recuperación enviado correctamente</response>
+    /// <response code="400">Email inexistente o error en el envío</response>
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {
+        var result = await _authService.ForgotPasswordAsync(dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("ForgotPassword fallido para {Email}: {Message}", dto.Email, result.Message);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Código de recuperación enviado a {Email}", dto.Email);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Restablece la contraseña del usuario validando el código de recuperación enviado por email.
+    /// </summary>
+    /// <param name="dto">Email, código de recuperación, nueva contraseña y confirmación</param>
+    /// <returns>Resultado de la operación</returns>
+    /// <response code="200">Contraseña restablecida correctamente</response>
+    /// <response code="400">Código inválido, expirado o contraseñas inválidas</response>
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+    {
+        var result = await _authService.ResetPasswordAsync(dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("ResetPassword fallido para {Email}: {Message}", dto.Email, result.Message);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Contraseña restablecida correctamente para {Email}", dto.Email);
 
         return Ok(result);
     }

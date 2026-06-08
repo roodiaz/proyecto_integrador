@@ -15,6 +15,12 @@ import {
   LoginData
 } from '../models/login.model';
 
+import {
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest
+} from '../models/forgot-password.model';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -59,6 +65,20 @@ export class AuthService {
     return this.http.post<ApiResponse<null>>(
       `${this.apiUrl}/logout`,
       { refreshToken }
+    );
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<ApiResponse<ForgotPasswordResponse>> {
+    return this.http.post<ApiResponse<ForgotPasswordResponse>>(
+      `${this.apiUrl}/forgot-password`,
+      request
+    );
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(
+      `${this.apiUrl}/reset-password`,
+      request
     );
   }
 

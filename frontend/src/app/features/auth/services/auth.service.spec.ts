@@ -7,6 +7,7 @@ import { ApiResponse } from '../../../core/models/api-response.model';
 import { environment } from '../../../../environments/environment';
 import { LoginRequest, LoginResponse } from '../models/login.model';
 import { RegisterRequest, RegisterResponse, VerifyRequest } from '../models/register.model';
+import { ForgotPasswordRequest, ForgotPasswordResponse, ResetPasswordRequest } from '../models/forgot-password.model';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -111,6 +112,42 @@ describe('AuthService', () => {
     const req = httpMock.expectOne(`${apiUrl}/logout`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ refreshToken });
+    req.flush(mockResponse);
+  });
+
+  it('forgotPassword() debe llamar a POST /auth/forgot-password con el email', () => {
+    // Arrange
+    const request: ForgotPasswordRequest = { email: 't@test.com' };
+    const mockResponse: ApiResponse<ForgotPasswordResponse> = { success: true, message: 'ok', data: { email: request.email, emailSent: true } };
+
+    // Act
+    service.forgotPassword(request).subscribe(res => {
+      // Assert
+      expect(res).toEqual(mockResponse);
+    });
+
+    // Assert
+    const req = httpMock.expectOne(`${apiUrl}/forgot-password`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(request);
+    req.flush(mockResponse);
+  });
+
+  it('resetPassword() debe llamar a POST /auth/reset-password con el body correcto', () => {
+    // Arrange
+    const request: ResetPasswordRequest = { email: 't@test.com', code: '123456', newPassword: 'newSecret1', confirmPassword: 'newSecret1' };
+    const mockResponse: ApiResponse<null> = { success: true, message: 'Contraseña actualizada correctamente', data: null };
+
+    // Act
+    service.resetPassword(request).subscribe(res => {
+      // Assert
+      expect(res).toEqual(mockResponse);
+    });
+
+    // Assert
+    const req = httpMock.expectOne(`${apiUrl}/reset-password`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(request);
     req.flush(mockResponse);
   });
 

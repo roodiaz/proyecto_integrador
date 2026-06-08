@@ -1,4 +1,5 @@
 ﻿using InvestLab.Models;
+using InvestLab.Models.DTOs.Auth;
 
 public interface IAuthService
 {
@@ -8,5 +9,7 @@ public interface IAuthService
     Task<Response> LoginAsync(LoginDto dto);
     Task<Response> RefreshTokenAsync(string refreshToken);
     Task<Response> LogoutAsync(string refreshToken);
+    Task<Response> ForgotPasswordAsync(ForgotPasswordDto dto);
+    Task<Response> ResetPasswordAsync(ResetPasswordDto dto);
 
 }
