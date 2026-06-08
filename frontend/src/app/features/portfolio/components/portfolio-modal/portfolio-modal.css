@@ -97,6 +97,21 @@
 
 .form-group { margin-bottom: 16px; }
 
+.label-with-help {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.label-with-help label,
+.label-with-help span {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .form-group label {
   display: block;
   margin-bottom: 6px;
@@ -214,6 +229,10 @@
   align-items: center;
   padding: 6px 0;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.summary-row .label-with-help {
+  margin-bottom: 0;
 }
 
 .summary-row:last-child {

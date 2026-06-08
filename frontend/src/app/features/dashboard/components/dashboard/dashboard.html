@@ -145,21 +145,27 @@
 
       <div class="chart-controls">
 
-        <div class="time-selector">
-          <button class="time-btn" [class.active]="selectedPeriod === '1W'" (click)="selectedPeriod = '1W'; onPeriodChange()">1W</button>
-          <button class="time-btn" [class.active]="selectedPeriod === '1M'" (click)="selectedPeriod = '1M'; onPeriodChange()">1M</button>
-          <button class="time-btn" [class.active]="selectedPeriod === '3M'" (click)="selectedPeriod = '3M'; onPeriodChange()">3M</button>
-          <button class="time-btn" [class.active]="selectedPeriod === '1Y'" (click)="selectedPeriod = '1Y'; onPeriodChange()">1Y</button>
+        <div class="time-selector-wrap">
+          <app-info-tooltip text="Elegí qué período de tiempo querés ver en el gráfico: 1W = última semana, 1M = último mes, 3M = últimos 3 meses, 1Y = último año. Períodos más largos muestran la tendencia general; períodos cortos muestran movimientos recientes." />
+          <div class="time-selector">
+            <button class="time-btn" [class.active]="selectedPeriod === '1W'" (click)="selectedPeriod = '1W'; onPeriodChange()">1W</button>
+            <button class="time-btn" [class.active]="selectedPeriod === '1M'" (click)="selectedPeriod = '1M'; onPeriodChange()">1M</button>
+            <button class="time-btn" [class.active]="selectedPeriod === '3M'" (click)="selectedPeriod = '3M'; onPeriodChange()">3M</button>
+            <button class="time-btn" [class.active]="selectedPeriod === '1Y'" (click)="selectedPeriod = '1Y'; onPeriodChange()">1Y</button>
+          </div>
         </div>
 
-        <div class="chart-type-selector">
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="selectedChartType = 'line'; onChartTypeChange()">
-            <mat-icon>show_chart</mat-icon>
-          </button>
+        <div class="chart-type-wrap">
+          <app-info-tooltip text="Cambiá la forma de ver el gráfico. La línea muestra la evolución continua del precio; las barras permiten comparar valores entre fechas específicas." />
+          <div class="chart-type-selector">
+            <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="selectedChartType = 'line'; onChartTypeChange()">
+              <mat-icon>show_chart</mat-icon>
+            </button>
 
-          <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="selectedChartType = 'bar'; onChartTypeChange()">
-            <mat-icon>bar_chart</mat-icon>
-          </button>
+            <button class="chart-type-btn" [class.active]="selectedChartType === 'bar'" (click)="selectedChartType = 'bar'; onChartTypeChange()">
+              <mat-icon>bar_chart</mat-icon>
+            </button>
+          </div>
         </div>
 
       </div>

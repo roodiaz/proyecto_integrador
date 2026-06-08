@@ -167,6 +167,13 @@
   align-items: center;
 }
 
+.time-selector-wrap,
+.chart-type-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .time-selector,
 .chart-type-selector {
   display: flex;

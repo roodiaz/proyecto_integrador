@@ -191,6 +191,17 @@
   color: var(--text-muted);
 }
 
+.section-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 8px;
+}
+
+.section-label-row .section-label {
+  margin: 0;
+}
+
 /* ── Asset list ── */
 .asset-list {
   display: flex;

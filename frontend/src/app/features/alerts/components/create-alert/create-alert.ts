@@ -6,6 +6,7 @@ import { MaterialModule } from '../../../../shared/material.module';
 import { Alert, ALERT_CONDITIONS, CreateAlertDto, UpdateAlertDto } from '../../models/alert.model';
 import { AlertService } from '../../services/alert.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
   selector: 'app-create-alert',
@@ -13,7 +14,8 @@ import { SnackBarService } from '../../../../core/services/snackbar.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MaterialModule
+    MaterialModule,
+    InfoTooltipComponent
   ],
   templateUrl: './create-alert.html',
   styleUrls: ['./create-alert.css'],

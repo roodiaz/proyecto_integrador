@@ -8,7 +8,10 @@
     @if (mode === 'buy') {
       <div class="buy-content">
         <div class="form-group">
-          <label for="ticker">Ticker</label>
+          <div class="label-with-help">
+            <label for="ticker">Ticker</label>
+            <app-info-tooltip text="El código único que identifica a una empresa en el mercado. Por ejemplo, AAPL es Apple, MSFT es Microsoft y TSLA es Tesla. Buscá el símbolo y presioná el botón de búsqueda para obtener el precio actual." />
+          </div>
 
           <div class="ticker-search">
             <input id="ticker" type="text" [(ngModel)]="buyTicker" placeholder="Ej: AAPL" class="form-input">
@@ -21,12 +24,18 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="quantity">Cantidad</label>
+            <div class="label-with-help">
+              <label for="quantity">Cantidad</label>
+              <app-info-tooltip text="La cantidad de acciones que querés comprar. Podés comprar desde 1 unidad. El costo total se calcula multiplicando esta cantidad por el precio de mercado." />
+            </div>
             <input id="quantity" type="number" [(ngModel)]="buyQuantity" min="1" class="form-input">
           </div>
 
           <div class="form-group">
-            <label for="price">Precio mercado</label>
+            <div class="label-with-help">
+              <label for="price">Precio mercado</label>
+              <app-info-tooltip text="El precio actual de la acción en el mercado en el momento de la consulta. Este es el precio al que se ejecutará tu compra simulada." />
+            </div>
             <div class="price-display">
               {{ marketPrice | currency:'USD' }}
               <span class="price-label">Precio actual del mercado</span>
@@ -36,12 +45,18 @@
 
         <div class="cost-summary">
           <div class="summary-row">
-            <span>Costo total:</span>
+            <div class="label-with-help">
+              <span>Costo total:</span>
+              <app-info-tooltip text="El dinero que se descontará de tu saldo al confirmar la compra. Se calcula como: Cantidad × Precio de mercado." />
+            </div>
             <span class="cost-amount">${{ totalCost.toFixed(2) }}</span>
           </div>
 
           <div class="summary-row">
-            <span>Saldo disponible:</span>
+            <div class="label-with-help">
+              <span>Saldo disponible:</span>
+              <app-info-tooltip text="El dinero que tenés disponible para invertir. Si el costo total supera este monto, la compra no podrá confirmarse." />
+            </div>
             <span class="balance-amount">${{ currentBalance.toFixed(2) }}</span>
           </div>
         </div>
@@ -65,12 +80,18 @@
             </div>
 
             <div class="info-item">
-              <span class="label">Cantidad disponible:</span>
+              <div class="label-with-help">
+                <span class="label">Cantidad disponible:</span>
+                <app-info-tooltip text="Podés vender todas tus acciones o solo una parte (venta parcial). Lo que no vendas seguirá en tu portfolio." />
+              </div>
               <span class="value">{{ position?.quantity }}</span>
             </div>
 
             <div class="info-item">
-              <span class="label">Precio compra:</span>
+              <div class="label-with-help">
+                <span class="label">Precio compra:</span>
+                <app-info-tooltip text="El precio promedio al que compraste estas acciones. Si compraste en distintos momentos, se muestra el promedio ponderado de todas las compras." />
+              </div>
               <span class="value">{{ position?.avgPrice | currency:'USD' }}</span>
             </div>
 
@@ -103,14 +124,20 @@
           </div>
 
           <div class="summary-row">
-            <span>Ganancia/Pérdida:</span>
+            <div class="label-with-help">
+              <span>Ganancia/Pérdida:</span>
+              <app-info-tooltip text="La diferencia entre lo que vas a recibir por la venta y lo que pagaste originalmente. Positivo significa que ganaste dinero; negativo que perdiste." />
+            </div>
             <span class="profit-amount" [class.positive]="profitAmount > 0" [class.negative]="profitAmount < 0">
               {{ profitAmount | currency:'USD' }}
             </span>
           </div>
 
           <div class="summary-row">
-            <span>Porcentaje:</span>
+            <div class="label-with-help">
+              <span>Porcentaje:</span>
+              <app-info-tooltip text="La ganancia o pérdida expresada como porcentaje de lo que invertiste. Por ejemplo, +15% significa que recuperás tu inversión original más un 15% extra." />
+            </div>
             <span class="profit-percent" [class.positive]="profitPercent > 0" [class.negative]="profitPercent < 0">
               {{ profitPercent | number:'1.2-2' }}%
             </span>

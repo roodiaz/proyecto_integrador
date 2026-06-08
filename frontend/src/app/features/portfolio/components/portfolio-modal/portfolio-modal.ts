@@ -6,6 +6,7 @@ import { PortfolioService } from '../../services/portfolio.service';
 import { BuyData, SellData, PortfolioModalData, PortfolioPosition, PortfolioModalResult } from '../../models/portfolio.modal.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 /**
  * Modal de operaciones del portfolio: permite comprar un nuevo activo o vender
@@ -20,7 +21,7 @@ import { MaterialModule } from '../../../../shared/material.module';
 @Component({
   selector: 'app-portfolio-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
   templateUrl: './portfolio-modal.html',
   styleUrl: './portfolio-modal.css'
 })

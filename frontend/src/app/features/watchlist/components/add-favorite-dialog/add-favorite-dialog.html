@@ -30,7 +30,10 @@
     </button>
 
     <!-- Activos populares -->
-    <p class="section-label">Activos Populares</p>
+    <div class="section-label-row">
+      <p class="section-label">Activos Populares</p>
+      <app-info-tooltip text="Son algunas de las acciones más conocidas del mercado estadounidense. Agregarlas a favoritos te permite seguir su precio desde la watchlist sin tener que buscarlas cada vez. No implica comprarlas." />
+    </div>
 
     <div class="asset-list">
       @for (asset of popularAssets; track asset.symbol) {

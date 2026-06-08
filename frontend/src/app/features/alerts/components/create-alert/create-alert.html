@@ -22,7 +22,10 @@
 
       <!-- Activo -->
       <div class="form-section">
-        <p class="section-label">Activo</p>
+        <div class="section-label-row">
+          <p class="section-label">Activo</p>
+          <app-info-tooltip text="El activo es la acción o instrumento financiero que querés vigilar. Cada empresa cotiza con un código único llamado ticker o símbolo, como AAPL para Apple o GOOGL para Alphabet." />
+        </div>
 
         <div class="field-group">
           <label class="field-label">Símbolo del activo *</label>
@@ -48,7 +51,10 @@
 
       <!-- Condición -->
       <div class="form-section">
-        <p class="section-label">Condición</p>
+        <div class="section-label-row">
+          <p class="section-label">Condición</p>
+          <app-info-tooltip text="La condición define cuándo querés recibir el aviso. Podés alertar cuando el precio supera o cae por debajo de un valor exacto en dólares, o cuando la variación del día supera un porcentaje (útil para detectar movimientos bruscos)." />
+        </div>
 
         <div class="field-group">
           <label class="field-label">Tipo de condición</label>
@@ -67,7 +73,10 @@
         <!-- Precio objetivo -->
         @if (!isPercentageCondition()) {
           <div class="field-group">
-            <label class="field-label">Precio objetivo *</label>
+            <div class="field-label-row">
+              <label class="field-label">Precio objetivo *</label>
+              <app-info-tooltip text="El precio exacto en dólares al que querés que se dispare la alerta. Ejemplo: si ponés $200 con la condición 'mayor que', recibirás un aviso cuando la acción supere ese precio." />
+            </div>
 
             <div class="field-input-wrap">
               <span class="field-prefix">$</span>
@@ -91,7 +100,10 @@
         <!-- Cambio porcentual -->
         @if (isPercentageCondition()) {
           <div class="field-group">
-            <label class="field-label">Cambio porcentual *</label>
+            <div class="field-label-row">
+              <label class="field-label">Cambio porcentual *</label>
+              <app-info-tooltip text="El porcentaje de variación respecto al cierre del día anterior que activará la alerta. Ejemplo: si ponés 5% con 'subida mayor a', recibirás un aviso cuando la acción suba más del 5% en ese día." />
+            </div>
 
             <div class="field-input-wrap">
               <input matInput class="field-input with-suffix" type="number" step="0.01" min="0.01" max="100" formControlName="percentChange" placeholder="0.00">
@@ -121,7 +133,10 @@
 
       <!-- Estado -->
       <div class="form-section">
-        <p class="section-label">Estado</p>
+        <div class="section-label-row">
+          <p class="section-label">Estado</p>
+          <app-info-tooltip text="Una alerta activa monitorea el precio en tiempo real y te notifica cuando se cumple la condición. Si la pausás, queda guardada pero no genera notificaciones hasta que la vuelvas a activar." />
+        </div>
 
         <div class="toggle-row">
           <div class="toggle-info">

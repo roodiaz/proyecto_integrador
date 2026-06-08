@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material.module';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
+import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 /**
  * Diálogo para agregar un activo a la lista de favoritos (watchlist).
@@ -18,7 +19,8 @@ import { MatDialogRef } from '@angular/material/dialog';
     imports: [
         CommonModule,
         MaterialModule,
-        FormsModule
+        FormsModule,
+        InfoTooltipComponent
     ],
     templateUrl: './add-favorite-dialog.html',
     styleUrl: './add-favorite-dialog.css'
