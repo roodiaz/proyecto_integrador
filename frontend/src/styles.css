@@ -503,7 +503,7 @@ html, body {
   padding: 14px 16px !important;
 }
 
-.app-snackbar .mat-mdc-snack-bar-label::before {
+.app-snackbar .mdc-snackbar__label::before {
   font-family: 'Material Icons' !important;
   font-size: 18px !important;
   flex-shrink: 0 !important;
@@ -526,7 +526,7 @@ html, body {
 .snackbar-success .mdc-snackbar__surface {
   border-left: 3px solid var(--il-success) !important;
 }
-.snackbar-success .mat-mdc-snack-bar-label::before {
+.snackbar-success .mdc-snackbar__label::before {
   content: 'check_circle' !important;
   color: var(--il-success) !important;
 }
@@ -538,7 +538,7 @@ html, body {
 .snackbar-error .mdc-snackbar__surface {
   border-left: 3px solid var(--il-danger) !important;
 }
-.snackbar-error .mat-mdc-snack-bar-label::before {
+.snackbar-error .mdc-snackbar__label::before {
   content: 'error' !important;
   color: var(--il-danger) !important;
 }
@@ -550,7 +550,7 @@ html, body {
 .snackbar-info .mdc-snackbar__surface {
   border-left: 3px solid var(--il-accent) !important;
 }
-.snackbar-info .mat-mdc-snack-bar-label::before {
+.snackbar-info .mdc-snackbar__label::before {
   content: 'info' !important;
   color: var(--il-accent) !important;
 }

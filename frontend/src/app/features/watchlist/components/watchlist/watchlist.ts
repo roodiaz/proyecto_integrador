@@ -217,8 +217,21 @@ export class Watchlist implements OnInit {
    * notifica al usuario y vuelve a cargar la lista.
    * @param symbol Símbolo del activo a eliminar de favoritos.
    */
-  removeFromWatchlist(symbol: string): void {
+  async removeFromWatchlist(symbol: string): Promise<void> {
     const normalizedSymbol = symbol.trim().toUpperCase();
+
+    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
+    const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
+      width: '350px',
+      backdropClass: 'blur-backdrop',
+      data: {
+        title: this.languageService.instant('WATCHLIST.DELETE_CONFIRM.TITLE'),
+        message: this.languageService.instant('WATCHLIST.DELETE_CONFIRM.MESSAGE', { symbol: normalizedSymbol })
+      }
+    });
+
+    const result = await dialogRef.afterClosed().toPromise();
+    if (!result) return;
 
     this.watchlistService.removeFavorite(normalizedSymbol).subscribe({
       next: response => {
