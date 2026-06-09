@@ -587,15 +587,22 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     const data = this.lineChartData;
     const isShortPeriod = ['7d', '1m', '3m'].includes(this.selectedPeriod);
 
+    const parseLocalDate = (value: string | Date): Date => {
+      if (value instanceof Date) return value;
+      const s = typeof value === 'string' ? value.substring(0, 10) : String(value);
+      const [y, m, d] = s.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    };
+
     const formatTick = (value: string | Date) => {
-      const d = value instanceof Date ? value : new Date(value);
+      const d = parseLocalDate(value);
       return isShortPeriod
         ? d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
         : d.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
     };
 
     const formatTooltipTitle = (value: string | Date) => {
-      const d = value instanceof Date ? value : new Date(value);
+      const d = parseLocalDate(value);
       return isShortPeriod
         ? d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
         : d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
