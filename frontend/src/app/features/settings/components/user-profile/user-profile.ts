@@ -51,7 +51,7 @@ export class UserProfile implements OnInit {
 
   // ── Verificación de cambio de email ──
   /** Estados posibles del flujo independiente de verificación de email. */
-  emailVerificationStatus: 'idle' | 'sending' | 'codeSent' | 'verifying' | 'verified' | 'error' = 'idle';
+  emailVerificationStatus: 'idle' | 'sending' | 'codeSent' | 'verifying' | 'verified' | 'error' | 'sendError' = 'idle';
   /** Mensaje de error a mostrar cuando `emailVerificationStatus` es 'error'. */
   emailVerificationError = '';
   /** Código de verificación ingresado por el usuario. */
@@ -262,7 +262,7 @@ export class UserProfile implements OnInit {
       .subscribe({
         next: response => {
           if (!response.success) {
-            this.emailVerificationStatus = 'error';
+            this.emailVerificationStatus = 'sendError';
             this.emailVerificationError = response.message || this.languageService.instant('SETTINGS.EMAIL_VERIFY.SEND_ERROR');
             return;
           }
@@ -273,7 +273,7 @@ export class UserProfile implements OnInit {
           this.notificationService.success(response.message);
         },
         error: error => {
-          this.emailVerificationStatus = 'error';
+          this.emailVerificationStatus = 'sendError';
           this.emailVerificationError = error.error?.message ?? this.languageService.instant('SETTINGS.EMAIL_VERIFY.SEND_ERROR');
         }
       });
@@ -357,6 +357,13 @@ export class UserProfile implements OnInit {
 
     if (!this.passwordForm.valid) {
       this.notificationService.error(this.languageService.instant('SETTINGS.FORM_ERRORS.FORM_INVALID_PASSWORD'));
+      return;
+    }
+
+    const current = this.passwordForm.value.currentPassword;
+    const newPwd = this.passwordForm.value.newPassword;
+    if (current && newPwd && current === newPwd) {
+      this.notificationService.error(this.languageService.instant('SETTINGS.FORM_ERRORS.PASSWORD_SAME_AS_CURRENT'));
       return;
     }
 
@@ -467,7 +474,7 @@ export class UserProfile implements OnInit {
           if (!response.success) return;
           localStorage.clear();
           sessionStorage.clear();
-          this.router.navigate(['/login']);
+          this.router.navigate(['/landing']);
         },
         error: error => {
           this.notificationService.fromResponse(false, error.error?.code, error.error?.message);

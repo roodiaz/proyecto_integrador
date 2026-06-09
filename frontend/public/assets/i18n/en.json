@@ -836,7 +836,8 @@
     },
     "FORM_ERRORS": {
       "FORM_INVALID": "Please complete the form correctly.",
-      "FORM_INVALID_PASSWORD": "Invalid form."
+      "FORM_INVALID_PASSWORD": "Invalid form.",
+      "PASSWORD_SAME_AS_CURRENT": "The new password cannot be the same as the current one."
     }
   },
   "HOME": {

@@ -141,6 +141,15 @@
                   </div>
                 }
 
+                @case ('sendError') {
+                  <div class="verify-status verify-status-error">
+                    <mat-icon>error</mat-icon>
+                    {{ emailVerificationError }}
+                  </div>
+
+                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">{{ 'SETTINGS.EMAIL_VERIFY.CANCEL_BUTTON' | translate }}</button>
+                }
+
                 @case ('error') {
                   <div class="verify-status verify-status-error">
                     <mat-icon>error</mat-icon>
