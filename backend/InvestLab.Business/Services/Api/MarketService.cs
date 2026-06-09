@@ -15,6 +15,7 @@ namespace InvestLab.Business.Services
         private readonly IMarketPriceCacheService _marketPriceCacheService;
         private readonly IMarketProviderResolver _providerResolver;
         private readonly IAssetService _assetService;
+        private readonly IMarketStatusService _marketStatusService;
         private readonly ILogger<MarketService> _logger;
 
         /// <summary>
@@ -24,12 +25,14 @@ namespace InvestLab.Business.Services
         /// <param name="logger">Logger para registrar información y errores del servicio.</param>
         /// <param name="assetService">Servicio para obtener o crear activos.</param>
         /// <param name="marketPriceCacheService">Servicio de caché de precios de mercado.</param>
-        public MarketService(IMarketProviderResolver providerResolver, ILogger<MarketService> logger, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
+        /// <param name="marketStatusService">Servicio que determina si el mercado está abierto o cerrado.</param>
+        public MarketService(IMarketProviderResolver providerResolver, ILogger<MarketService> logger, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService, IMarketStatusService marketStatusService)
         {
             _providerResolver = providerResolver;
             _logger = logger;
             _assetService = assetService;
             _marketPriceCacheService = marketPriceCacheService;
+            _marketStatusService = marketStatusService;
         }
 
         /// <summary>
@@ -59,7 +62,7 @@ namespace InvestLab.Business.Services
 
                 var overview = new MarketOverviewDto
                 {
-                    MarketStatus = GetMarketStatus(),
+                    MarketStatus = _marketStatusService.GetStatus(),
                     Indices = indices
                 };
 
@@ -313,46 +316,6 @@ namespace InvestLab.Business.Services
 
 
         // Metodos auxiliares
-        /// <summary>
-        /// Determina el estado actual del mercado (abierto o cerrado) en función del horario y día de la semana de la zona horaria del Este de Estados Unidos.
-        /// </summary>
-        /// <returns>Un objeto con el estado del mercado, el texto descriptivo, la hora actual del mercado y los horarios de apertura y cierre.</returns>
-        private static MarketStatusDto GetMarketStatus()
-        {
-            var timeZone = GetEasternTimeZone();
-            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
-            var open = new TimeSpan(9, 30, 0);
-            var close = new TimeSpan(16, 0, 0);
-            var isBusinessDay = now.DayOfWeek != DayOfWeek.Saturday && now.DayOfWeek != DayOfWeek.Sunday;
-            var isOpen = isBusinessDay && now.TimeOfDay >= open && now.TimeOfDay <= close;
-
-            return new MarketStatusDto
-            {
-                IsOpen = isOpen,
-                StatusText = isOpen ? "Mercado abierto" : "Mercado cerrado",
-                MarketTime = now.ToString("HH:mm:ss"),
-                TimeZone = "America/New_York",
-                OpenTime = "09:30",
-                CloseTime = "16:00"
-            };
-        }
-
-        /// <summary>
-        /// Obtiene la información de la zona horaria del Este de Estados Unidos, contemplando los distintos identificadores según el sistema operativo.
-        /// </summary>
-        /// <returns>La zona horaria correspondiente a "America/New_York" o, si no está disponible, a "Eastern Standard Time".</returns>
-        private static TimeZoneInfo GetEasternTimeZone()
-        {
-            try
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
-            }
-            catch
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-            }
-        }
-
         /// <summary>
         /// Traduce el símbolo de un índice de mercado a su nombre descriptivo.
         /// </summary>

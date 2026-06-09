@@ -10,18 +10,35 @@ namespace InvestLab.Business.Services.Api
     {
         private readonly IMemoryCache _cache;
         private readonly IMarketProviderResolver _providerResolver;
+        private readonly IMarketStatusService _marketStatusService;
         private const int CacheExpirationMinutes = 5;
+        private const int MarketClosedCacheExpirationHours = 24;
         private const string LastUpdatedAtCacheKey = "market-prices:last-updated-at";
 
         /// <summary>
         /// Inicializa una nueva instancia de <see cref="MarketPriceCacheService"/> con la caché en memoria y el proveedor externo de precios.
         /// </summary>
         /// <param name="cache">Caché en memoria utilizada para almacenar los precios de mercado.</param>
-        /// <param name="marketPriceService">Proveedor externo encargado de obtener los precios de mercado.</param>
-        public MarketPriceCacheService(IMemoryCache cache, IMarketProviderResolver providerResolver)
+        /// <param name="providerResolver">Proveedor externo encargado de obtener los precios de mercado.</param>
+        /// <param name="marketStatusService">Servicio que determina si el mercado está abierto o cerrado, usado para congelar la caché fuera de horario.</param>
+        public MarketPriceCacheService(IMemoryCache cache, IMarketProviderResolver providerResolver, IMarketStatusService marketStatusService)
         {
             _cache = cache;
             _providerResolver = providerResolver;
+            _marketStatusService = marketStatusService;
+        }
+
+        /// <summary>
+        /// Calcula el tiempo de expiración a aplicar a las entradas de la caché de precios: el TTL habitual mientras
+        /// el mercado está abierto, o un período prolongado mientras está cerrado para "congelar" los precios y
+        /// evitar consultas innecesarias al proveedor externo hasta la próxima apertura.
+        /// </summary>
+        /// <returns>El tiempo de expiración a utilizar en <see cref="IMemoryCache.Set"/>.</returns>
+        private TimeSpan GetCacheExpiration()
+        {
+            return _marketStatusService.IsMarketOpen()
+                ? TimeSpan.FromMinutes(CacheExpirationMinutes)
+                : TimeSpan.FromHours(MarketClosedCacheExpirationHours);
         }
 
         /// <summary>
@@ -46,7 +63,7 @@ namespace InvestLab.Business.Services.Api
 
             freshPrice.Symbol = freshPrice.Symbol.Trim().ToUpper();
             freshPrice.UpdatedAt = DateTime.UtcNow;
-            _cache.Set(GetCacheKey(freshPrice.Symbol), freshPrice, TimeSpan.FromMinutes(CacheExpirationMinutes));
+            _cache.Set(GetCacheKey(freshPrice.Symbol), freshPrice, GetCacheExpiration());
 
             return freshPrice;
         }
@@ -81,12 +98,13 @@ namespace InvestLab.Business.Services.Api
             {
                 var freshPrices = await _providerResolver.GetProvider().GetPricesAsync(missingSymbols);
                 var updatedAt = DateTime.UtcNow;
+                var expiration = GetCacheExpiration();
 
                 foreach (var price in freshPrices)
                 {
                     price.Symbol = price.Symbol.Trim().ToUpper();
                     price.UpdatedAt = updatedAt;
-                    _cache.Set(GetCacheKey(price.Symbol), price, TimeSpan.FromMinutes(CacheExpirationMinutes));
+                    _cache.Set(GetCacheKey(price.Symbol), price, expiration);
                     prices.Add(price);
                 }
             }
@@ -116,15 +134,16 @@ namespace InvestLab.Business.Services.Api
 
             var freshPrices = await _providerResolver.GetProvider().GetPricesAsync(cleanSymbols);
             var updatedAt = DateTime.UtcNow;
+            var expiration = GetCacheExpiration();
 
             foreach (var price in freshPrices)
             {
                 price.Symbol = price.Symbol.Trim().ToUpper();
                 price.UpdatedAt = updatedAt;
-                _cache.Set(GetCacheKey(price.Symbol), price, TimeSpan.FromMinutes(CacheExpirationMinutes));
+                _cache.Set(GetCacheKey(price.Symbol), price, expiration);
             }
 
-            _cache.Set(LastUpdatedAtCacheKey, updatedAt, TimeSpan.FromMinutes(CacheExpirationMinutes));
+            _cache.Set(LastUpdatedAtCacheKey, updatedAt, expiration);
         }
 
         /// <summary>

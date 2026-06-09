@@ -206,7 +206,8 @@
     "MARKET_CLOSED": "Mercado cerrado",
     "MARKET_STATUS_UNKNOWN": "Estado no disponible",
     "MARKET_CLOSES_IN": "Cierra en {{duration}}",
-    "MARKET_OPENS_IN": "Abre en {{duration}}"
+    "MARKET_OPENS_IN": "Abre en {{duration}}",
+    "REGULAR_HOURS_NOTE": "InvestLab utiliza exclusivamente precios del mercado regular. No se consideran operaciones ni cotizaciones after-hours ni pre-market."
   },
   "HEADER": {
     "NOTIFICATIONS": "Notificaciones",

@@ -64,6 +64,12 @@
 
   <!-- Bottom section -->
   <div class="sidebar-bottom">
+    <div class="regular-hours-note" [matTooltip]="'SIDEBAR.REGULAR_HOURS_NOTE' | translate"
+      [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
+      <mat-icon class="regular-hours-icon">info_outline</mat-icon>
+      <span class="regular-hours-text">{{ 'SIDEBAR.REGULAR_HOURS_NOTE' | translate }}</span>
+    </div>
+
     <div class="sidebar-divider"></div>
 
     <nav class="sidebar-nav sidebar-nav--bottom">

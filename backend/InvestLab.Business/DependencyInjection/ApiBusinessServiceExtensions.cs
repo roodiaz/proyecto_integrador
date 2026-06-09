@@ -36,6 +36,7 @@ public static class ApiBusinessServiceExtensions
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
         // servicio segundo plano
+        services.AddScoped<IMarketStatusService, MarketStatusService>();
         services.AddScoped<IMarketPriceCacheService, MarketPriceCacheService>();
         services.AddScoped<IMarketPriceRefreshService, MarketPriceRefreshService>();
 
