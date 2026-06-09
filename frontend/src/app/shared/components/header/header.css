@@ -77,6 +77,7 @@
   flex-direction: column;
   width: 320px;
   max-width: 90vw;
+  overflow: hidden;
 }
 
 .notif-menu-header {
@@ -168,11 +169,25 @@
 }
 
 /* ── Menú de usuario ── */
+::ng-deep .user-menu-panel,
+::ng-deep .notif-menu-panel {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
+}
+
+::ng-deep .user-menu-panel .mat-mdc-menu-content,
+::ng-deep .notif-menu-panel .mat-mdc-menu-content {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 .user-menu {
   display: flex;
   flex-direction: column;
   width: 280px;
   max-width: 90vw;
+  overflow: hidden;
 }
 
 .user-menu-info {
