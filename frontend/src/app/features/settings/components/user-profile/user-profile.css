@@ -144,6 +144,7 @@
 
 @media (max-width: 900px) {
   .span-7, .span-5 { grid-column: span 12; }
+  .save-panel { grid-column: span 12; }
   .profile-container { padding: 1.25rem; }
 }
 
@@ -419,6 +420,78 @@
 }
 
 /* ─── Notifications ─── */
+.notif-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.notif-inline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.notif-inline-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-inline-left .card-icon {
+  flex-shrink: 0;
+}
+
+.notif-inline-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.notif-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.notif-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ─── Save panel ─── */
+.save-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.btn-save-lg {
+  width: 100%;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.save-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+
 .notification-row {
   display: flex;
   align-items: center;
@@ -433,17 +506,6 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-}
-
-.notif-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.notif-desc {
-  font-size: 0.72rem;
-  color: var(--text-muted);
 }
 
 ::ng-deep .mat-mdc-slide-toggle .mdc-form-field label { display: none; }
@@ -890,7 +952,7 @@
   font-size: 0.68rem;
   color: var(--text-muted);
   line-height: 1.5;
-  margin: 0;
+  margin: 1rem 0 0;
 }
 
 .appearance-hint .hint-icon {

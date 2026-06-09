@@ -200,6 +200,41 @@
       }
     </section>
 
+    <!-- Notificaciones + Guardar -->
+    <section class="bento-card span-7 notif-card">
+      <div class="notif-inline-header">
+        <div class="notif-inline-left">
+          <mat-icon class="card-icon">notifications</mat-icon>
+          <div>
+            <h2 class="card-title">{{ 'SETTINGS.NOTIFICATIONS.SECTION_TITLE' | translate }}</h2>
+            <span class="notif-desc">{{ 'SETTINGS.NOTIFICATIONS.EMAIL_DESC' | translate }}</span>
+          </div>
+        </div>
+
+        @if (loadingProfile) {
+          <span class="skeleton skeleton-text medium"></span>
+        } @else {
+          <form [formGroup]="profileForm">
+            <div class="notif-inline-toggle">
+              <span class="notif-label">{{ 'SETTINGS.NOTIFICATIONS.EMAIL_LABEL' | translate }}</span>
+              <mat-slide-toggle formControlName="emailNotifications" color="primary"></mat-slide-toggle>
+            </div>
+          </form>
+        }
+      </div>
+    </section>
+
+    <!-- Guardar cambios -->
+    <div class="save-panel span-5">
+      <button class="btn btn-primary btn-save-lg" type="button"
+        [disabled]="savingProfile || loadingProfile"
+        (click)="onSaveProfile()">
+        <mat-icon>save</mat-icon>
+        {{ savingProfile ? ('SETTINGS.PERSONAL_INFO.SAVING_BUTTON' | translate) : ('SETTINGS.PERSONAL_INFO.SAVE_BUTTON' | translate) }}
+      </button>
+      <p class="save-hint">{{ 'SETTINGS.PERSONAL_INFO.SECTION_TITLE' | translate }} · {{ 'SETTINGS.NOTIFICATIONS.SECTION_TITLE' | translate }}</p>
+    </div>
+
     <!-- Apariencia -->
     <section class="bento-card span-5">
       <div class="card-header">
@@ -326,44 +361,12 @@
 
         </div>
       </form>
+      <p class="appearance-hint">
+        <mat-icon class="hint-icon">info</mat-icon>
+        {{ 'SETTINGS.APPEARANCE.THEME_HINT' | translate }}
+      </p>
       }
     </section>
-
-    <!-- Notificaciones -->
-    <section class="bento-card span-5">
-      <div class="card-header">
-        <mat-icon class="card-icon">notifications</mat-icon>
-        <h2 class="card-title">{{ 'SETTINGS.NOTIFICATIONS.SECTION_TITLE' | translate }}</h2>
-      </div>
-
-      @if (loadingProfile) {
-      <div class="profile-notification-skeleton">
-        <span class="skeleton skeleton-text medium"></span>
-        <span class="skeleton skeleton-text long"></span>
-      </div>
-      } @else {
-      <form [formGroup]="profileForm">
-        <div class="notification-row">
-          <div class="notification-info">
-            <span class="notif-label">{{ 'SETTINGS.NOTIFICATIONS.EMAIL_LABEL' | translate }}</span>
-            <span class="notif-desc">{{ 'SETTINGS.NOTIFICATIONS.EMAIL_DESC' | translate }}</span>
-          </div>
-
-          <mat-slide-toggle formControlName="emailNotifications" color="primary"></mat-slide-toggle>
-        </div>
-      </form>
-      }
-    </section>
-
-    <!-- Guardar cambios generales -->
-    <div class="save-general-row">
-      <button class="btn btn-primary" type="button"
-        [disabled]="savingProfile || loadingProfile"
-        (click)="onSaveProfile()">
-        <mat-icon>save</mat-icon>
-        {{ savingProfile ? ('SETTINGS.PERSONAL_INFO.SAVING_BUTTON' | translate) : ('SETTINGS.PERSONAL_INFO.SAVE_BUTTON' | translate) }}
-      </button>
-    </div>
 
     <!-- Seguridad -->
     <section class="bento-card span-full">
