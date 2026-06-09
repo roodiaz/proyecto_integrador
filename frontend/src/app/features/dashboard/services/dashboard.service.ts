@@ -9,7 +9,8 @@ import {
     DashboardTopCards,
     DashboardLatestTransaction,
     DashboardRecentNotification,
-    DashboardPortfolioDistribution
+    DashboardPortfolioDistribution,
+    DashboardPortfolioComposition
 } from '../models/dashboard.models';
 
 @Injectable({ providedIn: 'root' })
@@ -51,6 +52,13 @@ export class DashboardService {
         Observable<ApiResponse<DashboardPortfolioDistribution[]>> {
         return this.http.get<ApiResponse<DashboardPortfolioDistribution[]>>(
             `${this.apiUrl}/portfolio-distribution`
+        );
+    }
+
+    getPortfolioComposition(date: string):
+        Observable<ApiResponse<DashboardPortfolioComposition>> {
+        return this.http.get<ApiResponse<DashboardPortfolioComposition>>(
+            `${this.apiUrl}/portfolio-composition?date=${date}`
         );
     }
 }

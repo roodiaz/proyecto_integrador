@@ -31,7 +31,6 @@
     "PREV_PAGE": "Previous",
     "NEXT_PAGE": "Next"
   },
-
   "ERRORS": {
     "INTERNAL_ERROR": "Internal server error. Please try again.",
     "USER_NOT_FOUND": "User not found.",
@@ -74,7 +73,6 @@
     "MARKET_INDICES_UNAVAILABLE": "Could not retrieve market indices.",
     "MARKET_OVERVIEW_ERROR": "An error occurred while retrieving the market overview."
   },
-
   "SUCCESS": {
     "REGISTRATION_SUCCESS": "Account created. Check your email to verify it.",
     "REGISTRATION_SUCCESS_EMAIL_FAILED": "Account created, but we could not send the verification email.",
@@ -101,7 +99,6 @@
     "CONTACT_MESSAGE_SENT": "Message sent successfully.",
     "LOGOUT_SUCCESS": "Logged out successfully."
   },
-
   "AUTH": {
     "LOGIN": {
       "TITLE": "Welcome",
@@ -189,7 +186,6 @@
       }
     }
   },
-
   "SIDEBAR": {
     "DASHBOARD": "Dashboard",
     "MARKET": "Market",
@@ -201,7 +197,7 @@
     "PRICES_PENDING": "Price update pending",
     "PRICES_JUST_NOW": "Prices updated just now",
     "PRICES_SECONDS_AGO": "Prices updated {{seconds}} seconds ago",
-    "PRICES_MINUTES_AGO": "Prices updated {{minutes}} and {{seconds}} ago",
+    "PRICES_MINUTES_AGO": "Prices updated {{minutes}} min and {{seconds}} sec ago",
     "PRICES_1_HOUR_AGO": "Prices updated 1 hour ago",
     "PRICES_HOURS_AGO": "Prices updated {{hours}} hours ago",
     "NO_DATA": "No data available",
@@ -211,7 +207,6 @@
     "MARKET_CLOSES_IN": "Closes in {{duration}}",
     "MARKET_OPENS_IN": "Opens in {{duration}}"
   },
-
   "HEADER": {
     "NOTIFICATIONS": "Notifications",
     "NO_NOTIFICATIONS": "No notifications",
@@ -221,7 +216,6 @@
     "SETTINGS": "Settings",
     "LOGOUT": "Log Out"
   },
-
   "DASHBOARD": {
     "TITLE": "Dashboard",
     "SUBTITLE": "Summary of your financial activity",
@@ -285,9 +279,17 @@
     "TIME_MINUTES_AGO": "{{minutes}} min ago",
     "TIME_HOURS_AGO": "{{hours}} h ago",
     "TIME_YESTERDAY": "Yesterday",
-    "TIME_DAYS_AGO": "{{days}} days ago"
+    "TIME_DAYS_AGO": "{{days}} days ago",
+    "COMPOSITION_HEADER": "Portfolio Composition",
+    "COMPOSITION_DATE": "Date",
+    "COMPOSITION_AVAILABLE": "Available Cash",
+    "COMPOSITION_INVESTED": "Invested Capital",
+    "COMPOSITION_TOTAL": "Total Value",
+    "COMPOSITION_EFFECTIVE_DATE": "Data as of closing",
+    "COMPOSITION_EMPTY_TITLE": "No historical data",
+    "COMPOSITION_EMPTY_TEXT": "No snapshots available for the selected date.",
+    "TOOLTIP_COMPOSITION": "Shows how your capital was distributed between available cash and invested capital on the selected date. Change the date to explore your history."
   },
-
   "MARKET": {
     "TITLE": "Market",
     "SUBTITLE": "Explore market assets",
@@ -355,6 +357,7 @@
     "TOOLTIP_INDEX_SP500": "The S&P 500 groups the 500 largest companies in the United States. It is the most widely used reference index for the American market.",
     "TOOLTIP_INDEX_NASDAQ": "The NASDAQ primarily concentrates technology companies like Apple, Google, and Microsoft. It reflects how the tech sector of the market is performing.",
     "TOOLTIP_INDEX_DOW": "The Dow Jones groups only 30 large traditional industrial companies in the US. It is one of the oldest and most well-known indices in the world.",
+    "TOOLTIP_INDEX_RUT": "The Russell 2000 groups the 2000 small-cap companies in the US. It is the benchmark index for Small Caps in the American market.",
     "TOOLTIP_INDEX_DEFAULT": "This index groups a set of stocks to show how a part of the market is performing.",
     "TOOLTIP_STAT_OPEN": "The price at which the stock opened at the beginning of today's session.",
     "TOOLTIP_STAT_VOLUME": "Number of shares traded today. High volume may indicate greater interest or activity in the asset.",
@@ -387,7 +390,6 @@
     "BUY_SUCCESS": "Purchase completed successfully",
     "SELL_SUCCESS": "Sale completed successfully"
   },
-
   "PORTFOLIO": {
     "TITLE": "Portfolio",
     "SUBTITLE": "Manage your investments",
@@ -542,7 +544,6 @@
     },
     "CHART_VALUE_LABEL": "Value: ${{value}}"
   },
-
   "ALERTS": {
     "TITLE": "Alerts",
     "HEADER_TITLE": "Alert Center",
@@ -565,6 +566,7 @@
     "CREATE_FIRST": "Create First Alert",
     "EDIT_TOOLTIP": "Edit",
     "DELETE_TOOLTIP": "Delete",
+    "VIEW_NOTIFICATIONS_TOOLTIP": "View notifications for this alert",
     "CREATE_BUTTON": "New Alert",
     "EDIT_BUTTON": "Edit",
     "DELETE_BUTTON": "Delete",
@@ -659,7 +661,6 @@
     "TOOLTIP_STATUS_COL": "Indicates whether the alert is monitoring the market (Active) or temporarily deactivated (Paused).",
     "TOOLTIP_DATES": "The date you created the alert and the last time it was automatically triggered."
   },
-
   "NOTIFICATIONS": {
     "TITLE": "Notifications",
     "CENTER_TITLE": "Notification Center",
@@ -673,6 +674,10 @@
     "DELETE": "Delete",
     "DELETE_TOOLTIP": "Delete",
     "MARK_ALL_READ": "Mark all as read",
+    "FILTER_BY_ALERT": "Filtering notifications for alert #{{id}}",
+    "CLEAR_ALERT_FILTER": "Clear filter",
+    "TRIGGERED_BY_ALERT": "Triggered by alert #{{id}}",
+    "TRIGGERED_BY_CONDITION": "Triggered by: {{condition}}",
     "NO_NOTIFICATIONS": "No notifications",
     "NO_NOTIFICATIONS_DESC": "Triggered alerts will appear here as notifications",
     "UNREAD": "Unread",
@@ -695,7 +700,6 @@
       "MESSAGE": "Are you sure you want to delete this record from the history?"
     }
   },
-
   "WATCHLIST": {
     "TITLE": "Watchlist",
     "FAVORITES_TITLE": "Favorites List",
@@ -745,7 +749,6 @@
     "TOOLTIP_CHANGE": "The percentage change in price relative to the previous day's close. Green means it went up, red means it went down.",
     "TOOLTIP_ACTIONS": "Quick options: view the chart on Market, create a price alert, or remove the asset from your favorites."
   },
-
   "SETTINGS": {
     "TITLE": "User Profile",
     "SUBTITLE": "Manage your personal information and preferences",
@@ -836,7 +839,6 @@
       "FORM_INVALID_PASSWORD": "Invalid form."
     }
   },
-
   "HOME": {
     "LANDING": {
       "HERO_TITLE_1": "Invest with",

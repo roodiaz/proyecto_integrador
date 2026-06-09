@@ -128,6 +128,30 @@ public class DashboardController : BaseController
     }
 
     /// <summary>
+    /// Obtiene la composición histórica del portfolio del usuario autenticado para una fecha determinada.
+    /// Si no existe snapshot exacto para esa fecha, retorna el snapshot más reciente anterior.
+    /// </summary>
+    /// <param name="date">Fecha de referencia en formato yyyy-MM-dd.</param>
+    /// <returns>Efectivo disponible, capital invertido y valor total junto con la fecha efectiva del snapshot.</returns>
+    /// <response code="200">Composición obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpGet("portfolio-composition")]
+    public async Task<IActionResult> GetPortfolioComposition([FromQuery] DateTime date)
+    {
+        _logger.LogInformation("Consultando composición del portfolio: UserId={UserId} Date={Date}", UserId, date);
+
+        var result = await _service.GetPortfolioCompositionAsync(UserId, date);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener composición del portfolio: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Obtiene las últimas operaciones realizadas
     /// por el usuario autenticado.
     /// </summary>

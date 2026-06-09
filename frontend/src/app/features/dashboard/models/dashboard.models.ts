@@ -42,3 +42,10 @@ export interface DashboardPortfolioDistribution {
   value: number;
   percentage: number;
 }
+
+export interface DashboardPortfolioComposition {
+  availableBalance: number;
+  investedValue: number;
+  totalValue: number;
+  effectiveDate: string | null;
+}

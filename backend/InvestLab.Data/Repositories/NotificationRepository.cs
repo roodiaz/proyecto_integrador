@@ -27,6 +27,7 @@ public class NotificationRepository : INotificationRepository
     public async Task<(List<Notification>, int)> GetAsync(int userId, NotificationFilterDto filter)
     {
         var query = _context.Notifications
+            .Include(x => x.Alert).ThenInclude(a => a.Asset)
             .Where(x => x.UserId == userId)
             .AsQueryable();
 
@@ -44,6 +45,9 @@ public class NotificationRepository : INotificationRepository
 
         if (filter.ToDate.HasValue)
             query = query.Where(x => x.CreatedAt <= filter.ToDate.Value);
+
+        if (filter.AlertId.HasValue)
+            query = query.Where(x => x.AlertId == filter.AlertId.Value);
 
         var total = await query.CountAsync();
 

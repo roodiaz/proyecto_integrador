@@ -363,6 +363,43 @@ public class DashboardService : IDashboardService
         }
     }
 
+    /// <summary>
+    /// Obtiene la composición del portfolio del usuario para una fecha determinada a partir de los snapshots históricos.
+    /// Si no existe snapshot exacto para esa fecha, retorna el snapshot más reciente anterior.
+    /// Si no existe ningún snapshot, retorna un objeto con valores en cero.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="date">Fecha de referencia para buscar el snapshot.</param>
+    /// <returns>Composición del portfolio (efectivo disponible, capital invertido y total) junto con la fecha efectiva del snapshot.</returns>
+    public async Task<Response> GetPortfolioCompositionAsync(int userId, DateTime date)
+    {
+        try
+        {
+            var snapshot = await _portfolioHistoryRepository.GetOnOrBeforeAsync(userId, date);
+
+            if (snapshot == null)
+                return Response.Ok(new DashboardPortfolioCompositionDto());
+
+            var response = new DashboardPortfolioCompositionDto
+            {
+                AvailableBalance = snapshot.AvailableBalance ?? 0,
+                InvestedValue    = snapshot.InvestedValue ?? 0,
+                TotalValue       = snapshot.TotalValue,
+                EffectiveDate    = snapshot.Date
+            };
+
+            _logger.LogInformation("Composición del portfolio obtenida: UserId={UserId} Fecha={Date} Efectiva={EffectiveDate}",
+                userId, date.Date, snapshot.Date.Date);
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener composición del portfolio para UserId={UserId}", userId);
+            return Response.Fail("Error interno");
+        }
+    }
+
     //
     // HELPERS
     /// <summary>

@@ -16,6 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PortfolioModal } from '../../../portfolio/components/portfolio-modal/portfolio-modal';
 import { PortfolioService } from '../../../portfolio/services/portfolio.service';
 import { BuyData, SellData, PortfolioModalResult } from '../../../portfolio/models/portfolio.modal.model';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   MarketIndex,
@@ -51,13 +52,14 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   loadingOverview = false;
 
   /** Tarjetas placeholder que se muestran cuando todavía no hay índices disponibles. */
-  emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
+  emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }, { name: 'Russell 2000' }];
 
   /** Claves de traducción para los tooltips de los índices. */
   readonly indexTooltips: Record<string, string> = {
-    'S&P 500':   'MARKET.TOOLTIP_INDEX_SP500',
-    'NASDAQ':    'MARKET.TOOLTIP_INDEX_NASDAQ',
-    'Dow Jones': 'MARKET.TOOLTIP_INDEX_DOW'
+    'S&P 500':      'MARKET.TOOLTIP_INDEX_SP500',
+    'NASDAQ':       'MARKET.TOOLTIP_INDEX_NASDAQ',
+    'Dow Jones':    'MARKET.TOOLTIP_INDEX_DOW',
+    'Russell 2000': 'MARKET.TOOLTIP_INDEX_RUT'
   };
 
   // ── Activo seleccionado ──
@@ -115,6 +117,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private languageService: LanguageService,
     private dialog: MatDialog,
     private themeService: ThemeService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {
     effect(() => {
       this.themeService.currentTheme();
@@ -132,6 +136,11 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * busca el último activo consultado y arranca el reloj del estado del mercado.
    */
   ngOnInit(): void {
+    const tickerParam = this.route.snapshot.queryParamMap.get('ticker');
+    if (tickerParam) {
+      this.selectedSymbol = tickerParam.toUpperCase();
+      this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+    }
     this.loadMarketData();
     this.loadMarketOverview();
     this.loadMarketLists();
@@ -814,7 +823,11 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @param symbol Símbolo de la serie (por ejemplo `'^GSPC'` para el S&P 500).
    */
   private getSeriesColor(symbol: string): string {
-    return symbol === '^GSPC' ? '#10b981' : symbol === '^IXIC' ? '#f59e0b' : '#a78bfa';
+    if (symbol === '^GSPC') return '#10b981';
+    if (symbol === '^IXIC') return '#f59e0b';
+    if (symbol === '^DJI')  return '#a78bfa';
+    if (symbol === '^RUT')  return '#f87171';
+    return '#94a3b8';
   }
 
   /**
@@ -823,7 +836,11 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @param symbol Símbolo de la serie (por ejemplo `'^GSPC'` para el S&P 500).
    */
   private getSeriesBackgroundColor(symbol: string): string {
-    return symbol === '^GSPC' ? 'rgba(16, 185, 129, 0.10)' : symbol === '^IXIC' ? 'rgba(245, 158, 11, 0.10)' : 'rgba(167, 139, 250, 0.10)';
+    if (symbol === '^GSPC') return 'rgba(16, 185, 129, 0.10)';
+    if (symbol === '^IXIC') return 'rgba(245, 158, 11, 0.10)';
+    if (symbol === '^DJI')  return 'rgba(167, 139, 250, 0.10)';
+    if (symbol === '^RUT')  return 'rgba(248, 113, 113, 0.10)';
+    return 'rgba(148, 163, 184, 0.10)';
   }
 
   /**

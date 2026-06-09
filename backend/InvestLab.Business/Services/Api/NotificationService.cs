@@ -1,4 +1,5 @@
 ﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Notifications;
@@ -39,7 +40,9 @@ public class NotificationService : INotificationService
             Message = x.Message,
             Price = x.Price,
             IsRead = x.IsRead,
-            CreatedAt = x.CreatedAt
+            CreatedAt = x.CreatedAt,
+            AlertSymbol = x.Alert?.Asset?.Symbol,
+            AlertCondition = FormatCondition(x.Alert)
         });
 
         return Response.Ok(new { data = result, total });
@@ -109,5 +112,24 @@ public class NotificationService : INotificationService
         var count = await _notificationRepo.GetUnreadCountAsync(userId);
 
         return Response.Ok(new { count });
+    }
+
+    private static string? FormatCondition(Alert? alert)
+    {
+        if (alert?.Asset == null) return null;
+
+        var op = alert.Operator switch
+        {
+            Enums.AlertOperator.GreaterThan        => ">",
+            Enums.AlertOperator.LessThan           => "<",
+            Enums.AlertOperator.GreaterThanOrEqual => ">=",
+            Enums.AlertOperator.LessThanOrEqual    => "<=",
+            Enums.AlertOperator.Equal              => "=",
+            _                                      => "?"
+        };
+
+        return alert.ConditionType == Enums.ConditionType.Percentage
+            ? $"{alert.Asset.Symbol} {op} {alert.Value}%"
+            : $"{alert.Asset.Symbol} {op} ${alert.Value}";
     }
 }

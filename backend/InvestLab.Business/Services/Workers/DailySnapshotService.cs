@@ -132,9 +132,11 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                 var history = new PortfolioHistory
                 {
-                    UserId = user.Id,
-                    Date = snapshotDate,
-                    TotalValue = Math.Round(totalValue, 2)
+                    UserId            = user.Id,
+                    Date              = snapshotDate,
+                    AvailableBalance  = Math.Round(balanceAtClose, 2),
+                    InvestedValue     = Math.Round(holdingsValue, 2),
+                    TotalValue        = Math.Round(totalValue, 2)
                 };
 
                 await _portfolioHistoryRepository.InsertAsync(history);
@@ -244,9 +246,11 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                     await _portfolioHistoryRepository.InsertAsync(new PortfolioHistory
                     {
-                        UserId     = user.Id,
-                        Date       = date,
-                        TotalValue = Math.Round(totalValue, 2)
+                        UserId           = user.Id,
+                        Date             = date,
+                        AvailableBalance = Math.Round(balanceAtD, 2),
+                        InvestedValue    = Math.Round(holdingsValue, 2),
+                        TotalValue       = Math.Round(totalValue, 2)
                     });
 
                     _logger.LogInformation("Snapshot histórico generado: UserId={UserId} Fecha={Date} Valor={Total}",

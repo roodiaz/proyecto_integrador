@@ -68,6 +68,10 @@ namespace InvestLab.Business.Services.Api
 
                 var condition = MapCondition(dto);
 
+                var exists = await _alertRepository.ExistsAsync(userId, asset.Id, condition.Item1, condition.Item2, condition.Item3);
+                if (exists)
+                    return Response.Fail("Ya existe una alerta con la misma condición para ese activo", ALERT_DUPLICATE);
+
                 var alert = new Alert
                 {
                     UserId = userId,

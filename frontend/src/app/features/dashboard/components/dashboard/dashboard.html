@@ -200,6 +200,84 @@
   <!-- BOTTOM SECTION -->
   <div class="dashboard-grid">
 
+    <!-- COMPOSICIÓN DEL PORTFOLIO (nueva — primera) -->
+    <div class="dashboard-card">
+
+      <div class="card-header">
+        <h3>{{ 'DASHBOARD.COMPOSITION_HEADER' | translate }}</h3>
+        <app-info-tooltip
+          [text]="'DASHBOARD.TOOLTIP_COMPOSITION' | translate"
+        />
+      </div>
+
+      <!-- Selector de fecha -->
+      <div class="composition-date-row">
+        <mat-form-field appearance="outline" class="composition-date-field">
+          <mat-label>{{ 'DASHBOARD.COMPOSITION_DATE' | translate }}</mat-label>
+          <input
+            matInput
+            type="date"
+            [(ngModel)]="selectedCompositionDate"
+            (change)="onCompositionDateChange()"
+          />
+        </mat-form-field>
+      </div>
+
+      @if (loadingPortfolioComposition) {
+        <div class="skeleton-card-list">
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+          <div class="skeleton skeleton-list-item"></div>
+        </div>
+      } @else if (hasCompositionData) {
+        <!-- Stats de composición -->
+        <div class="composition-stats">
+          <div class="composition-stat available">
+            <div class="composition-stat-dot available-dot"></div>
+            <div class="composition-stat-body">
+              <div class="composition-stat-label">{{ 'DASHBOARD.COMPOSITION_AVAILABLE' | translate }}</div>
+              <div class="composition-stat-value">{{ formatCurrency(portfolioComposition?.availableBalance) }}</div>
+              <div class="composition-stat-pct">{{ compositionAvailablePercent }}%</div>
+            </div>
+          </div>
+
+          <div class="composition-stat invested">
+            <div class="composition-stat-dot invested-dot"></div>
+            <div class="composition-stat-body">
+              <div class="composition-stat-label">{{ 'DASHBOARD.COMPOSITION_INVESTED' | translate }}</div>
+              <div class="composition-stat-value">{{ formatCurrency(portfolioComposition?.investedValue) }}</div>
+              <div class="composition-stat-pct">{{ compositionInvestedPercent }}%</div>
+            </div>
+          </div>
+
+          <div class="composition-total-row">
+            <span class="composition-total-label">{{ 'DASHBOARD.COMPOSITION_TOTAL' | translate }}</span>
+            <span class="composition-total-value">{{ formatCurrency(portfolioComposition?.totalValue) }}</span>
+          </div>
+        </div>
+
+        <!-- Gráfico de torta -->
+        <div class="composition-chart-wrap">
+          <canvas id="compositionChart"></canvas>
+        </div>
+
+        <!-- Fecha efectiva del snapshot -->
+        @if (portfolioComposition?.effectiveDate) {
+          <div class="composition-effective-date">
+            {{ 'DASHBOARD.COMPOSITION_EFFECTIVE_DATE' | translate }}
+            {{ portfolioComposition?.effectiveDate | date:'dd/MM/yyyy' }}
+          </div>
+        }
+      } @else {
+        <div class="card-empty">
+          <div class="card-empty-icon"><mat-icon>pie_chart</mat-icon></div>
+          <div class="card-empty-title">{{ 'DASHBOARD.COMPOSITION_EMPTY_TITLE' | translate }}</div>
+          <div class="card-empty-text">{{ 'DASHBOARD.COMPOSITION_EMPTY_TEXT' | translate }}</div>
+        </div>
+      }
+
+    </div>
+
     <!-- DISTRIBUCION -->
     <div class="dashboard-card">
 
@@ -234,50 +312,6 @@
               <div class="card-empty-icon"><mat-icon>bar_chart</mat-icon></div>
               <div class="card-empty-title">{{ 'DASHBOARD.DISTRIBUTION_EMPTY_TITLE' | translate }}</div>
               <div class="card-empty-text">{{ 'DASHBOARD.DISTRIBUTION_EMPTY_TEXT' | translate }}</div>
-            </div>
-          }
-        </div>
-      }
-
-    </div>
-
-    <!-- NOTIFICACIONES -->
-    <div class="dashboard-card">
-
-      <div class="card-header">
-        <h3>{{ 'DASHBOARD.NOTIFICATIONS_HEADER' | translate }}</h3>
-        <app-info-tooltip
-          [text]="'DASHBOARD.TOOLTIP_NOTIFICATIONS' | translate"
-        />
-      </div>
-
-      @if (loadingRecentNotifications) {
-        <div class="skeleton-card-list">
-          <div class="skeleton skeleton-list-item"></div>
-          <div class="skeleton skeleton-list-item"></div>
-          <div class="skeleton skeleton-list-item"></div>
-        </div>
-      } @else {
-        <div class="alerts-modern">
-          @for (notification of recentNotifications; track notification) {
-            <div class="alert-modern-item" [ngClass]="getNotificationClass(notification)">
-              <div class="alert-modern-symbol">
-                {{ getNotificationSymbol(notification.message) }}
-              </div>
-
-              <div class="alert-modern-message">
-                {{ getNotificationMessage(notification.message) }}
-              </div>
-
-              <div class="alert-modern-date">
-                {{ formatRelativeDate(notification.createdAt) }}
-              </div>
-            </div>
-          } @empty {
-            <div class="card-empty">
-              <div class="card-empty-icon"><mat-icon>notifications_off</mat-icon></div>
-              <div class="card-empty-title">{{ 'DASHBOARD.NO_NOTIFICATIONS' | translate }}</div>
-              <div class="card-empty-text">{{ 'DASHBOARD.NOTIFICATIONS_EMPTY_TEXT' | translate }}</div>
             </div>
           }
         </div>

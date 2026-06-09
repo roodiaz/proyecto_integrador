@@ -14,5 +14,7 @@ namespace InvestLab.Business.Interfaces.Api
         Task<Response> GetPerformanceChartAsync(int userId, DashboardPerformanceChartFilterDto filter);
 
         Task<Response> GetLatestTransactionsAsync(int userId);
+
+        Task<Response> GetPortfolioCompositionAsync(int userId, DateTime date);
     }
 }

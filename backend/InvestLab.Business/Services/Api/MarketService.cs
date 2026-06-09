@@ -40,7 +40,7 @@ namespace InvestLab.Business.Services
         {
             try
             {
-                var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI" };
+                var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI", "^RUT" };
                 var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
 
                 if (marketPricesResponse.Prices == null || marketPricesResponse.Prices.Count == 0)
@@ -281,7 +281,7 @@ namespace InvestLab.Business.Services
                 if (!IsValidHistoryRange(range))
                     return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y", INVALID_RANGE);
 
-                var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI" };
+                var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI", "^RUT" };
                 var series = new List<MarketHistorySeriesDto>();
 
                 foreach (var symbol in symbols)
@@ -365,6 +365,7 @@ namespace InvestLab.Business.Services
                 "^GSPC" => "S&P 500",
                 "^IXIC" => "NASDAQ",
                 "^DJI" => "Dow Jones",
+                "^RUT" => "Russell 2000",
                 _ => symbol
             };
         }

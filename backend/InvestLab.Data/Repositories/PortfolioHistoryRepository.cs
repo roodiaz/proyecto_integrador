@@ -90,6 +90,23 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
+        /// Obtiene el snapshot más reciente del historial de portafolio en o antes de la fecha indicada.
+        /// Si existe un registro exacto para esa fecha lo retorna; de lo contrario retorna el más reciente anterior.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="date">Fecha de referencia (inclusive).</param>
+        /// <returns>El snapshot más reciente en o antes de la fecha dada, o <c>null</c> si no existe ninguno.</returns>
+        public async Task<PortfolioHistory?> GetOnOrBeforeAsync(int userId, DateTime date)
+        {
+            var end = date.Date.AddDays(1);
+
+            return await _collection
+                .Find(x => x.UserId == userId && x.Date < end)
+                .SortByDescending(x => x.Date)
+                .FirstOrDefaultAsync();
+        }
+
+        /// <summary>
         /// Elimina todos los registros de historial de portafolio asociados a un usuario.
         /// </summary>
         /// <param name="userId">Identificador del usuario cuyo historial se eliminará.</param>

@@ -31,7 +31,6 @@
     "PREV_PAGE": "Anterior",
     "NEXT_PAGE": "Siguiente"
   },
-
   "ERRORS": {
     "INTERNAL_ERROR": "Error interno del servidor. Por favor, intentá de nuevo.",
     "USER_NOT_FOUND": "Usuario no encontrado.",
@@ -74,7 +73,6 @@
     "MARKET_INDICES_UNAVAILABLE": "No se pudieron obtener los índices del mercado.",
     "MARKET_OVERVIEW_ERROR": "Ocurrió un error al obtener el panorama de mercado."
   },
-
   "SUCCESS": {
     "REGISTRATION_SUCCESS": "Cuenta creada. Revisá tu email para verificarla.",
     "REGISTRATION_SUCCESS_EMAIL_FAILED": "Cuenta creada, pero no pudimos enviar el correo de verificación.",
@@ -101,7 +99,6 @@
     "CONTACT_MESSAGE_SENT": "Mensaje enviado correctamente.",
     "LOGOUT_SUCCESS": "Sesión cerrada correctamente."
   },
-
   "AUTH": {
     "LOGIN": {
       "TITLE": "Bienvenido",
@@ -189,7 +186,6 @@
       }
     }
   },
-
   "SIDEBAR": {
     "DASHBOARD": "Dashboard",
     "MARKET": "Mercado",
@@ -201,7 +197,7 @@
     "PRICES_PENDING": "Precios pendientes de actualización",
     "PRICES_JUST_NOW": "Precios actualizados hace unos segundos",
     "PRICES_SECONDS_AGO": "Precios actualizados hace {{seconds}} segundos",
-    "PRICES_MINUTES_AGO": "Precios actualizados hace {{minutes}} y {{seconds}}",
+    "PRICES_MINUTES_AGO": "Precios actualizados hace {{minutes}} min y {{seconds}} seg",
     "PRICES_1_HOUR_AGO": "Precios actualizados hace 1 hora",
     "PRICES_HOURS_AGO": "Precios actualizados hace {{hours}} horas",
     "NO_DATA": "Sin datos disponibles",
@@ -211,7 +207,6 @@
     "MARKET_CLOSES_IN": "Cierra en {{duration}}",
     "MARKET_OPENS_IN": "Abre en {{duration}}"
   },
-
   "HEADER": {
     "NOTIFICATIONS": "Notificaciones",
     "NO_NOTIFICATIONS": "No tenés notificaciones",
@@ -221,7 +216,6 @@
     "SETTINGS": "Configuración",
     "LOGOUT": "Cerrar Sesión"
   },
-
   "DASHBOARD": {
     "TITLE": "Dashboard",
     "SUBTITLE": "Resumen de tu actividad financiera",
@@ -285,9 +279,17 @@
     "TIME_MINUTES_AGO": "Hace {{minutes}} min",
     "TIME_HOURS_AGO": "Hace {{hours}} h",
     "TIME_YESTERDAY": "Ayer",
-    "TIME_DAYS_AGO": "Hace {{days}} días"
+    "TIME_DAYS_AGO": "Hace {{days}} días",
+    "COMPOSITION_HEADER": "Composición del Portfolio",
+    "COMPOSITION_DATE": "Fecha",
+    "COMPOSITION_AVAILABLE": "Efectivo Disponible",
+    "COMPOSITION_INVESTED": "Capital Invertido",
+    "COMPOSITION_TOTAL": "Valor Total",
+    "COMPOSITION_EFFECTIVE_DATE": "Datos al cierre del",
+    "COMPOSITION_EMPTY_TITLE": "Sin datos históricos",
+    "COMPOSITION_EMPTY_TEXT": "No hay snapshots disponibles para la fecha seleccionada.",
+    "TOOLTIP_COMPOSITION": "Muestra cómo estaba distribuido tu capital entre efectivo disponible y capital invertido en la fecha seleccionada. Cambiá la fecha para explorar tu historial."
   },
-
   "MARKET": {
     "TITLE": "Mercado",
     "SUBTITLE": "Explorar activos del mercado",
@@ -355,6 +357,7 @@
     "TOOLTIP_INDEX_SP500": "El S&P 500 agrupa las 500 empresas más grandes de Estados Unidos. Es el índice más usado como referencia del mercado americano en general.",
     "TOOLTIP_INDEX_NASDAQ": "El NASDAQ concentra principalmente empresas tecnológicas como Apple, Google y Microsoft. Refleja cómo se comporta el sector tech del mercado.",
     "TOOLTIP_INDEX_DOW": "El Dow Jones agrupa solo 30 grandes empresas industriales y tradicionales de EE.UU. Es uno de los índices más antiguos y conocidos del mundo.",
+    "TOOLTIP_INDEX_RUT": "El Russell 2000 agrupa las 2000 empresas de pequeña capitalización de EE.UU. Es el índice de referencia para las Small Caps del mercado americano.",
     "TOOLTIP_INDEX_DEFAULT": "Este índice agrupa un conjunto de acciones para mostrar cómo se comporta una parte del mercado.",
     "TOOLTIP_STAT_OPEN": "Precio al que abrió la acción al comienzo de la jornada de hoy.",
     "TOOLTIP_STAT_VOLUME": "Cantidad de acciones negociadas hoy. Un volumen alto puede indicar mayor interés o actividad en el activo.",
@@ -387,7 +390,6 @@
     "BUY_SUCCESS": "Compra realizada correctamente",
     "SELL_SUCCESS": "Venta realizada correctamente"
   },
-
   "PORTFOLIO": {
     "TITLE": "Portfolio",
     "SUBTITLE": "Gestioná tus inversiones",
@@ -542,7 +544,6 @@
     },
     "CHART_VALUE_LABEL": "Valor: ${{value}}"
   },
-
   "ALERTS": {
     "TITLE": "Alertas",
     "HEADER_TITLE": "Centro de Alertas",
@@ -565,6 +566,7 @@
     "CREATE_FIRST": "Crear Primera Alerta",
     "EDIT_TOOLTIP": "Editar",
     "DELETE_TOOLTIP": "Eliminar",
+    "VIEW_NOTIFICATIONS_TOOLTIP": "Ver notificaciones de esta alerta",
     "CREATE_BUTTON": "Nueva Alerta",
     "EDIT_BUTTON": "Editar",
     "DELETE_BUTTON": "Eliminar",
@@ -659,7 +661,6 @@
     "TOOLTIP_STATUS_COL": "Indica si la alerta está monitoreando el mercado (Activa) o temporalmente desactivada (Pausada).",
     "TOOLTIP_DATES": "Fecha en que creaste la alerta y la última vez que se disparó automáticamente."
   },
-
   "NOTIFICATIONS": {
     "TITLE": "Notificaciones",
     "CENTER_TITLE": "Centro de Notificaciones",
@@ -673,6 +674,10 @@
     "DELETE": "Eliminar",
     "DELETE_TOOLTIP": "Eliminar",
     "MARK_ALL_READ": "Marcar todo como leído",
+    "FILTER_BY_ALERT": "Filtrando notificaciones de la alerta #{{id}}",
+    "CLEAR_ALERT_FILTER": "Quitar filtro",
+    "TRIGGERED_BY_ALERT": "Disparada por la alerta #{{id}}",
+    "TRIGGERED_BY_CONDITION": "Disparada por: {{condition}}",
     "NO_NOTIFICATIONS": "No hay notificaciones",
     "NO_NOTIFICATIONS_DESC": "Las alertas disparadas aparecerán aquí como notificaciones",
     "UNREAD": "No leída",
@@ -695,7 +700,6 @@
       "MESSAGE": "¿Estás seguro de que deseas eliminar este registro del historial?"
     }
   },
-
   "WATCHLIST": {
     "TITLE": "Watchlist",
     "FAVORITES_TITLE": "Lista de Favoritos",
@@ -745,7 +749,6 @@
     "TOOLTIP_CHANGE": "El porcentaje de cambio del precio respecto al cierre del día anterior. Verde significa que subió, rojo que bajó.",
     "TOOLTIP_ACTIONS": "Opciones rápidas: ver el gráfico en Mercado, crear una alerta de precio, o quitar el activo de tus favoritos."
   },
-
   "SETTINGS": {
     "TITLE": "Perfil de Usuario",
     "SUBTITLE": "Administrá tu información personal y preferencias",
@@ -836,7 +839,6 @@
       "FORM_INVALID_PASSWORD": "Formulario inválido."
     }
   },
-
   "HOME": {
     "LANDING": {
       "HERO_TITLE_1": "Invertí con",

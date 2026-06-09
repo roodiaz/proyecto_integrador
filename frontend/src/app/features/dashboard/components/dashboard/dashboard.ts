@@ -10,8 +10,8 @@ import {
   DashboardTopCards,
   DashboardPerformanceChart,
   DashboardLatestTransaction,
-  DashboardRecentNotification,
-  DashboardPortfolioDistribution
+  DashboardPortfolioDistribution,
+  DashboardPortfolioComposition
 } from '../../models/dashboard.models';
 import Chart from 'chart.js/auto';
 import { ThemeService } from '../../../../core/services/theme.service';
@@ -34,25 +34,29 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Estado interno ─────────────────────────────────────────────────────────
   private chart: Chart | null = null;
+  private compositionChart: Chart | null = null;
   private resizeObserver: any;
 
-  // ── Controles del gráfico ──────────────────────────────────────────────────
+  // ── Controles del gráfico de performance ──────────────────────────────────
   selectedChartType: 'line' | 'bar' = 'line';
   selectedPeriod: '1W' | '1M' | '3M' | '1Y' = '1M';
+
+  // ── Filtro de fecha para composición ──────────────────────────────────────
+  selectedCompositionDate: string = this.getTodayString();
 
   // ── Datos del dashboard ────────────────────────────────────────────────────
   topCards: DashboardTopCards | null = null;
   performanceChart: DashboardPerformanceChart | null = null;
   latestTransactions: DashboardLatestTransaction[] = [];
-  recentNotifications: DashboardRecentNotification[] = [];
   portfolioDistribution: DashboardPortfolioDistribution[] = [];
+  portfolioComposition: DashboardPortfolioComposition | null = null;
 
   // ── Estados de carga ───────────────────────────────────────────────────────
   loadingTopCards = false;
   loadingPerformanceChart = false;
   loadingLatestTransactions = false;
-  loadingRecentNotifications = false;
   loadingPortfolioDistribution = false;
+  loadingPortfolioComposition = false;
 
   constructor(
     private dashboardService: DashboardService,
@@ -60,11 +64,14 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     private languageService: LanguageService
   ) {
     effect(() => {
-      // Re-renderizar el gráfico cuando cambia el tema
       this.themeService.currentTheme();
       if (this.performanceChart?.data?.length) {
         this.destroyChart();
         this.renderChartWhenReady();
+      }
+      if (this.portfolioComposition) {
+        this.destroyCompositionChart();
+        this.renderCompositionChartWhenReady();
       }
     });
   }
@@ -75,8 +82,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.loadTopCards();
     this.loadPerformanceChart();
     this.loadLatestTransactions();
-    this.loadRecentNotifications();
     this.loadPortfolioDistribution();
+    this.loadPortfolioComposition(this.selectedCompositionDate);
   }
 
   ngAfterViewInit(): void {
@@ -86,28 +93,46 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyChart();
+    this.destroyCompositionChart();
 
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
   }
 
-  /** Redimensiona el gráfico cuando cambia el tamaño de la ventana. */
   @HostListener('window:resize')
   onResize(): void {
-    if (this.chart) {
-      this.chart.resize();
-    }
+    if (this.chart) this.chart.resize();
+    if (this.compositionChart) this.compositionChart.resize();
   }
 
   // ── Getters ────────────────────────────────────────────────────────────────
 
   /**
-   * Indica si hay suficientes puntos de datos para renderizar el gráfico.
-   * @returns `true` si el array de datos del gráfico tiene al menos un punto.
+   * Indica si hay suficientes puntos de datos para renderizar el gráfico de performance.
    */
   get hasEnoughChartData(): boolean {
     return !!this.performanceChart?.data && this.performanceChart.data.length > 0;
+  }
+
+  /** Indica si el snapshot de composición tiene datos para graficar. */
+  get hasCompositionData(): boolean {
+    return !!this.portfolioComposition &&
+      (this.portfolioComposition.availableBalance > 0 || this.portfolioComposition.investedValue > 0);
+  }
+
+  get compositionAvailablePercent(): number {
+    if (!this.hasCompositionData) return 0;
+    const total = this.portfolioComposition!.totalValue;
+    if (total <= 0) return 0;
+    return Math.round((this.portfolioComposition!.availableBalance / total) * 1000) / 10;
+  }
+
+  get compositionInvestedPercent(): number {
+    if (!this.hasCompositionData) return 0;
+    const total = this.portfolioComposition!.totalValue;
+    if (total <= 0) return 0;
+    return Math.round((this.portfolioComposition!.investedValue / total) * 1000) / 10;
   }
 
   // ── Carga de datos ─────────────────────────────────────────────────────────
@@ -122,16 +147,12 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         next: response => {
           this.topCards = (response.success && response.data) ? response.data : null;
         },
-        error: error => {
-          console.error('Error cargando cards del dashboard', error);
-          this.topCards = null;
-        }
+        error: () => { this.topCards = null; }
       });
   }
 
   /**
    * Carga los datos del gráfico de rendimiento para el período seleccionado.
-   * Destruye el gráfico actual antes de iniciar la carga para evitar instancias duplicadas.
    */
   loadPerformanceChart(): void {
     this.loadingPerformanceChart = true;
@@ -149,8 +170,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         this.performanceChart = response.data;
         this.renderChartWhenReady();
       },
-      error: error => {
-        console.error('Error cargando gráfico del dashboard', error);
+      error: () => {
         this.performanceChart = null;
         this.loadingPerformanceChart = false;
         this.destroyChart();
@@ -168,14 +188,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         next: response => {
           this.latestTransactions = (response.success && response.data) ? response.data : [];
         },
-        error: error => {
-          console.error('Error cargando últimas operaciones', error);
-          this.latestTransactions = [];
-        }
+        error: () => { this.latestTransactions = []; }
       });
   }
 
-  /** Carga la distribución del portafolio por instrumento. */
+  /** Carga la distribución del portafolio por sector. */
   loadPortfolioDistribution(): void {
     this.loadingPortfolioDistribution = true;
 
@@ -185,49 +202,47 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         next: response => {
           this.portfolioDistribution = (response.success && response.data) ? response.data : [];
         },
-        error: error => {
-          console.error('Error cargando distribución del portfolio', error);
-          this.portfolioDistribution = [];
-        }
+        error: () => { this.portfolioDistribution = []; }
       });
   }
 
-  /** Carga las notificaciones de alertas más recientes para el panel de resumen. */
-  loadRecentNotifications(): void {
-    this.loadingRecentNotifications = true;
+  /** Carga la composición histórica del portfolio para la fecha seleccionada. */
+  loadPortfolioComposition(date: string): void {
+    this.loadingPortfolioComposition = true;
+    this.destroyCompositionChart();
 
-    this.dashboardService.getRecentNotifications()
-      .pipe(finalize(() => this.loadingRecentNotifications = false))
+    this.dashboardService.getPortfolioComposition(date)
+      .pipe(finalize(() => this.loadingPortfolioComposition = false))
       .subscribe({
         next: response => {
-          this.recentNotifications = (response.success && response.data) ? response.data : [];
+          this.portfolioComposition = (response.success && response.data) ? response.data : null;
+          this.renderCompositionChartWhenReady();
         },
-        error: error => {
-          console.error('Error cargando notificaciones recientes', error);
-          this.recentNotifications = [];
-        }
+        error: () => { this.portfolioComposition = null; }
       });
   }
 
-  // ── Controles del gráfico ──────────────────────────────────────────────────
+  // ── Controles ──────────────────────────────────────────────────────────────
 
-  /** Destruye el gráfico actual y lo recrea con el tipo de visualización seleccionado. */
   onChartTypeChange(): void {
     this.destroyChart();
     this.renderChartWhenReady();
   }
 
-  /** Recarga los datos del gráfico para el período recién seleccionado. */
   onPeriodChange(): void {
     this.loadPerformanceChart();
+  }
+
+  onCompositionDateChange(): void {
+    if (this.selectedCompositionDate) {
+      this.loadPortfolioComposition(this.selectedCompositionDate);
+    }
   }
 
   // ── Helpers de presentación ────────────────────────────────────────────────
 
   /**
-   * Formatea un número como moneda en dólares con separadores para `es-AR`.
-   * @param value Valor numérico a formatear. `null`/`undefined` se tratan como `0`.
-   * @returns Cadena con formato `$ 1.234,56`.
+   * Formatea un número como moneda en dólares.
    */
   formatCurrency(value: number | null | undefined): string {
     return new Intl.NumberFormat('es-AR', {
@@ -240,8 +255,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Formatea un número como porcentaje con signo explícito.
-   * @param value Valor porcentual. `null`/`undefined` se tratan como `0`.
-   * @returns Cadena con formato `+1.23%` o `-1.23%`.
    */
   formatPercent(value: number | null | undefined): string {
     const number = value ?? 0;
@@ -249,11 +262,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return `${sign}${number.toFixed(2)}%`;
   }
 
-  /**
-   * Devuelve la clase CSS para colorear la tarjeta de saldo total según si el
-   * valor del portafolio es mayor, igual o menor al capital inicial (USD 10.000).
-   * @returns `'positive'`, `'negative'` o `'neutral'`.
-   */
   getBalanceClass(): string {
     const value = this.topCards?.totalValue ?? 0;
     if (value > 10000) return 'positive';
@@ -261,11 +269,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return 'neutral';
   }
 
-  /**
-   * Devuelve la clase CSS para colorear la tarjeta de ganancia del día
-   * según si el valor es positivo, negativo o neutro.
-   * @returns `'positive'`, `'negative'` o `'neutral'`.
-   */
   getProfitClass(): string {
     const value = this.topCards?.todayProfit ?? 0;
     if (value > 0) return 'positive';
@@ -273,10 +276,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return 'neutral';
   }
 
-  /**
-   * Devuelve la clase CSS para el badge de variación del gráfico de rendimiento.
-   * @returns `'positive'`, `'negative'` o `'neutral'`.
-   */
   getChartVariationClass(): string {
     const value = this.performanceChart?.variationPercent ?? 0;
     if (value > 0) return 'positive';
@@ -284,11 +283,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return 'neutral';
   }
 
-  /**
-   * Mapea el tipo de transacción al nombre de clase CSS para el badge de operación.
-   * @param type Cadena con el tipo de operación (ej. `'COMPRA'`, `'VENTA'`).
-   * @returns `'buy'`, `'sell'` o cadena vacía si no coincide.
-   */
   getTransactionClass(type: string): string {
     const value = type?.toUpperCase();
     if (value.includes('COMPRA')) return 'buy';
@@ -296,45 +290,12 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return '';
   }
 
-  /**
-   * Clasifica una notificación según el contenido del mensaje para aplicar
-   * el color de borde correspondiente al item del panel de alertas.
-   * @param notification Objeto de notificación reciente del dashboard.
-   * @returns `'success'`, `'danger'` o `'warning'`.
-   */
-  getNotificationClass(notification: DashboardRecentNotification): string {
-    const message = notification.message?.toLowerCase() ?? '';
-
-    if (message.includes('subió') || message.includes('superó') || message.includes('alcanzó')) return 'success';
-    if (message.includes('cayó') || message.includes('bajó') || message.includes('debajo')) return 'danger';
-
-    return 'warning';
+  getAllocationWidth(value: number): string {
+    return `${Math.min(Math.max(value ?? 0, 0), 100)}%`;
   }
 
   /**
-   * Extrae el símbolo del instrumento (primera palabra del mensaje de notificación).
-   * @param message Texto completo del mensaje (ej. `'AAPL superó el precio objetivo'`).
-   * @returns Primera palabra del mensaje, o cadena vacía si el mensaje es nulo.
-   */
-  getNotificationSymbol(message: string): string {
-    return message?.trim()?.split(' ')[0] ?? '';
-  }
-
-  /**
-   * Extrae el cuerpo del mensaje de notificación sin el símbolo inicial.
-   * @param message Texto completo del mensaje.
-   * @returns Todas las palabras del mensaje excepto la primera.
-   */
-  getNotificationMessage(message: string): string {
-    const parts = message?.trim()?.split(' ') ?? [];
-    return parts.length > 1 ? parts.slice(1).join(' ') : message;
-  }
-
-  /**
-   * Convierte una fecha ISO a una cadena relativa legible en español
-   * (ej. `'Hace 5 min'`, `'Ayer'`, `'Hace 3 días'`).
-   * @param value Cadena de fecha en formato ISO 8601.
-   * @returns Fecha relativa como texto o fecha formateada `DD/MM/AAAA` si supera una semana.
+   * Convierte una fecha ISO a una cadena relativa legible en español.
    */
   formatRelativeDate(value: string): string {
     if (!value) return '';
@@ -355,47 +316,23 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return date.toLocaleDateString(this.languageService.current === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  /**
-   * Convierte un porcentaje de asignación al ancho CSS de la barra de progreso,
-   * limitado entre 0 % y 100 %.
-   * @param value Porcentaje de asignación del instrumento (0-100).
-   * @returns Cadena CSS con formato `'42%'`.
-   */
-  getAllocationWidth(value: number): string {
-    return `${Math.min(Math.max(value ?? 0, 0), 100)}%`;
-  }
+  // ── Gráfico de performance (privado) ──────────────────────────────────────
 
-  // ── Gráfico (privado) ──────────────────────────────────────────────────────
-
-  /**
-   * Registra un `ResizeObserver` sobre `.chart-container` para redimensionar el
-   * gráfico automáticamente cuando el contenedor cambia de tamaño.
-   */
   private setupResizeObserver(): void {
     const chartContainer = document.querySelector('.chart-container');
     if (chartContainer && 'ResizeObserver' in window) {
       this.resizeObserver = new ResizeObserver(() => {
-        if (this.chart) {
-          this.chart.resize();
-        }
+        if (this.chart) this.chart.resize();
       });
       this.resizeObserver.observe(chartContainer);
     }
   }
 
-  /**
-   * Inicializa o reemplaza la instancia de `Chart.js` sobre el canvas dado.
-   * Destruye cualquier gráfico previo antes de crear uno nuevo para evitar
-   * fugas de memoria.
-   * @param canvas Elemento `<canvas>` sobre el que se renderizará el gráfico.
-   */
   private createChart(canvas: HTMLCanvasElement): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    if (this.chart) {
-      this.chart.destroy();
-    }
+    if (this.chart) this.chart.destroy();
 
     canvas.width = canvas.offsetWidth;
     canvas.height = 400;
@@ -406,11 +343,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.chart = new Chart(ctx, config);
   }
 
-  /**
-   * Construye los datasets de Chart.js a partir de los puntos de
-   * `performanceChart.data` para los tres índices: Portfolio, S&P 500 y NASDAQ.
-   * @returns Objeto `{ labels, datasets }` listo para pasarle al constructor de `Chart`.
-   */
   private generateChartData() {
     const chartPoints = this.performanceChart?.data ?? [];
     const labels = chartPoints.map(x => x.label);
@@ -448,13 +380,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return { labels, datasets };
   }
 
-  /**
-   * Genera la configuración completa de Chart.js para el tipo de gráfico activo.
-   * En modo `'bar'` el tooltip muestra variación porcentual; en modo `'line'`
-   * muestra el valor en dólares.
-   * @param data Datasets generados por `generateChartData()`.
-   * @returns Objeto de configuración listo para pasarle al constructor de `Chart`.
-   */
   private getChartConfiguration(data: any): any {
     const t = this.themeService.getChartTheme();
 
@@ -504,17 +429,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         },
         scales: {
           x: {
-            grid: {
-              color: t.gridColor,
-              borderColor: t.gridBorderColor
-            },
+            grid: { color: t.gridColor, borderColor: t.gridBorderColor },
             ticks: { color: t.textColor, font: { size: 11 } }
           },
           y: {
-            grid: {
-              color: t.gridColor,
-              borderColor: t.gridBorderColor
-            },
+            grid: { color: t.gridColor, borderColor: t.gridBorderColor },
             ticks: {
               color: t.textColor,
               font: { size: 11 },
@@ -548,11 +467,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     return config;
   }
 
-  /**
-   * Espera a que el elemento `#mainChart` esté disponible en el DOM antes de
-   * crear el gráfico. Si el canvas no existe aún, reintenta tras 50 ms.
-   * No hace nada si no hay datos de rendimiento cargados.
-   */
   private renderChartWhenReady(): void {
     if (!this.performanceChart?.data?.length) return;
 
@@ -568,11 +482,90 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
-  /** Destruye la instancia activa de Chart.js y limpia la referencia. */
   private destroyChart(): void {
     if (!this.chart) return;
-
     this.chart.destroy();
     this.chart = null;
+  }
+
+  // ── Gráfico de composición (privado) ──────────────────────────────────────
+
+  private createCompositionChart(canvas: HTMLCanvasElement): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (this.compositionChart) this.compositionChart.destroy();
+
+    const t = this.themeService.getChartTheme();
+    const available = this.portfolioComposition?.availableBalance ?? 0;
+    const invested  = this.portfolioComposition?.investedValue ?? 0;
+
+    const availableLabel = this.languageService.instant('DASHBOARD.COMPOSITION_AVAILABLE');
+    const investedLabel  = this.languageService.instant('DASHBOARD.COMPOSITION_INVESTED');
+
+    this.compositionChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [availableLabel, investedLabel],
+        datasets: [{
+          data: [available, invested],
+          backgroundColor: ['rgba(74, 225, 118, 0.75)', 'rgba(74, 144, 226, 0.75)'],
+          borderColor:     ['#4AE176', '#4a90e2'],
+          borderWidth: 2,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: t.tooltipBg,
+            titleColor: t.tooltipText,
+            bodyColor: t.tooltipText,
+            borderColor: t.tooltipBorderColor,
+            borderWidth: 1,
+            padding: 12,
+            callbacks: {
+              label: (context: any) => {
+                const value = context.parsed;
+                const total = (context.dataset.data as number[]).reduce((a: number, b: number) => a + b, 0);
+                const pct   = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                return ` ${new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(value)} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  private renderCompositionChartWhenReady(): void {
+    if (!this.hasCompositionData) return;
+
+    setTimeout(() => {
+      const canvas = document.getElementById('compositionChart') as HTMLCanvasElement;
+
+      if (!canvas) {
+        setTimeout(() => this.renderCompositionChartWhenReady(), 50);
+        return;
+      }
+
+      this.createCompositionChart(canvas);
+    }, 0);
+  }
+
+  private destroyCompositionChart(): void {
+    if (!this.compositionChart) return;
+    this.compositionChart.destroy();
+    this.compositionChart = null;
+  }
+
+  // ── Utilidades ─────────────────────────────────────────────────────────────
+
+  private getTodayString(): string {
+    return new Date().toISOString().split('T')[0];
   }
 }

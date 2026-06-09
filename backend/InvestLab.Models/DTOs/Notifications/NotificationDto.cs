@@ -8,4 +8,6 @@ public class NotificationDto
     public decimal? Price { get; set; }
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? AlertSymbol { get; set; }
+    public string? AlertCondition { get; set; }
 }

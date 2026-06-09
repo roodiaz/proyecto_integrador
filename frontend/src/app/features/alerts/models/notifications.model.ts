@@ -6,6 +6,8 @@ export interface Notification {
   price: number;
   isRead: boolean;
   createdAt: Date;
+  alertSymbol: string | null;
+  alertCondition: string | null;
 }
 
 export interface UnreadCountResponse {

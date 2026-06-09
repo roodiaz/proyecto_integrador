@@ -35,6 +35,9 @@ export class Alerts implements OnInit, OnDestroy {
   /** Tab activo: lista de alertas o historial de notificaciones. */
   activeView: 'alerts' | 'history' = 'alerts';
 
+  /** AlertId seleccionado para filtrar notificaciones. Null = sin filtro. */
+  selectedAlertId: number | null = null;
+
   // ── Alertas ────────────────────────────────────────────────────────────────
   /** Lista de alertas cargadas según los filtros actuales. */
   alerts: Alert[] = [];
@@ -121,8 +124,16 @@ export class Alerts implements OnInit, OnDestroy {
    * @param view Tab de destino.
    */
   setActiveView(view: 'alerts' | 'history'): void {
+    if (view === 'history') this.selectedAlertId = null;
     this.activeView = view;
     if (view === 'history') this.unreadNotificationsService.refresh();
+  }
+
+  /** Cambia al tab de notificaciones pre-filtrado por la alerta indicada. */
+  viewAlertNotifications(alert: Alert): void {
+    this.selectedAlertId = alert.id;
+    this.activeView = 'history';
+    this.unreadNotificationsService.refresh();
   }
 
   // ── Filtros y paginación ───────────────────────────────────────────────────
@@ -371,11 +382,12 @@ export class Alerts implements OnInit, OnDestroy {
    * @param isActive Nuevo estado deseado (`true` = activar, `false` = pausar).
    */
   toggleAlert(alert: Alert, isActive: boolean): void {
+    alert.isActive = isActive;
     this.alertService.toggle(alert.id)
       .subscribe({
         next: () => {
-          this.loadAlerts();
-          this.loadStats();
+          if (isActive) { this.activeAlerts++; this.pausedAlerts--; }
+          else           { this.activeAlerts--; this.pausedAlerts++; }
           this.snackBarService.successFromCode('ALERT_TOGGLED');
         },
         error: error => {

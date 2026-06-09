@@ -15,6 +15,14 @@ namespace InvestLab.Models.Documents
         [BsonElement("date")]
         public DateTime Date { get; set; }
 
+        [BsonElement("availableBalance")]
+        [BsonIgnoreIfNull]
+        public decimal? AvailableBalance { get; set; }
+
+        [BsonElement("investedValue")]
+        [BsonIgnoreIfNull]
+        public decimal? InvestedValue { get; set; }
+
         [BsonElement("totalValue")]
         public decimal TotalValue { get; set; }
     }

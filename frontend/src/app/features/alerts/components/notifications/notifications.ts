@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Notification } from '../../models/notifications.model';
 import { MatDialog } from '@angular/material/dialog';
@@ -18,7 +18,13 @@ import { LanguageService } from '../../../../core/services/language.service';
   templateUrl: './notifications.html',
   styleUrl: './notifications.css'
 })
-export class Notifications implements OnInit {
+export class Notifications implements OnInit, OnChanges {
+
+  // ── Inputs / Outputs ───────────────────────────────────────────────────────
+  /** Cuando se recibe un alertId, la lista se filtra por esa alerta. */
+  @Input() alertId: number | null = null;
+  /** Emite cuando el usuario limpia el filtro por alerta desde dentro del componente. */
+  @Output() clearAlertFilter = new EventEmitter<void>();
 
   // ── Notificaciones ─────────────────────────────────────────────────────────
   /** Lista de notificaciones de la página actual. */
@@ -53,6 +59,13 @@ export class Notifications implements OnInit {
     this.loadNotificationList();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['alertId'] && !changes['alertId'].firstChange) {
+      this.currentNotificationPage = 1;
+      this.loadNotificationList();
+    }
+  }
+
   // ── Contadores ─────────────────────────────────────────────────────────────
 
   /**
@@ -84,7 +97,8 @@ export class Notifications implements OnInit {
                     ? false
                     : null,
       fromDate: this.notificationFromDate || null,
-      toDate:   this.notificationToDate   || null
+      toDate:   this.notificationToDate   || null,
+      alertId:  this.alertId ?? null
     };
 
     this.notificationService.search(filter)
@@ -168,6 +182,11 @@ export class Notifications implements OnInit {
     this.notificationFromDate     = '';
     this.notificationToDate       = '';
     this.applyNotificationFilter();
+  }
+
+  /** Elimina el filtro por alerta y notifica al padre para que limpie el input. */
+  onClearAlertFilter(): void {
+    this.clearAlertFilter.emit();
   }
 
   // ── Acciones sobre notificaciones ─────────────────────────────────────────

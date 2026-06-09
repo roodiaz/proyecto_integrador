@@ -234,5 +234,6 @@ VALUES
 INSERT INTO assets (symbol, name, sector)
 VALUES
 ('^GSPC', 'S&P 500', 'Index'),
-('^IXIC', 'NASDAQ Composite', 'Index');
-('^DJI', 'Dow Jones Industrial Average', 'Index');
+('^IXIC', 'NASDAQ Composite', 'Index'),
+('^DJI', 'Dow Jones Industrial Average', 'Index'),
+('^RUT', 'Russell 2000', 'Index');

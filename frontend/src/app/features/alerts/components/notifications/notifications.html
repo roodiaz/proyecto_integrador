@@ -30,6 +30,17 @@
     }
   </div>
 
+  <!-- Banner filtro por alerta -->
+  @if (alertId) {
+    <div class="alert-filter-banner">
+      <mat-icon>filter_alt</mat-icon>
+      <span>{{ 'NOTIFICATIONS.FILTER_BY_ALERT' | translate: { id: alertId } }}</span>
+      <button class="clear-alert-filter-btn" (click)="onClearAlertFilter()" [title]="'NOTIFICATIONS.CLEAR_ALERT_FILTER' | translate">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
   <!-- Search & Filters -->
   <div class="notif-toolbar">
     <div class="search-wrap">
@@ -97,7 +108,11 @@
 
           <!-- Card top: icon + unread dot -->
           <div class="notif-card-top">
-            <div class="notif-icon-wrap">
+            <div class="notif-icon-wrap"
+                 [matTooltip]="notification.alertCondition
+                   ? ('NOTIFICATIONS.TRIGGERED_BY_CONDITION' | translate: { condition: notification.alertCondition })
+                   : ('NOTIFICATIONS.TRIGGERED_BY_ALERT' | translate: { id: notification.alertId })"
+                 matTooltipPosition="above">
               <mat-icon class="notif-icon">notifications_active</mat-icon>
             </div>
             @if (!notification.isRead) {

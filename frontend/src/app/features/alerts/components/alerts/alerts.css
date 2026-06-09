@@ -538,6 +538,12 @@ input:checked + .slider:before { transform: translateX(22px); }
   color: var(--accent-red);
 }
 
+.action-icon-btn.notif-history-btn:hover {
+  background: rgba(173, 198, 255, 0.12);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
 /* ── Pagination ── */
 .pagination-container {
   display: flex;

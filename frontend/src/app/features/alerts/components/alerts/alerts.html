@@ -200,6 +200,10 @@
                     <button class="action-icon-btn delete-btn" (click)="deleteAlert(alert)" [title]="'ALERTS.DELETE_TOOLTIP' | translate">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
+
+                    <button class="action-icon-btn notif-history-btn" (click)="viewAlertNotifications(alert)" [title]="'ALERTS.VIEW_NOTIFICATIONS_TOOLTIP' | translate">
+                      <mat-icon>notifications_active</mat-icon>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -241,7 +245,10 @@
     <!-- TAB 2 — NOTIFICACIONES -->
     <div class="tab-content" [class.active]="activeView === 'history'">
       @if (activeView === 'history') {
-        <app-notifications></app-notifications>
+        <app-notifications
+          [alertId]="selectedAlertId"
+          (clearAlertFilter)="selectedAlertId = null"
+        ></app-notifications>
       }
     </div>
 

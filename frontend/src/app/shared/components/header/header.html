@@ -7,7 +7,7 @@
     <!-- Notificaciones -->
     <button mat-icon-button class="icon-btn" [matTooltip]="'HEADER.NOTIFICATIONS' | translate" [matMenuTriggerFor]="notifMenu"
       (menuOpened)="loadRecentNotifications()">
-      <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
+      <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="large">
         notifications
       </mat-icon>
     </button>

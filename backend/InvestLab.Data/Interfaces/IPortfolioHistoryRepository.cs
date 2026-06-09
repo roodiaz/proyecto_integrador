@@ -14,6 +14,8 @@ namespace InvestLab.Data.Interfaces
 
         Task<bool> ExistsByDateAsync(int userId, DateTime date);
 
+        Task<PortfolioHistory?> GetOnOrBeforeAsync(int userId, DateTime date);
+
         Task DeleteByUserIdAsync(int userId);
     }
 }
