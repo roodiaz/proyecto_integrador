@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 /**
  * Servicio que centraliza el cierre de sesión del usuario: invalida el
  * `refreshToken` en el servidor (cuando es posible), limpia el almacenamiento
- * de sesión local y redirige a la pantalla de login.
+ * de sesión local y redirige a la landing.
  */
 @Injectable({
     providedIn: 'root'
@@ -41,9 +41,9 @@ export class AuthSessionService {
             });
     }
 
-    /** Limpia el almacenamiento de sesión local y redirige al usuario a la pantalla de login. */
+    /** Limpia el almacenamiento de sesión local y redirige al usuario a la landing. */
     private clearSession(): void {
         sessionStorage.clear();
-        this.router.navigate(['/login']);
+        this.router.navigate(['/landing']);
     }
 }
