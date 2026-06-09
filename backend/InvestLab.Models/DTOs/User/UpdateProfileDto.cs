@@ -17,4 +17,6 @@ public class UpdateProfileDto
     public string Currency { get; set; }
 
     public bool EmailNotifications { get; set; }
+
+    public string? Theme { get; set; }
 }

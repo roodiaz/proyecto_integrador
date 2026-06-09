@@ -200,6 +200,67 @@
       }
     </section>
 
+    <!-- Apariencia -->
+    <section class="bento-card span-5">
+      <div class="card-header">
+        <mat-icon class="card-icon">palette</mat-icon>
+        <h2 class="card-title">Apariencia</h2>
+      </div>
+
+      <div class="appearance-section">
+        <p class="appearance-label">Tema de la aplicación</p>
+
+        <div class="theme-options">
+          <button
+            type="button"
+            class="theme-option"
+            [class.theme-option--active]="selectedTheme === 'Dark'"
+            (click)="onThemeChange('Dark')"
+            aria-label="Modo Oscuro">
+            <div class="theme-preview theme-preview--dark">
+              <div class="tp-sidebar"></div>
+              <div class="tp-content">
+                <div class="tp-bar"></div>
+                <div class="tp-bar tp-bar--short"></div>
+              </div>
+            </div>
+            <div class="theme-option-footer">
+              <mat-icon class="theme-radio-icon">
+                {{ selectedTheme === 'Dark' ? 'radio_button_checked' : 'radio_button_unchecked' }}
+              </mat-icon>
+              <span>Modo Oscuro</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="theme-option"
+            [class.theme-option--active]="selectedTheme === 'Light'"
+            (click)="onThemeChange('Light')"
+            aria-label="Modo Claro">
+            <div class="theme-preview theme-preview--light">
+              <div class="tp-sidebar"></div>
+              <div class="tp-content">
+                <div class="tp-bar"></div>
+                <div class="tp-bar tp-bar--short"></div>
+              </div>
+            </div>
+            <div class="theme-option-footer">
+              <mat-icon class="theme-radio-icon">
+                {{ selectedTheme === 'Light' ? 'radio_button_checked' : 'radio_button_unchecked' }}
+              </mat-icon>
+              <span>Modo Claro</span>
+            </div>
+          </button>
+        </div>
+
+        <p class="appearance-hint">
+          <mat-icon class="hint-icon">info</mat-icon>
+          El cambio se aplica y guarda automáticamente.
+        </p>
+      </div>
+    </section>
+
     <!-- Preferencias -->
     <section class="bento-card span-7">
       <div class="card-header">
@@ -280,6 +341,16 @@
       }
     </section>
 
+    <!-- Guardar cambios generales -->
+    <div class="save-general-row">
+      <button class="btn btn-primary" type="button"
+        [disabled]="savingProfile || loadingProfile"
+        (click)="onSaveProfile()">
+        <mat-icon>save</mat-icon>
+        {{ savingProfile ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+
     <!-- Seguridad -->
     <section class="bento-card span-full">
       <div class="card-header">
@@ -348,12 +419,6 @@
           <div class="action-buttons">
             <button class="btn btn-secondary" type="button" [disabled]="changingPassword" (click)="onChangePassword()">
               {{ changingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
-            </button>
-
-            <button class="btn btn-primary" type="button" [disabled]="savingProfile || loadingProfile"
-              (click)="onSaveProfile()">
-              <mat-icon>save</mat-icon>
-              {{ savingProfile ? 'Guardando...' : 'Guardar Cambios' }}
             </button>
           </div>
         </div>

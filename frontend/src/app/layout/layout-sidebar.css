@@ -1,18 +1,10 @@
 .main-content {
   flex: 1;
-
   margin-left: 260px;
-
   min-height: 100vh;
-
-  /* halo fijo: no scrollea con el contenido */
-  background:
-    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(173, 198, 255, 0.13) 0%, transparent 65%),
-    #131313;
+  background: var(--il-main-gradient);
   background-attachment: fixed, fixed;
-
-  transition: margin-left .3s ease;
-
+  transition: margin-left .3s ease, background 0.25s ease;
   display: flex;
   flex-direction: column;
 }
@@ -23,10 +15,7 @@
 
 .content-area {
   flex: 1;
-
   padding: 24px;
-
   overflow-y: auto;
-
   background: transparent;
 }

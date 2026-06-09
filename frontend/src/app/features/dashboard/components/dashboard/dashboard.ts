@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, HostListener, AfterViewInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -13,6 +13,7 @@ import {
   DashboardPortfolioDistribution
 } from '../../models/dashboard.models';
 import Chart from 'chart.js/auto';
+import { ThemeService } from '../../../../core/services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -50,7 +51,19 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   loadingRecentNotifications = false;
   loadingPortfolioDistribution = false;
 
-  constructor(private dashboardService: DashboardService) { }
+  constructor(
+    private dashboardService: DashboardService,
+    private themeService: ThemeService
+  ) {
+    effect(() => {
+      // Re-renderizar el gráfico cuando cambia el tema
+      this.themeService.currentTheme();
+      if (this.performanceChart?.data?.length) {
+        this.destroyChart();
+        this.renderChartWhenReady();
+      }
+    });
+  }
 
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
@@ -439,6 +452,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
    * @returns Objeto de configuración listo para pasarle al constructor de `Chart`.
    */
   private getChartConfiguration(data: any): any {
+    const t = this.themeService.getChartTheme();
+
     const config = {
       type: this.selectedChartType,
       data: data,
@@ -450,7 +465,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
             display: true,
             position: 'top' as any,
             labels: {
-              color: '#ffffff',
+              color: t.legendColor,
               font: { size: 12, weight: '500' },
               usePointStyle: true,
               padding: 20
@@ -459,10 +474,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
           tooltip: {
             mode: 'index' as any,
             intersect: false,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: '#4a90e2',
+            backgroundColor: t.tooltipBg,
+            titleColor: t.tooltipText,
+            bodyColor: t.tooltipText,
+            borderColor: t.tooltipBorderColor,
             borderWidth: 1,
             padding: 12,
             displayColors: true,
@@ -486,18 +501,18 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         scales: {
           x: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.2)'
+              color: t.gridColor,
+              borderColor: t.gridBorderColor
             },
-            ticks: { color: 'rgba(255, 255, 255, 0.7)', font: { size: 11 } }
+            ticks: { color: t.textColor, font: { size: 11 } }
           },
           y: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.2)'
+              color: t.gridColor,
+              borderColor: t.gridBorderColor
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: t.textColor,
               font: { size: 11 },
               callback: (value: any) => {
                 const number = Number(value);

@@ -173,7 +173,8 @@ CREATE TABLE user_settings (
     favorites_used INT NOT NULL,
     operations_used_today INT NOT NULL,
     searches_used_today INT NOT NULL,
-	
+    theme VARCHAR(10) DEFAULT 'Dark',
+
     CONSTRAINT fk_settings_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

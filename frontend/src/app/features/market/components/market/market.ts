@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -7,6 +7,7 @@ import Chart from 'chart.js/auto';
 import { CandlestickController, CandlestickElement, OhlcController, OhlcElement } from 'chartjs-chart-financial';
 import 'chartjs-adapter-date-fns';
 import { MarketService } from '../../services/market.service';
+import { ThemeService } from '../../../../core/services/theme.service';
 import { WatchlistService } from '../../../watchlist/services/watchlist.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -109,8 +110,16 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private watchlistService: WatchlistService,
     private portfolioService: PortfolioService,
     private snackBarService: SnackBarService,
-    private dialog: MatDialog
-  ) { }
+    private dialog: MatDialog,
+    private themeService: ThemeService,
+  ) {
+    effect(() => {
+      this.themeService.currentTheme();
+      if (this.chart) {
+        this.setupChart();
+      }
+    });
+  }
 
   // ── Ciclo de vida ──
 
@@ -885,6 +894,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @returns Configuración lista para instanciar un `Chart` de Chart.js.
    */
   private getMarketChartConfiguration(data: any): any {
+    const t = this.themeService.getChartTheme();
+
     if (this.selectedChartType === 'candlestick') {
       return {
         type: 'candlestick',
@@ -897,7 +908,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
               display: true,
               position: 'top',
               labels: {
-                color: '#ffffff',
+                color: t.legendColor,
                 font: { size: 12, weight: '500' },
                 usePointStyle: true,
                 padding: 20
@@ -906,10 +917,10 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
             tooltip: {
               mode: 'index',
               intersect: false,
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              titleColor: '#ffffff',
-              bodyColor: '#ffffff',
-              borderColor: '#4a90e2',
+              backgroundColor: t.tooltipBg,
+              titleColor: t.tooltipText,
+              bodyColor: t.tooltipText,
+              borderColor: t.tooltipBorderColor,
               borderWidth: 1,
               padding: 12
             }
@@ -918,13 +929,13 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
             x: {
               type: 'time',
               time: { unit: 'day' },
-              grid: { color: 'rgba(255, 255, 255, 0.1)' },
-              ticks: { color: 'rgba(255, 255, 255, 0.7)', font: { size: 11 } }
+              grid: { color: t.gridColor },
+              ticks: { color: t.textColor, font: { size: 11 } }
             },
             y: {
-              grid: { color: 'rgba(255, 255, 255, 0.1)' },
+              grid: { color: t.gridColor },
               ticks: {
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: t.textColor,
                 font: { size: 11 },
                 callback: (value: any) => `$${Number(value).toFixed(0)}`
               }
@@ -945,7 +956,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
             display: true,
             position: 'top',
             labels: {
-              color: '#ffffff',
+              color: t.legendColor,
               font: { size: 12, weight: '500' },
               usePointStyle: true,
               padding: 20
@@ -954,10 +965,10 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
           tooltip: {
             mode: 'index',
             intersect: false,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: '#4a90e2',
+            backgroundColor: t.tooltipBg,
+            titleColor: t.tooltipText,
+            bodyColor: t.tooltipText,
+            borderColor: t.tooltipBorderColor,
             borderWidth: 1,
             padding: 12,
             displayColors: true,
@@ -973,13 +984,13 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-            ticks: { color: 'rgba(255, 255, 255, 0.7)', font: { size: 11 } }
+            grid: { color: t.gridColor },
+            ticks: { color: t.textColor, font: { size: 11 } }
           },
           y: {
-            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            grid: { color: t.gridColor },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: t.textColor,
               font: { size: 11 },
               callback: (value: any) => {
                 const number = Number(value);

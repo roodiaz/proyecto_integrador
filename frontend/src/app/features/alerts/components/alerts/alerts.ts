@@ -284,6 +284,8 @@ export class Alerts implements OnInit, OnDestroy {
 
       const dialogRef = this.dialog.open(ModalComponent, {
         width: '600px',
+        maxWidth: '95vw',
+        maxHeight: '90vh',
         backdropClass: 'blur-backdrop',
         data: {
           isEditing: false,
@@ -313,6 +315,8 @@ export class Alerts implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(ModalComponent, {
       width: '600px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
       backdropClass: 'blur-backdrop',
       data: { alert }
     });

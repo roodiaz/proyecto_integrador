@@ -1,105 +1,492 @@
-/* You can add global styles to this file, and also import other style files */
+/* ═══════════════════════════════════════════════════════════════════════════
+   InvestLab — Global Styles
+   Sistema de temas: Dark (default) / Light
+   ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ── DARK THEME (default) ─────────────────────────────────────────────────── */
 :root {
-  --primary-bg: #111B20;
-  --card-bg: #1E1E1E;
-  --text-primary: #FFFFFF;
-  --text-secondary: #b0bec5;
-  --accent-green: #B0C956;
-  --border-color: rgba(255, 255, 255, 0.1);
+  /* Fondos */
+  --il-bg:            #131313;
+  --il-surface:       #1e1e1e;
+  --il-surface-low:   #0e0e0e;
+  --il-surface-high:  #2a2a2a;
+  --il-sidebar-bg:    #0d0d0d;
+  --il-avatar-bg:     #1c1f2b;
+
+  /* Bordes */
+  --il-border:        #2d2d2d;
+  --il-border-muted:  rgba(255, 255, 255, 0.06);
+  --il-border-focus:  #424754;
+
+  /* Texto */
+  --il-text:          #e5e2e1;
+  --il-text-muted:    #8c909f;
+  --il-text-sec:      #c2c6d6;
+  --il-text-dim:      #7f8dab;
+
+  /* Acento de marca */
+  --il-accent:        #adc6ff;
+  --il-accent-on:     #002e6a;
+
+  /* Estado */
+  --il-success:       #4ae176;
+  --il-success-dim:   rgba(74, 225, 118, 0.15);
+  --il-danger:        #ffb4ab;
+  --il-danger-dim:    rgba(255, 180, 171, 0.15);
+  --il-warning:       #ffc107;
+  --il-warning-dim:   rgba(255, 193, 7, 0.12);
+
+  /* Overlays y paneles */
+  --il-dialog-bg:           #1b1d24;
+  --il-portfolio-dialog-bg: #131313;
+  --il-snackbar-bg:         #1c1b1b;
+  --il-select-panel-bg:     #1e1e1e;
+  --il-select-option-hover: #2a2a2a;
+  --il-datepicker-bg:       #1e1e1e;
+  --il-menu-bg:             #1e1e1e;
+
+  /* Gradiente del layout */
+  --il-main-gradient: radial-gradient(ellipse 90% 55% at 50% 0%, rgba(173, 198, 255, 0.13) 0%, transparent 65%), #131313;
+
+  /* Skeleton */
+  --il-skeleton-from: rgba(255, 255, 255, 0.06);
+  --il-skeleton-mid:  rgba(255, 255, 255, 0.12);
+
+  /* Atajos para componentes que no usan il- prefix */
+  --primary-bg:     #131313;
+  --card-bg:        #1e1e1e;
+  --text-primary:   #e5e2e1;
+  --text-secondary: #c2c6d6;
+  --accent-green:   #4ae176;
+  --border-color:   rgba(255, 255, 255, 0.1);
 }
 
-html,
-body {
+/* ── LIGHT THEME ──────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  /* Fondos */
+  --il-bg:            #f5f7ff;
+  --il-surface:       #ffffff;
+  --il-surface-low:   #eef1fa;
+  --il-surface-high:  #e4e8f5;
+  --il-sidebar-bg:    #eef1fa;
+  --il-avatar-bg:     #dde2f0;
+
+  /* Bordes */
+  --il-border:        #dde2f0;
+  --il-border-muted:  rgba(0, 0, 0, 0.07);
+  --il-border-focus:  #527bd9;
+
+  /* Texto */
+  --il-text:          #1a1d2e;
+  --il-text-muted:    #5a6380;
+  --il-text-sec:      #3d4566;
+  --il-text-dim:      #5a6380;
+
+  /* Acento de marca */
+  --il-accent:        #527bd9;
+  --il-accent-on:     #002e6a;
+
+  /* Estado — ajustados para fondo claro */
+  --il-success:       #16a34a;
+  --il-success-dim:   rgba(22, 163, 74, 0.12);
+  --il-danger:        #dc2626;
+  --il-danger-dim:    rgba(220, 38, 38, 0.12);
+  --il-warning:       #d97706;
+  --il-warning-dim:   rgba(217, 119, 6, 0.12);
+
+  /* Overlays y paneles */
+  --il-dialog-bg:           #ffffff;
+  --il-portfolio-dialog-bg: #f5f7ff;
+  --il-snackbar-bg:         #ffffff;
+  --il-select-panel-bg:     #ffffff;
+  --il-select-option-hover: #eef1fa;
+  --il-datepicker-bg:       #ffffff;
+  --il-menu-bg:             #ffffff;
+
+  /* Sidebar item activo */
+  --il-active-bg: rgba(82, 123, 217, 0.1);
+
+  /* Gradiente del layout */
+  --il-main-gradient: radial-gradient(ellipse 90% 55% at 50% 0%, rgba(82, 123, 217, 0.08) 0%, transparent 65%), #f5f7ff;
+
+  /* Skeleton */
+  --il-skeleton-from: rgba(0, 0, 0, 0.04);
+  --il-skeleton-mid:  rgba(0, 0, 0, 0.09);
+
+  /* Atajos para componentes */
+  --primary-bg:     #f5f7ff;
+  --card-bg:        #ffffff;
+  --text-primary:   #1a1d2e;
+  --text-secondary: #3d4566;
+  --accent-green:   #16a34a;
+  --border-color:   rgba(0, 0, 0, 0.09);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: "JetBrains Mono", monospace !important;
-  background-color: var(--primary-bg);
-  color: var(--text-primary);
+  background-color: var(--il-bg);
+  color: var(--il-text);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   OVERRIDES DE COMPONENTES — light theme
+   Se usan selectores con mayor especificidad que :host (que compila a
+   [_nghost-xxx] = 0-1-0). Aquí 0-1-1, que gana la cascada.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dashboard ── */
+[data-theme="light"] app-dashboard {
+  --primary-bg:       #f5f7ff;
+  --card-bg:          #ffffff;
+  --card-surface:     #f0f3fc;
+  --text-primary:     #1a1d2e;
+  --text-secondary:   #3d4566;
+  --text-muted:       #5a6380;
+  --accent-primary:   #527bd9;
+  --accent-green:     #16a34a;
+  --accent-red:       #dc2626;
+  --border-color:     #dde2f0;
+  --row-border:       rgba(0, 0, 0, 0.06);
+  --overlay-hover:    rgba(0, 0, 0, 0.04);
+  --overlay-item:     rgba(0, 0, 0, 0.02);
+  --bar-track:        rgba(0, 0, 0, 0.07);
+  --chart-empty-bg:   rgba(82, 123, 217, 0.04);
+  --card-empty-text:  #5a6380;
+}
+
+/* ── Portfolio ── */
+[data-theme="light"] app-portfolio {
+  --primary-bg:     #f5f7ff;
+  --card-bg:        #ffffff;
+  --surface:        #f0f3fc;
+  --text-primary:   #1a1d2e;
+  --text-secondary: #3d4566;
+  --accent-primary: #527bd9;
+  --accent-green:   #16a34a;
+  --accent-red:     #dc2626;
+  --border-color:   #dde2f0;
+  --border-subtle:  rgba(0, 0, 0, 0.05);
+  --hover-bg:       rgba(0, 0, 0, 0.03);
+  --green-dim:      rgba(22, 163, 74, 0.12);
+  --red-dim:        rgba(220, 38, 38, 0.12);
+}
+
+/* ── Portfolio Modal ── */
+[data-theme="light"] app-portfolio-modal {
+  --bg:            #f5f7ff;
+  --surface:       #eef1fa;
+  --surface-mid:   #e4e8f5;
+  --border:        #dde2f0;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --text:          #1a1d2e;
+  --text-sec:      #3d4566;
+  --text-muted:    #5a6380;
+  --accent:        #527bd9;
+  --accent-on:     #002e6a;
+  --green:         #16a34a;
+  --green-dim:     rgba(22, 163, 74, 0.12);
+  --red:           #dc2626;
+  --red-dim:       rgba(220, 38, 38, 0.12);
+  --input-bg:      #ffffff;
+  --hover:         rgba(0, 0, 0, 0.04);
+}
+
+/* ── Market ── */
+[data-theme="light"] app-market {
+  --mkt-text:             #1a1d2e;
+  --mkt-text-title:       #1a1d2e;
+  --mkt-text-sec:         #3d4566;
+  --mkt-text-muted:       #5a6380;
+  --mkt-text-stat:        #1a1d2e;
+  --mkt-accent:           #527bd9;
+  --mkt-accent-on:        #002e6a;
+
+  --mkt-card:             rgba(255, 255, 255, 0.92);
+  --mkt-card-border:      #527bd9;
+  --mkt-card-shadow:      0 4px 20px rgba(0, 0, 0, 0.07);
+  --mkt-chart-bg:         #ffffff;
+  --mkt-chart-border:     #527bd9;
+  --mkt-surface:          #eef1fa;
+  --mkt-surface-low:      rgba(238, 241, 250, 0.6);
+  --mkt-surface-act:      rgba(228, 232, 245, 0.7);
+  --mkt-btn-bg:           #ffffff;
+  --mkt-btn-border:       #dde2f0;
+  --mkt-logo-bg:          #eef1fa;
+  --mkt-logo-border:      #dde2f0;
+  --mkt-logo-empty-bg:    #e4e8f5;
+  --mkt-trending-bg:      #ffffff;
+  --mkt-trending-border:  #dde2f0;
+  --mkt-hover:            rgba(0, 0, 0, 0.04);
+  --mkt-asset-divider:    #dde2f0;
+  --mkt-news-tag-bg:      rgba(82, 123, 217, 0.12);
+  --mkt-news-tag-border:  rgba(82, 123, 217, 0.35);
+  --mkt-sell-dis-bg:      rgba(0, 0, 0, 0.05);
+  --mkt-sell-dis-text:    rgba(26, 29, 46, 0.35);
+  --mkt-sell-dis-border:  rgba(0, 0, 0, 0.08);
+  --mkt-empty-bg:         radial-gradient(circle at top, rgba(82, 123, 217, 0.08), transparent 42%), rgba(82, 123, 217, 0.03);
+  --mkt-empty-title:      #1a1d2e;
+  --mkt-empty-text:       #5a6380;
+  --mkt-symbol-btn:       #eef1fa;
+}
+
+/* ── Create Alert dialog ── */
+[data-theme="light"] app-create-alert {
+  --dlg-bg:          #f5f7ff;
+  --dlg-surface:     #eef1fa;
+  --dlg-input:       #ffffff;
+  --dlg-border:      #dde2f0;
+  --dlg-text:        #1a1d2e;
+  --dlg-muted:       #5a6380;
+  --dlg-accent:      #527bd9;
+  --dlg-accent-on:   #002e6a;
+  --dlg-hover:       rgba(0, 0, 0, 0.04);
+  --dlg-cancel-hover: #e4e8f5;
+  --dlg-track:       #d0d5e8;
+}
+
+/* CDK overlay panels (fuera del componente, requieren selectores globales) */
+[data-theme="light"] .dark-select-panel {
+  background: #ffffff !important;
+  border: 1px solid #dde2f0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10) !important;
+}
+
+[data-theme="light"] .dark-select-panel .mat-mdc-option {
+  background: #ffffff !important;
+  color: #1a1d2e !important;
+}
+
+[data-theme="light"] .dark-select-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background: #eef1fa !important;
+}
+
+[data-theme="light"] .dark-select-panel .mat-mdc-option.mdc-list-item--selected {
+  color: #002e6a !important;
+  background: #eef1fa !important;
+}
+
+/* ── Alerts ── */
+[data-theme="light"] app-alerts {
+  --primary-bg:     #f5f7ff;
+  --surface:        #ffffff;
+  --surface-mid:    #f0f3fc;
+  --text-primary:   #1a1d2e;
+  --text-secondary: #3d4566;
+  --text-muted:     #5a6380;
+  --accent-primary: #527bd9;
+  --accent-on:      #002e6a;
+  --accent-green:   #16a34a;
+  --accent-red:     #dc2626;
+  --border-color:   #dde2f0;
+  --border-subtle:  rgba(0, 0, 0, 0.05);
+  --hover-bg:       rgba(0, 0, 0, 0.03);
+  --green-dim:         rgba(22, 163, 74, 0.12);
+  --red-dim:           rgba(220, 38, 38, 0.12);
+  --input-bg:          #eef1fa;
+  --usage-track:       rgba(0, 0, 0, 0.07);
+  --date-color-scheme: light;
+}
+
+/* ── Notifications ── */
+[data-theme="light"] app-notifications {
+  --bg:                #f5f7ff;
+  --surface:           #ffffff;
+  --surface-low:       #eef1fa;
+  --surface-high:      #e4e8f5;
+  --border:            #dde2f0;
+  --border-focus:      #527bd9;
+  --text:              #1a1d2e;
+  --text-muted:        #5a6380;
+  --accent:            #527bd9;
+  --accent-on:         #002e6a;
+  --green:             #16a34a;
+  --green-dim:         rgba(22, 163, 74, 0.12);
+  --red:               #dc2626;
+  --red-dim:           rgba(220, 38, 38, 0.12);
+  --date-color-scheme: light;
+}
+
+/* ── Watchlist ── */
+[data-theme="light"] app-watchlist {
+  --bg:          #f5f7ff;
+  --surface:     #ffffff;
+  --surface-low: #eef1fa;
+  --surface-high: #e4e8f5;
+  --header-bg:   #eef1fa;
+  --border:      #dde2f0;
+  --border-focus: #527bd9;
+  --text:        #1a1d2e;
+  --text-muted:  #5a6380;
+  --text-sec:    #3d4566;
+  --accent:      #527bd9;
+  --accent-on:   #002e6a;
+  --green:       #16a34a;
+  --red:         #dc2626;
+  --purple:      #7c6aff;
+}
+
+/* ── User Profile / Settings ── */
+[data-theme="light"] app-user-profile {
+  --bg:           #f5f7ff;
+  --surface:      #ffffff;
+  --surface-low:  #eef1fa;
+  --surface-high: #e4e8f5;
+  --border:       #dde2f0;
+  --border-focus: #527bd9;
+  --text:         #1a1d2e;
+  --text-muted:   #5a6380;
+  --text-secondary: #3d4566;
+  --accent:       #527bd9;
+  --accent-on:    #002e6a;
+  --green:        #16a34a;
+  --green-container: #16a34a;
+}
+
+/* ── Market ── */
+[data-theme="light"] app-market {
+  color: #1a1d2e;
+}
+
+/* ── Portfolio Modal ── */
+[data-theme="light"] app-portfolio-modal {
+  --primary-bg:     #f5f7ff;
+  --card-bg:        #ffffff;
+  --text-primary:   #1a1d2e;
+  --text-secondary: #3d4566;
+  --accent-primary: #527bd9;
+  --border-color:   #dde2f0;
+}
+
+/* ── Add Favorite Dialog ── */
+[data-theme="light"] app-add-favorite-dialog {
+  --bg:            #f5f7ff;
+  --surface:       #ffffff;
+  --surface-mid:   #eef1fa;
+  --border:        #dde2f0;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-focus:  #527bd9;
+  --text:          #1a1d2e;
+  --text-sec:      #3d4566;
+  --text-muted:    #5a6380;
+  --accent:        #527bd9;
+  --accent-on:     #002e6a;
+  --green:         #16a34a;
+  --green-dim:     rgba(22, 163, 74, 0.12);
+  --red:           #dc2626;
+  --red-dim:       rgba(220, 38, 38, 0.12);
+  --input-bg:      #ffffff;
+  --hover:         rgba(0, 0, 0, 0.04);
+}
+
+/* ── Create Alert ── */
+[data-theme="light"] app-create-alert {
+  --bg:           #f5f7ff;
+  --surface:      #ffffff;
+  --surface-low:  #eef1fa;
+  --border:       #dde2f0;
+  --border-focus: #527bd9;
+  --text:         #1a1d2e;
+  --text-muted:   #5a6380;
+  --accent:       #527bd9;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   OVERRIDES GLOBALES — Material y dialogs
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Watchlist dialog ── */
 .watchlist-dialog .mat-mdc-dialog-surface {
-  background: #1b1d24 !important;
-  color: white !important;
+  background: var(--il-dialog-bg) !important;
+  color: var(--il-text) !important;
   border-radius: 16px !important;
 }
 
 .watchlist-dialog .mat-mdc-dialog-title {
-  color: #ffffff !important;
+  color: var(--il-text) !important;
 }
 
 .watchlist-dialog mat-label {
-  color: #94a3b8 !important;
+  color: var(--il-text-muted) !important;
 }
 
 .watchlist-dialog input {
-  color: #ffffff !important;
-  caret-color: #ffffff !important;
+  color: var(--il-text) !important;
+  caret-color: var(--il-text) !important;
 }
 
 .watchlist-dialog .mdc-floating-label {
-  color: #94a3b8 !important;
+  color: var(--il-text-muted) !important;
 }
 
 .watchlist-dialog .mdc-notched-outline__leading,
 .watchlist-dialog .mdc-notched-outline__notch,
 .watchlist-dialog .mdc-notched-outline__trailing {
-  border-color: rgba(255, 255, 255, .2) !important;
+  border-color: var(--il-border-focus) !important;
 }
 
 .watchlist-dialog .mat-mdc-input-element::placeholder {
-  color: #64748b !important;
+  color: var(--il-text-muted) !important;
 }
 
 .watchlist-dialog .mat-mdc-form-field-subscript-wrapper {
   display: none;
 }
 
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 767px) {
   .navigation-buttons {
     flex-direction: column;
   }
-
   .navigation-buttons button {
     width: 100%;
   }
 }
 
-/* Backdrop con blur para dialogs */
+/* Backdrop con blur */
 .blur-backdrop {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   background-color: rgba(0, 0, 0, 0.55) !important;
 }
 
-.blur-backdrop {
-  backdrop-filter: blur(4px);
-  background: rgba(0, 0, 0, 0.7);
-}
-
+/* ── Portfolio dialog ── */
 .portfolio-dialog-panel .mat-mdc-dialog-container {
-  --mdc-dialog-container-color: #131313;
+  --mdc-dialog-container-color: var(--il-portfolio-dialog-bg);
 }
 
 .portfolio-dialog-panel .mdc-dialog__surface {
-  background: #131313 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+  background: var(--il-portfolio-dialog-bg) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
   border-radius: 12px !important;
   overflow: hidden !important;
-  border: 1px solid #424754 !important;
+  border: 1px solid var(--il-border-focus) !important;
 }
 
-/* ========================= */
-/* SNACKBAR / TOAST          */
-/* ========================= */
+/* ── Material Menu (header user / notifications) ── */
+.mat-mdc-menu-panel {
+  background: var(--il-menu-bg) !important;
+  border: 1px solid var(--il-border) !important;
+}
 
+.mat-mdc-menu-item {
+  color: var(--il-text) !important;
+}
+
+.mat-mdc-menu-item:hover:not([disabled]) {
+  background: var(--il-surface-high) !important;
+}
+
+/* ── SNACKBAR / TOAST ── */
 .app-snackbar .mdc-snackbar__surface {
-  background: #1C1B1B !important;
+  background: var(--il-snackbar-bg) !important;
   border-radius: 10px !important;
-  border: 1px solid #424754 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55) !important;
+  border: 1px solid var(--il-border-focus) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
   min-width: 300px !important;
   max-width: 480px !important;
   padding: 0 !important;
@@ -112,7 +499,7 @@ body {
   font-family: "JetBrains Mono", monospace !important;
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: #E5E2E1 !important;
+  color: var(--il-text) !important;
   padding: 14px 16px !important;
 }
 
@@ -130,109 +517,76 @@ body {
   letter-spacing: 0.05em !important;
   padding: 0 14px !important;
   height: 100% !important;
-  border-left: 1px solid #424754 !important;
+  border-left: 1px solid var(--il-border-focus) !important;
   border-radius: 0 10px 10px 0 !important;
   min-width: 60px !important;
 }
 
 /* SUCCESS */
 .snackbar-success .mdc-snackbar__surface {
-  border-left: 3px solid #4AE176 !important;
+  border-left: 3px solid var(--il-success) !important;
 }
-
 .snackbar-success .mat-mdc-snack-bar-label::before {
   content: 'check_circle' !important;
-  color: #4AE176 !important;
+  color: var(--il-success) !important;
 }
-
 .snackbar-success .mat-mdc-snack-bar-action button {
-  color: #4AE176 !important;
+  color: var(--il-success) !important;
 }
 
 /* ERROR */
 .snackbar-error .mdc-snackbar__surface {
-  border-left: 3px solid #FFB4AB !important;
+  border-left: 3px solid var(--il-danger) !important;
 }
-
 .snackbar-error .mat-mdc-snack-bar-label::before {
   content: 'error' !important;
-  color: #FFB4AB !important;
+  color: var(--il-danger) !important;
 }
-
 .snackbar-error .mat-mdc-snack-bar-action button {
-  color: #FFB4AB !important;
+  color: var(--il-danger) !important;
 }
 
 /* INFO */
 .snackbar-info .mdc-snackbar__surface {
-  border-left: 3px solid #ADC6FF !important;
+  border-left: 3px solid var(--il-accent) !important;
 }
-
 .snackbar-info .mat-mdc-snack-bar-label::before {
   content: 'info' !important;
-  color: #ADC6FF !important;
+  color: var(--il-accent) !important;
 }
-
 .snackbar-info .mat-mdc-snack-bar-action button {
-  color: #ADC6FF !important;
+  color: var(--il-accent) !important;
 }
 
-/* ========================= */
-/* GLOBAL SKELETON LOADERS */
-/* ========================= */
-
+/* ══════════════════════════════════════════════════════════════════════════════
+   SKELETON LOADERS
+   ══════════════════════════════════════════════════════════════════════════════ */
 .skeleton {
   display: block;
   border-radius: 10px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.06) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--il-skeleton-from) 25%,
+    var(--il-skeleton-mid) 50%,
+    var(--il-skeleton-from) 75%
+  );
   background-size: 220% 100%;
   animation: skeleton-loading 1.4s ease-in-out infinite;
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 220% 0; }
+  0%   { background-position: 220% 0; }
   100% { background-position: -220% 0; }
 }
 
-.skeleton-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.skeleton-metric-value {
-  width: 150px;
-  height: 28px;
-  margin-bottom: 8px;
-}
-
-.skeleton-title {
-  width: 160px;
-  height: 22px;
-}
-
-.skeleton-subtitle {
-  width: 90px;
-  height: 12px;
-}
-
-.skeleton-text {
-  width: 100%;
-  height: 14px;
-}
-
-.skeleton-text.short {
-  width: 35%;
-}
-
-.skeleton-text.medium {
-  width: 55%;
-}
-
-.skeleton-text.long {
-  width: 75%;
-}
+.skeleton-icon          { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; }
+.skeleton-metric-value  { width: 150px; height: 28px; margin-bottom: 8px; }
+.skeleton-title         { width: 160px; height: 22px; }
+.skeleton-subtitle      { width: 90px; height: 12px; }
+.skeleton-text          { width: 100%; height: 14px; }
+.skeleton-text.short    { width: 35%; }
+.skeleton-text.medium   { width: 55%; }
+.skeleton-text.long     { width: 75%; }
 
 .skeleton-card-list {
   min-height: 150px;
@@ -242,16 +596,12 @@ body {
   gap: 14px;
 }
 
-.skeleton-list-item {
-  width: 100%;
-  height: 48px;
-  border-radius: 12px;
-}
+.skeleton-list-item { width: 100%; height: 48px; border-radius: 12px; }
 
 .skeleton-chart-box {
   min-height: 360px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--il-surface-low);
   border: 1px dashed rgba(160, 180, 255, 0.25);
   padding: 48px;
   display: flex;
@@ -260,33 +610,144 @@ body {
   gap: 16px;
 }
 
-.skeleton-chart-line {
-  height: 16px;
-}
-
-.skeleton-chart-line.xl {
-  width: 78%;
-}
-
-.skeleton-chart-line.lg {
-  width: 62%;
-}
-
-.skeleton-chart-line.md {
-  width: 44%;
-}
-
-.skeleton-chart-line.sm {
-  width: 28%;
-}
+.skeleton-chart-line      { height: 16px; }
+.skeleton-chart-line.xl   { width: 78%; }
+.skeleton-chart-line.lg   { width: 62%; }
+.skeleton-chart-line.md   { width: 44%; }
+.skeleton-chart-line.sm   { width: 28%; }
 
 @media (max-width: 600px) {
-  .skeleton-chart-box {
-    min-height: 300px;
-    padding: 28px;
-  }
+  .skeleton-chart-box     { min-height: 300px; padding: 28px; }
+  .skeleton-metric-value  { width: 120px; }
+}
 
-  .skeleton-metric-value {
-    width: 120px;
-  }
+/* ══════════════════════════════════════════════════════════════════════════════
+   AUTH PAGES — overrides para tema claro
+   ══════════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] .login-layout,
+[data-theme="light"] .register-layout,
+[data-theme="light"] .forgot-layout {
+  background: #f5f7ff !important;
+  color: #1a1d2e !important;
+}
+
+[data-theme="light"] .auth-section {
+  background: #ffffff !important;
+  border-left-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .hero-section {
+  color: #1a1d2e;
+}
+
+[data-theme="light"] .hero-description,
+[data-theme="light"] .hero-card p {
+  color: #5a6380 !important;
+}
+
+[data-theme="light"] .hero-card {
+  background: rgba(173, 198, 255, 0.08) !important;
+  border-color: rgba(173, 198, 255, 0.3) !important;
+}
+
+[data-theme="light"] .auth-header p {
+  color: #5a6380 !important;
+}
+
+[data-theme="light"] ::ng-deep .mdc-text-field--outlined {
+  background: rgba(173, 198, 255, 0.06) !important;
+}
+
+[data-theme="light"] ::ng-deep .mat-mdc-input-element {
+  color: #1a1d2e !important;
+}
+
+[data-theme="light"] ::ng-deep .mdc-floating-label {
+  color: #5a6380 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MARKET — light theme overrides (no usa :host vars)
+   ══════════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] .market-terminal {
+  color: #1a1d2e;
+}
+
+[data-theme="light"] .terminal-title-block,
+[data-theme="light"] .market-terminal h1,
+[data-theme="light"] .market-terminal h2,
+[data-theme="light"] .market-terminal h3 {
+  color: #1a1d2e;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — colored card / chart / table borders (#527bd9)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Dashboard */
+[data-theme="light"] app-dashboard .stat-card,
+[data-theme="light"] app-dashboard .chart-section,
+[data-theme="light"] app-dashboard .dashboard-card {
+  border-color: #527bd9;
+}
+
+/* Portfolio */
+[data-theme="light"] app-portfolio .summary-card,
+[data-theme="light"] app-portfolio .chart-container,
+[data-theme="light"] app-portfolio .holdings-section,
+[data-theme="light"] app-portfolio .operations-section {
+  border-color: #527bd9;
+}
+
+/* Alerts */
+[data-theme="light"] app-alerts .summary-card,
+[data-theme="light"] app-alerts .alerts-list-container,
+[data-theme="light"] app-alerts .advanced-filters,
+[data-theme="light"] app-alerts .pagination-container {
+  border-color: #527bd9;
+}
+
+/* Notifications */
+[data-theme="light"] app-notifications .notif-item,
+[data-theme="light"] app-notifications .advanced-filters,
+[data-theme="light"] app-notifications .notif-pagination {
+  border-color: #527bd9;
+}
+
+/* Settings */
+[data-theme="light"] app-user-profile .bento-card {
+  border-color: #527bd9;
+}
+
+[data-theme="light"] app-user-profile .danger-zone {
+  border-color: #ef4444;
+  background: #ffffff;
+}
+
+[data-theme="light"] app-user-profile .danger-zone:hover {
+  border-color: #dc2626;
+}
+
+[data-theme="light"] app-user-profile .danger-zone .danger-copy p {
+  color: #5a6380;
+}
+
+[data-theme="light"] app-user-profile .danger-icon,
+[data-theme="light"] app-user-profile .danger-title {
+  color: #dc2626;
+}
+
+[data-theme="light"] app-user-profile .danger-zone .danger-copy h3 {
+  color: #dc2626;
+}
+
+[data-theme="light"] app-user-profile .btn-delete-account {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.45);
+  background: rgba(220, 38, 38, 0.06);
+}
+
+[data-theme="light"] app-user-profile .btn-delete-account:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.8);
 }

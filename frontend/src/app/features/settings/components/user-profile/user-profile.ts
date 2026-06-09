@@ -8,6 +8,7 @@ import { MaterialModule } from '../../../../shared/material.module';
 import { environment } from '../../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { ThemeService, Theme } from '../../../../core/services/theme.service';
 
 /**
  * Pantalla de perfil de usuario, dentro de la sección de configuración.
@@ -46,6 +47,9 @@ export class UserProfile implements OnInit {
   uploadingImage = false;
   deletingAccount = false;
 
+  // ── Tema visual ──
+  selectedTheme: Theme = 'Dark';
+
   // ── Verificación de cambio de email ──
   /** Estados posibles del flujo independiente de verificación de email. */
   emailVerificationStatus: 'idle' | 'sending' | 'codeSent' | 'verifying' | 'verified' | 'error' = 'idle';
@@ -71,7 +75,8 @@ export class UserProfile implements OnInit {
     private userService: UserService,
     private notificationService: SnackBarService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) {
     this.profileForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(3)]],
@@ -130,6 +135,9 @@ export class UserProfile implements OnInit {
             emailNotifications: profile.settings.emailNotifications,
           });
 
+          this.selectedTheme = (profile.settings.theme as Theme) || 'Dark';
+          this.themeService.initialize(profile.settings.theme);
+
           this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
           this.currentEmail = profile.email;
           this.resetEmailVerification();
@@ -160,7 +168,8 @@ export class UserProfile implements OnInit {
       phone: this.profileForm.value.phone,
       birthDate: this.profileForm.value.birthDate,
       currency: this.profileForm.value.currency,
-      emailNotifications: this.profileForm.value.emailNotifications
+      emailNotifications: this.profileForm.value.emailNotifications,
+      theme: this.selectedTheme
     };
 
     this.userService.updateProfile(request)
@@ -173,6 +182,24 @@ export class UserProfile implements OnInit {
           this.notificationService.error(error.error?.message ?? 'Error al actualizar perfil');
         }
       });
+  }
+
+  // ── Tema visual ──
+
+  /** Cambia el tema, lo aplica de inmediato y lo persiste en el backend. */
+  onThemeChange(theme: Theme): void {
+    this.selectedTheme = theme;
+    this.themeService.setTheme(theme);
+    this.userService.updateProfile({
+      userName: this.profileForm.value.userName,
+      currency: this.profileForm.value.currency,
+      emailNotifications: this.profileForm.value.emailNotifications,
+      phone: this.profileForm.value.phone,
+      birthDate: this.profileForm.value.birthDate,
+      theme
+    }).subscribe({
+      error: () => this.notificationService.error('No se pudo guardar el tema')
+    });
   }
 
   // ── Verificación de cambio de email ──

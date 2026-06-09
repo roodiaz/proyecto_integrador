@@ -14,6 +14,7 @@
   --green-dim:       rgba(74, 225, 118, 0.15);
   --red:             #FFB4AB;
   --red-dim:         rgba(255, 180, 171, 0.15);
+  --date-color-scheme: dark;
 }
 
 /* ── Page wrapper ── */
@@ -276,7 +277,7 @@
   outline: none;
   cursor: pointer;
   transition: border-color 0.2s;
-  color-scheme: dark;
+  color-scheme: var(--date-color-scheme);
 }
 
 .filter-date:focus {

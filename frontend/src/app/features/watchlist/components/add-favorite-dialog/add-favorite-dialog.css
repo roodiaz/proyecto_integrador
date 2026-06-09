@@ -17,6 +17,8 @@
   --green-dim:     rgba(74, 225, 118, 0.15);
   --red:           #FFB4AB;
   --red-dim:       rgba(255, 180, 171, 0.15);
+  --input-bg:      #0e0e0e;
+  --hover:         rgba(255, 255, 255, 0.06);
 }
 
 /* ── Container ── */
@@ -73,7 +75,7 @@
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--hover);
   color: var(--text);
 }
 
@@ -115,7 +117,7 @@
 
 .search-input {
   width: 100%;
-  background: #0e0e0e;
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.6rem 2.25rem 0.6rem 2.5rem;
@@ -305,7 +307,7 @@
 }
 
 .cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--hover);
   color: var(--text);
 }
 

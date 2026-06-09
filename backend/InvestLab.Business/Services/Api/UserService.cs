@@ -93,7 +93,8 @@ public class UserService : IUserService
                 settings = new
                 {
                     user.UserSetting.Currency,
-                    user.UserSetting.EmailNotifications
+                    user.UserSetting.EmailNotifications,
+                    Theme = user.UserSetting.Theme ?? "Dark"
                 }
             });
         }
@@ -131,6 +132,7 @@ public class UserService : IUserService
 
             user.UserSetting.Currency = dto.Currency;
             user.UserSetting.EmailNotifications = dto.EmailNotifications;
+            user.UserSetting.Theme = dto.Theme ?? "Dark";
 
             await _userRepository.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();

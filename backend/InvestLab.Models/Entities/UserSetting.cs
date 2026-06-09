@@ -36,6 +36,10 @@ public partial class UserSetting
     [Column("searches_used_today")]
     public int SearchesUsedToday { get; set; }
 
+    [Column("theme")]
+    [StringLength(10)]
+    public string? Theme { get; set; }
+
     [ForeignKey("UserId")]
     [InverseProperty("UserSetting")]
     public virtual User User { get; set; } = null!;

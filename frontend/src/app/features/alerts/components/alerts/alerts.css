@@ -19,8 +19,11 @@
   --border-color:   #424754;
   --border-subtle:  rgba(255, 255, 255, 0.05);
   --hover-bg:       rgba(255, 255, 255, 0.03);
-  --green-dim:      rgba(74, 225, 118, 0.15);
-  --red-dim:        rgba(255, 180, 171, 0.15);
+  --green-dim:        rgba(74, 225, 118, 0.15);
+  --red-dim:          rgba(255, 180, 171, 0.15);
+  --input-bg:         #0e0e0e;
+  --usage-track:      rgba(255, 255, 255, 0.12);
+  --date-color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -154,7 +157,7 @@
 .usage-progress {
   width: 100%;
   height: 5px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--usage-track);
   border-radius: 999px;
   overflow: hidden;
   margin-top: 10px;
@@ -256,7 +259,7 @@
 
 .search-input {
   width: 100%;
-  background: #0e0e0e;
+  background: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.55rem 0.875rem 0.55rem 2.5rem;
@@ -359,7 +362,7 @@
 }
 
 .filter-select {
-  background: #0e0e0e;
+  background: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -374,7 +377,7 @@
 .filter-select option { background: var(--primary-bg); color: var(--text-primary); }
 
 .filter-date {
-  background: #0e0e0e;
+  background: var(--input-bg);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -383,7 +386,7 @@
   outline: none;
   cursor: pointer;
   transition: border-color 0.2s;
-  color-scheme: dark;
+  color-scheme: var(--date-color-scheme);
 }
 
 .filter-date:focus { border-color: var(--accent-primary); }

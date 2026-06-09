@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -6,6 +6,7 @@ import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { MatDialog } from '@angular/material/dialog';
 
 import { PortfolioService } from '../../services/portfolio.service';
+import { ThemeService } from '../../../../core/services/theme.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
@@ -114,8 +115,14 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     private snackBarService: SnackBarService,
     private portfolioService: PortfolioService,
     private dialog: MatDialog,
+    private themeService: ThemeService,
   ) {
     Chart.register(...registerables);
+    effect(() => {
+      this.themeService.currentTheme();
+      if (this.pieChartData.length) this.createPieChart();
+      if (this.lineChartData.length) this.createLineChart();
+    });
   }
 
   // ── Ciclo de vida ──
@@ -591,6 +598,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         : d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
     };
 
+    const t = this.themeService.getChartTheme();
+
     const config: ChartConfiguration = {
       type: 'line',
       data: {
@@ -604,7 +613,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           fill: true,
           tension: 0.3,
           pointBackgroundColor: '#4ECDC4',
-          pointBorderColor: '#FFFFFF',
+          pointBorderColor: t.legendColor,
           pointBorderWidth: 3,
           pointRadius: 6,
           pointHoverRadius: 8,
@@ -618,9 +627,9 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            titleColor: '#FFFFFF',
-            bodyColor: '#FFFFFF',
+            backgroundColor: t.tooltipBg,
+            titleColor: t.tooltipText,
+            bodyColor: t.tooltipText,
             borderColor: '#4ECDC4',
             borderWidth: 2,
             padding: 16,
@@ -642,7 +651,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
             display: true,
             grid: { display: false },
             ticks: {
-              color: '#FFFFFF',
+              color: t.textColor,
               font: { size: 11 },
               maxRotation: 0,
               autoSkip: true,
@@ -652,9 +661,9 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           },
           y: {
             display: true,
-            grid: { color: 'rgba(255,255,255,0.1)' },
+            grid: { color: t.gridColor },
             ticks: {
-              color: '#FFFFFF',
+              color: t.textColor,
               font: { size: 11 },
               callback: (v: any) => `$${(Number(v) / 1000).toFixed(1)}k`,
             },

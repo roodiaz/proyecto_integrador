@@ -426,6 +426,14 @@
   background: var(--surface-high) !important;
 }
 
+/* ─── Guardar cambios generales ─── */
+.save-general-row {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 4px;
+}
+
 /* ─── Card Footer (Security) ─── */
 .card-footer {
   display: flex;
@@ -717,4 +725,148 @@
 
 .link-btn:hover {
   color: var(--text);
+}
+
+/* ─── Apariencia / Tema ─── */
+.appearance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appearance-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.theme-options {
+  display: flex;
+  gap: 0.875rem;
+}
+
+.theme-option {
+  flex: 1;
+  background: var(--surface-low);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 0.625rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.theme-option:hover {
+  border-color: var(--border-focus);
+}
+
+.theme-option--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(173, 198, 255, 0.15);
+}
+
+/* Mini-preview del tema */
+.theme-preview {
+  height: 60px;
+  border-radius: 6px;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.theme-preview--dark {
+  background: #131313;
+}
+
+.theme-preview--light {
+  background: #f5f7ff;
+}
+
+.tp-sidebar {
+  width: 28%;
+  flex-shrink: 0;
+}
+
+.theme-preview--dark .tp-sidebar {
+  background: #0d0d0d;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.theme-preview--light .tp-sidebar {
+  background: #eef1fa;
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.tp-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 10px;
+}
+
+.tp-bar {
+  height: 8px;
+  border-radius: 4px;
+  width: 80%;
+}
+
+.tp-bar--short {
+  width: 55%;
+}
+
+.theme-preview--dark .tp-bar {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-preview--dark .tp-bar--short {
+  background: rgba(173, 198, 255, 0.25);
+}
+
+.theme-preview--light .tp-bar {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.theme-preview--light .tp-bar--short {
+  background: rgba(173, 198, 255, 0.6);
+}
+
+.theme-option-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.theme-radio-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: var(--accent);
+}
+
+.appearance-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.appearance-hint .hint-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  flex-shrink: 0;
 }
