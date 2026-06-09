@@ -130,6 +130,16 @@ public class DailySnapshotWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
 
+            // Si el mercado ya cerró, guarda los precios de hoy antes de generar snapshots.
+            // Esto cubre el caso en que el worker arrancó o se reinició después de las 16:05 NY.
+            if (nowNy >= nowNy.Date.AddHours(16).AddMinutes(5) &&
+                nowNy.DayOfWeek != DayOfWeek.Saturday &&
+                nowNy.DayOfWeek != DayOfWeek.Sunday)
+            {
+                _logger.LogInformation("Mercado ya cerró. Guardando historial de mercado antes del catch-up de portfolios.");
+                await service.SaveDailyMarketHistoryAsync();
+            }
+
             await service.RunHistoricalCatchUpAsync(lastCloseUtc);
 
             _logger.LogInformation("Catch-up histórico completado");

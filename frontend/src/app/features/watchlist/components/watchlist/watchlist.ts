@@ -11,6 +11,7 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { FavoriteItem } from '../../models/watchlist-item';
 import { AddFavoriteDialog } from '../add-favorite-dialog/add-favorite-dialog';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { LanguageService } from '../../../../core/services/language.service';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
@@ -50,7 +51,8 @@ export class Watchlist implements OnInit {
     private router: Router,
     private watchlistService: WatchlistService,
     private dialog: MatDialog,
-    private notificationService: SnackBarService
+    private notificationService: SnackBarService,
+    private languageService: LanguageService
   ) { }
 
   // ── Ciclo de vida ──
@@ -220,7 +222,10 @@ export class Watchlist implements OnInit {
 
     this.watchlistService.removeFavorite(normalizedSymbol).subscribe({
       next: response => {
-        this.notificationService.fromResponse(response.success, response.code, response.message);
+        if (response.success)
+          this.notificationService.success(this.languageService.instant('MARKET.WATCHLIST_REMOVED', { symbol: normalizedSymbol }));
+        else
+          this.notificationService.fromResponse(false, response.code, response.message);
         if (response.success) this.loadWatchlist();
       },
       error: err => {
@@ -249,7 +254,10 @@ export class Watchlist implements OnInit {
 
       this.watchlistService.addFavorite(normalizedSymbol).subscribe({
         next: res => {
-          this.notificationService.fromResponse(res.success, res.code, res.message);
+          if (res.success)
+            this.notificationService.success(this.languageService.instant('MARKET.WATCHLIST_ADDED', { symbol: normalizedSymbol }));
+          else
+            this.notificationService.fromResponse(false, res.code, res.message);
           if (res.success) this.loadWatchlist();
         },
         error: err => {

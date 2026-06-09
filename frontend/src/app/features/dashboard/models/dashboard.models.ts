@@ -22,6 +22,9 @@ export interface DashboardPerformanceChartPoint {
   portfolio: number;
   sp500: number;
   nasdaq: number;
+  portfolioValue: number;
+  sp500Value: number;
+  nasdaqValue: number;
 }
 
 export interface DashboardLatestTransaction {

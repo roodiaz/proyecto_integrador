@@ -377,7 +377,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
       }
     ];
 
-    return { labels, datasets };
+    return { labels, datasets, chartPoints };
   }
 
   private getChartConfiguration(data: any): any {
@@ -412,17 +412,19 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
             displayColors: true,
             callbacks: {
               label: (context: any) => {
-                let label = context.dataset.label || '';
-                if (label) label += ': ';
-                if (context.parsed.y !== null) {
-                  label += new Intl.NumberFormat('es-ES', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  }).format(context.parsed.y);
+                const pt = data.chartPoints?.[context.dataIndex];
+                const pct = context.parsed.y;
+                const sign = pct > 0 ? '+' : '';
+                const fmtUsd = (v: number) => `$${v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`;
+                const label = context.dataset.label || '';
+                if (!pt) return `${label}: ${fmtPct(pct)}`;
+                switch (context.datasetIndex) {
+                  case 0: return `${label}: ${fmtUsd(pt.portfolioValue)} (${fmtPct(pct)})`;
+                  case 1: return `${label}: ${fmtUsd(pt.sp500Value)} (${fmtPct(pct)})`;
+                  case 2: return `${label}: ${fmtUsd(pt.nasdaqValue)} (${fmtPct(pct)})`;
+                  default: return `${label}: ${fmtPct(pct)}`;
                 }
-                return label;
               }
             }
           }
@@ -440,7 +442,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
               callback: (value: any) => {
                 const number = Number(value);
                 const sign = number > 0 ? '+' : '';
-                return `${sign}${number}%`;
+                return `${sign}${number.toFixed(2)}%`;
               }
             }
           }
@@ -448,21 +450,6 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         interaction: { mode: 'index' as any, intersect: false }
       }
     };
-
-    if (this.selectedChartType === 'bar') {
-      config.options.plugins.tooltip.callbacks = {
-        label: (context: any) => {
-          let label = context.dataset.label || '';
-          if (label) label += ': ';
-          if (context.parsed.y !== null) {
-            const value = context.parsed.y;
-            const sign = value > 0 ? '+' : '';
-            label += `${sign}${value.toFixed(2)}%`;
-          }
-          return label;
-        }
-      };
-    }
 
     return config;
   }

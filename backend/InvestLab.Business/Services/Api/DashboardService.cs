@@ -268,17 +268,30 @@ public class DashboardService : IDashboardService
             var sp500Base = sp500History.First().Close;
             var nasdaqBase = nasdaqHistory.First().Close;
 
-            var sp500Dictionary = sp500History.ToDictionary(x => x.Date.Date, x => x.Close);
-            var nasdaqDictionary = nasdaqHistory.ToDictionary(x => x.Date.Date, x => x.Close);
+            var sp500Sorted = sp500History.OrderBy(x => x.Date).ToList();
+            var nasdaqSorted = nasdaqHistory.OrderBy(x => x.Date).ToList();
+
+            decimal GetClosest(List<PriceHistory> sorted, DateTime target)
+            {
+                var exact = sorted.LastOrDefault(x => x.Date.Date <= target.Date);
+                return exact?.Close ?? sorted.First().Close;
+            }
 
             var chartData = portfolioHistory
-                .Where(x => sp500Dictionary.ContainsKey(x.Date.Date) && nasdaqDictionary.ContainsKey(x.Date.Date))
-                .Select(x => new DashboardPerformanceChartPointDto
+                .Select(x =>
                 {
-                    Label = monthlyView ? x.Date.ToString("MM/yyyy") : x.Date.ToString("dd/MM"),
-                    Portfolio = Math.Round((x.TotalValue / portfolioBase) * 100, 2),
-                    Sp500 = Math.Round((sp500Dictionary[x.Date.Date] / sp500Base) * 100, 2),
-                    Nasdaq = Math.Round((nasdaqDictionary[x.Date.Date] / nasdaqBase) * 100, 2)
+                    var sp500Close = GetClosest(sp500Sorted, x.Date);
+                    var nasdaqClose = GetClosest(nasdaqSorted, x.Date);
+                    return new DashboardPerformanceChartPointDto
+                    {
+                        Label = monthlyView ? x.Date.ToString("MM/yyyy") : x.Date.ToString("dd/MM"),
+                        Portfolio = Math.Round((x.TotalValue / portfolioBase) * 100, 2),
+                        Sp500 = Math.Round((sp500Close / sp500Base) * 100, 2),
+                        Nasdaq = Math.Round((nasdaqClose / nasdaqBase) * 100, 2),
+                        PortfolioValue = Math.Round(x.TotalValue, 2),
+                        Sp500Value = Math.Round(sp500Close, 2),
+                        NasdaqValue = Math.Round(nasdaqClose, 2)
+                    };
                 })
                 .ToList();
 

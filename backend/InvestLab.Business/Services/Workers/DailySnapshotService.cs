@@ -309,9 +309,9 @@ public class DailySnapshotService : IDailySnapshotWorker
                 _logger.LogInformation("Procesando cierre diario de {Symbol}", asset.Symbol);
                 var today = DateTime.UtcNow.Date;
 
-                // Obtiene únicamente la información
-                // correspondiente al último día bursátil.
-                var historical = await _providerResolver.GetProvider().GetHistoricalAsync(asset.Symbol, today.AddDays(-1), today);
+                // Pide from=ayer, to=mañana para que el endDate (tratado como exclusivo
+                // por algunos proveedores) incluya siempre el cierre de hoy.
+                var historical = await _providerResolver.GetProvider().GetHistoricalAsync(asset.Symbol, today.AddDays(-1), today.AddDays(1));
 
                 if (!historical.Any())
                 {

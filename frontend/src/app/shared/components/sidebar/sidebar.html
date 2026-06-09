@@ -57,11 +57,7 @@
 
       <div class="market-status">
         <mat-icon class="market-status-icon">schedule</mat-icon>
-        @if (marketStatusService.isOpen(marketStatus)) {
-          <span class="market-status-text">{{ updatedText }}</span>
-        } @else {
-          <span class="market-status-text">{{ getLastUpdateTimeText() }}</span>
-        }
+        <span class="market-status-text">{{ updatedText }}</span>
       </div>
     </div>
   </nav>
