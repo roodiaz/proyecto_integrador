@@ -2,8 +2,10 @@ using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Integrations.Interfaces;
+using InvestLab.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services.Api
 {
@@ -86,18 +88,18 @@ namespace InvestLab.Business.Services.Api
             var temp = await _tempRepository.GetByUserIdAsync(user.Id);
 
             if (temp == null)
-                return VerificationCodeResult.Fail("Código no encontrado");
+                return VerificationCodeResult.Fail("Código no encontrado", VERIFICATION_CODE_NOT_FOUND);
 
             if (temp.ExpiresAt < DateTime.UtcNow)
-                return VerificationCodeResult.Fail("Código expirado");
+                return VerificationCodeResult.Fail("Código expirado", VERIFICATION_CODE_EXPIRED);
 
             if (temp.IsUsed)
-                return VerificationCodeResult.Fail("El código ya fue utilizado");
+                return VerificationCodeResult.Fail("El código ya fue utilizado", VERIFICATION_CODE_ALREADY_USED);
 
             var result = _passwordHasher.VerifyHashedPassword(user, temp.TempPasswordHash, code);
 
             if (result == PasswordVerificationResult.Failed)
-                return VerificationCodeResult.Fail("Código inválido");
+                return VerificationCodeResult.Fail("Código inválido", VERIFICATION_CODE_INVALID);
 
             return VerificationCodeResult.Ok(temp);
         }

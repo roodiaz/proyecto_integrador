@@ -9,12 +9,12 @@
       <div class="buy-content">
         <div class="form-group">
           <div class="label-with-help">
-            <label for="ticker">Ticker</label>
-            <app-info-tooltip text="El código único que identifica a una empresa en el mercado. Por ejemplo, AAPL es Apple, MSFT es Microsoft y TSLA es Tesla. Buscá el símbolo y presioná el botón de búsqueda para obtener el precio actual." />
+            <label for="ticker">{{ 'PORTFOLIO.MODAL.TICKER_LABEL' | translate }}</label>
+            <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_SYMBOL' | translate" />
           </div>
 
           <div class="ticker-search">
-            <input id="ticker" type="text" [(ngModel)]="buyTicker" placeholder="Ej: AAPL" class="form-input">
+            <input id="ticker" type="text" [(ngModel)]="buyTicker" [placeholder]="'MARKET.SEARCH_SYMBOL_PLACEHOLDER' | translate" class="form-input">
 
             <button type="button" class="search-btn" (click)="loadMarketPrice()" [disabled]="isLoadingPrice">
               <mat-icon class="search-icon">search</mat-icon>
@@ -25,20 +25,20 @@
         <div class="form-row">
           <div class="form-group">
             <div class="label-with-help">
-              <label for="quantity">Cantidad</label>
-              <app-info-tooltip text="La cantidad de acciones que querés comprar. Podés comprar desde 1 unidad. El costo total se calcula multiplicando esta cantidad por el precio de mercado." />
+              <label for="quantity">{{ 'PORTFOLIO.MODAL.QUANTITY_LABEL' | translate }}</label>
+              <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_QUANTITY' | translate" />
             </div>
             <input id="quantity" type="number" [(ngModel)]="buyQuantity" min="1" class="form-input">
           </div>
 
           <div class="form-group">
             <div class="label-with-help">
-              <label for="price">Precio mercado</label>
-              <app-info-tooltip text="El precio actual de la acción en el mercado en el momento de la consulta. Este es el precio al que se ejecutará tu compra simulada." />
+              <label for="price">{{ 'PORTFOLIO.MODAL.MARKET_PRICE' | translate }}</label>
+              <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_PRICE' | translate" />
             </div>
             <div class="price-display">
               {{ marketPrice | currency:'USD' }}
-              <span class="price-label">Precio actual del mercado</span>
+              <span class="price-label">{{ 'PORTFOLIO.MODAL.PRICE_CURRENT_LABEL' | translate }}</span>
             </div>
           </div>
         </div>
@@ -46,16 +46,16 @@
         <div class="cost-summary">
           <div class="summary-row">
             <div class="label-with-help">
-              <span>Costo total:</span>
-              <app-info-tooltip text="El dinero que se descontará de tu saldo al confirmar la compra. Se calcula como: Cantidad × Precio de mercado." />
+              <span>{{ 'PORTFOLIO.MODAL.TOTAL_COST_LABEL' | translate }}:</span>
+              <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_TOTAL_COST' | translate" />
             </div>
             <span class="cost-amount">${{ totalCost.toFixed(2) }}</span>
           </div>
 
           <div class="summary-row">
             <div class="label-with-help">
-              <span>Saldo disponible:</span>
-              <app-info-tooltip text="El dinero que tenés disponible para invertir. Si el costo total supera este monto, la compra no podrá confirmarse." />
+              <span>{{ 'PORTFOLIO.MODAL.BALANCE_LABEL' | translate }}:</span>
+              <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_BALANCE' | translate" />
             </div>
             <span class="balance-amount">${{ currentBalance.toFixed(2) }}</span>
           </div>
@@ -66,37 +66,37 @@
     @if (mode === 'sell') {
       <div class="sell-content">
         <div class="operation-info">
-          <h3>Información de la operación</h3>
+          <h3>{{ 'PORTFOLIO.MODAL.OP_INFO_TITLE' | translate }}</h3>
 
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">Ticker:</span>
+              <span class="label">{{ 'PORTFOLIO.MODAL.TICKER_LABEL' | translate }}:</span>
               <span class="value">{{ position?.symbol }}</span>
             </div>
 
             <div class="info-item">
-              <span class="label">Cantidad total:</span>
+              <span class="label">{{ 'PORTFOLIO.MODAL.TOTAL_QUANTITY' | translate }}:</span>
               <span class="value">{{ position?.quantity }}</span>
             </div>
 
             <div class="info-item">
               <div class="label-with-help">
-                <span class="label">Cantidad disponible:</span>
-                <app-info-tooltip text="Podés vender todas tus acciones o solo una parte (venta parcial). Lo que no vendas seguirá en tu portfolio." />
+                <span class="label">{{ 'PORTFOLIO.MODAL.AVAILABLE_QUANTITY' | translate }}:</span>
+                <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_SELL_TYPE' | translate" />
               </div>
               <span class="value">{{ position?.quantity }}</span>
             </div>
 
             <div class="info-item">
               <div class="label-with-help">
-                <span class="label">Precio compra:</span>
-                <app-info-tooltip text="El precio promedio al que compraste estas acciones. Si compraste en distintos momentos, se muestra el promedio ponderado de todas las compras." />
+                <span class="label">{{ 'PORTFOLIO.MODAL.BUY_PRICE' | translate }}:</span>
+                <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_AVG_PRICE' | translate" />
               </div>
               <span class="value">{{ position?.avgPrice | currency:'USD' }}</span>
             </div>
 
             <div class="info-item">
-              <span class="label">Precio actual:</span>
+              <span class="label">{{ 'PORTFOLIO.CURRENT_PRICE' | translate }}:</span>
               <span class="value">{{ position?.currentPrice | currency:'USD' }}</span>
             </div>
           </div>
@@ -104,29 +104,29 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="sellQuantity">Cantidad a vender</label>
+            <label for="sellQuantity">{{ 'PORTFOLIO.MODAL.QUANTITY_LABEL' | translate }}</label>
             <input id="sellQuantity" type="number" [(ngModel)]="sellQuantity" min="1" [max]="position?.quantity ?? 1" class="form-input">
           </div>
 
           <div class="form-group">
-            <label for="sellMarketPrice">Precio mercado</label>
+            <label for="sellMarketPrice">{{ 'PORTFOLIO.MODAL.MARKET_PRICE' | translate }}</label>
             <div id="sellMarketPrice" class="price-display">
               {{ position?.currentPrice | currency:'USD' }}
-              <span class="price-label">Precio actual del mercado</span>
+              <span class="price-label">{{ 'PORTFOLIO.MODAL.PRICE_CURRENT_LABEL' | translate }}</span>
             </div>
           </div>
         </div>
 
         <div class="profit-summary">
           <div class="summary-row">
-            <span>Total venta:</span>
+            <span>{{ 'PORTFOLIO.MODAL.SELL_TOTAL' | translate }}:</span>
             <span class="sell-total">{{ sellTotal | currency:'USD' }}</span>
           </div>
 
           <div class="summary-row">
             <div class="label-with-help">
-              <span>Ganancia/Pérdida:</span>
-              <app-info-tooltip text="La diferencia entre lo que vas a recibir por la venta y lo que pagaste originalmente. Positivo significa que ganaste dinero; negativo que perdiste." />
+              <span>{{ 'PORTFOLIO.MODAL.PROFIT_LOSS_LABEL' | translate }}:</span>
+              <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_PROFIT' | translate" />
             </div>
             <span class="profit-amount" [class.positive]="profitAmount > 0" [class.negative]="profitAmount < 0">
               {{ profitAmount | currency:'USD' }}
@@ -135,8 +135,8 @@
 
           <div class="summary-row">
             <div class="label-with-help">
-              <span>Porcentaje:</span>
-              <app-info-tooltip text="La ganancia o pérdida expresada como porcentaje de lo que invertiste. Por ejemplo, +15% significa que recuperás tu inversión original más un 15% extra." />
+              <span>{{ 'PORTFOLIO.MODAL.PROFIT_PERCENT' | translate }}:</span>
+              <app-info-tooltip [text]="'PORTFOLIO.MODAL.TOOLTIP_PROFIT_PCT' | translate" />
             </div>
             <span class="profit-percent" [class.positive]="profitPercent > 0" [class.negative]="profitPercent < 0">
               {{ profitPercent | number:'1.2-2' }}%
@@ -148,17 +148,17 @@
   </div>
 
   <div class="modal-footer">
-    <button class="cancel-btn" type="button" (click)="onClose()">Cancelar</button>
+    <button class="cancel-btn" type="button" (click)="onClose()">{{ 'COMMON.CANCEL' | translate }}</button>
 
     @if (mode === 'buy') {
       <button class="confirm-btn buy-btn" type="button" (click)="onBuy()" [disabled]="!canBuy">
-        Comprar
+        {{ 'PORTFOLIO.MODAL.CONFIRM_BUY' | translate }}
       </button>
     }
 
     @if (mode === 'sell') {
       <button class="confirm-btn sell-btn" type="button" (click)="onSell()" [disabled]="!canSell">
-        Vender
+        {{ 'PORTFOLIO.MODAL.CONFIRM_SELL' | translate }}
       </button>
     }
   </div>

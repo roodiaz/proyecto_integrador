@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../models/login.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-login-form',
@@ -13,20 +15,19 @@ import { LoginRequest } from '../../models/login.model';
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    MaterialModule
+    MaterialModule,
+    TranslateModule
   ],
   templateUrl: './login-form.html',
   styleUrls: ['./login-form.css']
 })
 export class LoginForm {
 
-  // ── Estado del formulario ──────────────────────────────────────────────────
-  /** Formulario reactivo con los campos email y contraseña. */
   loginForm: FormGroup;
-  /** Controla la visibilidad del texto en el input de contraseña. */
   hidePassword = true;
-  /** Mensaje de error a mostrar cuando el inicio de sesión falla. */
   loginError: string | null = null;
+
+  private readonly languageService = inject(LanguageService);
 
   constructor(
     private fb: FormBuilder,
@@ -39,13 +40,6 @@ export class LoginForm {
     });
   }
 
-  // ── Acciones ───────────────────────────────────────────────────────────────
-
-  /**
-   * Valida el formulario y envía las credenciales al servicio de autenticación.
-   * Si la respuesta es exitosa, almacena los tokens en `sessionStorage` y
-   * redirige al dashboard. En caso de error muestra el mensaje correspondiente.
-   */
   onSubmit(): void {
     if (!this.loginForm.valid) return;
 
@@ -59,7 +53,9 @@ export class LoginForm {
     this.authService.login(request).subscribe({
       next: response => {
         if (!response.success || !response.data) {
-          this.loginError = response.message;
+          this.loginError = response.code
+            ? this.languageService.instant(`ERRORS.${response.code}`)
+            : response.message;
           return;
         }
 
@@ -69,7 +65,10 @@ export class LoginForm {
         this.router.navigate(['/dashboard']);
       },
       error: error => {
-        this.loginError = error.error?.message ?? 'Error al iniciar sesión';
+        const code = error.error?.code;
+        this.loginError = code
+          ? this.languageService.instant(`ERRORS.${code}`)
+          : this.languageService.instant('ERRORS.INVALID_CREDENTIALS');
       }
     });
   }

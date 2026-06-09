@@ -4,15 +4,17 @@ import { Notification } from '../../models/notifications.model';
 import { MatDialog } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '../../services/notification.service';
 import { UnreadNotificationsService } from '../../services/unread-notifications.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent, TranslateModule],
   templateUrl: './notifications.html',
   styleUrl: './notifications.css'
 })
@@ -43,7 +45,8 @@ export class Notifications implements OnInit {
   constructor(
     private dialog: MatDialog,
     private notificationService: NotificationService,
-    private unreadNotificationsService: UnreadNotificationsService
+    private unreadNotificationsService: UnreadNotificationsService,
+    private languageService: LanguageService
   ) { }
 
   ngOnInit(): void {
@@ -218,8 +221,8 @@ export class Notifications implements OnInit {
       width: '350px',
       backdropClass: 'blur-backdrop',
       data: {
-        title:   'Eliminar notificación',
-        message: '¿Estás seguro de que deseas eliminar este registro del historial?'
+        title:   this.languageService.instant('NOTIFICATIONS.DELETE_CONFIRM.TITLE'),
+        message: this.languageService.instant('NOTIFICATIONS.DELETE_CONFIRM.MESSAGE')
       }
     });
 

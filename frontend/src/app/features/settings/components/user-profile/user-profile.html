@@ -4,7 +4,7 @@
   <header class="profile-hero">
     <div class="avatar-wrapper" (click)="!uploadingImage && triggerFileInput()">
       @if (!loadingProfile) {
-      <img [src]="profileImageUrl || 'img/logo.png'" alt="Foto perfil" class="profile-avatar">
+      <img [src]="profileImageUrl || 'img/logo.png'" [alt]="'SETTINGS.TITLE' | translate" class="profile-avatar">
       } @else {
       <span class="skeleton profile-avatar-skeleton"></span>
       }
@@ -21,8 +21,8 @@
     </div>
 
     <div class="hero-info">
-      <h1 class="hero-name">Perfil de Usuario</h1>
-      <p class="hero-subtitle">Administra tu información personal y preferencias</p>
+      <h1 class="hero-name">{{ 'SETTINGS.TITLE' | translate }}</h1>
+      <p class="hero-subtitle">{{ 'SETTINGS.SUBTITLE' | translate }}</p>
     </div>
   </header>
 
@@ -33,7 +33,7 @@
     <section class="bento-card span-full">
       <div class="card-header">
         <mat-icon class="card-icon">badge</mat-icon>
-        <h2 class="card-title">Información Personal</h2>
+        <h2 class="card-title">{{ 'SETTINGS.PERSONAL_INFO.SECTION_TITLE' | translate }}</h2>
       </div>
 
       @if (loadingProfile) {
@@ -48,38 +48,38 @@
         <div class="fields-grid">
 
           <div class="field-group">
-            <label class="field-label">Nombre de Usuario *</label>
+            <label class="field-label">{{ 'SETTINGS.PERSONAL_INFO.USERNAME_LABEL' | translate }} *</label>
 
             <div class="field-input-wrap">
-              <input matInput formControlName="userName" class="field-input" placeholder="Tu nombre de usuario">
+              <input matInput formControlName="userName" class="field-input" [placeholder]="'SETTINGS.PERSONAL_INFO.USERNAME_PLACEHOLDER' | translate">
               <mat-icon class="field-icon">person</mat-icon>
             </div>
 
             @if (profileForm.get('userName')?.hasError('required') && profileForm.get('userName')?.touched) {
             <span class="field-error">
-              El nombre es requerido
+              {{ 'SETTINGS.PERSONAL_INFO.VALIDATION.USERNAME_REQUIRED' | translate }}
             </span>
             }
           </div>
 
           <div class="field-group email-field-group">
-            <label class="field-label">Correo Electrónico *</label>
+            <label class="field-label">{{ 'SETTINGS.PERSONAL_INFO.EMAIL_LABEL' | translate }} *</label>
 
             <div class="field-input-wrap">
               <input matInput formControlName="email" type="email" class="field-input"
-                placeholder="ejemplo@dominio.com" [readonly]="emailVerificationStatus === 'codeSent' || emailVerificationStatus === 'verifying'">
+                [placeholder]="'SETTINGS.PERSONAL_INFO.EMAIL_PLACEHOLDER' | translate" [readonly]="emailVerificationStatus === 'codeSent' || emailVerificationStatus === 'verifying'">
               <mat-icon class="field-icon">mail</mat-icon>
             </div>
 
             @if (profileForm.get('email')?.hasError('email') && profileForm.get('email')?.touched) {
             <span class="field-error">
-              Por favor ingresá un correo válido
+              {{ 'SETTINGS.PERSONAL_INFO.VALIDATION.EMAIL_INVALID' | translate }}
             </span>
             }
 
             <p class="field-hint">
               <mat-icon class="hint-icon">info</mat-icon>
-              El email es tu credencial de acceso: para cambiarlo necesitás verificar que sos el dueño de la nueva dirección.
+              {{ 'SETTINGS.PERSONAL_INFO.EMAIL_HINT' | translate }}
             </p>
 
             <!-- Flujo de verificación de cambio de email -->
@@ -92,27 +92,27 @@
                     [disabled]="!canRequestEmailChange"
                     (click)="onVerifyEmail()">
                     <mat-icon>mark_email_unread</mat-icon>
-                    Verificar Email
+                    {{ 'SETTINGS.EMAIL_VERIFY.VERIFY_BUTTON' | translate }}
                   </button>
                 }
 
                 @case ('sending') {
                   <button class="btn btn-secondary btn-sm" type="button" disabled>
                     <mat-icon>mark_email_unread</mat-icon>
-                    Enviando código...
+                    {{ 'SETTINGS.EMAIL_VERIFY.SENDING_BUTTON' | translate }}
                   </button>
                 }
 
                 @case ('codeSent') {
                   <div class="verify-status verify-status-pending">
                     <mat-icon>mark_email_read</mat-icon>
-                    Te enviamos un código de verificación a <strong>{{ pendingEmail }}</strong>
+                    {{ 'SETTINGS.EMAIL_VERIFY.CODE_SENT_MSG' | translate }} <strong>{{ pendingEmail }}</strong>
                   </div>
 
                   <div class="verify-code-row">
                     <div class="field-input-wrap code-input-wrap">
                       <input class="field-input" type="text" inputmode="numeric" maxlength="6"
-                        placeholder="Código de Verificación" [(ngModel)]="emailVerificationCode"
+                        [placeholder]="'SETTINGS.EMAIL_VERIFY.CODE_PLACEHOLDER' | translate" [(ngModel)]="emailVerificationCode"
                         [ngModelOptions]="{standalone: true}">
                       <mat-icon class="field-icon">pin</mat-icon>
                     </div>
@@ -120,24 +120,24 @@
                     <button class="btn btn-primary btn-sm" type="button"
                       [disabled]="!emailVerificationCode.trim()"
                       (click)="onValidateEmailCode()">
-                      Validar Código
+                      {{ 'SETTINGS.EMAIL_VERIFY.VALIDATE_BUTTON' | translate }}
                     </button>
                   </div>
 
-                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">Cancelar</button>
+                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">{{ 'SETTINGS.EMAIL_VERIFY.CANCEL_BUTTON' | translate }}</button>
                 }
 
                 @case ('verifying') {
                   <div class="verify-status verify-status-pending">
                     <mat-icon>hourglass_top</mat-icon>
-                    Validando código...
+                    {{ 'SETTINGS.EMAIL_VERIFY.VALIDATING' | translate }}
                   </div>
                 }
 
                 @case ('verified') {
                   <div class="verify-status verify-status-success">
                     <mat-icon>verified</mat-icon>
-                    Email verificado correctamente
+                    {{ 'SETTINGS.EMAIL_VERIFY.VERIFIED_MSG' | translate }}
                   </div>
                 }
 
@@ -150,7 +150,7 @@
                   <div class="verify-code-row">
                     <div class="field-input-wrap code-input-wrap">
                       <input class="field-input" type="text" inputmode="numeric" maxlength="6"
-                        placeholder="Código de Verificación" [(ngModel)]="emailVerificationCode"
+                        [placeholder]="'SETTINGS.EMAIL_VERIFY.CODE_PLACEHOLDER' | translate" [(ngModel)]="emailVerificationCode"
                         [ngModelOptions]="{standalone: true}">
                       <mat-icon class="field-icon">pin</mat-icon>
                     </div>
@@ -158,11 +158,11 @@
                     <button class="btn btn-primary btn-sm" type="button"
                       [disabled]="!emailVerificationCode.trim()"
                       (click)="onValidateEmailCode()">
-                      Reintentar
+                      {{ 'SETTINGS.EMAIL_VERIFY.RETRY_BUTTON' | translate }}
                     </button>
                   </div>
 
-                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">Cancelar</button>
+                  <button class="link-btn" type="button" (click)="cancelEmailVerification()">{{ 'SETTINGS.EMAIL_VERIFY.CANCEL_BUTTON' | translate }}</button>
                 }
               }
 
@@ -170,10 +170,10 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Fecha de Nacimiento</label>
+            <label class="field-label">{{ 'SETTINGS.PERSONAL_INFO.BIRTH_DATE_LABEL' | translate }}</label>
 
             <div class="field-input-wrap datepicker-wrap">
-              <input [matDatepicker]="picker" formControlName="birthDate" class="field-input" placeholder="dd/mm/aaaa"
+              <input [matDatepicker]="picker" formControlName="birthDate" class="field-input" [placeholder]="'SETTINGS.PERSONAL_INFO.BIRTH_DATE_PLACEHOLDER' | translate"
                 readonly>
               <mat-datepicker-toggle [for]="picker" class="datepicker-toggle-btn"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
@@ -181,16 +181,16 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Teléfono</label>
+            <label class="field-label">{{ 'SETTINGS.PERSONAL_INFO.PHONE_LABEL' | translate }}</label>
 
             <div class="field-input-wrap">
-              <input matInput formControlName="phone" class="field-input" placeholder="+54 11 1234-5678">
+              <input matInput formControlName="phone" class="field-input" [placeholder]="'SETTINGS.PERSONAL_INFO.PHONE_PLACEHOLDER' | translate">
               <mat-icon class="field-icon">call</mat-icon>
             </div>
 
             @if (profileForm.get('phone')?.hasError('pattern') && profileForm.get('phone')?.touched) {
             <span class="field-error">
-              Formato de teléfono inválido
+              {{ 'SETTINGS.PERSONAL_INFO.VALIDATION.PHONE_INVALID' | translate }}
             </span>
             }
           </div>
@@ -204,11 +204,11 @@
     <section class="bento-card span-5">
       <div class="card-header">
         <mat-icon class="card-icon">palette</mat-icon>
-        <h2 class="card-title">Apariencia</h2>
+        <h2 class="card-title">{{ 'SETTINGS.APPEARANCE.SECTION_TITLE' | translate }}</h2>
       </div>
 
       <div class="appearance-section">
-        <p class="appearance-label">Tema de la aplicación</p>
+        <p class="appearance-label">{{ 'SETTINGS.APPEARANCE.THEME_LABEL' | translate }}</p>
 
         <div class="theme-options">
           <button
@@ -216,7 +216,7 @@
             class="theme-option"
             [class.theme-option--active]="selectedTheme === 'Dark'"
             (click)="onThemeChange('Dark')"
-            aria-label="Modo Oscuro">
+            [attr.aria-label]="'SETTINGS.APPEARANCE.DARK_MODE' | translate">
             <div class="theme-preview theme-preview--dark">
               <div class="tp-sidebar"></div>
               <div class="tp-content">
@@ -228,7 +228,7 @@
               <mat-icon class="theme-radio-icon">
                 {{ selectedTheme === 'Dark' ? 'radio_button_checked' : 'radio_button_unchecked' }}
               </mat-icon>
-              <span>Modo Oscuro</span>
+              <span>{{ 'SETTINGS.APPEARANCE.DARK_MODE' | translate }}</span>
             </div>
           </button>
 
@@ -237,7 +237,7 @@
             class="theme-option"
             [class.theme-option--active]="selectedTheme === 'Light'"
             (click)="onThemeChange('Light')"
-            aria-label="Modo Claro">
+            [attr.aria-label]="'SETTINGS.APPEARANCE.LIGHT_MODE' | translate">
             <div class="theme-preview theme-preview--light">
               <div class="tp-sidebar"></div>
               <div class="tp-content">
@@ -249,14 +249,14 @@
               <mat-icon class="theme-radio-icon">
                 {{ selectedTheme === 'Light' ? 'radio_button_checked' : 'radio_button_unchecked' }}
               </mat-icon>
-              <span>Modo Claro</span>
+              <span>{{ 'SETTINGS.APPEARANCE.LIGHT_MODE' | translate }}</span>
             </div>
           </button>
         </div>
 
         <p class="appearance-hint">
           <mat-icon class="hint-icon">info</mat-icon>
-          El cambio se aplica y guarda automáticamente.
+          {{ 'SETTINGS.APPEARANCE.THEME_HINT' | translate }}
         </p>
       </div>
     </section>
@@ -265,7 +265,7 @@
     <section class="bento-card span-7">
       <div class="card-header">
         <mat-icon class="card-icon">settings_suggest</mat-icon>
-        <h2 class="card-title">Preferencias</h2>
+        <h2 class="card-title">{{ 'SETTINGS.PREFERENCES.SECTION_TITLE' | translate }}</h2>
       </div>
 
       @if (loadingProfile) {
@@ -278,13 +278,27 @@
         <div class="fields-stack">
 
           <div class="field-group">
-            <label class="field-label">Idioma</label>
+            <label class="field-label">{{ 'SETTINGS.PREFERENCES.LANGUAGE_LABEL' | translate }}</label>
 
             <div class="field-input-wrap">
-              <mat-select class="field-select" value="es" panelClass="dark-select-panel">
-                <mat-option value="es">Español</mat-option>
-                <mat-option value="en" disabled>
-                  Inglés <span class="coming-soon-inline">(Próximamente)</span>
+              <mat-select class="field-select" [(ngModel)]="selectedLanguage" [ngModelOptions]="{standalone: true}" panelClass="dark-select-panel" (ngModelChange)="onLanguageChange($event)">
+                <mat-select-trigger>
+                  <span class="lang-trigger">
+                    <img class="lang-flag" [src]="selectedLanguage === 'es' ? 'img/spanish.png' : 'img/english.png'" [alt]="selectedLanguage">
+                    {{ (selectedLanguage === 'es' ? 'SETTINGS.LANGUAGE.ES' : 'SETTINGS.LANGUAGE.EN') | translate }}
+                  </span>
+                </mat-select-trigger>
+                <mat-option value="es">
+                  <span class="lang-option">
+                    <img class="lang-flag" src="img/spanish.png" alt="es">
+                    {{ 'SETTINGS.LANGUAGE.ES' | translate }}
+                  </span>
+                </mat-option>
+                <mat-option value="en">
+                  <span class="lang-option">
+                    <img class="lang-flag" src="img/english.png" alt="en">
+                    {{ 'SETTINGS.LANGUAGE.EN' | translate }}
+                  </span>
                 </mat-option>
               </mat-select>
 
@@ -293,16 +307,16 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Moneda Principal *</label>
+            <label class="field-label">{{ 'SETTINGS.PREFERENCES.CURRENCY_LABEL' | translate }} *</label>
 
             <div class="field-input-wrap">
               <mat-select formControlName="currency" class="field-select" panelClass="dark-select-panel">
-                <mat-option value="USD">Dólares (USD)</mat-option>
+                <mat-option value="USD">{{ 'SETTINGS.PREFERENCES.CURRENCY_USD' | translate }}</mat-option>
                 <mat-option value="EUR" disabled>
-                  Euros (EUR) <span class="coming-soon-inline">(Próximamente)</span>
+                  {{ 'SETTINGS.PREFERENCES.CURRENCY_EUR' | translate }} <span class="coming-soon-inline">{{ 'SETTINGS.PREFERENCES.COMING_SOON' | translate }}</span>
                 </mat-option>
                 <mat-option value="ARS" disabled>
-                  Pesos Argentinos (ARS) <span class="coming-soon-inline">(Próximamente)</span>
+                  {{ 'SETTINGS.PREFERENCES.CURRENCY_ARS' | translate }} <span class="coming-soon-inline">{{ 'SETTINGS.PREFERENCES.COMING_SOON' | translate }}</span>
                 </mat-option>
               </mat-select>
 
@@ -319,7 +333,7 @@
     <section class="bento-card span-5">
       <div class="card-header">
         <mat-icon class="card-icon">notifications</mat-icon>
-        <h2 class="card-title">Notificaciones</h2>
+        <h2 class="card-title">{{ 'SETTINGS.NOTIFICATIONS.SECTION_TITLE' | translate }}</h2>
       </div>
 
       @if (loadingProfile) {
@@ -331,8 +345,8 @@
       <form [formGroup]="profileForm">
         <div class="notification-row">
           <div class="notification-info">
-            <span class="notif-label">Correo Electrónico</span>
-            <span class="notif-desc">Alertas de mercado y seguridad</span>
+            <span class="notif-label">{{ 'SETTINGS.NOTIFICATIONS.EMAIL_LABEL' | translate }}</span>
+            <span class="notif-desc">{{ 'SETTINGS.NOTIFICATIONS.EMAIL_DESC' | translate }}</span>
           </div>
 
           <mat-slide-toggle formControlName="emailNotifications" color="primary"></mat-slide-toggle>
@@ -347,7 +361,7 @@
         [disabled]="savingProfile || loadingProfile"
         (click)="onSaveProfile()">
         <mat-icon>save</mat-icon>
-        {{ savingProfile ? 'Guardando...' : 'Guardar Cambios' }}
+        {{ savingProfile ? ('SETTINGS.PERSONAL_INFO.SAVING_BUTTON' | translate) : ('SETTINGS.PERSONAL_INFO.SAVE_BUTTON' | translate) }}
       </button>
     </div>
 
@@ -355,14 +369,14 @@
     <section class="bento-card span-full">
       <div class="card-header">
         <mat-icon class="card-icon">lock_reset</mat-icon>
-        <h2 class="card-title">Seguridad</h2>
+        <h2 class="card-title">{{ 'SETTINGS.SECURITY.SECTION_TITLE' | translate }}</h2>
       </div>
 
       <form [formGroup]="passwordForm">
         <div class="fields-grid">
 
           <div class="field-group">
-            <label class="field-label">Contraseña Actual</label>
+            <label class="field-label">{{ 'SETTINGS.SECURITY.CURRENT_PASSWORD_LABEL' | translate }}</label>
 
             <div class="field-input-wrap">
               <input [type]="hidePassword ? 'password' : 'text'" formControlName="currentPassword" class="field-input"
@@ -375,7 +389,7 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Nueva Contraseña</label>
+            <label class="field-label">{{ 'SETTINGS.SECURITY.NEW_PASSWORD_LABEL' | translate }}</label>
 
             <div class="field-input-wrap">
               <input [type]="hidePassword ? 'password' : 'text'" formControlName="newPassword" class="field-input"
@@ -388,7 +402,7 @@
           </div>
 
           <div class="field-group">
-            <label class="field-label">Confirmar Nueva Contraseña</label>
+            <label class="field-label">{{ 'SETTINGS.SECURITY.CONFIRM_PASSWORD_LABEL' | translate }}</label>
 
             <div class="field-input-wrap">
               <input [type]="hidePassword ? 'password' : 'text'" formControlName="confirmPassword" class="field-input"
@@ -401,7 +415,7 @@
 
             @if (passwordForm.get('confirmPassword')?.hasError('passwordMismatch')) {
             <span class="field-error">
-              Las contraseñas no coinciden
+              {{ 'SETTINGS.SECURITY.VALIDATION.PASSWORDS_MISMATCH' | translate }}
             </span>
             }
           </div>
@@ -412,13 +426,12 @@
         <div class="card-footer">
           <p class="security-note">
             <mat-icon class="note-icon">info</mat-icon>
-            Toda la información se cifra mediante protocolos de grado institucional AES-256 antes de guardarse en
-            nuestros servidores.
+            {{ 'SETTINGS.SECURITY.SECURITY_NOTE' | translate }}
           </p>
 
           <div class="action-buttons">
             <button class="btn btn-secondary" type="button" [disabled]="changingPassword" (click)="onChangePassword()">
-              {{ changingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
+              {{ changingPassword ? ('SETTINGS.SECURITY.CHANGING_BUTTON' | translate) : ('SETTINGS.SECURITY.CHANGE_BUTTON' | translate) }}
             </button>
           </div>
         </div>
@@ -430,22 +443,18 @@
     <section class="bento-card span-full danger-zone">
       <div class="card-header">
         <mat-icon class="card-icon danger-icon">warning</mat-icon>
-        <h2 class="card-title danger-title">Zona peligrosa</h2>
+        <h2 class="card-title danger-title">{{ 'SETTINGS.DANGER_ZONE.SECTION_TITLE' | translate }}</h2>
       </div>
 
       <div class="danger-content">
         <div class="danger-copy">
-          <h3>Eliminar cuenta</h3>
-          <p>
-            Esta acción eliminará tu usuario, portfolio, operaciones, favoritos, alertas, notificaciones y
-            configuración.
-            No se puede deshacer.
-          </p>
+          <h3>{{ 'SETTINGS.DANGER_ZONE.DELETE_TITLE' | translate }}</h3>
+          <p>{{ 'SETTINGS.DANGER_ZONE.DELETE_DESC' | translate }}</p>
         </div>
 
         <button class="btn-delete-account" type="button" [disabled]="deletingAccount" (click)="confirmDeleteAccount()">
           <mat-icon>delete_forever</mat-icon>
-          {{ deletingAccount ? 'Eliminando...' : 'Eliminar Cuenta' }}
+          {{ deletingAccount ? ('SETTINGS.DANGER_ZONE.DELETING_BUTTON' | translate) : ('SETTINGS.DANGER_ZONE.DELETE_BUTTON' | translate) }}
         </button>
       </div>
     </section>

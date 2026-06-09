@@ -3,8 +3,8 @@
   <!-- HEADER -->
   <div class="dashboard-header">
     <div class="dashboard-title-block">
-      <h1 class="dashboard-title">Dashboard</h1>
-      <p class="dashboard-subtitle">Resumen general de tu portfolio, rendimiento y actividad reciente.</p>
+      <h1 class="dashboard-title">{{ 'DASHBOARD.TITLE' | translate }}</h1>
+      <p class="dashboard-subtitle">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="header-stats">
@@ -25,12 +25,12 @@
             <div class="skeleton skeleton-metric-value"></div>
           }
 
-          <div class="stat-label">Valor Total</div>
+          <div class="stat-label">{{ 'DASHBOARD.TOTAL_VALUE' | translate }}</div>
         </div>
 
         <app-info-tooltip
           class="stat-help"
-          text="El valor total es la suma de todo lo que tenés invertido en este momento, calculado al precio actual de cada activo."
+          [text]="'DASHBOARD.TOOLTIP_TOTAL_VALUE' | translate"
         />
       </div>
 
@@ -50,12 +50,12 @@
             <div class="skeleton skeleton-metric-value"></div>
           }
 
-          <div class="stat-label">Activos</div>
+          <div class="stat-label">{{ 'DASHBOARD.ACTIVE_ASSETS' | translate }}</div>
         </div>
 
         <app-info-tooltip
           class="stat-help"
-          text="Indica cuántos activos distintos tenés en tu portfolio ahora mismo. Un activo puede ser una acción, un ETF u otro instrumento de inversión."
+          [text]="'DASHBOARD.TOOLTIP_ACTIVE_ASSETS' | translate"
         />
       </div>
 
@@ -78,12 +78,12 @@
             <div class="skeleton skeleton-metric-value"></div>
           }
 
-          <div class="stat-label">Profit</div>
+          <div class="stat-label">{{ 'DASHBOARD.PROFIT_LOSS' | translate }}</div>
         </div>
 
         <app-info-tooltip
           class="stat-help"
-          text="Muestra cuánto ganaste o perdiste hoy con tus inversiones simuladas. Si el número es positivo, tus activos subieron de valor. Si es negativo, bajaron."
+          [text]="'DASHBOARD.TOOLTIP_TODAY_PROFIT' | translate"
         />
       </div>
 
@@ -103,12 +103,12 @@
             <div class="skeleton skeleton-metric-value"></div>
           }
 
-          <div class="stat-label">Alertas Activas</div>
+          <div class="stat-label">{{ 'DASHBOARD.ACTIVE_ALERTS' | translate }}</div>
         </div>
 
         <app-info-tooltip
           class="stat-help"
-          text="Son las alertas que configuraste y están esperando que se cumpla una condición, como que una acción suba o baje a cierto precio."
+          [text]="'DASHBOARD.TOOLTIP_ACTIVE_ALERTS' | translate"
         />
       </div>
 
@@ -122,9 +122,9 @@
 
       <div class="chart-title-section">
         <div class="chart-title-row">
-          <h2 class="chart-title">Portfolio vs S&P500 vs NASDAQ</h2>
+          <h2 class="chart-title">{{ 'DASHBOARD.CHART_COMPARE' | translate }}</h2>
           <app-info-tooltip
-            text="Este gráfico compara cómo creció tu portfolio frente a dos índices del mercado real. Te ayuda a ver si tus decisiones simuladas son mejores o peores que seguir el mercado en general."
+            [text]="'DASHBOARD.TOOLTIP_CHART_COMPARE' | translate"
           />
         </div>
 
@@ -138,7 +138,7 @@
           </span>
 
           <span class="period">
-            {{ performanceChart?.variationText || 'últimos 30 días' }}
+            {{ performanceChart?.variationText || ('DASHBOARD.PERIOD_1M' | translate) }}
           </span>
         </div>
       </div>
@@ -146,7 +146,7 @@
       <div class="chart-controls">
 
         <div class="time-selector-wrap">
-          <app-info-tooltip text="Elegí qué período de tiempo querés ver en el gráfico: 1W = última semana, 1M = último mes, 3M = últimos 3 meses, 1Y = último año. Períodos más largos muestran la tendencia general; períodos cortos muestran movimientos recientes." />
+          <app-info-tooltip [text]="'DASHBOARD.TOOLTIP_TIME_PERIOD' | translate" />
           <div class="time-selector">
             <button class="time-btn" [class.active]="selectedPeriod === '1W'" (click)="selectedPeriod = '1W'; onPeriodChange()">1W</button>
             <button class="time-btn" [class.active]="selectedPeriod === '1M'" (click)="selectedPeriod = '1M'; onPeriodChange()">1M</button>
@@ -156,7 +156,7 @@
         </div>
 
         <div class="chart-type-wrap">
-          <app-info-tooltip text="Cambiá la forma de ver el gráfico. La línea muestra la evolución continua del precio; las barras permiten comparar valores entre fechas específicas." />
+          <app-info-tooltip [text]="'DASHBOARD.TOOLTIP_CHART_TYPE' | translate" />
           <div class="chart-type-selector">
             <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="selectedChartType = 'line'; onChartTypeChange()">
               <mat-icon>show_chart</mat-icon>
@@ -190,10 +190,8 @@
     @if (!loadingPerformanceChart && !hasEnoughChartData) {
       <div class="chart-empty">
         <div class="chart-empty-icon"><mat-icon>show_chart</mat-icon></div>
-        <div class="chart-empty-title">No hay suficientes datos históricos</div>
-        <div class="chart-empty-text">
-          Todavía no existen suficientes snapshots del portfolio para mostrar la evolución de este período.
-        </div>
+        <div class="chart-empty-title">{{ 'DASHBOARD.NO_CHART_DATA' | translate }}</div>
+        <div class="chart-empty-text">{{ 'DASHBOARD.NO_CHART_DATA_TEXT' | translate }}</div>
       </div>
     }
 
@@ -206,9 +204,9 @@
     <div class="dashboard-card">
 
       <div class="card-header">
-        <h3>Distribución del Portfolio</h3>
+        <h3>{{ 'DASHBOARD.PORTFOLIO_DISTRIBUTION' | translate }}</h3>
         <app-info-tooltip
-          text="Muestra cómo están repartidas tus inversiones entre diferentes sectores, como tecnología, energía o finanzas. Una buena distribución ayuda a reducir el riesgo."
+          [text]="'DASHBOARD.TOOLTIP_DISTRIBUTION' | translate"
         />
       </div>
 
@@ -234,10 +232,8 @@
           } @empty {
             <div class="card-empty">
               <div class="card-empty-icon"><mat-icon>bar_chart</mat-icon></div>
-              <div class="card-empty-title">No hay distribución disponible</div>
-              <div class="card-empty-text">
-                Cuando tengas activos en tu portfolio, se mostrará la distribución por sector.
-              </div>
+              <div class="card-empty-title">{{ 'DASHBOARD.DISTRIBUTION_EMPTY_TITLE' | translate }}</div>
+              <div class="card-empty-text">{{ 'DASHBOARD.DISTRIBUTION_EMPTY_TEXT' | translate }}</div>
             </div>
           }
         </div>
@@ -249,9 +245,9 @@
     <div class="dashboard-card">
 
       <div class="card-header">
-        <h3>Notificaciones Recientes</h3>
+        <h3>{{ 'DASHBOARD.NOTIFICATIONS_HEADER' | translate }}</h3>
         <app-info-tooltip
-          text="Acá aparecen los avisos más recientes generados por tus alertas. Por ejemplo, cuando una acción llegó al precio que vos configuraste."
+          [text]="'DASHBOARD.TOOLTIP_NOTIFICATIONS' | translate"
         />
       </div>
 
@@ -280,8 +276,8 @@
           } @empty {
             <div class="card-empty">
               <div class="card-empty-icon"><mat-icon>notifications_off</mat-icon></div>
-              <div class="card-empty-title">No hay notificaciones recientes</div>
-              <div class="card-empty-text">Cuando una alerta se dispare, aparecerá acá.</div>
+              <div class="card-empty-title">{{ 'DASHBOARD.NO_NOTIFICATIONS' | translate }}</div>
+              <div class="card-empty-text">{{ 'DASHBOARD.NOTIFICATIONS_EMPTY_TEXT' | translate }}</div>
             </div>
           }
         </div>
@@ -293,9 +289,9 @@
     <div class="dashboard-card">
 
       <div class="card-header">
-        <h3>Últimas Operaciones</h3>
+        <h3>{{ 'DASHBOARD.TRANSACTIONS_HEADER' | translate }}</h3>
         <app-info-tooltip
-          text="Son las últimas compras y ventas simuladas que realizaste. Te permite revisar tu historial de actividad reciente en la plataforma."
+          [text]="'DASHBOARD.TOOLTIP_TRANSACTIONS' | translate"
         />
       </div>
 
@@ -310,9 +306,9 @@
           <table class="operations-table">
             <thead>
               <tr>
-                <th>Activo</th>
-                <th>Tipo</th>
-                <th>Precio</th>
+                <th>{{ 'DASHBOARD.ASSET' | translate }}</th>
+                <th>{{ 'COMMON.TYPE' | translate }}</th>
+                <th>{{ 'COMMON.PRICE' | translate }}</th>
               </tr>
             </thead>
 
@@ -335,8 +331,8 @@
         } @else {
           <div class="card-empty">
             <div class="card-empty-icon"><mat-icon>inbox</mat-icon></div>
-            <div class="card-empty-title">No hay operaciones recientes</div>
-            <div class="card-empty-text">Cuando compres o vendas activos, se mostrarán acá.</div>
+            <div class="card-empty-title">{{ 'DASHBOARD.NO_TRANSACTIONS' | translate }}</div>
+            <div class="card-empty-text">{{ 'DASHBOARD.TRANSACTIONS_EMPTY_TEXT' | translate }}</div>
           </div>
         }
       }

@@ -9,10 +9,13 @@ namespace InvestLab.Business.Interfaces.Api
     {
         public bool Success { get; set; }
         public string? ErrorMessage { get; set; }
+        public string? ErrorCode { get; set; }
         public UserTempCredential? Credential { get; set; }
 
-        public static VerificationCodeResult Fail(string message) => new() { Success = false, ErrorMessage = message };
-        public static VerificationCodeResult Ok(UserTempCredential credential) => new() { Success = true, Credential = credential };
+        public static VerificationCodeResult Fail(string message, string? code = null) =>
+            new() { Success = false, ErrorMessage = message, ErrorCode = code };
+        public static VerificationCodeResult Ok(UserTempCredential credential) =>
+            new() { Success = true, Credential = credential };
     }
 
     /// <summary>

@@ -4,18 +4,18 @@
     <!-- ─── Header ─────────────────────────────────────────────────────────── -->
     <div class="section-header">
       <div class="title-container">
-        <h2>Portfolio</h2>
-        <p class="page-subtitle">Seguí el rendimiento de tus inversiones, tenencias y operaciones realizadas.</p>
+        <h2>{{ 'PORTFOLIO.TITLE' | translate }}</h2>
+        <p class="page-subtitle">{{ 'PORTFOLIO.SUBTITLE' | translate }}</p>
       </div>
 
       <div class="header-actions">
         <button class="reset-portfolio-btn" type="button" (click)="confirmResetSimulation()">
           <mat-icon>restart_alt</mat-icon>
-          Reiniciar Portfolio
+          {{ 'PORTFOLIO.RESET_BUTTON' | translate }}
         </button>
 
         <button class="buy-action-btn" type="button" (click)="openBuyModal()">
-          <span>+</span> Nueva Operación
+          <span>+</span> {{ 'PORTFOLIO.NEW_OPERATION' | translate }}
         </button>
       </div>
     </div>
@@ -25,9 +25,9 @@
 
       <div class="summary-card">
         <div class="summary-card-header">
-          <h3>Saldo Actual</h3>
+          <h3>{{ 'PORTFOLIO.BALANCE_CARDS.CURRENT_BALANCE' | translate }}</h3>
           <app-info-tooltip
-            text="Es el dinero disponible en tu cuenta para operar, sin contar el valor de tus inversiones abiertas."
+            [text]="'PORTFOLIO.TOOLTIP_AVAILABLE_BALANCE' | translate"
           />
         </div>
         @if (!loadingSummary) {
@@ -39,9 +39,9 @@
 
       <div class="summary-card">
         <div class="summary-card-header">
-          <h3>Ganancia / Pérdida</h3>
+          <h3>{{ 'PORTFOLIO.BALANCE_CARDS.PROFIT_LOSS' | translate }}</h3>
           <app-info-tooltip
-            text="Es el resultado total desde que empezaste la simulación (saldo total menos saldo inicial). Se compone de ganancia 'realizada' (la que ya quedó fija al vender) y 'no realizada' (la valorización de tus inversiones abiertas al precio de hoy). Por eso vender al precio de mercado no cambia este total: solo convierte una ganancia no realizada en realizada."
+            [text]="'PORTFOLIO.TOOLTIP_PROFIT_LOSS' | translate"
           />
         </div>
         @if (!loadingSummary) {
@@ -54,11 +54,11 @@
           <p class="amount-breakdown">
             <span [class.positive]="portfolioSummary.realizedProfitLoss > 0"
               [class.negative]="portfolioSummary.realizedProfitLoss < 0">
-              Realizada: {{ portfolioSummary.realizedProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.realizedProfitLoss.toFixed(2) }}
+              {{ 'PORTFOLIO.BALANCE_CARDS.REALIZED_PL' | translate }}: {{ portfolioSummary.realizedProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.realizedProfitLoss.toFixed(2) }}
             </span>
             <span [class.positive]="portfolioSummary.unrealizedProfitLoss > 0"
               [class.negative]="portfolioSummary.unrealizedProfitLoss < 0">
-              No realizada: {{ portfolioSummary.unrealizedProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.unrealizedProfitLoss.toFixed(2) }}
+              {{ 'PORTFOLIO.BALANCE_CARDS.UNREALIZED_PL' | translate }}: {{ portfolioSummary.unrealizedProfitLoss > 0 ? '+' : '' }}${{ portfolioSummary.unrealizedProfitLoss.toFixed(2) }}
             </span>
           </p>
         } @else {
@@ -68,9 +68,9 @@
 
       <div class="summary-card">
         <div class="summary-card-header">
-          <h3>Saldo Total</h3>
+          <h3>{{ 'PORTFOLIO.BALANCE_CARDS.TOTAL_BALANCE' | translate }}</h3>
           <app-info-tooltip
-            text="Es el dinero disponible en tu cuenta más el valor actual de todas tus inversiones abiertas, calculado al precio de mercado de hoy."
+            [text]="'PORTFOLIO.TOOLTIP_TOTAL_BALANCE' | translate"
           />
         </div>
         @if (!loadingSummary) {
@@ -85,9 +85,9 @@
 
       <div class="summary-card usage">
         <div class="summary-card-header">
-          <h3>Operaciones del día</h3>
+          <h3>{{ 'PORTFOLIO.BALANCE_CARDS.OPERATIONS_TODAY' | translate }}</h3>
           <app-info-tooltip
-            text="Indica cuántas operaciones (compras o ventas) realizaste hoy sobre el máximo permitido. Existe un límite diario para simular condiciones reales del mercado."
+            [text]="'PORTFOLIO.TOOLTIP_DAILY_OPS' | translate"
           />
         </div>
         @if (!loadingSummary) {
@@ -117,9 +117,9 @@
       <!-- Pie -->
       <div class="chart-container">
         <div class="summary-card-header" style="margin-bottom: 20px;">
-          <h3 style="margin: 0;">Distribución</h3>
+          <h3 style="margin: 0;">{{ 'PORTFOLIO.DISTRIBUTION' | translate }}</h3>
           <app-info-tooltip
-            text="Muestra cómo está repartido tu dinero entre los distintos activos que tenés. Diversificar entre varios activos ayuda a reducir el riesgo."
+            [text]="'PORTFOLIO.TOOLTIP_DISTRIBUTION' | translate"
           />
         </div>
 
@@ -133,9 +133,9 @@
         } @else if (pieChartData.length === 0) {
           <div class="empty-state">
             <div class="empty-icon">◎</div>
-            <p class="empty-title">Sin activos en cartera</p>
-            <p class="empty-sub">Realizá tu primera compra para ver la distribución.</p>
-            <button class="empty-cta" type="button" (click)="openBuyModal()">+ Nueva Operación</button>
+            <p class="empty-title">{{ 'PORTFOLIO.EMPTY_PIE' | translate }}</p>
+            <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_PIE_TEXT' | translate }}</p>
+            <button class="empty-cta" type="button" (click)="openBuyModal()">+ {{ 'PORTFOLIO.NEW_OPERATION' | translate }}</button>
           </div>
         } @else {
           <div class="distribution-wrapper">
@@ -143,7 +143,7 @@
               <canvas id="pieChart"></canvas>
             </div>
             <div class="top-assets-section">
-              <h3>Top Activos</h3>
+              <h3>{{ 'PORTFOLIO.TOP_ASSETS' | translate }}</h3>
               <div class="top-assets-list">
                 @for (asset of topAssets; track asset.ticker; let i = $index) {
                   <div class="top-asset-item">
@@ -163,13 +163,13 @@
         <div class="chart-header">
           <div>
             <div class="summary-card-header" style="margin-bottom: 4px;">
-              <h3 style="margin: 0;">Evolución</h3>
+              <h3 style="margin: 0;">{{ 'PORTFOLIO.PERFORMANCE' | translate }}</h3>
               <app-info-tooltip
-                text="Muestra cómo fue cambiando el valor total de tu portfolio a lo largo del tiempo. Cada punto representa el valor al cierre del mercado en esa fecha."
+                [text]="'PORTFOLIO.TOOLTIP_EVOLUTION_CHART' | translate"
               />
             </div>
             @if (!loadingSummary) {
-              <p class="chart-close-note">Precios de cierre al {{ portfolioSummary.lastMarketCloseDate | date:'dd/MM/yyyy' }}</p>
+              <p class="chart-close-note">{{ 'PORTFOLIO.CLOSE_PRICES_NOTE' | translate }} {{ portfolioSummary.lastMarketCloseDate | date:'dd/MM/yyyy' }}</p>
             }
           </div>
           <div class="period-selector">
@@ -191,8 +191,8 @@
         } @else if (lineChartData.length === 0) {
           <div class="empty-state line-empty">
             <div class="empty-icon">╌</div>
-            <p class="empty-title">Sin historial de evolución</p>
-            <p class="empty-sub">Los datos aparecerán una vez que haya operaciones registradas.</p>
+            <p class="empty-title">{{ 'PORTFOLIO.EMPTY_LINE' | translate }}</p>
+            <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_LINE_TEXT' | translate }}</p>
           </div>
         } @else {
           <canvas id="lineChart" width="400" height="200"></canvas>
@@ -200,7 +200,7 @@
 
         <p class="chart-market-hours-note">
           <mat-icon class="chart-market-hours-icon">info_outline</mat-icon>
-          Las operaciones realizadas después del cierre del mercado (16:00 NY) se reflejarán en el próximo día bursátil.
+          {{ 'PORTFOLIO.MARKET_HOURS_NOTE' | translate }}
         </p>
       </div>
 
@@ -211,18 +211,18 @@
 
       <div class="table-header">
         <div class="summary-card-header" style="gap: 8px;">
-          <h2>Tenencias</h2>
+          <h2>{{ 'PORTFOLIO.HOLDINGS' | translate }}</h2>
           <app-info-tooltip
-            text="Son los activos que tenés actualmente en tu portfolio. Para cada uno podés ver cuánto compraste, a qué precio y cómo evolucionó desde entonces."
+            [text]="'PORTFOLIO.TOOLTIP_HOLDINGS' | translate"
           />
         </div>
         <div class="table-filter-row">
           <div class="search-wrap">
             <mat-icon class="search-icon">search</mat-icon>
-            <input type="text" class="search-input" placeholder="Buscar ticker..." [(ngModel)]="symbolFilter"
+            <input type="text" class="search-input" [placeholder]="'PORTFOLIO.SEARCH_TICKER' | translate" [(ngModel)]="symbolFilter"
               (ngModelChange)="onPositionFiltersChange()">
           </div>
-          <button class="btn-export" [disabled]="downloadingHoldings" (click)="downloadHoldings()" title="Descargar Excel">
+          <button class="btn-export" [disabled]="downloadingHoldings" (click)="downloadHoldings()" [title]="'PORTFOLIO.EXPORT.EXPORT_HOLDINGS' | translate">
             <mat-icon>download</mat-icon>
           </button>
         </div>
@@ -242,50 +242,50 @@
             <tr>
               <th style="width:11%" class="th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSortPositions('symbol')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>Ticker</span>
-                  <app-info-tooltip text="El símbolo único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
+                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>{{ 'PORTFOLIO.SYMBOL' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_SYMBOL' | translate" />
                 </div>
               </th>
               <th style="width:13%" class="th-sortable" [class.sort-active]="sortField === 'sector'" (click)="onSortPositions('sector')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('sector') }}</span><span>Sector</span>
-                  <app-info-tooltip text="El sector de la economía al que pertenece la empresa, como tecnología, energía o finanzas." />
+                  <span class="sort-icon">{{ getSortIcon('sector') }}</span><span>{{ 'PORTFOLIO.SECTOR' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_SECTOR' | translate" />
                 </div>
               </th>
               <th style="width:9%" class="th-sortable" [class.sort-active]="sortField === 'quantity'" (click)="onSortPositions('quantity')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('quantity') }}</span><span>Cantidad</span>
-                  <app-info-tooltip text="El número de acciones que tenés de este activo en tu portfolio simulado." />
+                  <span class="sort-icon">{{ getSortIcon('quantity') }}</span><span>{{ 'PORTFOLIO.QUANTITY' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_QUANTITY' | translate" />
                 </div>
               </th>
               <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'averagePrice'" (click)="onSortPositions('averagePrice')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('averagePrice') }}</span><span>Precio Compra</span>
-                  <app-info-tooltip text="El precio promedio al que compraste las acciones de este activo." />
+                  <span class="sort-icon">{{ getSortIcon('averagePrice') }}</span><span>{{ 'PORTFOLIO.AVG_PRICE' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_AVG_PRICE' | translate" />
                 </div>
               </th>
               <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'currentPrice'" (click)="onSortPositions('currentPrice')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('currentPrice') }}</span><span>Precio Actual</span>
-                  <app-info-tooltip text="El precio de mercado actual de este activo, actualizado en tiempo real." />
+                  <span class="sort-icon">{{ getSortIcon('currentPrice') }}</span><span>{{ 'PORTFOLIO.CURRENT_PRICE' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_CURRENT_PRICE' | translate" />
                 </div>
               </th>
               <th style="width:12%" class="th-sortable" [class.sort-active]="sortField === 'variationPercent'" (click)="onSortPositions('variationPercent')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>Variación</span>
-                  <app-info-tooltip text="El porcentaje de cambio entre el precio de compra y el precio actual. Si es positivo, el activo subió de valor desde que lo compraste." />
+                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>{{ 'PORTFOLIO.VARIATION' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_CHANGE_PCT' | translate" />
                 </div>
               </th>
               <th style="width:18%" class="th-sortable" [class.sort-active]="sortField === 'profitLoss'" (click)="onSortPositions('profitLoss')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('profitLoss') }}</span><span>Ganancia/Pérdida</span>
-                  <app-info-tooltip text="La diferencia en dinero entre lo que pagaste y lo que vale ahora. Un número positivo es ganancia, negativo es pérdida." />
+                  <span class="sort-icon">{{ getSortIcon('profitLoss') }}</span><span>{{ 'PORTFOLIO.PROFIT_LOSS' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_PROFIT' | translate" />
                 </div>
               </th>
               <th style="width:9%">
                 <div class="th-with-help">
-                  <span>Acciones</span>
-                  <app-info-tooltip text="Opciones disponibles para operar con este activo. Podés venderlo directamente desde acá." />
+                  <span>{{ 'PORTFOLIO.ACTIONS_HEADER' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_ACTIONS' | translate" />
                 </div>
               </th>
             </tr>
@@ -296,9 +296,9 @@
                 <td class="td-empty" colspan="8">
                   <div class="empty-state">
                     <div class="empty-icon">▭</div>
-                    <p class="empty-title">Sin posiciones abiertas</p>
-                    <p class="empty-sub">Comprá un activo para comenzar a construir tu cartera.</p>
-                    <button class="empty-cta" type="button" (click)="openBuyModal()">+ Nueva Operación</button>
+                    <p class="empty-title">{{ 'PORTFOLIO.EMPTY_HOLDINGS' | translate }}</p>
+                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_HOLDINGS_TEXT' | translate }}</p>
+                    <button class="empty-cta" type="button" (click)="openBuyModal()">+ {{ 'PORTFOLIO.NEW_OPERATION' | translate }}</button>
                   </div>
                 </td>
               </tr>
@@ -307,8 +307,8 @@
                 <td class="td-empty" colspan="8">
                   <div class="empty-state">
                     <div class="empty-icon">⌕</div>
-                    <p class="empty-title">Sin resultados</p>
-                    <p class="empty-sub">No hay tenencias que coincidan con los filtros aplicados.</p>
+                    <p class="empty-title">{{ 'PORTFOLIO.SIN_RESULTADOS' | translate }}</p>
+                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_FILTER_TEXT' | translate }}</p>
                   </div>
                 </td>
               </tr>
@@ -329,7 +329,7 @@
                     {{ item.profitLoss | currency:'USD' }}
                   </td>
                   <td>
-                    <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)" title="Vender">
+                    <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)" [title]="'PORTFOLIO.SELL_BUTTON' | translate">
                       <mat-icon>sell</mat-icon>
                     </button>
                   </td>
@@ -349,16 +349,16 @@
             <div class="pagination-info">
               <select class="page-size-select" [(ngModel)]="positionsPageSize"
                 (ngModelChange)="onPositionsPageSizeChange()">
-                <option [value]="5">5 por página</option>
-                <option [value]="10">10 por página</option>
-                <option [value]="20">20 por página</option>
+                <option [value]="5">5 {{ 'PORTFOLIO.PER_PAGE' | translate }}</option>
+                <option [value]="10">10 {{ 'PORTFOLIO.PER_PAGE' | translate }}</option>
+                <option [value]="20">20 {{ 'PORTFOLIO.PER_PAGE' | translate }}</option>
               </select>
-              <span>Página {{ positionsPage }} de {{ totalPositionsPages }}</span>
-              <span>({{ totalPositions }} tenencias)</span>
+              <span>{{ 'COMMON.PAGINATION_OF' | translate | titlecase }} {{ positionsPage }} / {{ totalPositionsPages }}</span>
+              <span>({{ totalPositions }} {{ 'PORTFOLIO.HOLDINGS' | translate | lowercase }})</span>
             </div>
             <div class="pagination-controls">
               <button class="pagination-btn" type="button" [disabled]="positionsPage === 1"
-                (click)="previousPositionsPage()">← Anterior</button>
+                (click)="previousPositionsPage()">{{ 'PORTFOLIO.PREV_PAGE' | translate }}</button>
               <div class="page-numbers">
                 @for (page of getPositionPageNumbers(); track page) {
                   <button class="page-btn" type="button" [class.active]="page === positionsPage"
@@ -366,7 +366,7 @@
                 }
               </div>
               <button class="pagination-btn" type="button" [disabled]="positionsPage === totalPositionsPages"
-                (click)="nextPositionsPage()">Siguiente →</button>
+                (click)="nextPositionsPage()">{{ 'PORTFOLIO.NEXT_PAGE' | translate }}</button>
             </div>
           </div>
         }
@@ -379,23 +379,23 @@
 
       <div class="table-header">
         <div class="summary-card-header" style="gap: 8px;">
-          <h2>Operaciones Realizadas</h2>
+          <h2>{{ 'PORTFOLIO.OPERATIONS_TITLE' | translate }}</h2>
           <app-info-tooltip
-            text="El historial completo de todas las compras y ventas simuladas que realizaste en la plataforma."
+            [text]="'PORTFOLIO.TOOLTIP_OPERATIONS' | translate"
           />
         </div>
         <div class="table-filter-row">
           <div class="search-wrap">
             <mat-icon class="search-icon">search</mat-icon>
-            <input type="text" class="search-input" placeholder="Buscar ticker..." [(ngModel)]="operationSymbolFilter"
+            <input type="text" class="search-input" [placeholder]="'PORTFOLIO.SEARCH_TICKER' | translate" [(ngModel)]="operationSymbolFilter"
               (input)="onOperationFiltersChange()">
           </div>
           <button class="btn-filter" (click)="showOperationsFilters = !showOperationsFilters">
             <mat-icon>tune</mat-icon>
-            Filtrar
+            {{ 'COMMON.FILTER' | translate }}
             <mat-icon class="chevron" [class.open]="showOperationsFilters">expand_more</mat-icon>
           </button>
-          <button class="btn-export" [disabled]="downloadingTransactions" (click)="downloadTransactions()" title="Descargar Excel">
+          <button class="btn-export" [disabled]="downloadingTransactions" (click)="downloadTransactions()" [title]="'PORTFOLIO.EXPORT.EXPORT_TRANSACTIONS' | translate">
             <mat-icon>download</mat-icon>
           </button>
         </div>
@@ -404,19 +404,19 @@
       @if (showOperationsFilters) {
         <div class="advanced-filters">
           <div class="filter-group">
-            <label class="filter-label">Tipo</label>
+            <label class="filter-label">{{ 'PORTFOLIO.FILTER_TYPE' | translate }}</label>
             <select class="filter-select" [(ngModel)]="operationTypeFilter" (change)="onOperationFiltersChange()">
-              <option [ngValue]="null">Todas</option>
-              <option [ngValue]="1">Compras</option>
-              <option [ngValue]="2">Ventas</option>
+              <option [ngValue]="null">{{ 'PORTFOLIO.FILTER_ALL_OPS' | translate }}</option>
+              <option [ngValue]="1">{{ 'PORTFOLIO.FILTERS.BUY' | translate }}</option>
+              <option [ngValue]="2">{{ 'PORTFOLIO.FILTERS.SELL' | translate }}</option>
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">Desde</label>
+            <label class="filter-label">{{ 'PORTFOLIO.FILTERS.DATE_FROM' | translate }}</label>
             <input type="date" class="filter-date" [(ngModel)]="operationFromDate" (ngModelChange)="onOperationFiltersChange()">
           </div>
           <div class="filter-group">
-            <label class="filter-label">Hasta</label>
+            <label class="filter-label">{{ 'PORTFOLIO.FILTERS.DATE_TO' | translate }}</label>
             <input type="date" class="filter-date" [(ngModel)]="operationToDate" (ngModelChange)="onOperationFiltersChange()">
           </div>
         </div>
@@ -436,44 +436,44 @@
             <tr>
               <th style="width:18%" class="th-sortable" [class.sort-active]="operationSortField === 'date'" (click)="onSortOperations('date')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('date') }}</span><span>Fecha</span>
-                  <app-info-tooltip text="La fecha y hora exacta en que se realizó la operación de compra o venta." />
+                  <span class="sort-icon">{{ getOperationSortIcon('date') }}</span><span>{{ 'COMMON.DATE' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_DATE' | translate" />
                 </div>
               </th>
               <th style="width:12%" class="th-sortable" [class.sort-active]="operationSortField === 'symbol'" (click)="onSortOperations('symbol')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('symbol') }}</span><span>Ticker</span>
-                  <app-info-tooltip text="El símbolo de la acción operada. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
+                  <span class="sort-icon">{{ getOperationSortIcon('symbol') }}</span><span>{{ 'PORTFOLIO.SYMBOL' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_SYMBOL' | translate" />
                 </div>
               </th>
               <th style="width:13%" class="th-sortable" [class.sort-active]="operationSortField === 'sector'" (click)="onSortOperations('sector')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('sector') }}</span><span>Sector</span>
-                  <app-info-tooltip text="El sector de la economía al que pertenece la empresa, como tecnología, energía o finanzas." />
+                  <span class="sort-icon">{{ getOperationSortIcon('sector') }}</span><span>{{ 'PORTFOLIO.SECTOR' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_SECTOR' | translate" />
                 </div>
               </th>
               <th style="width:11%">
                 <div class="th-with-help">
-                  <span>Tipo</span>
-                  <app-info-tooltip text="Indica si fue una compra (adquiriste acciones) o una venta (las vendiste)." />
+                  <span>{{ 'COMMON.TYPE' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_TYPE' | translate" />
                 </div>
               </th>
               <th style="width:10%" class="th-sortable" [class.sort-active]="operationSortField === 'quantity'" (click)="onSortOperations('quantity')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('quantity') }}</span><span>Cantidad</span>
-                  <app-info-tooltip text="El número de acciones que compraste o vendiste en esa operación." />
+                  <span class="sort-icon">{{ getOperationSortIcon('quantity') }}</span><span>{{ 'PORTFOLIO.QUANTITY' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_QUANTITY' | translate" />
                 </div>
               </th>
               <th style="width:16%" class="th-sortable" [class.sort-active]="operationSortField === 'price'" (click)="onSortOperations('price')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('price') }}</span><span>Precio</span>
-                  <app-info-tooltip text="El precio por acción al momento de realizar la operación." />
+                  <span class="sort-icon">{{ getOperationSortIcon('price') }}</span><span>{{ 'COMMON.PRICE' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_PRICE' | translate" />
                 </div>
               </th>
               <th style="width:20%" class="th-sortable" [class.sort-active]="operationSortField === 'total'" (click)="onSortOperations('total')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('total') }}</span><span>Total</span>
-                  <app-info-tooltip text="El monto total de la operación: precio de la acción multiplicado por la cantidad comprada o vendida." />
+                  <span class="sort-icon">{{ getOperationSortIcon('total') }}</span><span>{{ 'COMMON.TOTAL' | translate }}</span>
+                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_TOTAL' | translate" />
                 </div>
               </th>
             </tr>
@@ -484,8 +484,8 @@
                 <td class="td-empty" colspan="7">
                   <div class="empty-state">
                     <div class="empty-icon">≡</div>
-                    <p class="empty-title">Sin operaciones registradas</p>
-                    <p class="empty-sub">Tus compras y ventas aparecerán acá cuando las realices.</p>
+                    <p class="empty-title">{{ 'PORTFOLIO.EMPTY_OPERATIONS' | translate }}</p>
+                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_OPERATIONS_TEXT' | translate }}</p>
                   </div>
                 </td>
               </tr>
@@ -494,8 +494,8 @@
                 <td class="td-empty" colspan="7">
                   <div class="empty-state">
                     <div class="empty-icon">⌕</div>
-                    <p class="empty-title">Sin resultados</p>
-                    <p class="empty-sub">No hay operaciones que coincidan con los filtros aplicados.</p>
+                    <p class="empty-title">{{ 'PORTFOLIO.SIN_RESULTADOS' | translate }}</p>
+                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_FILTER_OPS_TEXT' | translate }}</p>
                   </div>
                 </td>
               </tr>
@@ -507,7 +507,7 @@
                   <td>{{ operation.sector || '—' }}</td>
                   <td>
                     <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
-                      {{ operation.type === 1 ? 'Compra' : 'Venta' }}
+                      {{ operation.type === 1 ? ('PORTFOLIO.BUY_BADGE' | translate) : ('PORTFOLIO.SELL_BADGE' | translate) }}
                     </span>
                   </td>
                   <td>{{ operation.quantity }}</td>
@@ -529,16 +529,16 @@
             <div class="pagination-info">
               <select class="page-size-select" [(ngModel)]="operationsPageSize"
                 (ngModelChange)="onOperationsPageSizeChange()">
-                <option [value]="5">5 por página</option>
-                <option [value]="10">10 por página</option>
-                <option [value]="20">20 por página</option>
+                <option [value]="5">5 {{ 'PORTFOLIO.PER_PAGE' | translate }}</option>
+                <option [value]="10">10 {{ 'PORTFOLIO.PER_PAGE' | translate }}</option>
+                <option [value]="20">20 {{ 'PORTFOLIO.PER_PAGE' | translate }}</option>
               </select>
-              <span>Página {{ operationsPage }} de {{ totalOperationsPages }}</span>
-              <span>({{ totalOperations }} operaciones)</span>
+              <span>{{ 'COMMON.PAGINATION_OF' | translate | titlecase }} {{ operationsPage }} / {{ totalOperationsPages }}</span>
+              <span>({{ totalOperations }} {{ 'PORTFOLIO.OPERATIONS_TITLE' | translate | lowercase }})</span>
             </div>
             <div class="pagination-controls">
               <button class="pagination-btn" type="button" [disabled]="operationsPage === 1"
-                (click)="previousOperationsPage()">← Anterior</button>
+                (click)="previousOperationsPage()">{{ 'PORTFOLIO.PREV_PAGE' | translate }}</button>
               <div class="page-numbers">
                 @for (page of getOperationPageNumbers(); track page) {
                   <button class="page-btn" type="button" [class.active]="page === operationsPage"
@@ -546,7 +546,7 @@
                 }
               </div>
               <button class="pagination-btn" type="button" [disabled]="operationsPage === totalOperationsPages"
-                (click)="nextOperationsPage()">Siguiente →</button>
+                (click)="nextOperationsPage()">{{ 'PORTFOLIO.NEXT_PAGE' | translate }}</button>
             </div>
           </div>
         }

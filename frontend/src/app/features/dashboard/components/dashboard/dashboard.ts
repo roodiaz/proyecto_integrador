@@ -1,4 +1,5 @@
 import { Component, OnInit, HostListener, AfterViewInit, OnDestroy, effect } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -14,6 +15,7 @@ import {
 } from '../../models/dashboard.models';
 import Chart from 'chart.js/auto';
 import { ThemeService } from '../../../../core/services/theme.service';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,7 +24,8 @@ import { ThemeService } from '../../../../core/services/theme.service';
     CommonModule,
     FormsModule,
     MaterialModule,
-    InfoTooltipComponent
+    InfoTooltipComponent,
+    TranslateModule
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
@@ -53,7 +56,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private dashboardService: DashboardService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private languageService: LanguageService
   ) {
     effect(() => {
       // Re-renderizar el gráfico cuando cambia el tema
@@ -342,13 +346,13 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMinutes < 1) return 'Recién';
-    if (diffMinutes < 60) return `Hace ${diffMinutes} min`;
-    if (diffHours < 24) return `Hace ${diffHours} h`;
-    if (diffDays === 1) return 'Ayer';
-    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffMinutes < 1) return this.languageService.instant('DASHBOARD.TIME_JUST_NOW');
+    if (diffMinutes < 60) return this.languageService.instant('DASHBOARD.TIME_MINUTES_AGO', { minutes: diffMinutes });
+    if (diffHours < 24) return this.languageService.instant('DASHBOARD.TIME_HOURS_AGO', { hours: diffHours });
+    if (diffDays === 1) return this.languageService.instant('DASHBOARD.TIME_YESTERDAY');
+    if (diffDays < 7) return this.languageService.instant('DASHBOARD.TIME_DAYS_AGO', { days: diffDays });
 
-    return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return date.toLocaleDateString(this.languageService.current === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
   /**

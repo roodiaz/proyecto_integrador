@@ -11,22 +11,12 @@ import { Notification } from '../../../features/alerts/models/notifications.mode
 import { UserSessionService } from '../../../core/services/user-session.service';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
 import { ProfileData } from '../../../features/settings/models/user-profile.model';
+import { TranslateModule } from '@ngx-translate/core';
 
-/**
- * Encabezado superior de la aplicación.
- *
- * Concentra los accesos rápidos a las notificaciones y al perfil del usuario,
- * que antes solo estaban disponibles dentro de cada módulo o de la barra
- * lateral: un ícono de campana con la cantidad de notificaciones sin leer y
- * un menú desplegable con las últimas notificaciones, y un avatar con un menú
- * desplegable que muestra los datos básicos del usuario y accesos a
- * Configuración y Cierre de sesión (reutilizando exactamente la misma lógica
- * que el botón homónimo de la barra lateral).
- */
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, MaterialModule, MatProgressSpinnerModule],
+  imports: [CommonModule, RouterModule, MaterialModule, MatProgressSpinnerModule, TranslateModule],
   templateUrl: './header.html',
   styleUrl: './header.css'
 })

@@ -6,17 +6,15 @@
     <div class="hero-content">
 
       <span class="hero-badge">
-        Plataforma de Simulación Financiera
+        {{ 'AUTH.LOGIN.HERO.BADGE' | translate }}
       </span>
 
       <h1 class="hero-title">
-        Aprendé a invertir <span>sin riesgo.</span>
+        {{ 'AUTH.LOGIN.HERO.TITLE_1' | translate }} <span>{{ 'AUTH.LOGIN.HERO.TITLE_2' | translate }}</span>
       </h1>
 
       <p class="hero-description">
-        Accedé a una experiencia de inversión educativa con datos reales del mercado,
-        alertas inteligentes y herramientas diseñadas para ayudarte a desarrollar tus
-        conocimientos financieros.
+        {{ 'AUTH.LOGIN.HERO.DESCRIPTION' | translate }}
       </p>
 
       <div class="hero-cards">
@@ -24,20 +22,20 @@
         <div class="hero-card">
           <mat-icon>trending_up</mat-icon>
 
-          <h4>Mercado en Tiempo Real</h4>
+          <h4>{{ 'AUTH.LOGIN.HERO.CARD_MARKET_TITLE' | translate }}</h4>
 
           <p>
-            Seguí la evolución de acciones y ETFs utilizando información actualizada.
+            {{ 'AUTH.LOGIN.HERO.CARD_MARKET_DESC' | translate }}
           </p>
         </div>
 
         <div class="hero-card">
           <mat-icon>account_balance_wallet</mat-icon>
 
-          <h4>Capital Virtual</h4>
+          <h4>{{ 'AUTH.LOGIN.HERO.CARD_CAPITAL_TITLE' | translate }}</h4>
 
           <p>
-            Comenzá con USD 10.000 virtuales para practicar estrategias sin riesgo.
+            {{ 'AUTH.LOGIN.HERO.CARD_CAPITAL_DESC' | translate }}
           </p>
         </div>
 
@@ -53,10 +51,10 @@
     <div class="auth-container">
 
       <div class="auth-header">
-        <h2>Bienvenido</h2>
+        <h2>{{ 'AUTH.LOGIN.TITLE' | translate }}</h2>
 
         <p>
-          Ingresa tus credenciales para continuar
+          {{ 'AUTH.LOGIN.SUBTITLE' | translate }}
         </p>
       </div>
 
@@ -64,21 +62,21 @@
 
         <mat-form-field appearance="outline" class="full-width">
 
-          <mat-label>Correo Electrónico</mat-label>
+          <mat-label>{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</mat-label>
 
-          <input matInput type="email" formControlName="email" placeholder="ejemplo@correo.com" />
+          <input matInput type="email" formControlName="email" [placeholder]="'AUTH.LOGIN.EMAIL_PLACEHOLDER' | translate" />
 
           <mat-icon matSuffix>mail</mat-icon>
 
           @if (email?.hasError('required')) {
             <mat-error>
-              El correo electrónico es requerido
+              {{ 'AUTH.LOGIN.VALIDATION.EMAIL_REQUIRED' | translate }}
             </mat-error>
           }
 
           @if (email?.hasError('email')) {
             <mat-error>
-              Correo inválido
+              {{ 'AUTH.LOGIN.VALIDATION.EMAIL_INVALID' | translate }}
             </mat-error>
           }
 
@@ -86,7 +84,7 @@
 
         <mat-form-field appearance="outline" class="full-width">
 
-          <mat-label>Contraseña</mat-label>
+          <mat-label>{{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}</mat-label>
 
           <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
 
@@ -98,13 +96,13 @@
 
           @if (password?.hasError('required')) {
             <mat-error>
-              La contraseña es requerida
+              {{ 'AUTH.LOGIN.VALIDATION.PASSWORD_REQUIRED' | translate }}
             </mat-error>
           }
 
           @if (password?.hasError('minlength')) {
             <mat-error>
-              Mínimo 6 caracteres
+              {{ 'AUTH.LOGIN.VALIDATION.PASSWORD_MIN' | translate }}
             </mat-error>
           }
 
@@ -120,13 +118,13 @@
         <div class="auth-options">
 
           <a routerLink="/recuperar-contrasena" class="forgot-password">
-            ¿Olvidaste tu contraseña?
+            {{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}
           </a>
 
         </div>
 
         <button mat-raised-button type="submit" class="login-button" [disabled]="!loginForm.valid">
-          Iniciar Sesión
+          {{ 'AUTH.LOGIN.SUBMIT' | translate }}
 
           <mat-icon>
             login

@@ -5,14 +5,14 @@
   <div class="notif-page-header">
     <div class="notif-title-block">
       <div class="notif-title-row">
-        <h2 class="notif-title">Centro de Notificaciones</h2>
-        <app-info-tooltip text="Acá aparecen todos los avisos generados cuando una alerta se disparó. Cada notificación indica qué acción superó la condición configurada y a qué precio." />
+        <h2 class="notif-title">{{ 'NOTIFICATIONS.CENTER_TITLE' | translate }}</h2>
+        <app-info-tooltip [text]="'NOTIFICATIONS.TOOLTIP' | translate" />
       </div>
 
       @if (!loadingNotifications) {
         <div class="notif-chips">
-          <span class="chip">{{ totalNotifications }} totales</span>
-          <span class="chip chip-unread">{{ getUnreadHistoryCount() }} sin leer</span>
+          <span class="chip">{{ 'NOTIFICATIONS.TOTAL_CHIP' | translate: { count: totalNotifications } }}</span>
+          <span class="chip chip-unread">{{ 'NOTIFICATIONS.UNREAD_CHIP' | translate: { count: getUnreadHistoryCount() } }}</span>
         </div>
       } @else {
         <div class="notif-chips">
@@ -25,7 +25,7 @@
     @if (!loadingNotifications && getUnreadHistoryCount() > 0) {
       <button class="btn-mark-all" (click)="markAllAsRead()">
         <mat-icon>done_all</mat-icon>
-        Marcar todo como leído
+        {{ 'NOTIFICATIONS.MARK_ALL_READ' | translate }}
       </button>
     }
   </div>
@@ -34,19 +34,18 @@
   <div class="notif-toolbar">
     <div class="search-wrap">
       <mat-icon class="search-icon">search</mat-icon>
-
-      <input type="text" class="search-input" placeholder="Buscar ticker (ej: AAPL)..." [(ngModel)]="notificationSearch" (ngModelChange)="applyNotificationFilter()">
+      <input type="text" class="search-input" [placeholder]="'NOTIFICATIONS.SEARCH_PLACEHOLDER' | translate" [(ngModel)]="notificationSearch" (ngModelChange)="applyNotificationFilter()">
     </div>
 
     <button class="btn-filter" (click)="showNotificationFilters = !showNotificationFilters">
       <mat-icon>tune</mat-icon>
-      Filtrar
+      {{ 'COMMON.FILTER' | translate }}
       <mat-icon class="chevron" [class.open]="showNotificationFilters">expand_more</mat-icon>
     </button>
 
     <button class="btn-clear" (click)="clearNotificationFilters()">
       <mat-icon>close</mat-icon>
-      Limpiar
+      {{ 'COMMON.CLEAR' | translate }}
     </button>
   </div>
 
@@ -54,22 +53,22 @@
   @if (showNotificationFilters) {
     <div class="advanced-filters">
       <div class="filter-group">
-        <label class="filter-label">Estado</label>
+        <label class="filter-label">{{ 'COMMON.STATUS' | translate }}</label>
 
         <select class="filter-select" [(ngModel)]="notificationStatusFilter" (ngModelChange)="applyNotificationFilter()">
-          <option value="">Todas</option>
-          <option value="unread">No leídas</option>
-          <option value="read">Leídas</option>
+          <option value="">{{ 'NOTIFICATIONS.FILTERS.STATUS_ALL' | translate }}</option>
+          <option value="unread">{{ 'NOTIFICATIONS.FILTERS.STATUS_UNREAD' | translate }}</option>
+          <option value="read">{{ 'NOTIFICATIONS.FILTERS.STATUS_READ' | translate }}</option>
         </select>
       </div>
 
       <div class="filter-group">
-        <label class="filter-label">Desde</label>
+        <label class="filter-label">{{ 'ALERTS.FILTERS.DATE_FROM' | translate }}</label>
         <input type="date" class="filter-date" [(ngModel)]="notificationFromDate" (ngModelChange)="applyNotificationFilter()">
       </div>
 
       <div class="filter-group">
-        <label class="filter-label">Hasta</label>
+        <label class="filter-label">{{ 'ALERTS.FILTERS.DATE_TO' | translate }}</label>
         <input type="date" class="filter-date" [(ngModel)]="notificationToDate" (ngModelChange)="applyNotificationFilter()">
       </div>
     </div>
@@ -78,7 +77,7 @@
   <!-- Section Label -->
   @if (!loadingNotifications && notificationList.length > 0) {
     <p class="notif-section-label">
-      Notificaciones de Alertas Disparadas
+      {{ 'NOTIFICATIONS.SECTION_LABEL' | translate }}
     </p>
   }
 
@@ -104,7 +103,7 @@
             @if (!notification.isRead) {
               <span class="unread-dot"></span>
             } @else {
-              <span class="notif-read-label">Leído</span>
+              <span class="notif-read-label">{{ 'NOTIFICATIONS.READ_LABEL' | translate }}</span>
             }
           </div>
 
@@ -120,11 +119,11 @@
             </div>
             <div class="notif-actions">
               @if (!notification.isRead) {
-                <button class="action-btn read-btn" (click)="markAsRead(notification)" title="Marcar como leído">
+                <button class="action-btn read-btn" (click)="markAsRead(notification)" [title]="'NOTIFICATIONS.MARK_READ_TOOLTIP' | translate">
                   <mat-icon>check_circle_outline</mat-icon>
                 </button>
               }
-              <button class="action-btn delete-btn" (click)="deleteNotification(notification)" title="Eliminar">
+              <button class="action-btn delete-btn" (click)="deleteNotification(notification)" [title]="'NOTIFICATIONS.DELETE_TOOLTIP' | translate">
                 <mat-icon>delete_outline</mat-icon>
               </button>
             </div>
@@ -134,8 +133,8 @@
       } @empty {
         <div class="empty-state notif-empty">
           <mat-icon class="empty-icon">notifications_none</mat-icon>
-          <h3 class="empty-title">No hay notificaciones</h3>
-          <p class="empty-desc">Las alertas disparadas aparecerán aquí como notificaciones</p>
+          <h3 class="empty-title">{{ 'NOTIFICATIONS.NO_NOTIFICATIONS' | translate }}</h3>
+          <p class="empty-desc">{{ 'NOTIFICATIONS.NO_NOTIFICATIONS_DESC' | translate }}</p>
         </div>
       }
     }
@@ -146,14 +145,14 @@
   @if (!loadingNotifications && totalNotifications > 0) {
     <div class="notif-pagination">
       <div class="page-info">
-        <span class="page-label">Página {{ currentNotificationPage }} de {{ totalNotificationPages }}</span>
-        <span class="page-total">({{ totalNotifications }} notificaciones)</span>
+        <span class="page-label">{{ 'NOTIFICATIONS.PAGE_OF' | translate: { current: currentNotificationPage, total: totalNotificationPages } }}</span>
+        <span class="page-total">({{ totalNotifications }} {{ 'NOTIFICATIONS.TITLE' | translate | lowercase }})</span>
       </div>
 
       <div class="page-controls">
         <button class="page-nav-btn" [disabled]="currentNotificationPage === 1" (click)="previousNotificationPage()">
           <mat-icon>chevron_left</mat-icon>
-          Anterior
+          {{ 'NOTIFICATIONS.PREV_PAGE' | translate }}
         </button>
 
         <div class="page-numbers">
@@ -165,7 +164,7 @@
         </div>
 
         <button class="page-nav-btn" [disabled]="currentNotificationPage === totalNotificationPages" (click)="nextNotificationPage()">
-          Siguiente
+          {{ 'NOTIFICATIONS.NEXT_PAGE' | translate }}
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>

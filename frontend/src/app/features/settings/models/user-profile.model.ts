@@ -8,6 +8,7 @@ export interface UpdateProfileRequest {
   currency: string;
   emailNotifications: boolean;
   theme?: string;
+  language?: string;
 }
 
 export interface ChangePasswordRequest {
@@ -36,6 +37,7 @@ export interface ProfileData {
     currency: string;
     emailNotifications: boolean;
     theme: string;
+    language: string;
   };
 }
 export type ProfileResponse = ApiResponse<ProfileData>;

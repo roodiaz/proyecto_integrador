@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, effect } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -10,6 +11,7 @@ import { MarketService } from '../../services/market.service';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { WatchlistService } from '../../../watchlist/services/watchlist.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { LanguageService } from '../../../../core/services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PortfolioModal } from '../../../portfolio/components/portfolio-modal/portfolio-modal';
 import { PortfolioService } from '../../../portfolio/services/portfolio.service';
@@ -38,7 +40,7 @@ Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcEl
 @Component({
   selector: 'app-market',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent, TranslateModule],
   templateUrl: './market.html',
   styleUrl: './market.css'
 })
@@ -51,11 +53,11 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   /** Tarjetas placeholder que se muestran cuando todavía no hay índices disponibles. */
   emptyIndexCards = [{ name: 'S&P 500' }, { name: 'NASDAQ' }, { name: 'Dow Jones' }];
 
-  /** Textos explicativos de cada índice, usados en los tooltips informativos de las tarjetas. */
+  /** Claves de traducción para los tooltips de los índices. */
   readonly indexTooltips: Record<string, string> = {
-    'S&P 500':   'El S&P 500 agrupa las 500 empresas más grandes de Estados Unidos. Es el índice más usado como referencia del mercado americano en general.',
-    'NASDAQ':    'El NASDAQ concentra principalmente empresas tecnológicas como Apple, Google y Microsoft. Refleja cómo se comporta el sector tech del mercado.',
-    'Dow Jones': 'El Dow Jones agrupa solo 30 grandes empresas industriales y tradicionales de EE.UU. Es uno de los índices más antiguos y conocidos del mundo.'
+    'S&P 500':   'MARKET.TOOLTIP_INDEX_SP500',
+    'NASDAQ':    'MARKET.TOOLTIP_INDEX_NASDAQ',
+    'Dow Jones': 'MARKET.TOOLTIP_INDEX_DOW'
   };
 
   // ── Activo seleccionado ──
@@ -71,16 +73,16 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   /** Etiquetas placeholder que se muestran cuando todavía no hay un activo seleccionado. */
   emptyStatLabels = ['Open', 'Volume', 'Day High', 'Day Low', 'Avg Vol', 'Mkt Cap', 'P/E Ratio', 'Div Yield'];
 
-  /** Textos explicativos de cada métrica del activo, usados en los tooltips informativos. */
+  /** Claves de traducción para los tooltips de las métricas del activo. */
   readonly statTooltips: Record<string, string> = {
-    'Open':      'Precio al que abrió la acción al comienzo de la jornada de hoy.',
-    'Volume':    'Cantidad de acciones negociadas hoy. Un volumen alto puede indicar mayor interés o actividad en el activo.',
-    'Day High':  'El precio más alto que alcanzó la acción durante el día de hoy.',
-    'Day Low':   'El precio más bajo que tocó la acción durante el día de hoy.',
-    'Avg Vol':   'Promedio de acciones negociadas por día en los últimos tiempos. Sirve para comparar si hoy hay más o menos actividad de lo normal.',
-    'Mkt Cap':   'Capitalización de mercado: el valor total de la empresa en bolsa. Se calcula multiplicando el precio de la acción por la cantidad total de acciones.',
-    'P/E Ratio': 'Relación precio-ganancias: indica cuánto pagan los inversores por cada unidad de ganancia de la empresa. Un valor alto puede significar que el mercado espera mucho crecimiento.',
-    'Div Yield': 'Rendimiento por dividendo: porcentaje que la empresa paga a sus accionistas sobre el precio actual. Es una forma de obtener ganancias además de la suba del precio.'
+    'Open':      'MARKET.TOOLTIP_STAT_OPEN',
+    'Volume':    'MARKET.TOOLTIP_STAT_VOLUME',
+    'Day High':  'MARKET.TOOLTIP_STAT_DAY_HIGH',
+    'Day Low':   'MARKET.TOOLTIP_STAT_DAY_LOW',
+    'Avg Vol':   'MARKET.TOOLTIP_STAT_AVG_VOL',
+    'Mkt Cap':   'MARKET.TOOLTIP_STAT_MKT_CAP',
+    'P/E Ratio': 'MARKET.TOOLTIP_STAT_PE_RATIO',
+    'Div Yield': 'MARKET.TOOLTIP_STAT_DIV_YIELD'
   };
 
   // ── Gráfico comparativo ──
@@ -110,6 +112,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private watchlistService: WatchlistService,
     private portfolioService: PortfolioService,
     private snackBarService: SnackBarService,
+    private languageService: LanguageService,
     private dialog: MatDialog,
     private themeService: ThemeService,
   ) {
@@ -175,8 +178,8 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    */
   get chartTooltipText(): string {
     if (this.selectedChartType === 'candlestick')
-      return 'El gráfico de velas muestra el precio de apertura, cierre, máximo y mínimo de cada período. Es útil para analizar el movimiento interno del activo seleccionado.';
-    return 'Este gráfico compara el rendimiento del activo seleccionado frente al S&P 500, NASDAQ y Dow Jones. Te ayuda a ver si el activo se mueve mejor o peor que el mercado en general.';
+      return 'MARKET.TOOLTIP_CHART_CANDLESTICK';
+    return 'MARKET.TOOLTIP_CHART_COMPARE';
   }
 
   // ── Carga de datos ──
@@ -403,7 +406,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const symbol = this.selectedSymbol.trim().toUpperCase();
 
     if (!symbol) {
-      this.assetErrorMessage = 'Ingresá un símbolo para buscar';
+      this.assetErrorMessage = this.languageService.instant('MARKET.ERRORS.SYMBOL_REQUIRED');
       this.selectedAsset = null;
       this.hasPositionForSelectedAsset = false;
       return;
@@ -420,7 +423,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         if (!response.success || !response.data) {
           this.selectedAsset = null;
           this.hasPositionForSelectedAsset = false;
-          this.assetErrorMessage = response.message || 'No se encontró información para el activo';
+          this.assetErrorMessage = response.message || this.languageService.instant('MARKET.ERRORS.ASSET_NOT_FOUND');
           return;
         }
 
@@ -437,7 +440,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         this.loadingAsset = false;
         this.selectedAsset = null;
         this.hasPositionForSelectedAsset = false;
-        this.assetErrorMessage = 'No se pudo obtener la información del activo';
+        this.assetErrorMessage = this.languageService.instant('MARKET.ERRORS.ASSET_FETCH_FAILED');
       }
     });
   }
@@ -498,21 +501,21 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         this.favoriteLoading = false;
 
         if (!res.success) {
-          this.snackBarService.error(res.message || 'No se pudo actualizar favoritos');
+          this.snackBarService.error(res.message || this.languageService.instant('MARKET.ERRORS.WATCHLIST_UPDATE_FAILED'));
           return;
         }
 
         this.isFavorite = !wasFavorite;
 
         if (this.isFavorite)
-          this.snackBarService.success(`${symbol} agregado a favoritos`);
+          this.snackBarService.success(this.languageService.instant('MARKET.WATCHLIST_ADDED', { symbol }));
         else
-          this.snackBarService.info(`${symbol} eliminado de favoritos`);
+          this.snackBarService.info(this.languageService.instant('MARKET.WATCHLIST_REMOVED', { symbol }));
       },
       error: err => {
         this.favoriteLoading = false;
         console.error('Error actualizando favorito', err);
-        this.snackBarService.error('No se pudo actualizar favoritos');
+        this.snackBarService.error(this.languageService.instant('MARKET.ERRORS.WATCHLIST_UPDATE_FAILED'));
       }
     });
   }
@@ -526,7 +529,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const finalSymbol = symbol || this.selectedSymbol;
 
     if (!finalSymbol) {
-      this.snackBarService.error('Primero seleccioná un activo');
+      this.snackBarService.error(this.languageService.instant('MARKET.ERRORS.SELECT_ASSET_FIRST'));
       return;
     }
 
@@ -558,7 +561,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const finalSymbol = symbol || this.selectedSymbol;
 
     if (!finalSymbol) {
-      this.snackBarService.error('Primero seleccioná un activo');
+      this.snackBarService.error(this.languageService.instant('MARKET.ERRORS.SELECT_ASSET_FIRST'));
       return;
     }
 
@@ -589,16 +592,15 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   onBuyComplete(data: BuyData): void {
     this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
       next: response => {
-        if (!response.success) {
-          this.snackBarService.info(response.message || 'No se pudo realizar la compra');
-          return;
-        }
-
-        this.snackBarService.success(response.message || 'Compra realizada correctamente');
+        this.snackBarService.fromResponse(
+          response.success,
+          response.code,
+          response.message || this.languageService.instant(response.success ? 'MARKET.BUY_SUCCESS' : 'MARKET.ERRORS.BUY_ERROR')
+        );
       },
       error: error => {
         console.error('Error al realizar la compra', error);
-        this.snackBarService.error(error?.error?.message || 'Error al realizar la compra');
+        this.snackBarService.fromResponse(false, error?.error?.code, error?.error?.message || this.languageService.instant('MARKET.ERRORS.BUY_ERROR'));
       }
     });
   }
@@ -611,16 +613,15 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   sellPosition(data: SellData): void {
     this.portfolioService.sell(data).subscribe({
       next: response => {
-        if (!response.success) {
-          this.snackBarService.info(response.message || 'No se pudo realizar la venta');
-          return;
-        }
-
-        this.snackBarService.success(response.message || 'Venta realizada correctamente');
+        this.snackBarService.fromResponse(
+          response.success,
+          response.code,
+          response.message || this.languageService.instant(response.success ? 'MARKET.SELL_SUCCESS' : 'MARKET.ERRORS.SELL_ERROR')
+        );
       },
       error: error => {
         console.error('Error al vender activo', error);
-        this.snackBarService.error(error?.error?.message || 'Error al vender activo');
+        this.snackBarService.fromResponse(false, error?.error?.code, error?.error?.message || this.languageService.instant('MARKET.ERRORS.SELL_ERROR'));
       }
     });
   }
@@ -634,7 +635,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const finalSymbol = symbol || this.selectedSymbol;
 
     if (!finalSymbol) {
-      this.snackBarService.error('Primero seleccioná un activo');
+      this.snackBarService.error(this.languageService.instant('MARKET.ERRORS.SELECT_ASSET_FIRST'));
       return;
     }
 
@@ -654,11 +655,11 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       const result = await dialogRef.afterClosed().toPromise();
 
       if (result)
-        this.snackBarService.success('Alerta creada correctamente');
+        this.snackBarService.success(this.languageService.instant('MARKET.ALERT_CREATED'));
     }
     catch (error) {
       console.error('Error al abrir el modal de crear alerta', error);
-      this.snackBarService.error('No se pudo abrir el formulario de alerta');
+      this.snackBarService.error(this.languageService.instant('MARKET.ERRORS.ALERT_FORM_FAILED'));
     }
   }
 
@@ -691,7 +692,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @returns Descripción del índice o un texto genérico si no hay uno específico.
    */
   getIndexTooltip(name: string): string {
-    return this.indexTooltips[name] ?? 'Este índice agrupa un conjunto de acciones para mostrar cómo se comporta una parte del mercado.';
+    return this.indexTooltips[name] ?? 'MARKET.TOOLTIP_INDEX_DEFAULT';
   }
 
   /**

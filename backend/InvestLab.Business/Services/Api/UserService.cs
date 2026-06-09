@@ -7,6 +7,7 @@ using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using static InvestLab.Models.MessageCodes;
 
 public class UserService : IUserService
 {
@@ -78,7 +79,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("GetProfile: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             return Response.Ok(new
@@ -94,14 +95,15 @@ public class UserService : IUserService
                 {
                     user.UserSetting.Currency,
                     user.UserSetting.EmailNotifications,
-                    Theme = user.UserSetting.Theme ?? "Dark"
+                    Theme = user.UserSetting.Theme ?? "Dark",
+                    Language = user.UserSetting.Language ?? "es"
                 }
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en GetProfileAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -120,7 +122,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("UpdateProfile: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             user.Username = dto.UserName;
@@ -133,18 +135,20 @@ public class UserService : IUserService
             user.UserSetting.Currency = dto.Currency;
             user.UserSetting.EmailNotifications = dto.EmailNotifications;
             user.UserSetting.Theme = dto.Theme ?? "Dark";
+            if (!string.IsNullOrWhiteSpace(dto.Language))
+                user.UserSetting.Language = dto.Language;
 
             await _userRepository.UpdateAsync(user);
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Perfil actualizado {UserId}", userId);
 
-            return Response.Ok(null, "Perfil actualizado correctamente");
+            return Response.Ok(null, "Perfil actualizado correctamente", PROFILE_UPDATE_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en UpdateProfileAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -163,7 +167,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("ChangePassword: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.CurrentPassword);
@@ -171,7 +175,7 @@ public class UserService : IUserService
             if (result == PasswordVerificationResult.Failed)
             {
                 _logger.LogWarning("ChangePassword: password incorrecta {UserId}", userId);
-                return Response.Fail("Contraseña actual incorrecta");
+                return Response.Fail("Contraseña actual incorrecta", WRONG_CURRENT_PASSWORD);
             }
 
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
@@ -182,12 +186,12 @@ public class UserService : IUserService
 
             _logger.LogInformation("Password actualizado {UserId}", userId);
 
-            return Response.Ok(null, "Contraseña actualizada correctamente");
+            return Response.Ok(null, "Contraseña actualizada correctamente", PASSWORD_CHANGE_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en ChangePasswordAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -209,33 +213,33 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("RequestEmailChange: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             if (string.Equals(user.Email, dto.NewEmail, StringComparison.OrdinalIgnoreCase))
-                return Response.Fail("El nuevo email debe ser distinto al actual");
+                return Response.Fail("El nuevo email debe ser distinto al actual", EMAIL_SAME_AS_CURRENT);
 
             var existingUser = await _userRepository.GetByEmailAsync(dto.NewEmail);
 
             if (existingUser != null)
-                return Response.Fail("Ya existe una cuenta registrada con ese email");
+                return Response.Fail("Ya existe una cuenta registrada con ese email", EMAIL_ALREADY_EXISTS);
 
             var emailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Verificación de cambio de email", dto.NewEmail);
 
             if (!emailSent)
             {
                 _logger.LogWarning("RequestEmailChange: no se pudo enviar el código {UserId}", userId);
-                return Response.Fail("No pudimos enviar el código de verificación. Intentá nuevamente.");
+                return Response.Fail("No pudimos enviar el código de verificación. Intentá nuevamente.", EMAIL_VERIFICATION_SEND_FAILED);
             }
 
             _logger.LogInformation("Código de cambio de email enviado {UserId}", userId);
 
-            return Response.Ok(new { newEmail = dto.NewEmail }, "Te enviamos un código de verificación a tu nuevo email");
+            return Response.Ok(new { newEmail = dto.NewEmail }, "Te enviamos un código de verificación a tu nuevo email", EMAIL_VERIFICATION_SENT);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en RequestEmailChangeAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -256,7 +260,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("ConfirmEmailChange: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
@@ -264,7 +268,7 @@ public class UserService : IUserService
             if (!validation.Success)
             {
                 _logger.LogWarning("ConfirmEmailChange: {Reason} {UserId}", validation.ErrorMessage, userId);
-                return Response.Fail(validation.ErrorMessage!);
+                return Response.Fail(validation.ErrorMessage!, validation.ErrorCode);
             }
 
             var credential = validation.Credential!;
@@ -272,7 +276,7 @@ public class UserService : IUserService
             if (string.IsNullOrEmpty(credential.PendingEmail))
             {
                 _logger.LogWarning("ConfirmEmailChange: no hay un email pendiente de confirmación {UserId}", userId);
-                return Response.Fail("No hay un cambio de email pendiente de confirmación");
+                return Response.Fail("No hay un cambio de email pendiente de confirmación", NO_PENDING_EMAIL_CHANGE);
             }
 
             var newEmail = credential.PendingEmail;
@@ -288,12 +292,12 @@ public class UserService : IUserService
 
             _logger.LogInformation("Email actualizado correctamente {UserId}", userId);
 
-            return Response.Ok(new { email = newEmail }, "Email actualizado correctamente");
+            return Response.Ok(new { email = newEmail }, "Email actualizado correctamente", EMAIL_CHANGE_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en ConfirmEmailChangeAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -308,14 +312,14 @@ public class UserService : IUserService
         try
         {
             if (file == null || file.Length == 0)
-                return Response.Fail("Archivo inválido");
+                return Response.Fail("Archivo inválido", INVALID_FILE);
 
             var user = await _userRepository.GetByIdAsync(userId);
 
             if (user == null)
             {
                 _logger.LogWarning("UploadImage: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var folder = Path.Combine("wwwroot", "images");
@@ -348,12 +352,12 @@ public class UserService : IUserService
 
             _logger.LogInformation("Imagen actualizada {UserId}", userId);
 
-            return Response.Ok(user.ProfileImageUrl, "Imagen actualizada");
+            return Response.Ok(new { profileImageUrl = user.ProfileImageUrl }, "Imagen actualizada", IMAGE_UPLOAD_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en UploadProfileImageAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -372,7 +376,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _logger.LogWarning("DeleteAccount: usuario no encontrado {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             if (!string.IsNullOrEmpty(user.ProfileImageUrl))
@@ -401,12 +405,12 @@ public class UserService : IUserService
 
             _logger.LogInformation("Cuenta eliminada correctamente {UserId}", userId);
 
-            return Response.Ok(null, "Cuenta eliminada correctamente");
+            return Response.Ok(null, "Cuenta eliminada correctamente", ACCOUNT_DELETED);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en DeleteAccountAsync {UserId}", userId);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 }

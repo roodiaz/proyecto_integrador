@@ -5,6 +5,7 @@ using InvestLab.Models;
 using InvestLab.Models.DTOs.Contact;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static InvestLab.Models.MessageCodes;
 
 public class ContactService : IContactService
 {
@@ -56,12 +57,12 @@ public class ContactService : IContactService
 
             _logger.LogInformation("Mensaje de contacto recibido desde {Email}", dto.Email);
 
-            return Response.Ok(null, "Mensaje enviado correctamente");
+            return Response.Ok(null, "Mensaje enviado correctamente", CONTACT_MESSAGE_SENT);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al enviar mensaje de contacto");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 }

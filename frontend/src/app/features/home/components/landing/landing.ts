@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../../shared/material.module';
 
 /** Símbolo ficticio mostrado en la barra de ticker animada del header. */
@@ -37,7 +38,7 @@ interface Capability {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterModule, MaterialModule],
+  imports: [RouterModule, MaterialModule, TranslateModule],
   templateUrl: './landing.html',
   styleUrl: './landing.css'
 })
@@ -73,23 +74,23 @@ export class Landing implements OnInit, AfterViewInit, OnDestroy {
   readonly benefits: Benefit[] = [
     {
       icon: 'bolt',
-      title: 'Operá en tiempo real',
-      description: 'Precios y gráficos actualizados al instante, igual que en una terminal profesional.'
+      title: 'HOME.LANDING.BENEFIT_REALTIME_TITLE',
+      description: 'HOME.LANDING.BENEFIT_REALTIME_DESC'
     },
     {
       icon: 'shield',
-      title: 'Cero riesgo real',
-      description: 'Practicá con saldo virtual de USD 10.000 sin comprometer tu dinero.'
+      title: 'HOME.LANDING.BENEFIT_NORISK_TITLE',
+      description: 'HOME.LANDING.BENEFIT_NORISK_DESC'
     },
     {
       icon: 'auto_graph',
-      title: 'Alertas a tu medida',
-      description: 'Definí condiciones de precio o porcentaje y enterate apenas se cumplan.'
+      title: 'HOME.LANDING.BENEFIT_ALERTS_TITLE',
+      description: 'HOME.LANDING.BENEFIT_ALERTS_DESC'
     },
     {
       icon: 'school',
-      title: 'Aprendizaje guiado',
-      description: 'Entendé el mercado paso a paso mientras construís tu propio portfolio.'
+      title: 'HOME.LANDING.BENEFIT_LEARN_TITLE',
+      description: 'HOME.LANDING.BENEFIT_LEARN_DESC'
     }
   ];
 
@@ -97,32 +98,32 @@ export class Landing implements OnInit, AfterViewInit, OnDestroy {
   readonly capabilities: Capability[] = [
     {
       icon: 'candlestick_chart',
-      title: 'Simular inversiones',
-      description: 'Comprá y vendé activos con saldo virtual y viví la experiencia real del mercado sin riesgo.',
+      title: 'HOME.LANDING.CAP_SIMULATE_TITLE',
+      description: 'HOME.LANDING.CAP_SIMULATE_DESC',
       accent: 'blue'
     },
     {
       icon: 'visibility',
-      title: 'Seguir activos',
-      description: 'Marcá tus favoritos y monitoreá su evolución con gráficos y datos actualizados.',
+      title: 'HOME.LANDING.CAP_FOLLOW_TITLE',
+      description: 'HOME.LANDING.CAP_FOLLOW_DESC',
       accent: 'purple'
     },
     {
       icon: 'notifications_active',
-      title: 'Crear alertas',
-      description: 'Configurá avisos por precio o variación porcentual y enterate en el momento justo.',
+      title: 'HOME.LANDING.CAP_ALERTS_TITLE',
+      description: 'HOME.LANDING.CAP_ALERTS_DESC',
       accent: 'amber'
     },
     {
       icon: 'pie_chart',
-      title: 'Ver tu portfolio',
-      description: 'Visualizá el rendimiento de tus inversiones simuladas con métricas claras y precisas.',
+      title: 'HOME.LANDING.CAP_PORTFOLIO_TITLE',
+      description: 'HOME.LANDING.CAP_PORTFOLIO_DESC',
       accent: 'green'
     },
     {
       icon: 'menu_book',
-      title: 'Aprender sin riesgo',
-      description: 'Familiarizate con conceptos financieros reales en un entorno seguro y guiado.',
+      title: 'HOME.LANDING.CAP_LEARN_TITLE',
+      description: 'HOME.LANDING.CAP_LEARN_DESC',
       accent: 'pink'
     }
   ];

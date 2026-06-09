@@ -7,15 +7,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ForgotPasswordRequest, ResetPasswordRequest } from '../../models/forgot-password.model';
+import { TranslateModule } from '@ngx-translate/core';
 
-/**
- * Pantalla de recuperación de contraseña.
- *
- * Funciona en dos pasos: primero solicita el email del usuario para enviarle
- * un código de recuperación (reutilizando la infraestructura de códigos de
- * verificación de `AuthService`), y luego solicita el código junto con la
- * nueva contraseña para restablecerla.
- */
 @Component({
   selector: 'app-forgot-password-form',
   standalone: true,
@@ -24,7 +17,8 @@ import { ForgotPasswordRequest, ResetPasswordRequest } from '../../models/forgot
     ReactiveFormsModule,
     RouterModule,
     MaterialModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    TranslateModule
   ],
   templateUrl: './forgot-password-form.html',
   styleUrl: './forgot-password-form.css'
@@ -102,17 +96,17 @@ export class ForgotPasswordForm {
         this.isLoading = false;
 
         if (!response.success) {
-          this.snackBarService.error(response.message ?? 'No pudimos enviar el código de recuperación');
+          this.snackBarService.fromResponse(false, response.code, response.message);
           return;
         }
 
         this.sentToEmail = request.email;
         this.codeSent = true;
-        this.snackBarService.success('Código enviado. Revisa tu correo electrónico.');
+        this.snackBarService.fromResponse(true, response.code, response.message);
       },
       error: error => {
         this.isLoading = false;
-        this.snackBarService.error(error.error?.message ?? 'No existe una cuenta asociada a ese email');
+        this.snackBarService.fromResponse(false, error.error?.code, error.error?.message);
       }
     });
   }
@@ -141,16 +135,16 @@ export class ForgotPasswordForm {
         this.isLoading = false;
 
         if (!response.success) {
-          this.snackBarService.error(response.message ?? 'No pudimos restablecer la contraseña');
+          this.snackBarService.fromResponse(false, response.code, response.message);
           return;
         }
 
-        this.snackBarService.success('Contraseña actualizada correctamente');
+        this.snackBarService.fromResponse(true, response.code, response.message);
         this.router.navigate(['/login']);
       },
       error: error => {
         this.isLoading = false;
-        this.snackBarService.error(error.error?.message ?? 'Código inválido o expirado');
+        this.snackBarService.fromResponse(false, error.error?.code, error.error?.message);
       }
     });
   }

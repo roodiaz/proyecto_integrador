@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using static InvestLab.Models.Enums;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services.Api
 {
@@ -56,14 +57,14 @@ namespace InvestLab.Business.Services.Api
             {
                 var settings = await _userSettingRepository.GetByUserIdAsync(userId);
                 if (settings == null)
-                    return Response.Fail("Configuración de usuario no encontrada");
+                    return Response.Fail("Configuración de usuario no encontrada", USER_SETTINGS_NOT_FOUND);
 
                 if (settings.AlertsUsed >= _limits.MaxAlerts)
-                    return Response.Fail("Límite de alertas alcanzado");
+                    return Response.Fail("Límite de alertas alcanzado", MAX_ALERTS_REACHED);
 
                 var asset = await _assetService.GetOrCreateAsync(dto.Symbol);
                 if (asset == null)
-                    return Response.Fail("Activo no encontrado");
+                    return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
                 var condition = MapCondition(dto);
 
@@ -84,13 +85,13 @@ namespace InvestLab.Business.Services.Api
 
                 await _unitOfWork.SaveChangesAsync();
 
-                return Response.Ok("Alerta creada correctamente");
+                return Response.Ok(null, "Alerta creada correctamente", ALERT_CREATED);
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en CreateAlertAsync");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 
@@ -106,7 +107,7 @@ namespace InvestLab.Business.Services.Api
             {
                 var alert = await _alertRepository.GetByIdAsync(id);
                 if (alert == null || alert.UserId != userId)
-                    return Response.Fail("No encontrada");
+                    return Response.Fail("No encontrada", ALERT_NOT_FOUND);
 
                 var settings = await _userSettingRepository.GetByUserIdAsync(userId);
 
@@ -117,13 +118,13 @@ namespace InvestLab.Business.Services.Api
 
                 await _unitOfWork.SaveChangesAsync();
 
-                return Response.Ok(null, "Eliminada");
+                return Response.Ok(null, "Eliminada", ALERT_DELETED);
 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en DeleteAlertAsync");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 
@@ -140,18 +141,18 @@ namespace InvestLab.Business.Services.Api
                 var alert = await _alertRepository.GetByIdAsync(id);
 
                 if (alert == null || alert.UserId != userId)
-                    return Response.Fail("No encontrada");
+                    return Response.Fail("No encontrada", ALERT_NOT_FOUND);
 
                 alert.IsActive = !alert.IsActive;
 
                 await _unitOfWork.SaveChangesAsync();
 
-                return Response.Ok(null, "Estado actualizado");
+                return Response.Ok(null, "Estado actualizado", ALERT_TOGGLED);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en ToggleAlertAsync");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 
@@ -187,7 +188,7 @@ namespace InvestLab.Business.Services.Api
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en GetAlertsAsync");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 
@@ -204,15 +205,15 @@ namespace InvestLab.Business.Services.Api
                 var alert = await _alertRepository.GetByIdAsync(dto.Id);
 
                 if (alert == null || alert.UserId != userId)
-                    return Response.Fail("Alerta no encontrada");
+                    return Response.Fail("Alerta no encontrada", ALERT_NOT_FOUND);
 
                 if (!IsValidCondition(dto))
-                    return Response.Fail("Datos inválidos");
+                    return Response.Fail("Datos inválidos", ALERT_INVALID_DATA);
 
                 var asset = await _assetRepository.GetAsync(dto.Symbol);
 
                 if (asset == null)
-                    return Response.Fail("Activo no encontrado");
+                    return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
                 var (type, op, value) = MapCondition(dto);
 
@@ -224,7 +225,7 @@ namespace InvestLab.Business.Services.Api
                     alert.Operator != op ||
                     alert.Value != value))
                 {
-                    return Response.Fail("Ya existe una alerta igual");
+                    return Response.Fail("Ya existe una alerta igual", ALERT_DUPLICATE);
                 }
 
                 alert.AssetId = asset.Id;
@@ -237,12 +238,12 @@ namespace InvestLab.Business.Services.Api
 
                 _logger.LogInformation("Alerta actualizada {AlertId}", alert.Id);
 
-                return Response.Ok(null, "Alerta actualizada correctamente");
+                return Response.Ok(null, "Alerta actualizada correctamente", ALERT_UPDATED);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en UpdateAlert");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 
@@ -271,7 +272,7 @@ namespace InvestLab.Business.Services.Api
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en GetStats");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 

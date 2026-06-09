@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -8,54 +8,34 @@ import { Subscription, timer } from 'rxjs';
 import { MarketPriceStatusService } from '../../../shared/components/services/market-price-status.service';
 import { MarketStatusService } from '../../../shared/components/services/market-status.service';
 import { MarketStatus } from '../../../features/market/models/market.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../../core/services/language.service';
 
-/**
- * Barra lateral de navegación principal de la aplicación.
- *
- * Muestra los accesos a las distintas secciones (dashboard, mercado, portfolio,
- * alertas, watchlist, configuración y cierre de sesión), puede colapsarse para
- * ocupar menos espacio, y exhibe un indicador en tiempo real de hace cuánto se
- * actualizaron por última vez los precios del mercado.
- */
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [
     CommonModule,
     RouterModule,
-    MaterialModule
+    MaterialModule,
+    TranslateModule
   ],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.css']
 })
 export class Sidebar implements OnDestroy {
 
-  // ── Estado de la barra lateral ──
   isCollapsed = false;
-
-  // ── Estado de actualización de precios ──
   pricesUpdatedAt: string | null = null;
-  updatedText = 'Precios pendientes de actualización';
-
-  // ── Estado global del mercado ──
+  updatedText = '';
   marketStatus: MarketStatus | null = null;
 
-  // ── Suscripciones ──
+  private readonly languageService = inject(LanguageService);
   private sidebarSub?: Subscription;
   private statusSub?: Subscription;
   private clockSub?: Subscription;
   private marketStatusSub?: Subscription;
 
-  /**
-   * Suscribe la barra lateral al estado de colapso, al estado de actualización
-   * de precios del mercado, al estado global del mercado (abierto/cerrado), y
-   * arranca un reloj que recalcula cada segundo el texto de "hace cuánto se
-   * actualizaron los precios".
-   * @param sidebarService Servicio que expone y controla el estado de colapso de la barra lateral.
-   * @param authSessionService Servicio de sesión, usado para cerrar sesión.
-   * @param marketPriceStatusService Servicio que informa la fecha de la última actualización de precios.
-   * @param marketStatusService Servicio compartido que informa el estado global del mercado (abierto/cerrado).
-   */
   constructor(
     private sidebarService: SidebarService,
     private authSessionService: AuthSessionService,
@@ -90,14 +70,12 @@ export class Sidebar implements OnDestroy {
     this.clockSub?.unsubscribe();
   }
 
-  /** @returns El texto combinado (estado del mercado + actualización de precios) a mostrar como tooltip cuando la barra está colapsada. */
   getStatusTooltip(): string {
     return `${this.marketStatusService.getStatusText(this.marketStatus)} · ${this.updatedText}`;
   }
 
-  /** @returns La hora de la última actualización de precios formateada como reloj (p. ej. "17:00 hs"), o un texto de respaldo si todavía no hay datos. */
   getLastUpdateTimeText(): string {
-    if (!this.pricesUpdatedAt) return 'Sin datos disponibles';
+    if (!this.pricesUpdatedAt) return this.languageService.instant('SIDEBAR.NO_DATA');
 
     const updatedDate = new Date(this.pricesUpdatedAt);
     const hours = updatedDate.getHours().toString().padStart(2, '0');
@@ -119,31 +97,22 @@ export class Sidebar implements OnDestroy {
 
   // ── Helpers privados ──
 
-  /**
-   * Construye el texto descriptivo de "hace cuánto" se actualizaron los precios
-   * del mercado, en español y con la unidad de tiempo más adecuada (segundos,
-   * minutos u horas) según el tiempo transcurrido desde `updatedAt`.
-   * @param updatedAt Fecha (ISO) de la última actualización de precios, o `null`/`undefined` si todavía no hay datos.
-   * @returns El texto a mostrar junto al ícono de estado de precios en la barra lateral.
-   */
   private getUpdatedAgoText(updatedAt?: string | null): string {
-    if (!updatedAt) return 'Precios pendientes de actualización';
+    if (!updatedAt) return this.languageService.instant('SIDEBAR.PRICES_PENDING');
 
     const updatedDate = new Date(updatedAt);
     const diffSeconds = Math.max(0, Math.floor((new Date().getTime() - updatedDate.getTime()) / 1000));
 
-    if (diffSeconds < 10) return 'Precios actualizados hace unos segundos';
-    if (diffSeconds < 60) return `Precios actualizados hace ${diffSeconds} segundos`;
+    if (diffSeconds < 10) return this.languageService.instant('SIDEBAR.PRICES_JUST_NOW');
+    if (diffSeconds < 60) return this.languageService.instant('SIDEBAR.PRICES_SECONDS_AGO', { seconds: diffSeconds });
 
     const diffMinutes = Math.floor(diffSeconds / 60);
     const remainingSeconds = diffSeconds % 60;
-    const minutesText = diffMinutes === 1 ? '1 minuto' : `${diffMinutes} minutos`;
-    const secondsText = remainingSeconds === 1 ? '1 segundo' : `${remainingSeconds} segundos`;
-    if (diffMinutes < 60) return `Precios actualizados hace ${minutesText} y ${secondsText}`;
+    if (diffMinutes < 60) return this.languageService.instant('SIDEBAR.PRICES_MINUTES_AGO', { minutes: diffMinutes, seconds: remainingSeconds });
 
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours === 1) return 'Precios actualizados hace 1 hora';
+    if (diffHours === 1) return this.languageService.instant('SIDEBAR.PRICES_1_HOUR_AGO');
 
-    return `Precios actualizados hace ${diffHours} horas`;
+    return this.languageService.instant('SIDEBAR.PRICES_HOURS_AGO', { hours: diffHours });
   }
 }

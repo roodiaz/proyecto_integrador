@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { interval, map, Observable, shareReplay, startWith, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { MarketOverview, MarketStatus } from '../../../features/market/models/market.model';
+import { LanguageService } from '../../../core/services/language.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -19,6 +20,7 @@ export interface ApiResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class MarketStatusService {
   private readonly apiUrl = `${environment.apiUrl}/market/overview`;
+  private readonly languageService = inject(LanguageService);
 
   /** Estado del mercado, sondeado periódicamente y compartido entre todos los suscriptores. */
   private readonly status$: Observable<MarketStatus | null> = interval(60000).pipe(
@@ -42,7 +44,7 @@ export class MarketStatusService {
 
   /** @returns El texto descriptivo del estado del mercado (abierto/cerrado/etc.), o un mensaje genérico si no está disponible. */
   getStatusText(status: MarketStatus | null): string {
-    return status?.statusText ?? 'Estado no disponible';
+    return status?.statusText ?? this.languageService.instant('SIDEBAR.MARKET_STATUS_UNKNOWN');
   }
 
   /**
@@ -75,7 +77,8 @@ export class MarketStatusService {
     const minutes = diffMinutes % 60;
     const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
 
-    return status.isOpen ? `Cierra en ${durationText}` : `Abre en ${durationText}`;
+    const key = status.isOpen ? 'SIDEBAR.MARKET_CLOSES_IN' : 'SIDEBAR.MARKET_OPENS_IN';
+    return this.languageService.instant(key, { duration: durationText });
   }
 
   /** @returns La cantidad de minutos transcurridos desde la medianoche para una hora en formato "HH:mm" o "HH:mm:ss", o `null` si el formato no es válido. */

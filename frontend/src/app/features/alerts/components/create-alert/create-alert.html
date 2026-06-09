@@ -7,8 +7,8 @@
     </div>
 
     <div class="header-text">
-      <h2 class="dialog-title">{{ isEditMode ? 'Editar Alerta' : 'Nueva Alerta' }}</h2>
-      <p class="dialog-subtitle">Configura una alerta para monitorear el precio de un activo</p>
+      <h2 class="dialog-title">{{ isEditMode ? ('ALERTS.CREATE_DIALOG.EDIT_TITLE' | translate) : ('ALERTS.CREATE_DIALOG.TITLE' | translate) }}</h2>
+      <p class="dialog-subtitle">{{ 'ALERTS.CREATE_DIALOG.SUBTITLE' | translate }}</p>
     </div>
 
     <button class="close-btn" type="button" (click)="onCancel()">
@@ -23,27 +23,27 @@
       <!-- Activo -->
       <div class="form-section">
         <div class="section-label-row">
-          <p class="section-label">Activo</p>
-          <app-info-tooltip text="El activo es la acción o instrumento financiero que querés vigilar. Cada empresa cotiza con un código único llamado ticker o símbolo, como AAPL para Apple o GOOGL para Alphabet." />
+          <p class="section-label">{{ 'ALERTS.CREATE_DIALOG.ASSET_SECTION' | translate }}</p>
+          <app-info-tooltip [text]="'ALERTS.CREATE_DIALOG.TOOLTIP_ASSET' | translate" />
         </div>
 
         <div class="field-group">
-          <label class="field-label">Símbolo del activo *</label>
+          <label class="field-label">{{ 'ALERTS.CREATE_DIALOG.SYMBOL_LABEL' | translate }} *</label>
 
           <div class="field-input-wrap">
-            <input matInput class="field-input" formControlName="symbol" placeholder="Ej: AAPL, GOOGL, TSLA" uppercase>
+            <input matInput class="field-input" formControlName="symbol" [placeholder]="'ALERTS.CREATE_DIALOG.SYMBOL_PLACEHOLDER' | translate" uppercase>
             <mat-icon class="field-icon">candlestick_chart</mat-icon>
           </div>
 
           @if (alertForm.get('symbol')?.touched && alertForm.get('symbol')?.hasError('required')) {
             <span class="field-error">
-              El símbolo es requerido
+              {{ 'ALERTS.CREATE_DIALOG.VALIDATION.SYMBOL_REQUIRED' | translate }}
             </span>
           }
 
           @if (alertForm.get('symbol')?.touched && alertForm.get('symbol')?.hasError('pattern')) {
             <span class="field-error">
-              Ingresá un símbolo válido (1-5 letras)
+              {{ 'ALERTS.CREATE_DIALOG.VALIDATION.SYMBOL_PATTERN' | translate }}
             </span>
           }
         </div>
@@ -52,18 +52,18 @@
       <!-- Condición -->
       <div class="form-section">
         <div class="section-label-row">
-          <p class="section-label">Condición</p>
-          <app-info-tooltip text="La condición define cuándo querés recibir el aviso. Podés alertar cuando el precio supera o cae por debajo de un valor exacto en dólares, o cuando la variación del día supera un porcentaje (útil para detectar movimientos bruscos)." />
+          <p class="section-label">{{ 'ALERTS.CREATE_DIALOG.CONDITION_SECTION' | translate }}</p>
+          <app-info-tooltip [text]="'ALERTS.CREATE_DIALOG.TOOLTIP_CONDITION' | translate" />
         </div>
 
         <div class="field-group">
-          <label class="field-label">Tipo de condición</label>
+          <label class="field-label">{{ 'ALERTS.CREATE_DIALOG.CONDITION_TYPE_LABEL' | translate }}</label>
 
           <div class="field-input-wrap">
             <mat-select class="field-select" formControlName="condition" panelClass="dark-select-panel">
               @for (cond of conditions; track cond.value) {
                 <mat-option [value]="cond.value">
-                  {{ cond.label }}
+                  {{ cond.label | translate }}
                 </mat-option>
               }
             </mat-select>
@@ -74,8 +74,8 @@
         @if (!isPercentageCondition()) {
           <div class="field-group">
             <div class="field-label-row">
-              <label class="field-label">Precio objetivo *</label>
-              <app-info-tooltip text="El precio exacto en dólares al que querés que se dispare la alerta. Ejemplo: si ponés $200 con la condición 'mayor que', recibirás un aviso cuando la acción supere ese precio." />
+              <label class="field-label">{{ 'ALERTS.CREATE_DIALOG.PRICE_LABEL_STAR' | translate }} *</label>
+              <app-info-tooltip [text]="'ALERTS.CREATE_DIALOG.TOOLTIP_PRICE' | translate" />
             </div>
 
             <div class="field-input-wrap">
@@ -85,13 +85,13 @@
 
             @if (alertForm.get('price')?.touched && alertForm.get('price')?.hasError('required')) {
               <span class="field-error">
-                El precio es requerido
+                {{ 'ALERTS.CREATE_DIALOG.VALIDATION.PRICE_REQUIRED' | translate }}
               </span>
             }
 
             @if (alertForm.get('price')?.touched && alertForm.get('price')?.hasError('min')) {
               <span class="field-error">
-                El precio debe ser mayor a 0
+                {{ 'ALERTS.CREATE_DIALOG.VALIDATION.PRICE_MIN' | translate }}
               </span>
             }
           </div>
@@ -101,8 +101,8 @@
         @if (isPercentageCondition()) {
           <div class="field-group">
             <div class="field-label-row">
-              <label class="field-label">Cambio porcentual *</label>
-              <app-info-tooltip text="El porcentaje de variación respecto al cierre del día anterior que activará la alerta. Ejemplo: si ponés 5% con 'subida mayor a', recibirás un aviso cuando la acción suba más del 5% en ese día." />
+              <label class="field-label">{{ 'ALERTS.CREATE_DIALOG.PERCENT_LABEL_STAR' | translate }} *</label>
+              <app-info-tooltip [text]="'ALERTS.CREATE_DIALOG.TOOLTIP_PERCENT' | translate" />
             </div>
 
             <div class="field-input-wrap">
@@ -112,19 +112,19 @@
 
             @if (alertForm.get('percentChange')?.touched && alertForm.get('percentChange')?.hasError('required')) {
               <span class="field-error">
-                El porcentaje es requerido
+                {{ 'ALERTS.CREATE_DIALOG.VALIDATION.PERCENT_REQUIRED' | translate }}
               </span>
             }
 
             @if (alertForm.get('percentChange')?.touched && alertForm.get('percentChange')?.hasError('min')) {
               <span class="field-error">
-                Debe ser mayor a 0
+                {{ 'ALERTS.CREATE_DIALOG.VALIDATION.PERCENT_MIN' | translate }}
               </span>
             }
 
             @if (alertForm.get('percentChange')?.touched && alertForm.get('percentChange')?.hasError('max')) {
               <span class="field-error">
-                No puede ser mayor a 100
+                {{ 'ALERTS.CREATE_DIALOG.VALIDATION.PERCENT_MAX' | translate }}
               </span>
             }
           </div>
@@ -134,18 +134,18 @@
       <!-- Estado -->
       <div class="form-section">
         <div class="section-label-row">
-          <p class="section-label">Estado</p>
-          <app-info-tooltip text="Una alerta activa monitorea el precio en tiempo real y te notifica cuando se cumple la condición. Si la pausás, queda guardada pero no genera notificaciones hasta que la vuelvas a activar." />
+          <p class="section-label">{{ 'ALERTS.CREATE_DIALOG.STATUS_SECTION' | translate }}</p>
+          <app-info-tooltip [text]="'ALERTS.CREATE_DIALOG.TOOLTIP_STATUS' | translate" />
         </div>
 
         <div class="toggle-row">
           <div class="toggle-info">
             <span class="toggle-label">
-              {{ alertForm.get('isActive')?.value ? 'Alerta activa' : 'Alerta inactiva' }}
+              {{ alertForm.get('isActive')?.value ? ('ALERTS.CREATE_DIALOG.ACTIVE_STATUS' | translate) : ('ALERTS.CREATE_DIALOG.INACTIVE_STATUS' | translate) }}
             </span>
 
             <span class="toggle-desc">
-              {{ alertForm.get('isActive')?.value ? 'Enviará notificaciones cuando se cumpla la condición' : 'Guardada pero sin enviar notificaciones' }}
+              {{ alertForm.get('isActive')?.value ? ('ALERTS.CREATE_DIALOG.ACTIVE_DESC' | translate) : ('ALERTS.CREATE_DIALOG.INACTIVE_DESC' | translate) }}
             </span>
           </div>
 
@@ -158,11 +158,11 @@
 
   <!-- Footer -->
   <div class="dialog-footer">
-    <button class="btn-cancel" type="button" (click)="onCancel()">Cancelar</button>
+    <button class="btn-cancel" type="button" (click)="onCancel()">{{ 'ALERTS.CREATE_DIALOG.CANCEL_BUTTON' | translate }}</button>
 
     <button class="btn-submit" type="button" [disabled]="alertForm.invalid" (click)="onSubmit()">
       <mat-icon>{{ isEditMode ? 'edit' : 'add_alert' }}</mat-icon>
-      {{ isEditMode ? 'Actualizar Alerta' : 'Crear Alerta' }}
+      {{ isEditMode ? ('ALERTS.CREATE_DIALOG.UPDATE' | translate) : ('ALERTS.CREATE_DIALOG.SUBMIT' | translate) }}
     </button>
   </div>
 

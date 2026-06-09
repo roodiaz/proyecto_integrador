@@ -174,7 +174,8 @@ CREATE TABLE user_settings (
     operations_used_today INT NOT NULL,
     searches_used_today INT NOT NULL,
     theme VARCHAR(10) DEFAULT 'Dark',
-
+	language VARCHAR(10) DEFAULT 'es',
+	
     CONSTRAINT fk_settings_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

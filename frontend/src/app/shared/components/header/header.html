@@ -5,7 +5,7 @@
   <div class="header-actions">
 
     <!-- Notificaciones -->
-    <button mat-icon-button class="icon-btn" matTooltip="Notificaciones" [matMenuTriggerFor]="notifMenu"
+    <button mat-icon-button class="icon-btn" [matTooltip]="'HEADER.NOTIFICATIONS' | translate" [matMenuTriggerFor]="notifMenu"
       (menuOpened)="loadRecentNotifications()">
       <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="small">
         notifications
@@ -16,7 +16,7 @@
       <div class="notif-menu" (click)="$event.stopPropagation()">
 
         <div class="notif-menu-header">
-          Notificaciones
+          {{ 'HEADER.NOTIFICATIONS' | translate }}
         </div>
 
         @if (loadingRecentNotifications) {
@@ -25,7 +25,7 @@
           </div>
         } @else if (recentNotifications.length === 0) {
           <div class="notif-menu-empty">
-            No tenés notificaciones recientes
+            {{ 'HEADER.NO_NOTIFICATIONS' | translate }}
           </div>
         } @else {
           <div class="notif-menu-list">
@@ -43,7 +43,7 @@
         }
 
         <button mat-button class="notif-menu-action" (click)="goToNotifications()">
-          Ver todas las notificaciones
+          {{ 'HEADER.VIEW_ALL' | translate }}
           <mat-icon>arrow_forward</mat-icon>
         </button>
 
@@ -51,7 +51,7 @@
     </mat-menu>
 
     <!-- Perfil de usuario -->
-    <button class="avatar-btn" matTooltip="Mi cuenta" [matMenuTriggerFor]="userMenu">
+    <button class="avatar-btn" [matTooltip]="'HEADER.PROFILE' | translate" [matMenuTriggerFor]="userMenu">
       @if (profileImageUrl) {
         <img [src]="profileImageUrl" alt="Foto de perfil" class="avatar-image">
       } @else {
@@ -77,7 +77,6 @@
 
         @if (profile?.lastLoginAt) {
           <div class="user-menu-last-login">
-            <span class="user-menu-last-login-label">Último acceso:</span>
             <span class="user-menu-last-login-value">{{ profile?.lastLoginAt | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
         }
@@ -86,12 +85,12 @@
 
         <a mat-menu-item routerLink="/profile">
           <mat-icon>settings</mat-icon>
-          Configuración
+          {{ 'HEADER.SETTINGS' | translate }}
         </a>
 
         <button mat-menu-item class="user-menu-logout" (click)="logout()">
           <mat-icon>logout</mat-icon>
-          Cerrar Sesión
+          {{ 'HEADER.LOGOUT' | translate }}
         </button>
 
       </div>

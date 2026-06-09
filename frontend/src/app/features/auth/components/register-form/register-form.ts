@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -6,6 +6,8 @@ import { Router, RouterModule } from '@angular/router';
 import { RegisterRequest } from '../../models/register.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
+import { TranslateModule } from '@ngx-translate/core';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-register-form',
@@ -15,26 +17,21 @@ import { AuthService } from '../../services/auth.service';
     ReactiveFormsModule,
     MaterialModule,
     RouterModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    TranslateModule
   ],
   templateUrl: './register-form.html',
   styleUrl: './register-form.css'
 })
 export class RegisterForm {
 
-  // ── Estado del formulario ──────────────────────────────────────────────────
-  /** Formulario reactivo con los campos de registro del usuario. */
   registerForm: FormGroup;
-  /** Controla la visibilidad del texto en el input de contraseña. */
   hidePassword = true;
-  /** Controla la visibilidad del texto en el input de confirmación de contraseña. */
   hideConfirmPassword = true;
-
-  // ── Estado de la vista ─────────────────────────────────────────────────────
-  /** Indica si se está procesando el registro para mostrar el spinner. */
   isLoading = false;
-  /** Mensaje de error a mostrar cuando el registro falla. */
   errorMessage: string | null = null;
+
+  private readonly languageService = inject(LanguageService);
 
   constructor(
     private fb: FormBuilder,
@@ -97,7 +94,10 @@ export class RegisterForm {
       },
       error: error => {
         this.isLoading    = false;
-        this.errorMessage = error.error?.message ?? 'Ocurrio un error al registrarse';
+        const code = error.error?.code;
+        this.errorMessage = code
+          ? this.languageService.instant(`ERRORS.${code}`)
+          : this.languageService.instant('ERRORS.INTERNAL_ERROR');
       }
     });
   }

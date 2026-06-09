@@ -4,15 +4,13 @@
     <!-- Header -->
     <div class="alerts-header">
       <div class="header-info">
-        <h1>Centro de Alertas</h1>
-        <p class="header-subtitle">
-          Gestiona alertas de precio y variación para tus activos favoritos.
-        </p>
+        <h1>{{ 'ALERTS.HEADER_TITLE' | translate }}</h1>
+        <p class="header-subtitle">{{ 'ALERTS.HEADER_SUBTITLE' | translate }}</p>
       </div>
 
       <button class="new-alert-btn" (click)="createNewAlert()">
         <mat-icon>add</mat-icon>
-        Nueva Alerta
+        {{ 'ALERTS.CREATE_BUTTON' | translate }}
       </button>
     </div>
 
@@ -20,11 +18,11 @@
     <div class="tabs-container">
       <div class="tabs">
         <button class="tab" [class.active]="activeView === 'alerts'" (click)="setActiveView('alerts')">
-          Mis Alertas
+          {{ 'ALERTS.TAB_MY_ALERTS' | translate }}
         </button>
 
         <button class="tab notification-tab" [class.active]="activeView === 'history'" (click)="setActiveView('history')">
-          Notificaciones
+          {{ 'ALERTS.TAB_NOTIFICATIONS' | translate }}
           @if (unreadNotificationsCount > 0) {
             <span class="notification-badge">{{ unreadNotificationsCount }}</span>
           }
@@ -40,8 +38,8 @@
 
         <div class="summary-card active">
           <div class="summary-card-header">
-            <h3>Alertas Activas</h3>
-            <app-info-tooltip text="Son las alertas que están monitoreando el mercado ahora mismo. Cuando una acción cumpla la condición configurada, recibirás una notificación." />
+            <h3>{{ 'ALERTS.STATS_ACTIVE' | translate }}</h3>
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_ACTIVE' | translate" />
           </div>
           @if (!loadingStats) {
             <p class="amount">{{ activeAlerts }}</p>
@@ -52,8 +50,8 @@
 
         <div class="summary-card paused">
           <div class="summary-card-header">
-            <h3>Alertas Pausadas</h3>
-            <app-info-tooltip text="Alertas que desactivaste temporariamente. No se van a disparar hasta que las vuelvas a activar." />
+            <h3>{{ 'ALERTS.STATS_PAUSED' | translate }}</h3>
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_PAUSED' | translate" />
           </div>
           @if (!loadingStats) {
             <p class="amount">{{ pausedAlerts }}</p>
@@ -64,8 +62,8 @@
 
         <div class="summary-card triggered">
           <div class="summary-card-header">
-            <h3>Disparadas Hoy</h3>
-            <app-info-tooltip text="Cantidad de alertas que se activaron hoy porque el activo cumplió la condición que configuraste." />
+            <h3>{{ 'ALERTS.STATS_TRIGGERED_TODAY' | translate }}</h3>
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_TRIGGERED' | translate" />
           </div>
           @if (!loadingStats) {
             <p class="amount">{{ triggeredToday }}</p>
@@ -76,8 +74,8 @@
 
         <div class="summary-card usage">
           <div class="summary-card-header">
-            <h3>Alertas Utilizadas</h3>
-            <app-info-tooltip text="Cuántas alertas creaste sobre el máximo permitido. Hay un límite para mantener el sistema ordenado." />
+            <h3>{{ 'ALERTS.STATS_USED' | translate }}</h3>
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_USED' | translate" />
           </div>
           @if (!loadingStats) {
             <p class="amount">{{ usedAlerts }} <span class="limit">/ {{ limitAlerts }}</span></p>
@@ -96,39 +94,39 @@
         <div class="filter-toolbar">
           <div class="search-wrap">
             <mat-icon class="search-icon">search</mat-icon>
-            <input type="text" class="search-input" placeholder="Filtrar por ticker..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()">
+            <input type="text" class="search-input" [placeholder]="'ALERTS.SEARCH_PLACEHOLDER' | translate" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()">
           </div>
 
           <button class="btn-filter" (click)="showAlertFilters = !showAlertFilters">
             <mat-icon>tune</mat-icon>
-            Filtrar
+            {{ 'COMMON.FILTER' | translate }}
             <mat-icon class="chevron" [class.open]="showAlertFilters">expand_more</mat-icon>
           </button>
 
           <button class="btn-clear" (click)="clearSearch()">
             <mat-icon>close</mat-icon>
-            Limpiar
+            {{ 'COMMON.CLEAR' | translate }}
           </button>
         </div>
 
         @if (showAlertFilters) {
           <div class="advanced-filters">
             <div class="filter-group">
-              <label class="filter-label">Estado</label>
+              <label class="filter-label">{{ 'COMMON.STATUS' | translate }}</label>
               <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilter()">
-                <option value="">Todos</option>
-                <option value="active">Activa</option>
-                <option value="paused">Pausada</option>
+                <option value="">{{ 'ALERTS.FILTERS.STATUS_ALL' | translate }}</option>
+                <option value="active">{{ 'ALERTS.FILTERS.STATUS_ACTIVE' | translate }}</option>
+                <option value="paused">{{ 'ALERTS.FILTERS.STATUS_PAUSED' | translate }}</option>
               </select>
             </div>
 
             <div class="filter-group">
-              <label class="filter-label">Desde</label>
+              <label class="filter-label">{{ 'ALERTS.FILTERS.DATE_FROM' | translate }}</label>
               <input type="date" class="filter-date" [(ngModel)]="createdFrom" (ngModelChange)="applyFilter()">
             </div>
 
             <div class="filter-group">
-              <label class="filter-label">Hasta</label>
+              <label class="filter-label">{{ 'ALERTS.FILTERS.DATE_TO' | translate }}</label>
               <input type="date" class="filter-date" [(ngModel)]="createdTo" (ngModelChange)="applyFilter()">
             </div>
           </div>
@@ -138,20 +136,20 @@
       <!-- Lista de Alertas -->
       <div class="alerts-list-container">
         <div class="alerts-list-header">
-          <div class="header-column symbol">Símbolo</div>
+          <div class="header-column symbol">{{ 'ALERTS.SYMBOL' | translate }}</div>
           <div class="header-column condition">
-            Condición
-            <app-info-tooltip text="Define cuándo se disparará la alerta. Por ejemplo: 'precio mayor a $150' o 'variación diaria mayor al 5%'." />
+            {{ 'ALERTS.CONDITION' | translate }}
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_CONDITION' | translate" />
           </div>
           <div class="header-column status">
-            Estado
-            <app-info-tooltip text="Indica si la alerta está monitoreando el mercado (Activa) o temporalmente desactivada (Pausada)." />
+            {{ 'COMMON.STATUS' | translate }}
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_STATUS_COL' | translate" />
           </div>
           <div class="header-column dates">
-            Fechas
-            <app-info-tooltip text="Fecha en que creaste la alerta y la última vez que se disparó automáticamente." />
+            {{ 'ALERTS.COLUMN_DATES' | translate }}
+            <app-info-tooltip [text]="'ALERTS.TOOLTIP_DATES' | translate" />
           </div>
-          <div class="header-column actions">Acciones</div>
+          <div class="header-column actions">{{ 'ALERTS.COLUMN_ACTIONS' | translate }}</div>
         </div>
 
         <div class="alerts-list">
@@ -179,13 +177,13 @@
 
                 <div class="alert-column status">
                   <span class="alert-status-badge" [class.active]="alert.isActive" [class.paused]="!alert.isActive">
-                    {{ alert.isActive ? 'Activa' : 'Pausada' }}
+                    {{ alert.isActive ? ('ALERTS.STATUS_ACTIVE' | translate) : ('ALERTS.STATUS_PAUSED' | translate) }}
                   </span>
                 </div>
 
                 <div class="alert-column dates">
-                  <span class="alert-date">Creada: {{ alert.createdAt | date:'d/M/yy' }}</span>
-                  <span class="alert-last-triggered">Última: {{ alert.lastTriggered ? (alert.lastTriggered | date:'d/M/yy') : 'Nunca' }}</span>
+                  <span class="alert-date">{{ 'ALERTS.ITEM_CREATED' | translate }} {{ alert.createdAt | date:'d/M/yy' }}</span>
+                  <span class="alert-last-triggered">{{ 'ALERTS.ITEM_LAST' | translate }} {{ alert.lastTriggered ? (alert.lastTriggered | date:'d/M/yy') : ('ALERTS.ITEM_NEVER' | translate) }}</span>
                 </div>
 
                 <div class="alert-column actions">
@@ -195,11 +193,11 @@
                       <span class="slider"></span>
                     </label>
 
-                    <button class="action-icon-btn edit-btn" (click)="editAlert(alert)" title="Editar">
+                    <button class="action-icon-btn edit-btn" (click)="editAlert(alert)" [title]="'ALERTS.EDIT_TOOLTIP' | translate">
                       <mat-icon>edit</mat-icon>
                     </button>
 
-                    <button class="action-icon-btn delete-btn" (click)="deleteAlert(alert)" title="Eliminar">
+                    <button class="action-icon-btn delete-btn" (click)="deleteAlert(alert)" [title]="'ALERTS.DELETE_TOOLTIP' | translate">
                       <mat-icon>delete_outline</mat-icon>
                     </button>
                   </div>
@@ -208,9 +206,9 @@
             } @empty {
               <div class="empty-state">
                 <mat-icon class="empty-icon">notifications_none</mat-icon>
-                <h3 class="empty-title">No hay alertas configuradas</h3>
-                <p class="empty-sub">Crea tu primera alerta para comenzar a monitorear tus activos</p>
-                <button class="empty-cta" (click)="createNewAlert()">Crear Primera Alerta</button>
+                <h3 class="empty-title">{{ 'ALERTS.EMPTY_TITLE' | translate }}</h3>
+                <p class="empty-sub">{{ 'ALERTS.EMPTY_TEXT' | translate }}</p>
+                <button class="empty-cta" (click)="createNewAlert()">{{ 'ALERTS.CREATE_FIRST' | translate }}</button>
               </div>
             }
           }
@@ -221,12 +219,12 @@
       @if (!loadingAlerts && alerts.length > 0) {
         <div class="pagination-container">
           <div class="pagination-info">
-            <span>Página {{ currentPage }} de {{ totalPages }}</span>
-            <span>({{ totalAlerts }} alertas)</span>
+            <span>{{ 'COMMON.PAGINATION_OF' | translate | titlecase }} {{ currentPage }} / {{ totalPages }}</span>
+            <span>({{ totalAlerts }} {{ 'ALERTS.TITLE' | translate | lowercase }})</span>
           </div>
 
           <div class="pagination-controls">
-            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">← Anterior</button>
+            <button class="pagination-btn" [disabled]="currentPage === 1" (click)="previousPage()">← {{ 'COMMON.PREV_PAGE' | translate }}</button>
 
             <div class="page-numbers">
               @for (page of getPageNumbers(); track page) {
@@ -234,7 +232,7 @@
               }
             </div>
 
-            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">Siguiente →</button>
+            <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">{{ 'COMMON.NEXT_PAGE' | translate }} →</button>
           </div>
         </div>
       }

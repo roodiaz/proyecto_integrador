@@ -381,6 +381,36 @@
   border-color: var(--accent);
 }
 
+/* ─── Language flag selector ─── */
+.lang-trigger,
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-flag {
+  width: 20px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+::ng-deep .dark-select-panel .lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+::ng-deep .dark-select-panel .lang-flag {
+  width: 20px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
 /* Field errors */
 .field-error {
   font-size: 0.7rem;

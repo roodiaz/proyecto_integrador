@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { MaterialModule } from '../../../../shared/material.module';
 import { WatchlistService } from '../../services/watchlist.service';
@@ -12,18 +13,10 @@ import { AddFavoriteDialog } from '../add-favorite-dialog/add-favorite-dialog';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
-/**
- * Pantalla de lista de favoritos (watchlist).
- *
- * Muestra los activos que el usuario sigue, con su precio actual y variación,
- * permite buscarlos, ordenarlos, paginarlos, navegar a sus pantallas de mercado
- * o alertas, eliminarlos de la lista y agregar nuevos activos a través de un
- * diálogo de búsqueda.
- */
 @Component({
   selector: 'app-watchlist',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent, TranslateModule],
   templateUrl: './watchlist.html',
   styleUrl: './watchlist.css'
 })
@@ -227,16 +220,11 @@ export class Watchlist implements OnInit {
 
     this.watchlistService.removeFavorite(normalizedSymbol).subscribe({
       next: response => {
-        if (!response.success) {
-          this.notificationService.error(response.message || 'No se pudo eliminar el favorito');
-          return;
-        }
-
-        this.notificationService.success(response.message || 'Favorito eliminado correctamente');
-        this.loadWatchlist();
+        this.notificationService.fromResponse(response.success, response.code, response.message);
+        if (response.success) this.loadWatchlist();
       },
       error: err => {
-        this.notificationService.error(err.error?.message ?? 'Error al eliminar favorito');
+        this.notificationService.fromResponse(false, err.error?.code, err.error?.message);
       }
     });
   }
@@ -261,16 +249,11 @@ export class Watchlist implements OnInit {
 
       this.watchlistService.addFavorite(normalizedSymbol).subscribe({
         next: res => {
-          if (!res.success) {
-            this.notificationService.error(res.message || 'No se pudo agregar el favorito');
-            return;
-          }
-
-          this.notificationService.success(res.message || 'Favorito agregado correctamente');
-          this.loadWatchlist();
+          this.notificationService.fromResponse(res.success, res.code, res.message);
+          if (res.success) this.loadWatchlist();
         },
         error: err => {
-          this.notificationService.error(err.error?.message ?? 'Error al agregar favorito');
+          this.notificationService.fromResponse(false, err.error?.code, err.error?.message);
         }
       });
     });

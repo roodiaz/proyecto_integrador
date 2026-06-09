@@ -1,8 +1,8 @@
 <div class="market-terminal">
   <section class="terminal-heading">
     <div class="terminal-title-block">
-      <h1>Mercado</h1>
-      <p>Analisis institucional y comparacion de activos.</p>
+      <h1>{{ 'MARKET.TITLE' | translate }}</h1>
+      <p>{{ 'MARKET.SUBTITLE' | translate }}</p>
     </div>
   </section>
 
@@ -13,7 +13,7 @@
           <div>
             <div class="index-name-row">
               <span class="index-name">{{ index.name }}</span>
-              <app-info-tooltip [text]="getIndexTooltip(index.name)" />
+              <app-info-tooltip [text]="getIndexTooltip(index.name) | translate" />
             </div>
             <strong>{{ formatNumber(index.value) }}</strong>
           </div>
@@ -52,14 +52,14 @@
           <div>
             <div class="index-name-row">
               <span class="index-name">{{ item.name }}</span>
-              <app-info-tooltip [text]="getIndexTooltip(item.name)" />
+              <app-info-tooltip [text]="getIndexTooltip(item.name) | translate" />
             </div>
             <strong>--</strong>
           </div>
 
           <div class="index-side neutral">
             <span>--%</span>
-            <small>Sin datos</small>
+            <small>{{ 'MARKET.NO_DATA' | translate }}</small>
           </div>
         </article>
       }
@@ -80,7 +80,7 @@
             </span>
 
             <app-info-tooltip
-              text="Esta sección muestra la información principal del activo: su nombre, precio actual y variación respecto al cierre del día anterior."
+              [text]="'MARKET.TOOLTIP_ASSET_INFO' | translate"
             />
           </div>
 
@@ -106,8 +106,8 @@
               <span class="skeleton skeleton-text short"></span>
             </div>
           } @else {
-            <h2>Buscá un activo</h2>
-            <p>{{ assetErrorMessage || 'Ingresá un símbolo para ver precio, métricas y evolución.' }}</p>
+            <h2>{{ 'MARKET.SEARCH_PROMPT_TITLE' | translate }}</h2>
+            <p>{{ assetErrorMessage || ('MARKET.SEARCH_PROMPT_DESC' | translate) }}</p>
           }
         </div>
       }
@@ -117,64 +117,64 @@
       @if (selectedAsset) {
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Open</span>
-            <app-info-tooltip [text]="statTooltips['Open']" />
+            <span>{{ 'MARKET.OPEN' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Open'] | translate" />
           </div>
           <strong>{{ formatNullableCurrency(selectedAsset.open) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Volume</span>
-            <app-info-tooltip [text]="statTooltips['Volume']" />
+            <span>{{ 'MARKET.VOLUME' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Volume'] | translate" />
           </div>
           <strong>{{ selectedAsset.volume == null ? '--' : formatVolume(selectedAsset.volume) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Day High</span>
-            <app-info-tooltip [text]="statTooltips['Day High']" />
+            <span>{{ 'MARKET.DAY_HIGH' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Day High'] | translate" />
           </div>
           <strong class="positive">{{ formatNullableCurrency(selectedAsset.dayHigh) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Day Low</span>
-            <app-info-tooltip [text]="statTooltips['Day Low']" />
+            <span>{{ 'MARKET.DAY_LOW' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Day Low'] | translate" />
           </div>
           <strong class="negative">{{ formatNullableCurrency(selectedAsset.dayLow) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Avg Vol</span>
-            <app-info-tooltip [text]="statTooltips['Avg Vol']" />
+            <span>{{ 'MARKET.AVG_VOLUME' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Avg Vol'] | translate" />
           </div>
           <strong>{{ selectedAsset.avgVolume == null ? '--' : formatVolume(selectedAsset.avgVolume) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Mkt Cap</span>
-            <app-info-tooltip [text]="statTooltips['Mkt Cap']" />
+            <span>{{ 'MARKET.MARKET_CAP' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Mkt Cap'] | translate" />
           </div>
           <strong>{{ selectedAsset.marketCap == null ? '--' : formatMarketCap(selectedAsset.marketCap) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>P/E Ratio</span>
-            <app-info-tooltip [text]="statTooltips['P/E Ratio']" />
+            <span>{{ 'MARKET.PE_RATIO' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['P/E Ratio'] | translate" />
           </div>
           <strong>{{ selectedAsset.peRatio == null ? '--' : selectedAsset.peRatio.toFixed(1) }}</strong>
         </div>
 
         <div class="stat-item">
           <div class="stat-label-row">
-            <span>Div Yield</span>
-            <app-info-tooltip [text]="statTooltips['Div Yield']" />
+            <span>{{ 'MARKET.DIVIDEND_YIELD' | translate }}</span>
+            <app-info-tooltip [text]="statTooltips['Div Yield'] | translate" />
           </div>
           <strong>{{ formatNullablePercent(selectedAsset.dividendYield) }}</strong>
         </div>
@@ -190,7 +190,7 @@
           <div class="stat-item empty-stat">
             <div class="stat-label-row">
               <span>{{ item }}</span>
-              <app-info-tooltip [text]="statTooltips[item] || ''" />
+              <app-info-tooltip [text]="(statTooltips[item] || '') | translate" />
             </div>
             <strong>--</strong>
           </div>
@@ -200,7 +200,7 @@
 
     <div class="asset-actions" [class.disabled-actions]="!selectedAsset">
       <div class="icon-actions">
-        <button type="button" [disabled]="!selectedAsset" (click)="openCreateAlert(selectedAsset!.symbol)" title="Crear alerta">
+        <button type="button" [disabled]="!selectedAsset" (click)="openCreateAlert(selectedAsset!.symbol)" [title]="'MARKET.CREATE_ALERT' | translate">
           <mat-icon>notifications</mat-icon>
         </button>
 
@@ -210,11 +210,11 @@
       </div>
 
       <button type="button" class="buy-btn" [disabled]="!selectedAsset" (click)="selectedAsset && buyAsset(selectedAsset.symbol)">
-        COMPRAR
+        {{ 'MARKET.BUY_BUTTON' | translate }}
       </button>
 
-      <button type="button" class="sell-btn" [disabled]="!selectedAsset || !hasPositionForSelectedAsset || loadingPositionStatus" (click)="selectedAsset && sellAsset(selectedAsset.symbol)" [title]="!hasPositionForSelectedAsset ? 'No tenés este activo en tu portfolio' : 'Vender activo'">
-        {{ loadingPositionStatus ? '...' : 'VENDER' }}
+      <button type="button" class="sell-btn" [disabled]="!selectedAsset || !hasPositionForSelectedAsset || loadingPositionStatus" (click)="selectedAsset && sellAsset(selectedAsset.symbol)">
+        {{ loadingPositionStatus ? ('COMMON.LOADING' | translate) : ('PORTFOLIO.SELL_BUTTON' | translate) }}
       </button>
     </div>
   </section>
@@ -224,9 +224,9 @@
       <div class="chart-title-section">
         <div class="chart-title-row">
           <h2 class="chart-title">
-            {{ selectedAsset ? selectedAsset.symbol : 'Activo' }} vs S&P 500 vs NASDAQ vs Dow Jones
+            {{ selectedAsset ? selectedAsset.symbol : ('MARKET.OVERVIEW' | translate) }} vs S&P 500 vs NASDAQ vs Dow Jones
           </h2>
-          <app-info-tooltip [text]="chartTooltipText" />
+          <app-info-tooltip [text]="chartTooltipText | translate" />
         </div>
 
         <div class="chart-subtitle">
@@ -236,15 +236,15 @@
             {{ selectedAsset ? ((getAssetChangePercent() >= 0 ? '+' : '') + getAssetChangePercent().toFixed(2) + '%') : '--%' }}
           </span>
 
-          <span class="period">vs mercado</span>
+          <span class="period">{{ 'MARKET.VS_MARKET' | translate }}</span>
         </div>
       </div>
 
       <div class="chart-controls">
         <div class="symbol-input-wrapper">
-          <input type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" placeholder="Buscar simbolo">
+          <input type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" [placeholder]="'MARKET.SEARCH_SYMBOL_PLACEHOLDER' | translate">
 
-          <button type="button" (click)="searchAsset()" title="Buscar activo">
+          <button type="button" (click)="searchAsset()" [title]="'COMMON.SEARCH' | translate">
             <mat-icon>search</mat-icon>
           </button>
         </div>
@@ -284,8 +284,8 @@
     } @else if (!selectedAsset) {
       <div class="card-empty modern-empty chart-no-data">
         <div class="card-empty-icon"><mat-icon>show_chart</mat-icon></div>
-        <div class="card-empty-title">Sin activo seleccionado</div>
-        <div class="card-empty-text">Buscá un símbolo para ver la evolución del precio comparada con el mercado.</div>
+        <div class="card-empty-title">{{ 'MARKET.NO_ASSET_SELECTED' | translate }}</div>
+        <div class="card-empty-text">{{ 'MARKET.NO_ASSET_SELECTED_TEXT' | translate }}</div>
       </div>
     } @else {
       <div class="chart-container">
@@ -300,12 +300,12 @@
       <div class="small-card-header">
         <div class="card-title-with-help">
           <div class="card-title-row">
-            <h3>Market Intelligence</h3>
+            <h3>{{ 'MARKET.NEWS_TITLE' | translate }}</h3>
             <app-info-tooltip
-              text="Noticias financieras recientes del mercado. Los eventos del mundo real pueden afectar el precio de los activos, por eso es útil mantenerse informado."
+              [text]="'MARKET.TOOLTIP_NEWS' | translate"
             />
           </div>
-          <p class="card-kicker">Noticias principales del mercado</p>
+          <p class="card-kicker">{{ 'MARKET.NEWS_SUBTITLE' | translate }}</p>
         </div>
 
         @if (marketNews.length > 1) {
@@ -345,7 +345,7 @@
           }
 
           <button type="button" class="read-more news-read-more" (click)="openNews(activeNews.url)">
-            Continuar leyendo
+            {{ 'MARKET.READ_MORE' | translate }}
             <mat-icon>arrow_forward</mat-icon>
           </button>
         </div>
@@ -354,8 +354,8 @@
       @if (!loadingNews && marketNews.length === 0) {
         <div class="card-empty modern-empty">
           <div class="card-empty-icon"><mat-icon>article</mat-icon></div>
-          <div class="card-empty-title">No hay noticias disponibles</div>
-          <div class="card-empty-text">Cuando haya reportes principales del mercado, se van a mostrar acá.</div>
+          <div class="card-empty-title">{{ 'MARKET.NO_NEWS_TITLE' | translate }}</div>
+          <div class="card-empty-text">{{ 'MARKET.NO_NEWS_TEXT' | translate }}</div>
         </div>
       }
 
@@ -376,12 +376,12 @@
         <div class="small-card-header">
           <div class="card-title-with-help">
             <div class="card-title-row">
-              <h3>Tendencias Ahora</h3>
+              <h3>{{ 'MARKET.TRENDING_TITLE' | translate }}</h3>
               <app-info-tooltip
-                text="Son los activos con mayor actividad de trading en este momento. Un volumen alto puede indicar que algo importante está pasando con esa acción."
+                [text]="'MARKET.TOOLTIP_TRENDING' | translate"
               />
             </div>
-            <p class="card-kicker">Activos con mayor actividad</p>
+            <p class="card-kicker">{{ 'MARKET.TRENDING_SUBTITLE' | translate }}</p>
           </div>
 
           <mat-icon>trending_up</mat-icon>
@@ -405,8 +405,8 @@
             } @empty {
               <div class="card-empty modern-empty compact-empty">
                 <div class="card-empty-icon"><mat-icon>bar_chart</mat-icon></div>
-                <div class="card-empty-title">Sin tendencias disponibles</div>
-                <div class="card-empty-text">Todavía no hay activos destacados para mostrar.</div>
+                <div class="card-empty-title">{{ 'MARKET.NO_TRENDING_TITLE' | translate }}</div>
+                <div class="card-empty-text">{{ 'MARKET.NO_TRENDING_TEXT' | translate }}</div>
               </div>
             }
           </div>
@@ -423,12 +423,12 @@
         <div class="small-card-header">
           <div class="card-title-with-help">
             <div class="card-title-row">
-              <h3>Ganadores del Día</h3>
+              <h3>{{ 'MARKET.GAINERS_TITLE' | translate }}</h3>
               <app-info-tooltip
-                text="Los activos que más subieron de precio hoy. Pueden reflejar buenas noticias sobre la empresa o el sector al que pertenecen."
+                [text]="'MARKET.TOOLTIP_GAINERS' | translate"
               />
             </div>
-            <p class="card-kicker">Mayores subas</p>
+            <p class="card-kicker">{{ 'MARKET.GAINERS_SUBTITLE' | translate }}</p>
           </div>
 
           <mat-icon>north_east</mat-icon>
@@ -452,8 +452,8 @@
             } @empty {
               <div class="card-empty modern-empty compact-empty">
                 <div class="card-empty-icon"><mat-icon>north_east</mat-icon></div>
-                <div class="card-empty-title">Sin ganadores disponibles</div>
-                <div class="card-empty-text">Cuando el mercado informe subas destacadas, aparecerán acá.</div>
+                <div class="card-empty-title">{{ 'MARKET.NO_GAINERS_TITLE' | translate }}</div>
+                <div class="card-empty-text">{{ 'MARKET.NO_GAINERS_TEXT' | translate }}</div>
               </div>
             }
           </div>
@@ -470,12 +470,12 @@
         <div class="small-card-header">
           <div class="card-title-with-help">
             <div class="card-title-row">
-              <h3>Perdedores del Día</h3>
+              <h3>{{ 'MARKET.LOSERS_TITLE' | translate }}</h3>
               <app-info-tooltip
-                text="Los activos que más cayeron de precio hoy. Pueden reflejar malas noticias, ventas masivas o resultados negativos del mercado."
+                [text]="'MARKET.TOOLTIP_LOSERS' | translate"
               />
             </div>
-            <p class="card-kicker">Mayores bajas</p>
+            <p class="card-kicker">{{ 'MARKET.LOSERS_SUBTITLE' | translate }}</p>
           </div>
 
           <mat-icon>south_east</mat-icon>
@@ -499,8 +499,8 @@
             } @empty {
               <div class="card-empty modern-empty compact-empty">
                 <div class="card-empty-icon"><mat-icon>trending_down</mat-icon></div>
-                <div class="card-empty-title">Sin perdedores disponibles</div>
-                <div class="card-empty-text">Cuando el mercado informe bajas destacadas, aparecerán acá.</div>
+                <div class="card-empty-title">{{ 'MARKET.NO_LOSERS_TITLE' | translate }}</div>
+                <div class="card-empty-text">{{ 'MARKET.NO_LOSERS_TEXT' | translate }}</div>
               </div>
             }
           </div>

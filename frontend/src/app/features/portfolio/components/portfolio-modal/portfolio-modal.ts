@@ -1,10 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PortfolioService } from '../../services/portfolio.service';
 import { BuyData, SellData, PortfolioModalData, PortfolioPosition, PortfolioModalResult } from '../../models/portfolio.modal.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { LanguageService } from '../../../../core/services/language.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
@@ -21,7 +23,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
 @Component({
   selector: 'app-portfolio-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent, TranslateModule],
   templateUrl: './portfolio-modal.html',
   styleUrl: './portfolio-modal.css'
 })
@@ -53,7 +55,8 @@ export class PortfolioModal implements OnInit {
     private dialogRef: MatDialogRef<PortfolioModal, PortfolioModalResult>,
     @Inject(MAT_DIALOG_DATA) public data: PortfolioModalData,
     private portfolioService: PortfolioService,
-    private snackBarService: SnackBarService
+    private snackBarService: SnackBarService,
+    private languageService: LanguageService
   ) {
     this.mode = data.mode;
     this.symbol = data.symbol ?? '';
@@ -86,7 +89,7 @@ export class PortfolioModal implements OnInit {
     this.portfolioService.getPosition(this.symbol).subscribe({
       next: response => {
         if (!response.success || !response.data) {
-          this.snackBarService.error(response.message || 'No se pudo obtener la posición');
+          this.snackBarService.fromResponse(response.success, response.code, response.message || this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
           this.onClose();
           return;
         }
@@ -95,8 +98,8 @@ export class PortfolioModal implements OnInit {
         this.sellQuantity = 1;
       },
       error: error => {
-        console.error('No se pudo obtener la posición', error);
-        this.snackBarService.error('No se pudo obtener la posición');
+        console.error('loadPosition error', error);
+        this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
         this.onClose();
       }
     });
@@ -120,17 +123,17 @@ export class PortfolioModal implements OnInit {
 
         if (!response.success || !response.data) {
           this.marketPrice = 0;
-          this.snackBarService.info(response.message || 'No se encontró el activo');
+          this.snackBarService.fromResponse(response.success, response.code, response.message || this.languageService.instant('PORTFOLIO.ERRORS.ASSET_NOT_FOUND'));
           return;
         }
 
         this.marketPrice = response.data.currentPrice;
       },
       error: error => {
-        console.error('Error al obtener precio', error);
+        console.error('loadMarketPrice error', error);
         this.isLoadingPrice = false;
         this.marketPrice = 0;
-        this.snackBarService.error('No se pudo obtener el precio del activo');
+        this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.PRICE_FETCH_FAILED'));
       }
     });
   }
@@ -139,7 +142,9 @@ export class PortfolioModal implements OnInit {
 
   /** @returns El título del modal según el modo de operación actual. */
   get modalTitle(): string {
-    return this.mode === 'buy' ? 'Nueva operación' : 'Vender activo';
+    return this.mode === 'buy'
+      ? this.languageService.instant('PORTFOLIO.MODAL.OP_TITLE_BUY')
+      : this.languageService.instant('PORTFOLIO.MODAL.OP_TITLE_SELL');
   }
 
   /** @returns El saldo disponible del usuario para realizar compras. */

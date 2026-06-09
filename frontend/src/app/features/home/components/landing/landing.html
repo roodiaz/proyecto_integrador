@@ -32,8 +32,8 @@
         </div>
 
         <div class="header-actions">
-            <a class="login-link" routerLink="/login">Ingresar</a>
-            <a class="register-btn" routerLink="/registro">Comenzar ahora</a>
+            <a class="login-link" routerLink="/login">{{ 'HOME.LANDING.LOGIN_LINK' | translate }}</a>
+            <a class="register-btn" routerLink="/registro">{{ 'HOME.LANDING.REGISTER_NOW' | translate }}</a>
         </div>
 
     </header>
@@ -52,43 +52,41 @@
 
             <div class="hero-badge">
                 <span class="hero-badge-icon hero-badge-pulse">⌁</span>
-                <span>Simulación de Inversiones Sin Riesgo</span>
+                <span>{{ 'HOME.LANDING.HERO_BADGE' | translate }}</span>
             </div>
 
             <h1 class="hero-title">
-                Aprendé a invertir
+                {{ 'HOME.LANDING.HERO_TITLE' | translate }}
                 <br>
-                <span class="highlight">sin arriesgar dinero real.</span>
+                <span class="highlight">{{ 'HOME.LANDING.HERO_TITLE_HL' | translate }}</span>
             </h1>
 
             <p class="hero-description">
-                Accedé a la terminal de grado institucional de InvestLab.
-                Operá en mercados reales con datos en vivo utilizando nuestro
-                simulador de alta precisión.
+                {{ 'HOME.LANDING.HERO_DESC' | translate }}
             </p>
 
             <div class="hero-actions">
-                <a class="primary-action" routerLink="/registro">Comenzar ahora →</a>
-                <a class="secondary-action" routerLink="/contacto">Conocer más</a>
+                <a class="primary-action" routerLink="/registro">{{ 'HOME.LANDING.HERO_CTA_PRIMARY' | translate }}</a>
+                <a class="secondary-action" routerLink="/contacto">{{ 'HOME.LANDING.HERO_CTA_SECONDARY' | translate }}</a>
             </div>
 
             <!-- STATS -->
             <div class="stats-grid">
                 <div class="stat-card reveal">
-                    <span class="stat-label">Capital Virtual</span>
+                    <span class="stat-label">{{ 'HOME.LANDING.STAT_VIRTUAL_CAPITAL' | translate }}</span>
                     <span class="stat-value">USD 10.000</span>
                 </div>
                 <div class="stat-card reveal">
-                    <span class="stat-label">Sin Riesgo Real</span>
-                    <span class="stat-value">Simulación educativa</span>
+                    <span class="stat-label">{{ 'HOME.LANDING.STAT_NO_RISK' | translate }}</span>
+                    <span class="stat-value">{{ 'HOME.LANDING.STAT_NO_RISK_VAL' | translate }}</span>
                 </div>
                 <div class="stat-card reveal">
-                    <span class="stat-label">Alertas Configurables</span>
-                    <span class="stat-value">Precio y variación %</span>
+                    <span class="stat-label">{{ 'HOME.LANDING.STAT_ALERTS' | translate }}</span>
+                    <span class="stat-value">{{ 'HOME.LANDING.STAT_ALERTS_VAL' | translate }}</span>
                 </div>
                 <div class="stat-card reveal">
-                    <span class="stat-label">Portfolio Personal</span>
-                    <span class="stat-value">Evolución y rendimiento</span>
+                    <span class="stat-label">{{ 'HOME.LANDING.STAT_PORTFOLIO' | translate }}</span>
+                    <span class="stat-value">{{ 'HOME.LANDING.STAT_PORTFOLIO_VAL' | translate }}</span>
                 </div>
             </div>
 
@@ -129,11 +127,8 @@
     <section class="capabilities-section">
 
         <div class="section-header reveal">
-            <h2>Todo lo que necesitás para empezar a invertir</h2>
-            <p>
-                InvestLab reúne en un solo lugar las herramientas de un inversor profesional,
-                pensadas para que aprendas practicando, sin poner en riesgo tu dinero.
-            </p>
+            <h2>{{ 'HOME.LANDING.CAP_SECTION_TITLE' | translate }}</h2>
+            <p>{{ 'HOME.LANDING.CAP_SECTION_DESC' | translate }}</p>
         </div>
 
         <div class="capabilities-grid">
@@ -142,8 +137,8 @@
                     <div class="capability-icon">
                         <mat-icon>{{ capability.icon }}</mat-icon>
                     </div>
-                    <h3>{{ capability.title }}</h3>
-                    <p>{{ capability.description }}</p>
+                    <h3>{{ capability.title | translate }}</h3>
+                    <p>{{ capability.description | translate }}</p>
                 </div>
             }
         </div>
@@ -156,12 +151,10 @@
         <div class="benefits-layout">
 
             <div class="benefits-copy reveal">
-                <p class="eyebrow">Por qué InvestLab</p>
-                <h2>Una experiencia pensada para que ganes confianza</h2>
+                <p class="eyebrow">{{ 'HOME.LANDING.BENEFITS_EYEBROW' | translate }}</p>
+                <h2>{{ 'HOME.LANDING.BENEFITS_TITLE' | translate }}</h2>
                 <p class="benefits-description">
-                    Cada herramienta de la plataforma está diseñada para acercarte
-                    a la dinámica real del mercado financiero, sin la presión de
-                    arriesgar capital propio.
+                    {{ 'HOME.LANDING.BENEFITS_DESC' | translate }}
                 </p>
 
                 <div class="benefit-dots">
@@ -171,7 +164,7 @@
                             class="benefit-dot"
                             [class.active]="i === activeBenefitIndex"
                             (click)="selectBenefit(i)"
-                            [attr.aria-label]="'Ver beneficio: ' + benefit.title">
+                            [attr.aria-label]="benefit.title | translate">
                         </button>
                     }
                 </div>
@@ -183,8 +176,8 @@
                         <div class="benefit-icon">
                             <mat-icon>{{ benefit.icon }}</mat-icon>
                         </div>
-                        <h3>{{ benefit.title }}</h3>
-                        <p>{{ benefit.description }}</p>
+                        <h3>{{ benefit.title | translate }}</h3>
+                        <p>{{ benefit.description | translate }}</p>
                     </div>
                 }
             </div>
@@ -197,12 +190,8 @@
     <section class="features-section">
 
         <div class="section-header reveal">
-            <h2>Diseñado para la precisión profesional</h2>
-            <p>
-                Nuestra plataforma no es un juego.
-                Es un entorno de entrenamiento riguroso que utiliza conceptos
-                y herramientas similares a las utilizadas en entornos financieros reales.
-            </p>
+            <h2>{{ 'HOME.LANDING.FEATURES_SEC_TITLE' | translate }}</h2>
+            <p>{{ 'HOME.LANDING.FEATURES_SEC_DESC' | translate }}</p>
         </div>
 
         <div class="features-layout">
@@ -212,33 +201,24 @@
                 <div class="feature-item reveal">
                     <div class="feature-icon"><mat-icon>show_chart</mat-icon></div>
                     <div>
-                        <h3>Datos en tiempo real</h3>
-                        <p>
-                            Visualizá movimientos del mercado actualizados y tomá decisiones
-                            basadas en información relevante.
-                        </p>
+                        <h3>{{ 'HOME.LANDING.FEAT_REALTIME_TITLE' | translate }}</h3>
+                        <p>{{ 'HOME.LANDING.FEAT_REALTIME_DESC' | translate }}</p>
                     </div>
                 </div>
 
                 <div class="feature-item reveal">
                     <div class="feature-icon"><mat-icon>notifications_active</mat-icon></div>
                     <div>
-                        <h3>Alertas Inteligentes</h3>
-                        <p>
-                            Configurá alertas de precio y porcentaje para no perder ninguna
-                            oportunidad del mercado.
-                        </p>
+                        <h3>{{ 'HOME.LANDING.FEAT_ALERTS_TITLE' | translate }}</h3>
+                        <p>{{ 'HOME.LANDING.FEAT_ALERTS_DESC' | translate }}</p>
                     </div>
                 </div>
 
                 <div class="feature-item reveal">
                     <div class="feature-icon"><mat-icon>account_balance_wallet</mat-icon></div>
                     <div>
-                        <h3>Portafolio Simulado</h3>
-                        <p>
-                            Administrá inversiones virtuales y analizá tu rendimiento
-                            como si estuvieras operando en un entorno real.
-                        </p>
+                        <h3>{{ 'HOME.LANDING.FEAT_PORTFOLIO_TITLE' | translate }}</h3>
+                        <p>{{ 'HOME.LANDING.FEAT_PORTFOLIO_DESC' | translate }}</p>
                     </div>
                 </div>
 
@@ -257,12 +237,9 @@
     <!-- CTA -->
     <section class="cta-section">
         <div class="cta-card reveal">
-            <h2>Transformá tu aprendizaje financiero</h2>
-            <p>
-                Practicá estrategias, analizá mercados y adquirí experiencia sin
-                arriesgar dinero real.
-            </p>
-            <a routerLink="/registro" class="cta-button">Crear cuenta gratuita</a>
+            <h2>{{ 'HOME.LANDING.CTA_TITLE' | translate }}</h2>
+            <p>{{ 'HOME.LANDING.CTA_DESC' | translate }}</p>
+            <a routerLink="/registro" class="cta-button">{{ 'HOME.LANDING.CTA_BUTTON' | translate }}</a>
         </div>
     </section>
 
@@ -271,13 +248,13 @@
 
         <div class="footer-brand">
             <h3>InvestLab</h3>
-            <p>© 2026 InvestLab. Todos los derechos reservados.</p>
+            <p>{{ 'HOME.LANDING.FOOTER_COPY' | translate }}</p>
         </div>
 
         <div class="footer-links">
-            <a href="#">Privacidad</a>
-            <a href="#">Términos</a>
-            <a routerLink="/contacto">Soporte</a>
+            <a href="#">{{ 'HOME.LANDING.FOOTER_PRIVACY' | translate }}</a>
+            <a href="#">{{ 'HOME.LANDING.FOOTER_TERMS' | translate }}</a>
+            <a routerLink="/contacto">{{ 'HOME.LANDING.FOOTER_SUPPORT' | translate }}</a>
         </div>
 
     </footer>

@@ -11,6 +11,7 @@ using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static InvestLab.Models.Enums;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services.Api;
 
@@ -82,31 +83,31 @@ public class PortfolioService : IPortfolioService
             if (user == null)
             {
                 _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
             if (settings == null)
             {
                 _logger.LogWarning("Settings no encontrados: {UserId}", userId);
-                return Response.Fail("Configuración no encontrada");
+                return Response.Fail("Configuración no encontrada", SETTINGS_NOT_FOUND);
             }
 
             if (settings.OperationsUsedToday >= _limits.MaxOperationsPerDay)
             {
                 _logger.LogWarning("Límite diario alcanzado: {UserId}", userId);
-                return Response.Fail("Límite diario alcanzado");
+                return Response.Fail("Límite diario alcanzado", MAX_DAILY_OPERATIONS_REACHED);
             }
 
             var asset = await _assetService.GetOrCreateAsync(dto.Symbol);
             if (asset == null)
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
             var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", asset.Symbol);
-                return Response.Fail("No se pudo obtener el precio");
+                return Response.Fail("No se pudo obtener el precio", PRICE_NOT_AVAILABLE);
             }
 
             var total = dto.Quantity * market.Price;
@@ -114,7 +115,7 @@ public class PortfolioService : IPortfolioService
             if (user.Balance < total)
             {
                 _logger.LogWarning("Saldo insuficiente: {UserId}", userId);
-                return Response.Fail("Saldo insuficiente. Podés vender activos o reiniciar tu portfolio simulado.");
+                return Response.Fail("Saldo insuficiente. Podés vender activos o reiniciar tu portfolio simulado.", INSUFFICIENT_BALANCE);
             }
 
             var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
@@ -164,13 +165,13 @@ public class PortfolioService : IPortfolioService
 
             _logger.LogInformation("Compra realizada: UserId={UserId}, Asset={Asset}, Quantity={Quantity}", userId, asset.Symbol, dto.Quantity);
 
-            return Response.Ok(null, "Compra realizada correctamente");
+            return Response.Ok(null, "Compra realizada correctamente", BUY_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al comprar activo");
 
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -188,45 +189,45 @@ public class PortfolioService : IPortfolioService
             if (user == null)
             {
                 _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
             if (settings == null)
             {
                 _logger.LogWarning("Settings no encontrados: {UserId}", userId);
-                return Response.Fail("Configuración no encontrada");
+                return Response.Fail("Configuración no encontrada", SETTINGS_NOT_FOUND);
             }
             if (settings.OperationsUsedToday >= _limits.MaxOperationsPerDay)
             {
                 _logger.LogWarning("Límite diario alcanzado: {UserId}", userId);
-                return Response.Fail("Límite diario alcanzado");
+                return Response.Fail("Límite diario alcanzado", MAX_DAILY_OPERATIONS_REACHED);
             }
 
             var asset = await _assetRepository.GetAsync(dto.Symbol);
             if (asset == null)
             {
                 _logger.LogWarning("Activo no encontrado: {AssetId}", dto.Symbol);
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
             }
 
             var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
             if (portfolio == null)
             {
                 _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, AssetId={AssetId}", userId, asset.Id);
-                return Response.Fail("Activo no encontrado en portfolio");
+                return Response.Fail("Activo no encontrado en portfolio", POSITION_NOT_FOUND);
             }
             if (portfolio.Quantity < dto.Quantity)
             {
                 _logger.LogWarning("Cantidad insuficiente: UserId={UserId}, AssetId={AssetId}", userId, asset.Id);
-                return Response.Fail("Cantidad insuficiente");
+                return Response.Fail("Cantidad insuficiente", INSUFFICIENT_SHARES);
             }
 
             var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", asset.Symbol);
-                return Response.Fail("No se pudo obtener el precio");
+                return Response.Fail("No se pudo obtener el precio", PRICE_NOT_AVAILABLE);
             }
 
             var total = dto.Quantity * market.Price;
@@ -260,13 +261,13 @@ public class PortfolioService : IPortfolioService
 
             _logger.LogInformation("Venta realizada: UserId={UserId}, Asset={Asset}, Quantity={Quantity}", userId, asset.Symbol, dto.Quantity);
 
-            return Response.Ok(null, "Venta realizada correctamente");
+            return Response.Ok(null, "Venta realizada correctamente", SELL_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al vender activo");
 
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -284,21 +285,21 @@ public class PortfolioService : IPortfolioService
             if (asset == null)
             {
                 _logger.LogWarning("Activo no encontrado: {AssetId}", symbol);
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
             }
 
             var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
             if (portfolio == null)
             {
                 _logger.LogWarning("Posición no encontrada: UserId={UserId}, AssetId={AssetId}", userId, asset.Id);
-                return Response.Fail("Posición no encontrada");
+                return Response.Fail("Posición no encontrada", POSITION_NOT_FOUND);
             }
 
             var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", asset.Symbol);
-                return Response.Fail("No se pudo obtener el precio");
+                return Response.Fail("No se pudo obtener el precio", PRICE_NOT_AVAILABLE);
             }
 
             var response = new PortfolioPositionDto
@@ -317,7 +318,7 @@ public class PortfolioService : IPortfolioService
         {
             _logger.LogError(ex, "Error al obtener posición");
 
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -334,14 +335,14 @@ public class PortfolioService : IPortfolioService
             if (asset == null)
             {
                 _logger.LogWarning("Activo no encontrado: {Symbol}", symbol);
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
             }
 
             var market = await _providerResolver.GetProvider().GetPriceAsync(asset.Symbol);
             if (market == null)
             {
                 _logger.LogWarning("No se pudo obtener precio: {Symbol}", symbol);
-                return Response.Fail("No se pudo obtener el precio");
+                return Response.Fail("No se pudo obtener el precio", PRICE_NOT_AVAILABLE);
             }
 
             var response = new AssetPriceDto
@@ -358,7 +359,7 @@ public class PortfolioService : IPortfolioService
         {
             _logger.LogError(ex, "Error al obtener precio");
 
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -375,14 +376,14 @@ public class PortfolioService : IPortfolioService
             if (user == null)
             {
                 _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
             if (settings == null)
             {
                 _logger.LogWarning("Settings no encontrados: {UserId}", userId);
-                return Response.Fail("Configuración no encontrada");
+                return Response.Fail("Configuración no encontrada", SETTINGS_NOT_FOUND);
             }
 
             var portfolio = await _portfolioRepository.GetByUserAsync(userId);
@@ -433,7 +434,7 @@ public class PortfolioService : IPortfolioService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener resumen portfolio");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -490,7 +491,7 @@ public class PortfolioService : IPortfolioService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener pie chart portfolio");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -577,7 +578,7 @@ public class PortfolioService : IPortfolioService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al obtener open positions");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -619,7 +620,7 @@ public class PortfolioService : IPortfolioService
         {
             _logger.LogError(ex, "Error al obtener line chart portfolio");
 
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -726,7 +727,7 @@ public class PortfolioService : IPortfolioService
             if (user == null)
             {
                 _logger.LogWarning("Usuario no encontrado al reiniciar portfolio: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             await _portfolioHistoryRepository.DeleteByUserIdAsync(userId);
@@ -739,12 +740,12 @@ public class PortfolioService : IPortfolioService
 
             _logger.LogInformation("Portfolio reiniciado correctamente: UserId={UserId}", userId);
 
-            return Response.Ok(null, "Portfolio reiniciado correctamente");
+            return Response.Ok(null, "Portfolio reiniciado correctamente", PORTFOLIO_RESET_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al reiniciar portfolio: UserId={UserId}", userId);
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 }

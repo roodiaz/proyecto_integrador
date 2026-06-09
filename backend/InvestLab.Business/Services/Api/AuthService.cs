@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static InvestLab.Models.MessageCodes;
 
 public class AuthService : IAuthService
 {
@@ -65,7 +66,7 @@ public class AuthService : IAuthService
         try
         {
             if (registerDto.Password != registerDto.ConfirmPassword)
-                return Response.Fail("Las contraseñas no coinciden");
+                return Response.Fail("Las contraseñas no coinciden", PASSWORDS_DO_NOT_MATCH);
 
             var existingUser = await _userRepository.GetByEmailAsync(registerDto.Email);
 
@@ -83,10 +84,11 @@ public class AuthService : IAuthService
                     },
                     emailSent
                         ? "Ya existe una cuenta sin verificar."
-                        : "La cuenta existe pero no pudimos reenviar el código.");
+                        : "La cuenta existe pero no pudimos reenviar el código.",
+                    UNVERIFIED_ACCOUNT_EXISTS);
                 }
 
-                return Response.Fail("El email ya está registrado");
+                return Response.Fail("El email ya está registrado", EMAIL_ALREADY_REGISTERED);
             }
 
             var user = new User
@@ -107,7 +109,8 @@ public class AuthService : IAuthService
             {
                 User = user,
                 Currency = "USD",
-                EmailNotifications = true
+                EmailNotifications = true,
+                Language = "es"
             };
 
             await _userSettingRepository.AddAsync(userProfile);
@@ -123,7 +126,7 @@ public class AuthService : IAuthService
                     requiresVerification = true,
                     email = user.Email,
                     emailSent = true
-                });
+                }, code: REGISTRATION_SUCCESS);
             }
 
             return Response.Ok(new
@@ -132,12 +135,13 @@ public class AuthService : IAuthService
                 email = user.Email,
                 emailSent = false
             },
-            "La cuenta fue creada correctamente, pero no pudimos enviar el correo de verificación. Intente reenviar el código.");
+            "La cuenta fue creada correctamente, pero no pudimos enviar el correo de verificación. Intente reenviar el código.",
+            REGISTRATION_SUCCESS_EMAIL_FAILED);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en Register");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -154,11 +158,11 @@ public class AuthService : IAuthService
             if (user == null)
             {
                 _logger.LogWarning("Verify: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
             if (user.IsActive)
             {
-                return Response.Ok(null, "La cuenta ya se encuentra verificada");
+                return Response.Ok(null, "La cuenta ya se encuentra verificada", ACCOUNT_ALREADY_VERIFIED);
             }
 
             var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
@@ -166,7 +170,7 @@ public class AuthService : IAuthService
             if (!validation.Success)
             {
                 _logger.LogWarning("Verify: {Reason} {UserId}", validation.ErrorMessage, user.Id);
-                return Response.Fail(validation.ErrorMessage!);
+                return Response.Fail(validation.ErrorMessage!, validation.ErrorCode);
             }
 
             validation.Credential!.IsUsed = true;
@@ -176,12 +180,12 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Usuario verificado correctamente {Email}", user.Email);
 
-            return Response.Ok(null, "Cuenta verificada correctamente");
+            return Response.Ok(null, "Cuenta verificada correctamente", ACCOUNT_VERIFIED);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en VerifyAsync para {Email}", dto.Email);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -199,13 +203,13 @@ public class AuthService : IAuthService
             if (user == null)
             {
                 _logger.LogWarning("Resend: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             if (user.IsActive)
             {
                 _logger.LogWarning("Resend: usuario ya verificado {Email}", dto.Email);
-                return Response.Fail("La cuenta ya está verificada");
+                return Response.Fail("La cuenta ya está verificada", ACCOUNT_ALREADY_VERIFIED);
             }
 
             var emailSent = await ResendCodeInternal(user);
@@ -223,12 +227,13 @@ public class AuthService : IAuthService
             },
             emailSent
                 ? "Se envió un nuevo código"
-                : "No pudimos enviar el correo de verificación. Intente reenviar el código.");
+                : "No pudimos enviar el correo de verificación. Intente reenviar el código.",
+            emailSent ? CODE_RESENT : CODE_RESEND_FAILED);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en ResendCodeAsync para {Email}", dto.Email);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -245,15 +250,15 @@ public class AuthService : IAuthService
             var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user == null)
-                return Response.Fail("Email o contraseña incorrectos");
+                return Response.Fail("Email o contraseña incorrectos", INVALID_CREDENTIALS);
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
             if (result == PasswordVerificationResult.Failed)
-                return Response.Fail("Email o contraseña incorrectos");
+                return Response.Fail("Email o contraseña incorrectos", INVALID_CREDENTIALS);
 
             if (!user.IsActive)
-                return Response.Fail("Debes verificar tu cuenta");
+                return Response.Fail("Debes verificar tu cuenta", ACCOUNT_NOT_VERIFIED);
 
             var tokens = await _jwtService.GenerateTokensAsync(user);
 
@@ -271,12 +276,12 @@ public class AuthService : IAuthService
 
             await _unitOfWork.SaveChangesAsync();
 
-            return Response.Ok(new { tokens });
+            return Response.Ok(new { tokens }, code: LOGIN_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en Login");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -293,10 +298,10 @@ public class AuthService : IAuthService
             var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
 
             if (storedToken == null || storedToken.IsRevoked)
-                return Response.Fail("Token inválido");
+                return Response.Fail("Token inválido", INVALID_TOKEN);
 
             if (storedToken.ExpiresAt < DateTime.UtcNow)
-                return Response.Fail("Token expirado");
+                return Response.Fail("Token expirado", TOKEN_EXPIRED);
 
             var user = storedToken.User;
 
@@ -315,12 +320,12 @@ public class AuthService : IAuthService
 
             await _unitOfWork.SaveChangesAsync();
 
-            return Response.Ok(new { tokens });
+            return Response.Ok(new { tokens }, code: LOGIN_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en Refresh");
-            return Response.Fail("Error interno");
+            return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }
 
@@ -347,12 +352,12 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Logout exitoso para usuario {UserId}", storedToken.UserId);
 
-            return Response.Ok(null, "Logout exitoso");
+            return Response.Ok(null, "Logout exitoso", LOGOUT_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en LogoutAsync");
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -372,7 +377,7 @@ public class AuthService : IAuthService
             if (user == null)
             {
                 _logger.LogWarning("ForgotPassword: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("No existe una cuenta asociada a ese email");
+                return Response.Fail("No existe una cuenta asociada a ese email", ACCOUNT_NOT_FOUND_FOR_EMAIL);
             }
 
             var emailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Recuperación de contraseña");
@@ -389,12 +394,13 @@ public class AuthService : IAuthService
             },
             emailSent
                 ? "Se envió un código de recuperación a tu correo electrónico"
-                : "No pudimos enviar el correo de recuperación. Intente nuevamente.");
+                : "No pudimos enviar el correo de recuperación. Intente nuevamente.",
+            emailSent ? RECOVERY_EMAIL_SENT : RECOVERY_EMAIL_FAILED);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en ForgotPasswordAsync para {Email}", dto.Email);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 
@@ -410,14 +416,14 @@ public class AuthService : IAuthService
         try
         {
             if (dto.NewPassword != dto.ConfirmPassword)
-                return Response.Fail("Las contraseñas no coinciden");
+                return Response.Fail("Las contraseñas no coinciden", PASSWORDS_DO_NOT_MATCH);
 
             var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user == null)
             {
                 _logger.LogWarning("ResetPassword: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("Usuario no encontrado");
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
             }
 
             var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
@@ -425,7 +431,7 @@ public class AuthService : IAuthService
             if (!validation.Success)
             {
                 _logger.LogWarning("ResetPassword: {Reason} {UserId}", validation.ErrorMessage, user.Id);
-                return Response.Fail(validation.ErrorMessage!);
+                return Response.Fail(validation.ErrorMessage!, validation.ErrorCode);
             }
 
             validation.Credential!.IsUsed = true;
@@ -439,12 +445,12 @@ public class AuthService : IAuthService
 
             _logger.LogInformation("Contraseña restablecida correctamente para {Email}", user.Email);
 
-            return Response.Ok(null, "Contraseña actualizada correctamente");
+            return Response.Ok(null, "Contraseña actualizada correctamente", PASSWORD_RESET_SUCCESS);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en ResetPasswordAsync para {Email}", dto.Email);
-            return Response.Fail("Error interno del servidor");
+            return Response.Fail("Error interno del servidor", INTERNAL_ERROR);
         }
     }
 

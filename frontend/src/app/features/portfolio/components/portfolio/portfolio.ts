@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, effect } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -8,6 +9,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { PortfolioService } from '../../services/portfolio.service';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { LanguageService } from '../../../../core/services/language.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
@@ -32,7 +34,7 @@ import {
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, InfoTooltipComponent, TranslateModule],
   templateUrl: './portfolio.html',
   styleUrl: './portfolio.css',
 })
@@ -116,6 +118,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     private portfolioService: PortfolioService,
     private dialog: MatDialog,
     private themeService: ThemeService,
+    private languageService: LanguageService,
   ) {
     Chart.register(...registerables);
     effect(() => {
@@ -500,7 +503,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       .pipe(finalize(() => this.downloadingHoldings = false))
       .subscribe({
         next: (blob) => this.triggerDownload(blob, 'tenencias.xlsx'),
-        error: () => this.snackBarService.error('Error al exportar las tenencias'),
+        error: () => this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.EXPORT_HOLDINGS_FAILED')),
       });
   }
 
@@ -520,7 +523,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       .pipe(finalize(() => this.downloadingTransactions = false))
       .subscribe({
         next: (blob) => this.triggerDownload(blob, 'operaciones.xlsx'),
-        error: () => this.snackBarService.error('Error al exportar las operaciones'),
+        error: () => this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.EXPORT_TRANSACTIONS_FAILED')),
       });
   }
 
@@ -561,7 +564,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx: any) => `Valor: $${(ctx.parsed as number).toLocaleString('es-ES')}`,
+              label: (ctx: any) => this.languageService.instant('PORTFOLIO.CHART_VALUE_LABEL', { value: (ctx.parsed as number).toLocaleString('es-ES') }),
             },
           },
         },
@@ -605,7 +608,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       data: {
         labels: data.map(d => formatTick(d.date)),
         datasets: [{
-          label: 'Portfolio Value',
+          label: this.languageService.instant('PORTFOLIO.PERFORMANCE'),
           data: data.map(d => d.totalValue),
           borderColor: '#4ECDC4',
           backgroundColor: 'rgba(78, 205, 196, 0.1)',
@@ -689,14 +692,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   onBuyComplete(data: BuyData): void {
     this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
       next: (res) => {
-        if (res.success) {
-          this.snackBarService.success(res.message || 'Compra realizada correctamente');
-          this.refreshPortfolio();
-        } else {
-          this.snackBarService.info(res.message || 'No se pudo realizar la compra');
-        }
+        this.snackBarService.fromResponse(res.success, res.code, res.message);
+        if (res.success) this.refreshPortfolio();
       },
-      error: () => this.snackBarService.error('Error al realizar la compra'),
+      error: () => this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.BUY_ERROR')),
     });
   }
 
@@ -708,14 +707,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   sellPosition(data: SellData): void {
     this.portfolioService.sell(data).subscribe({
       next: (res) => {
-        if (res.success) {
-          this.snackBarService.success(res.message || 'Venta realizada correctamente');
-          this.refreshPortfolio();
-        } else {
-          this.snackBarService.info(res.message || 'No se pudo realizar la venta');
-        }
+        this.snackBarService.fromResponse(res.success, res.code, res.message);
+        if (res.success) this.refreshPortfolio();
       },
-      error: (err) => this.snackBarService.error(err.error?.message ?? 'Error al vender activo'),
+      error: (err) => this.snackBarService.fromResponse(false, err.error?.code, err.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.SELL_ERROR')),
     });
   }
 
@@ -732,8 +727,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       width: '420px',
       backdropClass: 'blur-backdrop',
       data: {
-        title: 'Reiniciar portfolio',
-        message: '¿Estás segura de que querés reiniciar tu portfolio? Se eliminarán tus tenencias, operaciones e historial de evolución. Tu saldo volverá al monto inicial.'
+        title: this.languageService.instant('PORTFOLIO.RESET_DIALOG.TITLE'),
+        message: this.languageService.instant('PORTFOLIO.RESET_DIALOG.MESSAGE')
       }
     });
 
@@ -752,16 +747,11 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   resetSimulation(): void {
     this.portfolioService.resetSimulation().subscribe({
       next: response => {
-        if (response.success) {
-          this.snackBarService.success(response.message || 'Portfolio reiniciado correctamente');
-          this.refreshPortfolio();
-          return;
-        }
-
-        this.snackBarService.info(response.message || 'No se pudo reiniciar el portfolio');
+        this.snackBarService.fromResponse(response.success, response.code, response.message);
+        if (response.success) this.refreshPortfolio();
       },
       error: error => {
-        this.snackBarService.error(error.error?.message ?? 'Error al reiniciar el portfolio');
+        this.snackBarService.fromResponse(false, error.error?.code, error.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.RESET_ERROR'));
       }
     });
   }

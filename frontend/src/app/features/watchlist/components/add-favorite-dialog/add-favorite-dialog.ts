@@ -3,16 +3,9 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material.module';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
-/**
- * Diálogo para agregar un activo a la lista de favoritos (watchlist).
- *
- * Permite buscar un activo por símbolo y agregarlo directamente, o elegirlo
- * de una lista de activos populares predefinida. Al confirmar, cierra el
- * diálogo devolviendo el símbolo elegido para que el componente que lo abrió
- * lo agregue a favoritos.
- */
 @Component({
     selector: 'app-add-favorite-dialog',
     standalone: true,
@@ -20,7 +13,8 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
         CommonModule,
         MaterialModule,
         FormsModule,
-        InfoTooltipComponent
+        InfoTooltipComponent,
+        TranslateModule
     ],
     templateUrl: './add-favorite-dialog.html',
     styleUrl: './add-favorite-dialog.css'

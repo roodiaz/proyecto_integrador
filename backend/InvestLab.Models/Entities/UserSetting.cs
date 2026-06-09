@@ -40,6 +40,10 @@ public partial class UserSetting
     [StringLength(10)]
     public string? Theme { get; set; }
 
+    [Column("language")]
+    [StringLength(10)]
+    public string? Language { get; set; }
+
     [ForeignKey("UserId")]
     [InverseProperty("UserSetting")]
     public virtual User User { get; set; } = null!;

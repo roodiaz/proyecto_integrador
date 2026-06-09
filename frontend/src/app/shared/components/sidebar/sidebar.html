@@ -7,34 +7,39 @@
 
   <!-- Main nav -->
   <nav class="sidebar-nav">
-    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" [matTooltip]="'Dashboard'"
+    <a class="nav-item" routerLink="/dashboard" routerLinkActive="active"
+      [matTooltip]="'SIDEBAR.DASHBOARD' | translate"
       [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
       <mat-icon class="nav-icon">dashboard</mat-icon>
-      <span class="nav-label">Dashboard</span>
+      <span class="nav-label">{{ 'SIDEBAR.DASHBOARD' | translate }}</span>
     </a>
 
-    <a class="nav-item" routerLink="/market" routerLinkActive="active" [matTooltip]="'Mercado'"
+    <a class="nav-item" routerLink="/market" routerLinkActive="active"
+      [matTooltip]="'SIDEBAR.MARKET' | translate"
       [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
       <mat-icon class="nav-icon">trending_up</mat-icon>
-      <span class="nav-label">Mercado</span>
+      <span class="nav-label">{{ 'SIDEBAR.MARKET' | translate }}</span>
     </a>
 
-    <a class="nav-item" routerLink="/portfolio" routerLinkActive="active" [matTooltip]="'Mi Portafolio'"
+    <a class="nav-item" routerLink="/portfolio" routerLinkActive="active"
+      [matTooltip]="'SIDEBAR.PORTFOLIO' | translate"
       [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
       <mat-icon class="nav-icon">account_balance_wallet</mat-icon>
-      <span class="nav-label">Mi Portafolio</span>
+      <span class="nav-label">{{ 'SIDEBAR.PORTFOLIO' | translate }}</span>
     </a>
 
-    <a class="nav-item" routerLink="/alerts" routerLinkActive="active" [matTooltip]="'Alertas'"
+    <a class="nav-item" routerLink="/alerts" routerLinkActive="active"
+      [matTooltip]="'SIDEBAR.ALERTS' | translate"
       [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
       <mat-icon class="nav-icon">notifications</mat-icon>
-      <span class="nav-label">Alertas</span>
+      <span class="nav-label">{{ 'SIDEBAR.ALERTS' | translate }}</span>
     </a>
 
-    <a class="nav-item" routerLink="/watchlist" routerLinkActive="active" [matTooltip]="'Lista de Seguimiento'"
+    <a class="nav-item" routerLink="/watchlist" routerLinkActive="active"
+      [matTooltip]="'SIDEBAR.WATCHLIST' | translate"
       [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
       <mat-icon class="nav-icon">star_border</mat-icon>
-      <span class="nav-label">Lista de Seguimiento</span>
+      <span class="nav-label">{{ 'SIDEBAR.WATCHLIST' | translate }}</span>
     </a>
 
     <div class="market-status-divider"></div>
@@ -55,7 +60,7 @@
         @if (marketStatusService.isOpen(marketStatus)) {
           <span class="market-status-text">{{ updatedText }}</span>
         } @else {
-          <span class="market-status-text">Última actualización:<br>{{ getLastUpdateTimeText() }}</span>
+          <span class="market-status-text">{{ getLastUpdateTimeText() }}</span>
         }
       </div>
     </div>
@@ -66,16 +71,18 @@
     <div class="sidebar-divider"></div>
 
     <nav class="sidebar-nav sidebar-nav--bottom">
-      <a class="nav-item" routerLink="/profile" routerLinkActive="active" [matTooltip]="'Configuración'"
+      <a class="nav-item" routerLink="/profile" routerLinkActive="active"
+        [matTooltip]="'SIDEBAR.SETTINGS' | translate"
         [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
         <mat-icon class="nav-icon">settings</mat-icon>
-        <span class="nav-label">Configuración</span>
+        <span class="nav-label">{{ 'SIDEBAR.SETTINGS' | translate }}</span>
       </a>
 
-      <a class="nav-item nav-item--danger" (click)="logout()" [matTooltip]="'Cerrar Sesión'"
+      <a class="nav-item nav-item--danger" (click)="logout()"
+        [matTooltip]="'SIDEBAR.LOGOUT' | translate"
         [matTooltipDisabled]="!isCollapsed" matTooltipPosition="right">
         <mat-icon class="nav-icon">logout</mat-icon>
-        <span class="nav-label">Cerrar Sesión</span>
+        <span class="nav-label">{{ 'SIDEBAR.LOGOUT' | translate }}</span>
       </a>
     </nav>
   </div>

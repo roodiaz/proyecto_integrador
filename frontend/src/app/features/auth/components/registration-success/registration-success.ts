@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-registration-success',
@@ -13,7 +14,8 @@ import { SnackBarService } from '../../../../core/services/snackbar.service';
     CommonModule,
     MaterialModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    TranslateModule
   ],
   templateUrl: './registration-success.html',
   styleUrl: './registration-success.css'
@@ -98,14 +100,16 @@ export class RegistrationSuccess implements OnInit, OnDestroy {
 
     this.authService.verifyCode(request).subscribe({
       next: response => {
-        if (!response.success) return;
+        if (!response.success) {
+          this.notificationService.fromResponse(false, response.code, response.message);
+          return;
+        }
 
-        this.notificationService.success(response.message);
-
+        this.notificationService.fromResponse(true, response.code, response.message);
         setTimeout(() => this.router.navigate(['/login']), 1500);
       },
       error: error => {
-        this.notificationService.error(error.error?.message ?? 'Ocurrió un error');
+        this.notificationService.fromResponse(false, error.error?.code, error.error?.message);
       }
     });
   }

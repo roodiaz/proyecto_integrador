@@ -2,6 +2,7 @@ import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../../shared/material.module';
 import { Alert, ALERT_CONDITIONS, CreateAlertDto, UpdateAlertDto } from '../../models/alert.model';
 import { AlertService } from '../../services/alert.service';
@@ -15,7 +16,8 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     CommonModule,
     ReactiveFormsModule,
     MaterialModule,
-    InfoTooltipComponent
+    InfoTooltipComponent,
+    TranslateModule
   ],
   templateUrl: './create-alert.html',
   styleUrls: ['./create-alert.css'],
@@ -105,11 +107,11 @@ export class CreateAlertComponent implements OnInit {
 
       this.alertService.update(updateDto).subscribe({
         next: () => {
-          this.snackBarService.success('Alerta actualizada correctamente');
+          this.snackBarService.successFromCode('ALERT_UPDATED');
           this.dialogRef.close(true);
         },
         error: error => {
-          this.snackBarService.error(error?.error?.message ?? 'Error al actualizar la alerta');
+          this.snackBarService.fromResponse(false, error?.error?.code, error?.error?.message);
         }
       });
 
@@ -118,11 +120,11 @@ export class CreateAlertComponent implements OnInit {
 
     this.alertService.create(dto).subscribe({
       next: () => {
-        this.snackBarService.success('Alerta creada correctamente');
+        this.snackBarService.successFromCode('ALERT_CREATED');
         this.dialogRef.close(true);
       },
       error: error => {
-        this.snackBarService.error(error?.error?.message ?? 'Error al crear la alerta');
+        this.snackBarService.fromResponse(false, error?.error?.code, error?.error?.message);
       }
     });
   }

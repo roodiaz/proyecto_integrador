@@ -3,7 +3,7 @@
   <div class="toolbar-left">
 
     <button class="back-button" type="button" routerLink="/">
-      ← Inicio
+      {{ 'HOME.PUBLIC_LAYOUT.BACK_HOME' | translate }}
     </button>
 
   </div>
@@ -11,15 +11,15 @@
   <div class="toolbar-right">
 
     <a class="nav-link" routerLink="/login" routerLinkActive="active">
-      Ingresar
+      {{ 'HOME.PUBLIC_LAYOUT.NAV_LOGIN' | translate }}
     </a>
 
     <a class="nav-link" routerLink="/registro" routerLinkActive="active">
-      Registrarse
+      {{ 'HOME.PUBLIC_LAYOUT.NAV_REGISTER' | translate }}
     </a>
 
     <a class="nav-link" routerLink="/contacto" routerLinkActive="active">
-      Contacto
+      {{ 'HOME.PUBLIC_LAYOUT.NAV_CONTACT' | translate }}
     </a>
 
   </div>

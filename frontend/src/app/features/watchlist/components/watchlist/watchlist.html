@@ -4,8 +4,8 @@
     <!-- ── Título ── -->
     <div class="watchlist-header">
       <div class="header-title">
-        <h2>Lista de Favoritos</h2>
-        <p>Gestiona los activos que sigues con mayor frecuencia</p>
+        <h2>{{ 'WATCHLIST.FAVORITES_TITLE' | translate }}</h2>
+        <p>{{ 'WATCHLIST.FAVORITES_SUBTITLE' | translate }}</p>
       </div>
     </div>
 
@@ -15,7 +15,7 @@
       <div class="search-wrap">
         <mat-icon class="search-icon">search</mat-icon>
 
-        <input type="text" class="search-input" placeholder="Buscar por símbolo o empresa..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch()">
+        <input type="text" class="search-input" [placeholder]="'WATCHLIST.SEARCH_PLACEHOLDER' | translate" [(ngModel)]="searchTerm" (ngModelChange)="onSearch()">
 
         @if (searchTerm) {
           <button class="search-clear" type="button" (click)="clearSearch()">
@@ -26,7 +26,7 @@
 
       <div class="toolbar-right">
         <div class="favorites-counter">
-          <span class="counter-label">★ FAVORITOS</span>
+          <span class="counter-label">{{ 'WATCHLIST.FAVORITES_COUNTER' | translate }}</span>
 
           @if (!loadingWatchlist || maxFavorites > 0) {
             <span class="counter-value">{{ currentFavorites }} / {{ maxFavorites }}</span>
@@ -42,7 +42,7 @@
 
         <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
           <mat-icon>add</mat-icon>
-          Agregar Activo
+          {{ 'WATCHLIST.ADD_ASSET_BUTTON' | translate }}
         </button>
       </div>
 
@@ -67,32 +67,32 @@
             <tr>
               <th class="col-symbol th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSort('symbol')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>Símbolo</span>
-                  <app-info-tooltip text="El código único que identifica a la acción. Por ejemplo, AAPL es Apple y MSFT es Microsoft." />
+                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>{{ 'WATCHLIST.SYMBOL' | translate }}</span>
+                  <app-info-tooltip [text]="'WATCHLIST.TOOLTIP_SYMBOL' | translate" />
                 </div>
               </th>
               <th class="col-company th-sortable" [class.sort-active]="sortField === 'name'" (click)="onSort('name')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('name') }}</span><span>Empresa</span>
-                  <app-info-tooltip text="El nombre completo de la empresa emisora de la acción." />
+                  <span class="sort-icon">{{ getSortIcon('name') }}</span><span>{{ 'WATCHLIST.NAME' | translate }}</span>
+                  <app-info-tooltip [text]="'WATCHLIST.TOOLTIP_NAME' | translate" />
                 </div>
               </th>
               <th class="col-price th-sortable" [class.sort-active]="sortField === 'price'" (click)="onSort('price')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('price') }}</span><span>Precio Actual</span>
-                  <app-info-tooltip text="El precio de mercado más reciente de la acción, actualizado en tiempo real." />
+                  <span class="sort-icon">{{ getSortIcon('price') }}</span><span>{{ 'WATCHLIST.PRICE' | translate }}</span>
+                  <app-info-tooltip [text]="'WATCHLIST.TOOLTIP_PRICE' | translate" />
                 </div>
               </th>
               <th class="col-variation th-sortable" [class.sort-active]="sortField === 'variationPercent'" (click)="onSort('variationPercent')">
                 <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>Variación %</span>
-                  <app-info-tooltip text="El porcentaje de cambio del precio respecto al cierre del día anterior. Verde significa que subió, rojo que bajó." />
+                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>{{ 'WATCHLIST.CHANGE_PERCENT' | translate }}</span>
+                  <app-info-tooltip [text]="'WATCHLIST.TOOLTIP_CHANGE' | translate" />
                 </div>
               </th>
               <th class="col-actions">
                 <div class="th-with-help">
-                  <span>Acciones</span>
-                  <app-info-tooltip text="Opciones rápidas: ver el gráfico en Mercado, crear una alerta de precio, o quitar el activo de tus favoritos." />
+                  <span>{{ 'WATCHLIST.ACTIONS_HEADER' | translate }}</span>
+                  <app-info-tooltip [text]="'WATCHLIST.TOOLTIP_ACTIONS' | translate" />
                 </div>
               </th>
             </tr>
@@ -104,11 +104,11 @@
                 <td class="td-empty" colspan="5">
                   <div class="empty-state">
                     <mat-icon class="empty-icon">star_border</mat-icon>
-                    <h3>No tienes favoritos</h3>
-                    <p>Agrega activos para comenzar a seguirlos.</p>
+                    <h3>{{ 'WATCHLIST.NO_FAVORITES' | translate }}</h3>
+                    <p>{{ 'WATCHLIST.NO_FAVORITES_HINT' | translate }}</p>
                     <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
                       <mat-icon>add</mat-icon>
-                      Agregar Activo
+                      {{ 'WATCHLIST.ADD_ASSET_BUTTON' | translate }}
                     </button>
                   </div>
                 </td>
@@ -118,7 +118,7 @@
                 <td class="td-empty" colspan="5">
                   <div class="no-results">
                     <mat-icon>search_off</mat-icon>
-                    <p>Sin resultados para "<strong>{{ searchTerm }}</strong>"</p>
+                    <p>{{ 'COMMON.NO_DATA' | translate }}</p>
                   </div>
                 </td>
               </tr>
@@ -140,13 +140,13 @@
                   </td>
                   <td class="col-actions">
                     <div class="row-actions">
-                      <button mat-icon-button class="action-btn market-btn" type="button" (click)="goToMarket(item.symbol); $event.stopPropagation()" title="Ver mercado">
+                      <button mat-icon-button class="action-btn market-btn" type="button" (click)="goToMarket(item.symbol); $event.stopPropagation()" [title]="'WATCHLIST.MARKET_TOOLTIP' | translate">
                         <mat-icon>show_chart</mat-icon>
                       </button>
-                      <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" title="Crear alerta">
+                      <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" [title]="'WATCHLIST.ALERT_TOOLTIP' | translate">
                         <mat-icon>notifications</mat-icon>
                       </button>
-                      <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" title="Eliminar">
+                      <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" [title]="'WATCHLIST.DELETE_TOOLTIP' | translate">
                         <mat-icon>delete</mat-icon>
                       </button>
                     </div>
@@ -171,14 +171,14 @@
     @if (watchlistItems.length > 0) {
       <div class="wl-pagination">
         <div class="page-info">
-          <span class="page-label">{{ getStartRecord() }} – {{ getEndRecord() }} de {{ totalRecords }}</span>
-          <span class="page-total">({{ totalRecords }} activos)</span>
+          <span class="page-label">{{ getStartRecord() }} – {{ getEndRecord() }} {{ 'COMMON.PAGINATION_OF' | translate }} {{ totalRecords }}</span>
+          <span class="page-total">({{ totalRecords }} {{ 'WATCHLIST.FAVORITES_TITLE' | translate | lowercase }})</span>
         </div>
 
         <div class="page-controls">
           <button class="page-nav-btn" type="button" [disabled]="currentPage === 1" (click)="previousPage()">
             <mat-icon>chevron_left</mat-icon>
-            Anterior
+            {{ 'WATCHLIST.PREV_PAGE' | translate }}
           </button>
 
           <div class="page-numbers">
@@ -190,7 +190,7 @@
           </div>
 
           <button class="page-nav-btn" type="button" [disabled]="getEndRecord() >= totalRecords" (click)="nextPage()">
-            Siguiente
+            {{ 'WATCHLIST.NEXT_PAGE' | translate }}
             <mat-icon>chevron_right</mat-icon>
           </button>
         </div>

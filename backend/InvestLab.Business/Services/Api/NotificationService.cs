@@ -2,6 +2,7 @@
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Notifications;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services.Api;
 
@@ -55,7 +56,7 @@ public class NotificationService : INotificationService
         var n = await _notificationRepo.GetByIdAsync(id);
 
         if (n == null || n.UserId != userId)
-            return Response.Fail("Notificación no encontrada");
+            return Response.Fail("Notificación no encontrada", ALERT_NOT_FOUND);
 
         n.IsRead = true;
 
@@ -89,7 +90,7 @@ public class NotificationService : INotificationService
         var n = await _notificationRepo.GetByIdAsync(id);
 
         if (n == null || n.UserId != userId)
-            return Response.Fail("Notificación no encontrada");
+            return Response.Fail("Notificación no encontrada", ALERT_NOT_FOUND);
 
         _notificationRepo.Remove(n);
 

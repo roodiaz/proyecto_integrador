@@ -1,8 +1,8 @@
 <div class="modal-container">
   <div class="modal-header">
     <div>
-      <h2>Agregar Activo</h2>
-      <p class="modal-subtitle">Busca por símbolo o selecciona uno popular</p>
+      <h2>{{ 'WATCHLIST.ADD_DIALOG.TITLE' | translate }}</h2>
+      <p class="modal-subtitle">{{ 'WATCHLIST.ADD_DIALOG.SUBTITLE' | translate }}</p>
     </div>
     <button class="close-btn" type="button" mat-dialog-close>✕</button>
   </div>
@@ -15,7 +15,7 @@
       <input
         type="text"
         class="search-input"
-        placeholder="Ej: AAPL, NVDA, TSLA..."
+        [placeholder]="'WATCHLIST.ADD_DIALOG.SYMBOL_PLACEHOLDER' | translate"
         [(ngModel)]="searchTerm">
       @if (searchTerm) {
         <button class="search-clear" type="button" (click)="searchTerm = ''">
@@ -26,13 +26,13 @@
 
     <button class="btn-add-primary" type="button" (click)="add(searchTerm)" [disabled]="!searchTerm.trim()">
       <mat-icon>add</mat-icon>
-      Agregar "{{ searchTerm || '...' }}"
+      {{ 'WATCHLIST.ADD_DIALOG.SUBMIT' | translate }} "{{ searchTerm || '...' }}"
     </button>
 
     <!-- Activos populares -->
     <div class="section-label-row">
-      <p class="section-label">Activos Populares</p>
-      <app-info-tooltip text="Son algunas de las acciones más conocidas del mercado estadounidense. Agregarlas a favoritos te permite seguir su precio desde la watchlist sin tener que buscarlas cada vez. No implica comprarlas." />
+      <p class="section-label">{{ 'WATCHLIST.ADD_DIALOG.POPULAR_SECTION' | translate }}</p>
+      <app-info-tooltip [text]="'WATCHLIST.ADD_DIALOG.POPULAR_TOOLTIP' | translate" />
     </div>
 
     <div class="asset-list">
@@ -47,7 +47,7 @@
           </div>
           <button class="btn-add-row" type="button" (click)="add(asset.symbol)">
             <mat-icon>add</mat-icon>
-            Agregar
+            {{ 'WATCHLIST.ADD_DIALOG.ADD_ROW_BUTTON' | translate }}
           </button>
         </div>
       }
@@ -56,6 +56,6 @@
   </div>
 
   <div class="modal-footer">
-    <button class="cancel-btn" type="button" mat-dialog-close>Cancelar</button>
+    <button class="cancel-btn" type="button" mat-dialog-close>{{ 'WATCHLIST.ADD_DIALOG.CANCEL_BUTTON' | translate }}</button>
   </div>
 </div>

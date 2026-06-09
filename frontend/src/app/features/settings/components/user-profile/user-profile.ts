@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import { UserService } from '../../services/user.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { MaterialModule } from '../../../../shared/material.module';
@@ -9,14 +10,8 @@ import { environment } from '../../../../../environments/environment';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ThemeService, Theme } from '../../../../core/services/theme.service';
+import { LanguageService, Language } from '../../../../core/services/language.service';
 
-/**
- * Pantalla de perfil de usuario, dentro de la sección de configuración.
- *
- * Permite ver y editar los datos personales y preferencias del usuario, cambiar
- * la foto de perfil, cambiar la contraseña y eliminar la cuenta. Los datos se
- * cargan al iniciar la pantalla y se guardan a través de `UserService`.
- */
 @Component({
   selector: 'app-user-profile',
   standalone: true,
@@ -24,7 +19,8 @@ import { ThemeService, Theme } from '../../../../core/services/theme.service';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MaterialModule
+    MaterialModule,
+    TranslateModule
   ],
   templateUrl: './user-profile.html',
   styleUrls: ['./user-profile.css']
@@ -49,6 +45,9 @@ export class UserProfile implements OnInit {
 
   // ── Tema visual ──
   selectedTheme: Theme = 'Dark';
+
+  // ── Idioma ──
+  selectedLanguage: Language = 'es';
 
   // ── Verificación de cambio de email ──
   /** Estados posibles del flujo independiente de verificación de email. */
@@ -76,7 +75,8 @@ export class UserProfile implements OnInit {
     private notificationService: SnackBarService,
     private dialog: MatDialog,
     private router: Router,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private languageService: LanguageService
   ) {
     this.profileForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(3)]],
@@ -137,6 +137,8 @@ export class UserProfile implements OnInit {
 
           this.selectedTheme = (profile.settings.theme as Theme) || 'Dark';
           this.themeService.initialize(profile.settings.theme);
+          this.selectedLanguage = (profile.settings.language as Language) || 'es';
+          this.languageService.initialize(profile.settings.language);
 
           this.profileImageUrl = profile.profileImageUrl ? environment.serverUrl + profile.profileImageUrl : '';
           this.currentEmail = profile.email;
@@ -157,7 +159,7 @@ export class UserProfile implements OnInit {
     if (this.savingProfile) return;
 
     if (!this.profileForm.valid) {
-      this.notificationService.error('Por favor, completa el formulario correctamente');
+      this.notificationService.error(this.languageService.instant('SETTINGS.FORM_ERRORS.FORM_INVALID'));
       return;
     }
 
@@ -169,17 +171,18 @@ export class UserProfile implements OnInit {
       birthDate: this.profileForm.value.birthDate,
       currency: this.profileForm.value.currency,
       emailNotifications: this.profileForm.value.emailNotifications,
-      theme: this.selectedTheme
+      theme: this.selectedTheme,
+      language: this.selectedLanguage
     };
 
     this.userService.updateProfile(request)
       .pipe(finalize(() => this.savingProfile = false))
       .subscribe({
         next: response => {
-          this.notificationService.success(response.message);
+          this.notificationService.fromResponse(response.success, response.code, response.message);
         },
         error: error => {
-          this.notificationService.error(error.error?.message ?? 'Error al actualizar perfil');
+          this.notificationService.fromResponse(false, error.error?.code, error.error?.message);
         }
       });
   }
@@ -196,9 +199,26 @@ export class UserProfile implements OnInit {
       emailNotifications: this.profileForm.value.emailNotifications,
       phone: this.profileForm.value.phone,
       birthDate: this.profileForm.value.birthDate,
-      theme
+      theme,
+      language: this.selectedLanguage
     }).subscribe({
-      error: () => this.notificationService.error('No se pudo guardar el tema')
+      error: (error) => this.notificationService.fromResponse(false, error.error?.code, error.error?.message)
+    });
+  }
+
+  onLanguageChange(lang: Language): void {
+    this.selectedLanguage = lang;
+    this.languageService.setLanguage(lang);
+    this.userService.updateProfile({
+      userName: this.profileForm.value.userName,
+      currency: this.profileForm.value.currency,
+      emailNotifications: this.profileForm.value.emailNotifications,
+      phone: this.profileForm.value.phone,
+      birthDate: this.profileForm.value.birthDate,
+      theme: this.selectedTheme,
+      language: lang
+    }).subscribe({
+      error: (error) => this.notificationService.fromResponse(false, error.error?.code, error.error?.message)
     });
   }
 
@@ -243,7 +263,7 @@ export class UserProfile implements OnInit {
         next: response => {
           if (!response.success) {
             this.emailVerificationStatus = 'error';
-            this.emailVerificationError = response.message || 'No se pudo enviar el código de verificación';
+            this.emailVerificationError = response.message || this.languageService.instant('SETTINGS.EMAIL_VERIFY.SEND_ERROR');
             return;
           }
 
@@ -254,7 +274,7 @@ export class UserProfile implements OnInit {
         },
         error: error => {
           this.emailVerificationStatus = 'error';
-          this.emailVerificationError = error.error?.message ?? 'No se pudo enviar el código de verificación';
+          this.emailVerificationError = error.error?.message ?? this.languageService.instant('SETTINGS.EMAIL_VERIFY.SEND_ERROR');
         }
       });
   }
@@ -275,17 +295,17 @@ export class UserProfile implements OnInit {
         next: response => {
           if (!response.success) {
             this.emailVerificationStatus = 'error';
-            this.emailVerificationError = response.message || 'Código inválido';
+            this.emailVerificationError = response.message || this.languageService.instant('SETTINGS.EMAIL_VERIFY.CODE_INVALID');
             return;
           }
 
-          this.notificationService.success(response.message || 'Email actualizado correctamente');
+          this.notificationService.fromResponse(response.success, response.code, response.message);
           this.emailVerificationStatus = 'verified';
           this.loadUserData();
         },
         error: error => {
           this.emailVerificationStatus = 'error';
-          this.emailVerificationError = error.error?.message ?? 'Código inválido';
+          this.emailVerificationError = error.error?.message ?? this.languageService.instant('SETTINGS.EMAIL_VERIFY.CODE_INVALID');
         }
       });
   }
@@ -336,7 +356,7 @@ export class UserProfile implements OnInit {
     if (this.changingPassword) return;
 
     if (!this.passwordForm.valid) {
-      this.notificationService.error('Formulario inválido');
+      this.notificationService.error(this.languageService.instant('SETTINGS.FORM_ERRORS.FORM_INVALID_PASSWORD'));
       return;
     }
 
@@ -352,11 +372,11 @@ export class UserProfile implements OnInit {
       .pipe(finalize(() => this.changingPassword = false))
       .subscribe({
         next: response => {
-          this.notificationService.success(response.message);
+          this.notificationService.fromResponse(response.success, response.code, response.message);
           this.passwordForm.reset();
         },
         error: error => {
-          this.notificationService.error(error.error?.message ?? 'Error al cambiar contraseña');
+          this.notificationService.fromResponse(false, error.error?.code, error.error?.message);
         }
       });
   }
@@ -382,7 +402,7 @@ export class UserProfile implements OnInit {
       .pipe(finalize(() => this.uploadingImage = false))
       .subscribe({
         next: response => {
-          this.notificationService.success(response.message);
+          this.notificationService.fromResponse(response.success, response.code, response.message);
 
           const imageUrl = response.data?.profileImageUrl;
 
@@ -392,7 +412,7 @@ export class UserProfile implements OnInit {
           input.value = '';
         },
         error: error => {
-          this.notificationService.error(error.error?.message ?? 'Error al subir imagen');
+          this.notificationService.fromResponse(false, error.error?.code, error.error?.message);
           input.value = '';
         }
       });
@@ -417,8 +437,8 @@ export class UserProfile implements OnInit {
       width: '430px',
       backdropClass: 'blur-backdrop',
       data: {
-        title: 'Eliminar cuenta',
-        message: '¿Estás segura de que querés eliminar tu cuenta? Se eliminarán tu usuario, portfolio, operaciones, favoritos, alertas, notificaciones y configuración. Esta acción no se puede deshacer.'
+        title: this.languageService.instant('SETTINGS.DANGER_ZONE.CONFIRM_TITLE'),
+        message: this.languageService.instant('SETTINGS.DANGER_ZONE.CONFIRM_MSG')
       }
     });
 
@@ -443,18 +463,14 @@ export class UserProfile implements OnInit {
       .pipe(finalize(() => this.deletingAccount = false))
       .subscribe({
         next: response => {
-          if (!response.success) {
-            this.notificationService.error(response.message || 'No se pudo eliminar la cuenta');
-            return;
-          }
-
-          this.notificationService.success(response.message || 'Cuenta eliminada correctamente');
+          this.notificationService.fromResponse(response.success, response.code, response.message);
+          if (!response.success) return;
           localStorage.clear();
           sessionStorage.clear();
           this.router.navigate(['/login']);
         },
         error: error => {
-          this.notificationService.error(error.error?.message ?? 'Error al eliminar la cuenta');
+          this.notificationService.fromResponse(false, error.error?.code, error.error?.message);
         }
       });
   }

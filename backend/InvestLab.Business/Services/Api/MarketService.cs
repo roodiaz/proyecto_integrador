@@ -6,6 +6,7 @@ using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.DTOs.Market.InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Logging;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services
 {
@@ -43,7 +44,7 @@ namespace InvestLab.Business.Services
                 var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
 
                 if (marketPricesResponse.Prices == null || marketPricesResponse.Prices.Count == 0)
-                    return Response.Fail("No se pudieron obtener los índices del mercado");
+                    return Response.Fail("No se pudieron obtener los índices del mercado", MARKET_INDICES_UNAVAILABLE);
 
                 var indices = marketPricesResponse.Prices.Select(x => new MarketIndexDto
                 {
@@ -62,12 +63,12 @@ namespace InvestLab.Business.Services
                     Indices = indices
                 };
 
-                return Response.Ok(overview, "Panorama de mercado obtenido correctamente");
+                return Response.Ok(overview, "Panorama de mercado obtenido correctamente", MARKET_OVERVIEW_SUCCESS);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener panorama de mercado");
-                return Response.Fail("Ocurrió un error al obtener el panorama de mercado");
+                return Response.Fail("Ocurrió un error al obtener el panorama de mercado", MARKET_OVERVIEW_ERROR);
             }
         }
 
@@ -81,19 +82,19 @@ namespace InvestLab.Business.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(symbol))
-                    return Response.Fail("Debe ingresar un símbolo válido");
+                    return Response.Fail("Debe ingresar un símbolo válido", INVALID_SYMBOL_FORMAT);
 
                 symbol = symbol.Trim().ToUpper();
 
                 var asset = await _assetService.GetOrCreateAsync(symbol);
                 if (asset == null)
-                    return Response.Fail("Activo no encontrado");
+                    return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
                 var marketPricesResponse = await _marketPriceCacheService.GetPricesAsync(new List<string> { symbol });
                 var price = marketPricesResponse.Prices.FirstOrDefault(x => x.Symbol == symbol);
 
                 if (price == null)
-                    return Response.Fail("No se encontró información de precio para el activo solicitado");
+                    return Response.Fail("No se encontró información de precio para el activo solicitado", PRICE_NOT_AVAILABLE);
 
                 var profile = await _providerResolver.GetProvider().GetProfileAsync(symbol);
                 var change = Math.Round(price.Price - price.PreviousClose, 2);
@@ -122,7 +123,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener detalle del activo {Symbol}", symbol);
-                return Response.Fail("Ocurrió un error al obtener el detalle del activo");
+                return Response.Fail("Ocurrió un error al obtener el detalle del activo", INTERNAL_ERROR);
             }
         }
 
@@ -140,7 +141,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener tendencias del mercado");
-                return Response.Fail("Ocurrió un error al obtener las tendencias del mercado");
+                return Response.Fail("Ocurrió un error al obtener las tendencias del mercado", INTERNAL_ERROR);
             }
         }
 
@@ -158,7 +159,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener ganadores del mercado");
-                return Response.Fail("Ocurrió un error al obtener los ganadores del mercado");
+                return Response.Fail("Ocurrió un error al obtener los ganadores del mercado", INTERNAL_ERROR);
             }
         }
 
@@ -176,7 +177,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener perdedores del mercado");
-                return Response.Fail("Ocurrió un error al obtener los perdedores del mercado");
+                return Response.Fail("Ocurrió un error al obtener los perdedores del mercado", INTERNAL_ERROR);
             }
 
         }
@@ -195,7 +196,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener noticias del mercado");
-                return Response.Fail("Ocurrió un error al obtener las noticias del mercado");
+                return Response.Fail("Ocurrió un error al obtener las noticias del mercado", INTERNAL_ERROR);
             }
         }
 
@@ -217,7 +218,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener estado de actualización de precios");
-                return Response.Fail("Error interno");
+                return Response.Fail("Error interno", INTERNAL_ERROR);
             }
         }
 
@@ -232,18 +233,18 @@ namespace InvestLab.Business.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(symbol))
-                    return Response.Fail("Debe ingresar un símbolo válido");
+                    return Response.Fail("Debe ingresar un símbolo válido", INVALID_SYMBOL_FORMAT);
 
                 symbol = symbol.Trim().ToUpper();
                 range = NormalizeHistoryRange(range);
 
                 if (!IsValidHistoryRange(range))
-                    return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y");
+                    return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y", INVALID_RANGE);
 
                 var history = await _providerResolver.GetProvider().GetChartHistoryAsync(symbol, range);
 
                 if (history == null || history.Count == 0)
-                    return Response.Fail("No se encontraron datos históricos para el activo");
+                    return Response.Fail("No se encontraron datos históricos para el activo", ASSET_NOT_FOUND);
 
                 var result = new MarketAssetHistoryDto
                 {
@@ -262,7 +263,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener histórico del activo {Symbol} con rango {Range}", symbol, range);
-                return Response.Fail("Ocurrió un error al obtener el histórico del activo");
+                return Response.Fail("Ocurrió un error al obtener el histórico del activo", INTERNAL_ERROR);
             }
         }
 
@@ -278,7 +279,7 @@ namespace InvestLab.Business.Services
                 range = NormalizeHistoryRange(range);
 
                 if (!IsValidHistoryRange(range))
-                    return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y");
+                    return Response.Fail("Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y", INVALID_RANGE);
 
                 var symbols = new List<string> { "^GSPC", "^IXIC", "^DJI" };
                 var series = new List<MarketHistorySeriesDto>();
@@ -306,7 +307,7 @@ namespace InvestLab.Business.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener histórico de comparación con rango {Range}", range);
-                return Response.Fail("Ocurrió un error al obtener el histórico de comparación");
+                return Response.Fail("Ocurrió un error al obtener el histórico de comparación", INTERNAL_ERROR);
             }
         }
 

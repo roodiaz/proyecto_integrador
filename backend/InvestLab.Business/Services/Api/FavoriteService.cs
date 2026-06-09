@@ -7,6 +7,7 @@ using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services.Api
 {
@@ -117,18 +118,18 @@ namespace InvestLab.Business.Services.Api
         {
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
             if (settings == null)
-                return Response.Fail("Configuración de usuario no encontrada");
+                return Response.Fail("Configuración de usuario no encontrada", USER_SETTINGS_NOT_FOUND);
 
             var asset = await _assetService.GetOrCreateAsync(dto.Symbol);
             if (asset == null)
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
             if (settings.FavoritesUsed >= _limits.MaxFavorites)
-                return Response.Fail("Límite de favoritos alcanzado");
+                return Response.Fail("Límite de favoritos alcanzado", MAX_FAVORITES_REACHED);
 
             var exists = await _favoriteRepo.ExistsAsync(userId, asset.Id);
             if (exists)
-                return Response.Fail("El activo ya está en favoritos");
+                return Response.Fail("El activo ya está en favoritos", FAVORITE_ALREADY_EXISTS);
 
             await _favoriteRepo.AddAsync(new Favorite
             {
@@ -158,15 +159,15 @@ namespace InvestLab.Business.Services.Api
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
             if (settings == null)
-                return Response.Fail("Configuración de usuario no encontrada");
+                return Response.Fail("Configuración de usuario no encontrada", USER_SETTINGS_NOT_FOUND);
 
             var asset = await _assetService.GetOrCreateAsync(symbol);
             if (asset == null)
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
             var fav = await _favoriteRepo.GetByUserAndAssetAsync(userId, asset.Id);
             if (fav == null)
-                return Response.Fail("Favorito no encontrado");
+                return Response.Fail("Favorito no encontrado", FAVORITE_NOT_FOUND);
 
             _favoriteRepo.Remove(fav);
 
@@ -189,11 +190,11 @@ namespace InvestLab.Business.Services.Api
         public async Task<Response> ExistsAsync(int userId, string symbol)
         {
             if (string.IsNullOrWhiteSpace(symbol))
-                return Response.Fail("Debe indicar un símbolo válido");
+                return Response.Fail("Debe indicar un símbolo válido", INVALID_SYMBOL);
 
             var asset = await _assetService.GetOrCreateAsync(symbol);
             if (asset == null)
-                return Response.Fail("Activo no encontrado");
+                return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
 
             var exists = await _favoriteRepo.ExistsAsync(userId, asset.Id);
 

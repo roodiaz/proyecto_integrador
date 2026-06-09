@@ -6,12 +6,11 @@
     <div class="hero-content">
 
       <h1 class="hero-title">
-        ¿Necesitás ayuda con <span>InvestLab?</span>
+        {{ 'HOME.CONTACT.HERO_TITLE_1' | translate }} <span>{{ 'HOME.CONTACT.HERO_TITLE_2' | translate }}</span>
       </h1>
 
       <p class="hero-description">
-        Contactanos para resolver dudas sobre la plataforma, el simulador de inversiones,
-        las alertas, el portafolio virtual o cualquier funcionalidad disponible.
+        {{ 'HOME.CONTACT.HERO_DESC' | translate }}
       </p>
 
       <div class="hero-cards">
@@ -22,8 +21,8 @@
           </div>
 
           <div>
-            <h4>Correo Electrónico</h4>
-            <p>contacto@investlab.com</p>
+            <h4>{{ 'HOME.CONTACT.EMAIL_CARD_TITLE' | translate }}</h4>
+            <p>{{ 'HOME.CONTACT.EMAIL_CARD_VALUE' | translate }}</p>
           </div>
         </div>
 
@@ -33,8 +32,8 @@
           </div>
 
           <div>
-            <h4>Comunidad y Novedades</h4>
-            <p>Seguinos para conocer mejoras de la plataforma y novedades del mercado.</p>
+            <h4>{{ 'HOME.CONTACT.COMMUNITY_CARD_TITLE' | translate }}</h4>
+            <p>{{ 'HOME.CONTACT.COMMUNITY_CARD_DESC' | translate }}</p>
           </div>
         </div>
 
@@ -44,8 +43,8 @@
           </div>
 
           <div>
-            <h4>Desarrollo</h4>
-            <p>Proyecto desarrollado en Argentina.</p>
+            <h4>{{ 'HOME.CONTACT.DEV_CARD_TITLE' | translate }}</h4>
+            <p>{{ 'HOME.CONTACT.DEV_CARD_DESC' | translate }}</p>
           </div>
         </div>
 
@@ -55,8 +54,8 @@
         <span class="status-dot"></span>
 
         <div>
-          <h4>Soporte Activo</h4>
-          <p>Respondemos consultas sobre la plataforma y el simulador de inversiones.</p>
+          <h4>{{ 'HOME.CONTACT.STATUS_TITLE' | translate }}</h4>
+          <p>{{ 'HOME.CONTACT.STATUS_DESC' | translate }}</p>
         </div>
       </div>
 
@@ -70,11 +69,9 @@
     <div class="contact-wrapper">
 
       <div class="contact-header">
-        <h2>Envíanos tu consulta</h2>
+        <h2>{{ 'HOME.CONTACT.FORM_TITLE' | translate }}</h2>
 
-        <p>
-          Completa el formulario y nos pondremos en contacto contigo a la brevedad.
-        </p>
+        <p>{{ 'HOME.CONTACT.FORM_DESC' | translate }}</p>
       </div>
 
       <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
@@ -83,36 +80,30 @@
         <div class="form-row">
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nombre Completo</mat-label>
+            <mat-label>{{ 'HOME.CONTACT.FULL_NAME_LABEL' | translate }}</mat-label>
 
-            <input matInput formControlName="fullName" placeholder="Ej: Juan Pérez" autocomplete="name" />
+            <input matInput formControlName="fullName" [placeholder]="'HOME.CONTACT.FULL_NAME_PLACEHOLDER' | translate" autocomplete="name" />
 
             <mat-icon matSuffix>person</mat-icon>
 
             @if (fullName?.hasError('required')) {
-              <mat-error>
-                El nombre es requerido
-              </mat-error>
+              <mat-error>{{ 'HOME.CONTACT.VALIDATION.NAME_REQUIRED' | translate }}</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Correo Electrónico</mat-label>
+            <mat-label>{{ 'HOME.CONTACT.EMAIL_LABEL' | translate }}</mat-label>
 
-            <input matInput type="email" formControlName="email" placeholder="ejemplo@correo.com" autocomplete="email" />
+            <input matInput type="email" formControlName="email" [placeholder]="'HOME.CONTACT.EMAIL_PLACEHOLDER' | translate" autocomplete="email" />
 
             <mat-icon matSuffix>email</mat-icon>
 
             @if (email?.hasError('required')) {
-              <mat-error>
-                El correo es requerido
-              </mat-error>
+              <mat-error>{{ 'HOME.CONTACT.VALIDATION.EMAIL_REQUIRED' | translate }}</mat-error>
             }
 
             @if (email?.hasError('email')) {
-              <mat-error>
-                Por favor ingresa un correo válido
-              </mat-error>
+              <mat-error>{{ 'HOME.CONTACT.VALIDATION.EMAIL_INVALID' | translate }}</mat-error>
             }
           </mat-form-field>
 
@@ -120,44 +111,36 @@
 
         <!-- Teléfono -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Teléfono</mat-label>
+          <mat-label>{{ 'HOME.CONTACT.PHONE_LABEL' | translate }}</mat-label>
 
           <input matInput type="text" formControlName="phone" autocomplete="tel" />
 
           <mat-icon matSuffix>phone</mat-icon>
 
           @if (phone?.hasError('required')) {
-            <mat-error>
-              El teléfono es requerido
-            </mat-error>
+            <mat-error>{{ 'HOME.CONTACT.VALIDATION.PHONE_REQUIRED' | translate }}</mat-error>
           }
 
           @if (phone?.hasError('minlength')) {
-            <mat-error>
-              Mínimo 6 caracteres
-            </mat-error>
+            <mat-error>{{ 'HOME.CONTACT.VALIDATION.PHONE_MIN' | translate }}</mat-error>
           }
         </mat-form-field>
 
         <!-- Consulta -->
         <mat-form-field appearance="outline" class="full-width consulta-field">
-          <mat-label>
-            ¿Cómo podemos ayudarte?
-          </mat-label>
+          <mat-label>{{ 'HOME.CONTACT.QUERY_LABEL' | translate }}</mat-label>
 
           <textarea matInput formControlName="consulta" cdkTextareaAutosize cdkAutosizeMinRows="6" cdkAutosizeMaxRows="12">
           </textarea>
 
           @if (consulta?.hasError('required')) {
-            <mat-error>
-              Por favor completa la consulta
-            </mat-error>
+            <mat-error>{{ 'HOME.CONTACT.VALIDATION.QUERY_REQUIRED' | translate }}</mat-error>
           }
         </mat-form-field>
 
         <!-- Botón -->
         <button mat-flat-button type="submit" class="contact-button" [disabled]="!contactForm.valid">
-          <span>Enviar Consulta</span>
+          <span>{{ 'HOME.CONTACT.SUBMIT_BUTTON' | translate }}</span>
 
           <mat-icon>send</mat-icon>
         </button>

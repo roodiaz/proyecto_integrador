@@ -3,11 +3,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, Subscription } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import { Alert, AlertDto, AlertFilterDto, ALERT_CONDITIONS } from '../../models/alert.model';
 import { Notifications } from '../notifications/notifications';
 import { UnreadNotificationsService } from '../../services/unread-notifications.service';
 import { AlertService } from '../../services/alert.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
+import { LanguageService } from '../../../../core/services/language.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
@@ -21,7 +23,8 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     DatePipe,
     Notifications,
     MaterialModule,
-    InfoTooltipComponent
+    InfoTooltipComponent,
+    TranslateModule
   ],
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']
@@ -73,6 +76,7 @@ export class Alerts implements OnInit, OnDestroy {
     private unreadNotificationsService: UnreadNotificationsService,
     private alertService: AlertService,
     private snackBarService: SnackBarService,
+    private languageService: LanguageService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
@@ -300,7 +304,7 @@ export class Alerts implements OnInit, OnDestroy {
       this.loadStats();
     } catch (error) {
       console.error('Error al abrir el modal de crear alerta:', error);
-      this.snackBarService.error('No se pudo abrir el modal de alerta');
+      this.snackBarService.error(this.languageService.instant('ERRORS.INTERNAL_ERROR'));
     }
   }
 
@@ -339,8 +343,8 @@ export class Alerts implements OnInit, OnDestroy {
       width: '350px',
       backdropClass: 'blur-backdrop',
       data: {
-        title: 'Eliminar alerta',
-        message: `¿Estas seguro de que deseas eliminar la alerta para ${alert.symbol}?`
+        title: this.languageService.instant('ALERTS.DELETE_CONFIRM.TITLE'),
+        message: this.languageService.instant('ALERTS.DELETE_CONFIRM.MESSAGE', { symbol: alert.symbol })
       }
     });
 
@@ -350,12 +354,12 @@ export class Alerts implements OnInit, OnDestroy {
     this.alertService.delete(alert.id)
       .subscribe({
         next: () => {
-          this.snackBarService.success('Alerta eliminada correctamente');
+          this.snackBarService.successFromCode('ALERT_DELETED');
           this.loadAlerts();
           this.loadStats();
         },
         error: error => {
-          this.snackBarService.error(error?.error?.message ?? 'Error al eliminar la alerta');
+          this.snackBarService.fromResponse(false, error?.error?.code, error?.error?.message);
         }
       });
   }
@@ -372,11 +376,11 @@ export class Alerts implements OnInit, OnDestroy {
         next: () => {
           this.loadAlerts();
           this.loadStats();
-          this.snackBarService.success(isActive ? 'Alerta activada' : 'Alerta pausada');
+          this.snackBarService.successFromCode('ALERT_TOGGLED');
         },
         error: error => {
           alert.isActive = !isActive;
-          this.snackBarService.error(error?.error?.message ?? 'Error al actualizar la alerta');
+          this.snackBarService.fromResponse(false, error?.error?.code, error?.error?.message);
         }
       });
   }
@@ -403,7 +407,7 @@ export class Alerts implements OnInit, OnDestroy {
    */
   getConditionDisplay(condition: string): string {
     const cond = this.conditions.find(c => c.value === condition);
-    return cond ? cond.label : condition;
+    return cond ? this.languageService.instant(cond.label) : condition;
   }
 
   /**

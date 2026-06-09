@@ -6,14 +6,12 @@
     <div class="hero-content">
 
       <h1 class="hero-title">
-        Comenzá tu camino en las
-        <span>inversiones.</span>
+        {{ 'HOME.LANDING.HERO_TITLE_1' | translate }}
+        <span>{{ 'HOME.LANDING.HERO_TITLE_2' | translate }}</span>
       </h1>
 
       <p class="hero-description">
-        Creá tu cuenta gratuita y accedé a una plataforma de simulación financiera
-        con datos reales del mercado, alertas inteligentes y herramientas para
-        aprender a invertir.
+        {{ 'HOME.LANDING.HERO_SUBTITLE' | translate }}
       </p>
 
       <div class="hero-cards">
@@ -25,10 +23,10 @@
           </div>
 
           <div class="hero-card-content">
-            <h4>Mercado en Tiempo Real</h4>
+            <h4>{{ 'HOME.LANDING.FEATURE_MARKET_TITLE' | translate }}</h4>
 
             <p>
-              Consultá precios actualizados de acciones y ETFs para seguir la evolución del mercado.
+              {{ 'HOME.LANDING.FEATURE_MARKET_DESC' | translate }}
             </p>
           </div>
 
@@ -41,10 +39,10 @@
           </div>
 
           <div class="hero-card-content">
-            <h4>Alertas Inteligentes</h4>
+            <h4>{{ 'HOME.LANDING.FEATURE_ALERTS_TITLE' | translate }}</h4>
 
             <p>
-              Configurá alertas personalizadas para recibir notificaciones cuando el mercado alcance tus objetivos.
+              {{ 'HOME.LANDING.FEATURE_ALERTS_DESC' | translate }}
             </p>
           </div>
 
@@ -57,10 +55,10 @@
           </div>
 
           <div class="hero-card-content">
-            <h4>Portafolio Virtual</h4>
+            <h4>{{ 'HOME.LANDING.FEATURE_PORTFOLIO_TITLE' | translate }}</h4>
 
             <p>
-              Administrá inversiones con un saldo inicial de USD 10.000 sin arriesgar dinero real.
+              {{ 'HOME.LANDING.FEATURE_PORTFOLIO_DESC' | translate }}
             </p>
           </div>
 
@@ -78,10 +76,10 @@
     <div class="register-wrapper">
 
       <div class="register-header">
-        <h2>Crear cuenta</h2>
+        <h2>{{ 'AUTH.REGISTER.TITLE' | translate }}</h2>
 
         <p>
-          Completá tus datos para comenzar.
+          {{ 'AUTH.REGISTER.SUBTITLE' | translate }}
         </p>
       </div>
 
@@ -99,7 +97,7 @@
           <mat-spinner diameter="50"></mat-spinner>
 
           <p>
-            Procesando registro...
+            {{ 'COMMON.LOADING' | translate }}
           </p>
         </div>
       }
@@ -111,15 +109,15 @@
           <!-- Nombre -->
           <mat-form-field appearance="outline" class="full-width">
 
-            <mat-label>Nombre Completo</mat-label>
+            <mat-label>{{ 'AUTH.REGISTER.FULL_NAME_LABEL' | translate }}</mat-label>
 
-            <input matInput formControlName="fullName" placeholder="Juan Pérez" autocomplete="name" />
+            <input matInput formControlName="fullName" [placeholder]="'AUTH.REGISTER.FULL_NAME_PLACEHOLDER' | translate" autocomplete="name" />
 
             <mat-icon matSuffix>person</mat-icon>
 
             @if (fullName?.hasError('required')) {
               <mat-error>
-                El nombre es requerido
+                {{ 'AUTH.REGISTER.VALIDATION.FULL_NAME_REQUIRED' | translate }}
               </mat-error>
             }
 
@@ -128,21 +126,21 @@
           <!-- Email -->
           <mat-form-field appearance="outline" class="full-width">
 
-            <mat-label>Correo Electrónico</mat-label>
+            <mat-label>{{ 'AUTH.REGISTER.EMAIL_LABEL' | translate }}</mat-label>
 
-            <input matInput type="email" formControlName="email" placeholder="ejemplo@correo.com" autocomplete="email" />
+            <input matInput type="email" formControlName="email" [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" autocomplete="email" />
 
             <mat-icon matSuffix>mail</mat-icon>
 
             @if (email?.hasError('required')) {
               <mat-error>
-                El correo electrónico es requerido
+                {{ 'AUTH.REGISTER.VALIDATION.EMAIL_REQUIRED' | translate }}
               </mat-error>
             }
 
             @if (email?.hasError('email')) {
               <mat-error>
-                Correo inválido
+                {{ 'AUTH.REGISTER.VALIDATION.EMAIL_INVALID' | translate }}
               </mat-error>
             }
 
@@ -151,15 +149,15 @@
           <!-- Teléfono -->
           <mat-form-field appearance="outline" class="full-width">
 
-            <mat-label>Teléfono</mat-label>
+            <mat-label>{{ 'AUTH.REGISTER.PHONE_LABEL' | translate }}</mat-label>
 
-            <input matInput type="tel" formControlName="phone" placeholder="+54 11 1234-5678" />
+            <input matInput type="tel" formControlName="phone" [placeholder]="'AUTH.REGISTER.PHONE_PLACEHOLDER' | translate" />
 
             <mat-icon matSuffix>phone</mat-icon>
 
             @if (phone?.hasError('pattern')) {
               <mat-error>
-                Número inválido
+                {{ 'AUTH.REGISTER.VALIDATION.PHONE_INVALID' | translate }}
               </mat-error>
             }
 
@@ -168,7 +166,7 @@
           <!-- Password -->
           <mat-form-field appearance="outline" class="full-width">
 
-            <mat-label>Contraseña</mat-label>
+            <mat-label>{{ 'AUTH.REGISTER.PASSWORD_LABEL' | translate }}</mat-label>
 
             <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
 
@@ -180,13 +178,13 @@
 
             @if (password?.hasError('required')) {
               <mat-error>
-                La contraseña es requerida
+                {{ 'AUTH.REGISTER.VALIDATION.PASSWORD_REQUIRED' | translate }}
               </mat-error>
             }
 
             @if (password?.hasError('minlength')) {
               <mat-error>
-                Mínimo 6 caracteres
+                {{ 'AUTH.REGISTER.VALIDATION.PASSWORD_MIN' | translate }}
               </mat-error>
             }
 
@@ -195,7 +193,7 @@
           <!-- Confirm Password -->
           <mat-form-field appearance="outline" class="full-width">
 
-            <mat-label>Confirmar Contraseña</mat-label>
+            <mat-label>{{ 'AUTH.REGISTER.CONFIRM_PASSWORD_LABEL' | translate }}</mat-label>
 
             <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword" />
 
@@ -207,38 +205,30 @@
 
             @if (confirmPassword?.hasError('required')) {
               <mat-error>
-                Por favor confirma tu contraseña
+                {{ 'AUTH.REGISTER.VALIDATION.CONFIRM_REQUIRED' | translate }}
               </mat-error>
             }
 
             @if (registerForm?.hasError('mismatch')) {
               <mat-error>
-                Las contraseñas no coinciden
+                {{ 'AUTH.REGISTER.VALIDATION.PASSWORDS_MISMATCH' | translate }}
               </mat-error>
             }
 
           </mat-form-field>
 
-          <div class="terms-text">
-            Al registrarte aceptas nuestros
-
-            <a routerLink="/terms">
-              Términos y Condiciones
-            </a>
-          </div>
-
           <button mat-flat-button type="submit" class="register-button" [disabled]="!registerForm.valid">
-            Crear Cuenta
+            {{ 'AUTH.REGISTER.SUBMIT' | translate }}
           </button>
 
         </form>
       }
 
       <div class="login-link">
-        ¿Ya tenés una cuenta?
+        {{ 'AUTH.REGISTER.HAVE_ACCOUNT' | translate }}
 
         <a routerLink="/login">
-          Iniciar sesión
+          {{ 'AUTH.REGISTER.LOGIN_LINK' | translate }}
         </a>
       </div>
 

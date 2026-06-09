@@ -20,15 +20,15 @@ export interface CreateAlertDto {
   isActive: boolean;
 }
 
-// Tipos de condiciones disponibles
+// Tipos de condiciones disponibles (label = translation key)
 export const ALERT_CONDITIONS = [
-  { value: '>', label: 'Precio mayor que', icon: '📈' },
-  { value: '>=', label: 'Precio mayor o igual que', icon: '📊' },
-  { value: '=', label: 'Precio igual a', icon: '⚖️' },
-  { value: '<=', label: 'Precio menor o igual que', icon: '📉' },
-  { value: '<', label: 'Precio menor que', icon: '📉' },
-  { value: '%>', label: 'Subida mayor a %', icon: '🚀' },
-  { value: '%<', label: 'Bajada mayor a %', icon: '📉' }
+  { value: '>',  label: 'ALERTS.CONDITIONS.GT',  icon: '📈' },
+  { value: '>=', label: 'ALERTS.CONDITIONS.GTE', icon: '📊' },
+  { value: '=',  label: 'ALERTS.CONDITIONS.EQ',  icon: '⚖️' },
+  { value: '<=', label: 'ALERTS.CONDITIONS.LTE', icon: '📉' },
+  { value: '<',  label: 'ALERTS.CONDITIONS.LT',  icon: '📉' },
+  { value: '%>', label: 'ALERTS.CONDITIONS.PCT_UP',   icon: '🚀' },
+  { value: '%<', label: 'ALERTS.CONDITIONS.PCT_DOWN', icon: '📉' }
 ];
 
 export interface AlertDto {

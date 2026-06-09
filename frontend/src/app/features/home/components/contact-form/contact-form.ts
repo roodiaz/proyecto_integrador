@@ -2,9 +2,11 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TextFieldModule } from '@angular/cdk/text-field';
+import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../../shared/material.module';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ContactService } from '../../services/contact.service';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-contact-form',
@@ -13,7 +15,8 @@ import { ContactService } from '../../services/contact.service';
     CommonModule,
     ReactiveFormsModule,
     TextFieldModule,
-    MaterialModule
+    MaterialModule,
+    TranslateModule
   ],
   templateUrl: './contact-form.html',
   styleUrl: './contact-form.css'
@@ -27,7 +30,8 @@ export class ContactForm {
   constructor(
     private fb: FormBuilder,
     private contactService: ContactService,
-    private notificationService: SnackBarService
+    private notificationService: SnackBarService,
+    private languageService: LanguageService
   ) {
     this.contactForm = this.fb.group({
       fullName: ['', [Validators.required]],
@@ -75,7 +79,7 @@ export class ContactForm {
         this.contactForm.reset({ fullName: '', email: '', phone: '', consulta: '' });
       },
       error: error => {
-        this.notificationService.error(error.error?.message ?? 'Error al enviar mensaje');
+        this.notificationService.fromResponse(false, error.error?.code, error.error?.message ?? this.languageService.instant('HOME.CONTACT.SEND_ERROR'));
       }
     });
   }
