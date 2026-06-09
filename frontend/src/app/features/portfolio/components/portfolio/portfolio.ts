@@ -610,6 +610,22 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
     const t = this.themeService.getChartTheme();
 
+    const values = data.map(d => d.totalValue).filter(v => v != null && isFinite(v));
+    const rawMin = values.length ? Math.min(...values) : 0;
+    const rawMax = values.length ? Math.max(...values) : 1;
+    const range = rawMax - rawMin || rawMax * 0.1 || 1;
+    const padding = range * 0.1;
+    const yMin = Math.max(0, rawMin - padding);
+    const yMax = rawMax + padding;
+
+    const yTicksLimit = 6;
+    const yStep = (yMax - yMin) / (yTicksLimit - 1);
+    const yDecimals = yStep >= 1000 ? 0 : yStep >= 100 ? 1 : yStep >= 10 ? 2 : 3;
+    const formatYTick = (n: number): string => {
+      if (n >= 1000) return `$${(n / 1000).toFixed(yDecimals)}k`;
+      return `$${n.toFixed(Math.min(yDecimals, 2))}`;
+    };
+
     const config: ChartConfiguration = {
       type: 'line',
       data: {
@@ -672,10 +688,13 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
           y: {
             display: true,
             grid: { color: t.gridColor },
+            min: yMin,
+            max: yMax,
             ticks: {
               color: t.textColor,
               font: { size: 11 },
-              callback: (v: any) => `$${(Number(v) / 1000).toFixed(1)}k`,
+              maxTicksLimit: yTicksLimit,
+              callback: (v: any) => formatYTick(Number(v)),
             },
           },
         },
