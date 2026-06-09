@@ -48,8 +48,10 @@ x-common-service: &common-service
   restart: always
 
   depends_on:
-    - postgres
-    - mongo
+    postgres:
+      condition: service_healthy
+    mongo:
+      condition: service_healthy
 
   networks:
     - investlab-network
@@ -83,6 +85,7 @@ services:
       Limits__MaxFavorites: ${Limits__MaxFavorites}
       Limits__MaxOperationsPerDay: ${Limits__MaxOperationsPerDay}
       Limits__MaxDailySearches: ${Limits__MaxDailySearches}
+      Limits__InitialBalance: ${Limits__InitialBalance}
 
   # ======================================
   # WORKERS
@@ -100,6 +103,29 @@ services:
 
     environment:
       <<: *common-environment
+
+  # ======================================
+  # FRONTEND
+  # ======================================
+  investlab.frontend:
+    image: ${DOCKER_REGISTRY-}investlabfrontend
+
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        API_URL: http://localhost:8080/api
+        SERVER_URL: http://localhost:8080
+
+    container_name: investlab.frontend
+
+    restart: always
+
+    ports:
+      - "4200:80"
+
+    networks:
+      - investlab-network
 
   # ======================================
   # POSTGRES
@@ -122,6 +148,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
     networks:
       - investlab-network
 
@@ -140,6 +173,13 @@ services:
 
     volumes:
       - mongo_data:/data/db
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
     networks:
       - investlab-network

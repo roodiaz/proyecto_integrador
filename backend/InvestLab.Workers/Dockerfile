@@ -10,10 +10,10 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["InvestLab.Workers.csproj", "."]
-RUN dotnet restore "./InvestLab.Workers.csproj"
+COPY ["InvestLab.Workers/InvestLab.Workers.csproj", "InvestLab.Workers/"]
+RUN dotnet restore "./InvestLab.Workers/InvestLab.Workers.csproj"
 COPY . .
-WORKDIR "/src/."
+WORKDIR "/src/InvestLab.Workers"
 RUN dotnet build "./InvestLab.Workers.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Esta fase se usa para publicar el proyecto de servicio que se copiará en la fase final.
