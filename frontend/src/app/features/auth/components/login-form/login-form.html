@@ -58,80 +58,151 @@
         </p>
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      @if (verificationStatus === 'idle') {
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
 
-        <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="full-width">
 
-          <mat-label>{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</mat-label>
+            <mat-label>{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</mat-label>
 
-          <input matInput type="email" formControlName="email" [placeholder]="'AUTH.LOGIN.EMAIL_PLACEHOLDER' | translate" />
+            <input matInput type="email" formControlName="email" [placeholder]="'AUTH.LOGIN.EMAIL_PLACEHOLDER' | translate" />
 
-          <mat-icon matSuffix>mail</mat-icon>
+            <mat-icon matSuffix>mail</mat-icon>
 
-          @if (email?.hasError('required')) {
-            <mat-error>
-              {{ 'AUTH.LOGIN.VALIDATION.EMAIL_REQUIRED' | translate }}
-            </mat-error>
+            @if (email?.hasError('required')) {
+              <mat-error>
+                {{ 'AUTH.LOGIN.VALIDATION.EMAIL_REQUIRED' | translate }}
+              </mat-error>
+            }
+
+            @if (email?.hasError('email')) {
+              <mat-error>
+                {{ 'AUTH.LOGIN.VALIDATION.EMAIL_INVALID' | translate }}
+              </mat-error>
+            }
+
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+
+            <mat-label>{{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}</mat-label>
+
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
+
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>
+                {{ hidePassword ? 'visibility_off' : 'visibility' }}
+              </mat-icon>
+            </button>
+
+            @if (password?.hasError('required')) {
+              <mat-error>
+                {{ 'AUTH.LOGIN.VALIDATION.PASSWORD_REQUIRED' | translate }}
+              </mat-error>
+            }
+
+            @if (password?.hasError('minlength')) {
+              <mat-error>
+                {{ 'AUTH.LOGIN.VALIDATION.PASSWORD_MIN' | translate }}
+              </mat-error>
+            }
+
+          </mat-form-field>
+
+          @if (loginError) {
+            <div class="error-message">
+              <mat-icon>error_outline</mat-icon>
+              {{ loginError }}
+            </div>
           }
 
-          @if (email?.hasError('email')) {
-            <mat-error>
-              {{ 'AUTH.LOGIN.VALIDATION.EMAIL_INVALID' | translate }}
-            </mat-error>
-          }
+          <div class="auth-options">
 
-        </mat-form-field>
+            <a routerLink="/recuperar-contrasena" class="forgot-password">
+              {{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}
+            </a>
 
-        <mat-form-field appearance="outline" class="full-width">
+          </div>
 
-          <mat-label>{{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}</mat-label>
+          <button mat-raised-button type="submit" class="login-button" [disabled]="!loginForm.valid">
+            {{ 'AUTH.LOGIN.SUBMIT' | translate }}
 
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
-
-          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
             <mat-icon>
-              {{ hidePassword ? 'visibility_off' : 'visibility' }}
+              login
             </mat-icon>
           </button>
 
-          @if (password?.hasError('required')) {
-            <mat-error>
-              {{ 'AUTH.LOGIN.VALIDATION.PASSWORD_REQUIRED' | translate }}
-            </mat-error>
-          }
+        </form>
+      }
 
-          @if (password?.hasError('minlength')) {
-            <mat-error>
-              {{ 'AUTH.LOGIN.VALIDATION.PASSWORD_MIN' | translate }}
-            </mat-error>
-          }
+      @if (verificationStatus !== 'idle') {
+        <div class="auth-form verify-section">
 
-        </mat-form-field>
-
-        @if (loginError) {
-          <div class="error-message">
-            <mat-icon>error_outline</mat-icon>
-            {{ loginError }}
+          <div class="verify-info">
+            <mat-icon class="verify-icon">mark_email_unread</mat-icon>
+            <p>{{ 'AUTH.REGISTRATION_SUCCESS.EMAIL_SENT' | translate }} <strong>{{ pendingEmail }}</strong></p>
           </div>
-        }
 
-        <div class="auth-options">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'AUTH.REGISTRATION_SUCCESS.CODE_LABEL' | translate }}</mat-label>
+            <input matInput
+                   [(ngModel)]="verificationCode"
+                   [placeholder]="'AUTH.REGISTRATION_SUCCESS.CODE_PLACEHOLDER' | translate"
+                   maxlength="6" />
+            <mat-icon matSuffix>pin</mat-icon>
+          </mat-form-field>
 
-          <a routerLink="/recuperar-contrasena" class="forgot-password">
-            {{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}
-          </a>
+          @if (verificationError) {
+            <div class="error-message">
+              <mat-icon>error_outline</mat-icon>
+              {{ verificationError }}
+            </div>
+          }
+
+          @if (verificationSuccess) {
+            <div class="success-message">
+              <mat-icon>check_circle_outline</mat-icon>
+              {{ verificationSuccess }}
+            </div>
+          }
+
+          <button mat-raised-button class="login-button"
+                  [disabled]="verificationStatus === 'verifying' || !verificationCode.trim()"
+                  (click)="onVerifyCode()">
+            @if (verificationStatus === 'verifying') {
+              <mat-spinner diameter="18"></mat-spinner>
+            }
+            @if (verificationStatus !== 'verifying') {
+              {{ 'AUTH.REGISTRATION_SUCCESS.SUBMIT' | translate }}
+            }
+            @if (verificationStatus !== 'verifying') {
+              <mat-icon>check_circle</mat-icon>
+            }
+          </button>
+
+          <div class="verify-actions">
+            <button mat-button type="button"
+                    [disabled]="verificationStatus === 'resending'"
+                    (click)="onResendCode()">
+              @if (verificationStatus === 'resending') {
+                <mat-spinner diameter="16"></mat-spinner>
+              }
+              @if (verificationStatus !== 'resending') {
+                <mat-icon>refresh</mat-icon>
+              }
+              @if (verificationStatus !== 'resending') {
+                {{ 'AUTH.REGISTRATION_SUCCESS.RESEND' | translate }}
+              }
+            </button>
+
+            <button mat-button type="button" (click)="cancelVerification()">
+              <mat-icon>arrow_back</mat-icon>
+              {{ 'AUTH.LOGIN.BACK' | translate }}
+            </button>
+          </div>
 
         </div>
-
-        <button mat-raised-button type="submit" class="login-button" [disabled]="!loginForm.valid">
-          {{ 'AUTH.LOGIN.SUBMIT' | translate }}
-
-          <mat-icon>
-            login
-          </mat-icon>
-        </button>
-
-      </form>
+      }
 
     </div>
 

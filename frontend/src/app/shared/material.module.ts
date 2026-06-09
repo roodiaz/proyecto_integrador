@@ -22,6 +22,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export const materialModules = [
   MatBadgeModule,
@@ -47,6 +48,7 @@ export const materialModules = [
   MatTableModule,
   MatChipsModule,
   MatPaginatorModule,
+  MatProgressSpinnerModule,
 ] as const;
 
 // Este módulo ya no es necesario en la nueva versión de Angular con standalone components

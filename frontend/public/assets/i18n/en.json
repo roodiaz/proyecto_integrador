@@ -108,6 +108,7 @@
       "PASSWORD_LABEL": "Password",
       "FORGOT_PASSWORD": "Forgot your password?",
       "SUBMIT": "Log In",
+      "BACK": "Go back",
       "NO_ACCOUNT": "Don't have an account?",
       "REGISTER_LINK": "Sign up",
       "VALIDATION": {

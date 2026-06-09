@@ -108,6 +108,7 @@
       "PASSWORD_LABEL": "Contraseña",
       "FORGOT_PASSWORD": "¿Olvidaste tu contraseña?",
       "SUBMIT": "Iniciar Sesión",
+      "BACK": "Volver",
       "NO_ACCOUNT": "¿No tenés cuenta?",
       "REGISTER_LINK": "Registrate",
       "VALIDATION": {
