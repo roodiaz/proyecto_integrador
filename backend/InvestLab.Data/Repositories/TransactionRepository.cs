@@ -121,6 +121,20 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
+        /// Devuelve todas las transacciones de un usuario, incluyendo el activo asociado,
+        /// ordenadas por fecha ascendente. Se utiliza para reconstruir estados históricos de portfolio.
+        /// </summary>
+        public async Task<List<Transaction>> GetAllByUserAsync(int userId)
+        {
+            return await _context.Transactions
+                .AsNoTracking()
+                .Include(x => x.Asset)
+                .Where(x => x.UserId == userId)
+                .OrderBy(x => x.CreatedAt)
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Devuelve todas las transacciones de un usuario que coincidan con los filtros indicados,
         /// sin aplicar paginación. Se usa para generar el archivo de exportación.
         /// </summary>

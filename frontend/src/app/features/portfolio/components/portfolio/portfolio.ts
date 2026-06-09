@@ -405,7 +405,6 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (err) => {
           console.error('Pie chart error', err);
-          this.snackBarService.error('No se pudo cargar la distribución del portfolio');
         },
       });
   }

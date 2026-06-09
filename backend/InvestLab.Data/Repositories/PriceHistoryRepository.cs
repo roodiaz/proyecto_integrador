@@ -135,4 +135,18 @@ public class PriceHistoryRepository : IPriceHistoryRepository
 
         return await pipeline.ToListAsync();
     }
+
+    /// <summary>
+    /// Devuelve el precio de cierre del símbolo en la fecha indicada o, si no hay registro
+    /// exacto, el del día bursátil más reciente anterior a esa fecha.
+    /// Retorna null si no existe ningún precio almacenado para el símbolo.
+    /// </summary>
+    public async Task<decimal?> GetClosingPriceOnOrBeforeAsync(string symbol, DateTime date)
+    {
+        var entry = await _collection
+            .Find(x => x.Symbol == symbol && x.Date <= date.Date)
+            .SortByDescending(x => x.Date)
+            .FirstOrDefaultAsync();
+        return entry?.Close;
+    }
 }

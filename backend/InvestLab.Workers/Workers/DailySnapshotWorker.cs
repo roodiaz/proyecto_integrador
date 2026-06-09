@@ -109,8 +109,8 @@ public class DailySnapshotWorker : BackgroundService
 
     /// <summary>
     /// Ejecuta una única vez al iniciar el worker.
-    /// Determina el último cierre bursátil ocurrido y genera el snapshot si falta,
-    /// garantizando que no queden días sin registro aunque el worker haya estado apagado.
+    /// Determina el último cierre bursátil ocurrido y garantiza que existan snapshots
+    /// para TODOS los días bursátiles faltantes desde la creación de cada usuario.
     /// </summary>
     private async Task RunCatchUpAsync(CancellationToken stoppingToken)
     {
@@ -125,19 +125,19 @@ public class DailySnapshotWorker : BackgroundService
             var lastCloseNy = GetLastMarketCloseNy(nowNy);
             var lastCloseUtc = TimeZoneInfo.ConvertTimeToUtc(lastCloseNy, nyTimeZone);
 
-            _logger.LogInformation("Catch-up: verificando snapshot para el cierre del {LastCloseNy} NY ({LastCloseUtc} UTC)", lastCloseNy, lastCloseUtc);
+            _logger.LogInformation("Catch-up histórico iniciado. Último cierre bursátil: {LastCloseNy} NY ({LastCloseUtc} UTC)", lastCloseNy, lastCloseUtc);
 
             using var scope = _serviceProvider.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
 
-            await service.GenerateDailyPortfolioSnapshotsAsync(lastCloseUtc);
+            await service.RunHistoricalCatchUpAsync(lastCloseUtc);
 
-            _logger.LogInformation("Catch-up completado");
+            _logger.LogInformation("Catch-up histórico completado");
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error durante el catch-up de snapshots al iniciar el worker");
+            _logger.LogError(ex, "Error durante el catch-up histórico de snapshots al iniciar el worker");
         }
     }
 

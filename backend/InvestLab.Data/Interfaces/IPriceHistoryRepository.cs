@@ -19,4 +19,6 @@ public interface IPriceHistoryRepository
     Task<List<PriceHistory>> GetBySymbolAndDateAsync(string symbol, DateTime fromDate);
 
     Task<List<PriceHistory>> GetLatestPricesAsync();
+
+    Task<decimal?> GetClosingPriceOnOrBeforeAsync(string symbol, DateTime date);
 }

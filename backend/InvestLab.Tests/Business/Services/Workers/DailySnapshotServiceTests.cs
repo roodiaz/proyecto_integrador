@@ -39,7 +39,8 @@ public class DailySnapshotServiceTests
 
     private static readonly DateTime MarketCloseUtc = new DateTime(2025, 6, 8, 20, 5, 0, DateTimeKind.Utc);
 
-    private static User UserEntity(int id = 1, decimal balance = 1000) => new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance };
+    private static User UserEntity(int id = 1, decimal balance = 1000, DateTime? createdAt = null) =>
+        new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance, CreatedAt = createdAt ?? new DateTime(2025, 6, 8) };
 
     private static Asset AssetEntity(int id = 1, string symbol = "AAPL", bool historyLoaded = true) => new() { Id = id, Symbol = symbol, HistoryLoaded = historyLoaded };
 
@@ -52,6 +53,12 @@ public class DailySnapshotServiceTests
 
     private static Transaction SellTx(int userId, int assetId, decimal quantity, decimal total, DateTime createdAt) =>
         new() { UserId = userId, AssetId = assetId, Type = TransactionType.Sell, Quantity = quantity, Price = total / quantity, Total = total, CreatedAt = createdAt };
+
+    private static Transaction BuyTxWithAsset(int userId, Asset asset, decimal quantity, decimal total, DateTime createdAt) =>
+        new() { UserId = userId, AssetId = asset.Id, Asset = asset, Type = TransactionType.Buy, Quantity = quantity, Price = total / quantity, Total = total, CreatedAt = createdAt };
+
+    private static Transaction SellTxWithAsset(int userId, Asset asset, decimal quantity, decimal total, DateTime createdAt) =>
+        new() { UserId = userId, AssetId = asset.Id, Asset = asset, Type = TransactionType.Sell, Quantity = quantity, Price = total / quantity, Total = total, CreatedAt = createdAt };
 
     // ---------- GenerateDailyPortfolioSnapshotsAsync ----------
 
@@ -224,6 +231,190 @@ public class DailySnapshotServiceTests
 
         // balance al cierre = 400 + 600 = 1000; holdings al cierre = 5 × 120 = 600; total = 1600
         _portfolioHistoryRepository.Verify(r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.TotalValue == 1600)), Times.Once);
+    }
+
+    // ---------- RunHistoricalCatchUpAsync ----------
+
+    /// <summary>
+    /// Si el usuario nunca tuvo snapshots y no tiene operaciones, se deben generar snapshots
+    /// para todos los días bursátiles desde CreatedAt hasta lastCloseUtc, con valor = balance.
+    /// Escenario: creado el lunes 02/06/2025, último cierre el viernes 06/06/2025 → 5 snapshots.
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenUserHasNoSnapshotsAndNoTransactions_ShouldGenerateSnapshotsForAllMissingBusinessDays()
+    {
+        var createdAt = new DateTime(2025, 6, 2); // lunes
+        var lastClose = new DateTime(2025, 6, 6, 20, 5, 0, DateTimeKind.Utc); // viernes 16:05 NY EDT
+        var user = UserEntity(balance: 10_000, createdAt: createdAt);
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { user });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ReturnsAsync((PortfolioHistory?)null);
+        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(new List<Portfolio>());
+        _transactionRepository.Setup(r => r.GetAllByUserAsync(1)).ReturnsAsync(new List<Transaction>());
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        // 02/06, 03/06, 04/06, 05/06, 06/06 (lun–vie) → 5 snapshots todos con valor 10 000
+        _portfolioHistoryRepository.Verify(
+            r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.UserId == 1 && h.TotalValue == 10_000)),
+            Times.Exactly(5));
+    }
+
+    /// <summary>
+    /// Si el usuario tiene un snapshot previo, la recuperación debe comenzar desde el día siguiente
+    /// al último snapshot, sin duplicar el existente.
+    /// Escenario: último snapshot = 04/06/2025, último cierre = 06/06/2025 → 2 snapshots (05 y 06).
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenUserHasExistingSnapshot_ShouldStartFromDayAfterLastSnapshot()
+    {
+        var lastClose = new DateTime(2025, 6, 6, 20, 5, 0, DateTimeKind.Utc);
+        var user = UserEntity(balance: 10_000, createdAt: new DateTime(2025, 6, 2));
+        var existingSnapshot = new PortfolioHistory { UserId = 1, Date = new DateTime(2025, 6, 4), TotalValue = 10_000 };
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { user });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ReturnsAsync(existingSnapshot);
+        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(new List<Portfolio>());
+        _transactionRepository.Setup(r => r.GetAllByUserAsync(1)).ReturnsAsync(new List<Transaction>());
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        // Solo 05/06 y 06/06 (04/06 ya existía)
+        _portfolioHistoryRepository.Verify(
+            r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.UserId == 1 && h.TotalValue == 10_000)),
+            Times.Exactly(2));
+    }
+
+    /// <summary>
+    /// Si ya existen todos los snapshots hasta el último cierre, no se debe insertar ninguno nuevo.
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenAllSnapshotsExist_ShouldInsertNothing()
+    {
+        var lastClose = new DateTime(2025, 6, 6, 20, 5, 0, DateTimeKind.Utc);
+        var user = UserEntity(balance: 10_000, createdAt: new DateTime(2025, 6, 2));
+        var upToDate = new PortfolioHistory { UserId = 1, Date = new DateTime(2025, 6, 6), TotalValue = 10_000 };
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { user });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ReturnsAsync(upToDate);
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        _portfolioHistoryRepository.Verify(r => r.InsertAsync(It.IsAny<PortfolioHistory>()), Times.Never);
+    }
+
+    /// <summary>
+    /// Cuando hay transacciones posteriores a la fecha del snapshot a reconstruir,
+    /// el balance debe reconstruirse revirtiendo esas operaciones.
+    /// Una compra de 600 después de la fecha D → balance en D = balance_actual + 600.
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenBuyOccurredAfterSnapshotDate_ShouldAddBuyTotalBackToBalance()
+    {
+        // Escenario: usuario creado el 03/06, último cierre el 04/06.
+        // Realizó una compra de 600 el 05/06 (después del día a reconstruir).
+        // Balance actual: 9400. Balance al 04/06 = 9400 + 600 = 10 000.
+        var createdAt = new DateTime(2025, 6, 3);
+        var lastClose = new DateTime(2025, 6, 4, 20, 5, 0, DateTimeKind.Utc);
+        var user = UserEntity(balance: 9_400, createdAt: createdAt);
+        var asset = AssetEntity();
+        var buyAfter = BuyTxWithAsset(1, asset, quantity: 3, total: 600, createdAt: new DateTime(2025, 6, 5, 10, 0, 0));
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { user });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ReturnsAsync((PortfolioHistory?)null);
+        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(new List<Portfolio>());
+        _transactionRepository.Setup(r => r.GetAllByUserAsync(1)).ReturnsAsync(new List<Transaction> { buyAfter });
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        // 03/06 y 04/06: ambos con balance 10 000, sin holdings (la compra fue el 05/06)
+        _portfolioHistoryRepository.Verify(
+            r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.UserId == 1 && h.TotalValue == 10_000)),
+            Times.Exactly(2));
+    }
+
+    /// <summary>
+    /// Cuando hay tenencias activas y se dispone de precio histórico para el día reconstruido,
+    /// el snapshot debe incluir su valorización.
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenUserHasHoldingsWithHistoricalPrice_ShouldIncludeHoldingsInSnapshot()
+    {
+        // Escenario: usuario creado el 05/06, último cierre el 05/06.
+        // Tiene 10 acciones de AAPL (compradas antes del 05/06), precio histórico del 05/06 = 150.
+        // Balance = 1000. Total esperado = 1000 + 10 × 150 = 2500.
+        var createdAt = new DateTime(2025, 6, 5);
+        var lastClose = new DateTime(2025, 6, 5, 20, 5, 0, DateTimeKind.Utc);
+        var user = UserEntity(balance: 1_000, createdAt: createdAt);
+        var asset = AssetEntity(symbol: "AAPL");
+        var portfolio = new List<Portfolio> { PortfolioEntity(asset, quantity: 10) };
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { user });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ReturnsAsync((PortfolioHistory?)null);
+        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolio);
+        _transactionRepository.Setup(r => r.GetAllByUserAsync(1)).ReturnsAsync(new List<Transaction>());
+        _priceHistoryRepository.Setup(r => r.GetClosingPriceOnOrBeforeAsync("AAPL", new DateTime(2025, 6, 5))).ReturnsAsync(150m);
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        _portfolioHistoryRepository.Verify(
+            r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.UserId == 1 && h.TotalValue == 2_500)),
+            Times.Once);
+    }
+
+    /// <summary>
+    /// Si un activo fue vendido después de la fecha a reconstruir,
+    /// debe aparecer en las tenencias históricas con la cantidad correcta.
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenAssetWasSoldAfterSnapshotDate_ShouldRestoreItToHistoricalHoldings()
+    {
+        // Escenario: usuario creado el 04/06, último cierre el 04/06.
+        // Tenía 5 AAPL al 04/06 y las vendió todas el 05/06.
+        // Portfolio actual: vacío. Balance actual: 1500 (= 1000 + 500 de la venta).
+        // Al 04/06: balance = 1500 - 500 = 1000; holdings = 5 × 120 = 600; total = 1600.
+        var createdAt = new DateTime(2025, 6, 4);
+        var lastClose = new DateTime(2025, 6, 4, 20, 5, 0, DateTimeKind.Utc);
+        var user = UserEntity(balance: 1_500, createdAt: createdAt);
+        var asset = AssetEntity(symbol: "AAPL");
+        var sellAfter = SellTxWithAsset(1, asset, quantity: 5, total: 500, createdAt: new DateTime(2025, 6, 5, 10, 0, 0));
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { user });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ReturnsAsync((PortfolioHistory?)null);
+        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(new List<Portfolio>()); // portfolio actual vacío
+        _transactionRepository.Setup(r => r.GetAllByUserAsync(1)).ReturnsAsync(new List<Transaction> { sellAfter });
+        _priceHistoryRepository.Setup(r => r.GetClosingPriceOnOrBeforeAsync("AAPL", new DateTime(2025, 6, 4))).ReturnsAsync(120m);
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        // balance al 04/06 = 1000; holdings = 5 × 120 = 600; total = 1600
+        _portfolioHistoryRepository.Verify(
+            r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.UserId == 1 && h.TotalValue == 1_600)),
+            Times.Once);
+    }
+
+    /// <summary>
+    /// Si un error ocurre procesando un usuario, debe registrarse y continuar con los demás.
+    /// </summary>
+    [Fact]
+    public async Task RunHistoricalCatchUpAsync_WhenOneUserFails_ShouldLogErrorAndContinueWithOthers()
+    {
+        var lastClose = new DateTime(2025, 6, 6, 20, 5, 0, DateTimeKind.Utc);
+        var failingUser = UserEntity(id: 1, createdAt: new DateTime(2025, 6, 6));
+        var workingUser = UserEntity(id: 2, balance: 5_000, createdAt: new DateTime(2025, 6, 6));
+
+        _userRepository.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User> { failingUser, workingUser });
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(1)).ThrowsAsync(new Exception("db failure"));
+        _portfolioHistoryRepository.Setup(r => r.GetLatestAsync(2)).ReturnsAsync((PortfolioHistory?)null);
+        _portfolioRepository.Setup(r => r.GetByUserAsync(2)).ReturnsAsync(new List<Portfolio>());
+        _transactionRepository.Setup(r => r.GetAllByUserAsync(2)).ReturnsAsync(new List<Transaction>());
+
+        await CreateService().RunHistoricalCatchUpAsync(lastClose);
+
+        // Usuario 1 falló, usuario 2 debe haber generado su snapshot
+        _portfolioHistoryRepository.Verify(
+            r => r.InsertAsync(It.Is<PortfolioHistory>(h => h.UserId == 2 && h.TotalValue == 5_000)),
+            Times.Once);
     }
 
     // ---------- SaveDailyMarketHistoryAsync ----------

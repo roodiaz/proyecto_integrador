@@ -150,6 +150,134 @@ public class DailySnapshotService : IDailySnapshotWorker
 
 
     /// <summary>
+    /// Garantiza que existan snapshots para todos los días bursátiles faltantes desde la
+    /// creación de cada usuario (o desde su último snapshot) hasta <paramref name="lastCloseUtc"/>.
+    ///
+    /// Para reconstruir el estado histórico del portfolio en una fecha D pasada, el método
+    /// invierte las operaciones realizadas después del fin del día D (>= D+1 UTC) sobre el
+    /// estado actual del usuario. El precio de cada activo se obtiene del historial almacenado
+    /// en la base de datos. Esto garantiza coherencia incluso cuando el worker estuvo apagado
+    /// durante días o semanas.
+    ///
+    /// El método es idempotente: omite cualquier fecha para la que ya exista un snapshot.
+    /// </summary>
+    /// <param name="lastCloseUtc">
+    /// Fecha/hora UTC del último cierre bursátil (límite superior de la recuperación).
+    /// </param>
+    public async Task RunHistoricalCatchUpAsync(DateTime lastCloseUtc)
+    {
+        var lastCloseDate = lastCloseUtc.Date;
+        var users = await _userRepository.GetAllAsync();
+
+        foreach (var user in users)
+        {
+            try
+            {
+                var latestSnapshot = await _portfolioHistoryRepository.GetLatestAsync(user.Id);
+
+                DateTime startDate;
+                if (latestSnapshot == null)
+                    startDate = user.CreatedAt.Date;
+                else
+                    startDate = latestSnapshot.Date.Date.AddDays(1);
+
+                var missingDays = GetBusinessDaysBetween(startDate, lastCloseDate);
+                if (missingDays.Count == 0)
+                {
+                    _logger.LogInformation("Sin días bursátiles faltantes para UserId={UserId}", user.Id);
+                    continue;
+                }
+
+                _logger.LogInformation("Recuperando {Count} días para UserId={UserId} ({From} → {To})",
+                    missingDays.Count, user.Id, missingDays[0], missingDays[^1]);
+
+                var currentPortfolio = await _portfolioRepository.GetByUserAsync(user.Id);
+                var allTransactions  = await _transactionRepository.GetAllByUserAsync(user.Id);
+
+                foreach (var date in missingDays)
+                {
+                    var cutoffUtc = date.Date.AddDays(1); // transacciones de D+1 en adelante son "después de D"
+
+                    var txAfterD = allTransactions.Where(tx => tx.CreatedAt >= cutoffUtc).ToList();
+
+                    // Reconstruir balance al fin del día D
+                    var balanceAtD = user.Balance;
+                    foreach (var tx in txAfterD)
+                    {
+                        if (tx.Type == TransactionType.Buy)  balanceAtD += tx.Total;
+                        if (tx.Type == TransactionType.Sell) balanceAtD -= tx.Total;
+                    }
+
+                    // Reconstruir tenencias al fin del día D
+                    // Clave: AssetId, Valor: (Symbol, Quantity)
+                    var holdingsAtD = currentPortfolio
+                        .ToDictionary(p => p.AssetId, p => (p.Asset.Symbol, p.Quantity));
+
+                    foreach (var tx in txAfterD)
+                    {
+                        if (!holdingsAtD.ContainsKey(tx.AssetId))
+                            holdingsAtD[tx.AssetId] = (tx.Asset.Symbol, 0m);
+
+                        var (sym, qty) = holdingsAtD[tx.AssetId];
+                        holdingsAtD[tx.AssetId] = tx.Type == TransactionType.Buy
+                            ? (sym, qty - tx.Quantity)   // deshacer compra
+                            : (sym, qty + tx.Quantity);  // deshacer venta
+                    }
+
+                    // Valorizar tenencias con precios históricos
+                    decimal holdingsValue = 0;
+                    foreach (var (_, (symbol, quantity)) in holdingsAtD)
+                    {
+                        if (quantity <= 0) continue;
+
+                        var price = await _priceHistoryRepository.GetClosingPriceOnOrBeforeAsync(symbol, date);
+                        if (price == null)
+                        {
+                            _logger.LogWarning("Sin precio histórico para {Symbol} en {Date}", symbol, date);
+                            continue;
+                        }
+
+                        holdingsValue += quantity * price.Value;
+                    }
+
+                    var totalValue = balanceAtD + holdingsValue;
+
+                    await _portfolioHistoryRepository.InsertAsync(new PortfolioHistory
+                    {
+                        UserId     = user.Id,
+                        Date       = date,
+                        TotalValue = Math.Round(totalValue, 2)
+                    });
+
+                    _logger.LogInformation("Snapshot histórico generado: UserId={UserId} Fecha={Date} Valor={Total}",
+                        user.Id, date, totalValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en catch-up histórico para UserId={UserId}", user.Id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Devuelve la lista de días bursátiles (lunes–viernes) entre <paramref name="start"/>
+    /// y <paramref name="end"/>, ambos inclusive.
+    /// </summary>
+    private static List<DateTime> GetBusinessDaysBetween(DateTime start, DateTime end)
+    {
+        var days = new List<DateTime>();
+        var current = start.Date;
+        while (current <= end.Date)
+        {
+            if (current.DayOfWeek != DayOfWeek.Saturday && current.DayOfWeek != DayOfWeek.Sunday)
+                days.Add(current);
+            current = current.AddDays(1);
+        }
+        return days;
+    }
+
+    /// <summary>
     /// Guarda el cierre diario oficial del mercado.
     ///
     /// Debe ejecutarse una vez por día luego del cierre bursátil.
