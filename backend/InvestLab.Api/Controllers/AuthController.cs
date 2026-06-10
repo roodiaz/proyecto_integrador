@@ -107,7 +107,10 @@ public class AuthController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var result = await _authService.LoginAsync(dto);
+        var ipAddress = ClientIpResolver.GetClientIp(HttpContext);
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        var result = await _authService.LoginAsync(dto, ipAddress, userAgent);
 
         if (!result.Success)
         {
@@ -131,7 +134,10 @@ public class AuthController : BaseController
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
     {
-        var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
+        var ipAddress = ClientIpResolver.GetClientIp(HttpContext);
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        var result = await _authService.RefreshTokenAsync(dto.RefreshToken, ipAddress, userAgent);
 
         if (!result.Success)
         {

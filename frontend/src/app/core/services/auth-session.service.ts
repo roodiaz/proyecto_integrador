@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { Router } from '@angular/router';
+import { TokenRefreshService } from './token-refresh.service';
 
 /**
  * Servicio que centraliza el cierre de sesión del usuario: invalida el
@@ -18,7 +19,8 @@ export class AuthSessionService {
      */
     constructor(
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private tokenRefreshService: TokenRefreshService
     ) { }
 
     /**
@@ -43,6 +45,7 @@ export class AuthSessionService {
 
     /** Limpia el almacenamiento de sesión local y redirige al usuario a la landing. */
     private clearSession(): void {
+        this.tokenRefreshService.cancelProactiveRefresh();
         sessionStorage.clear();
         this.router.navigate(['/landing']);
     }

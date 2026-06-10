@@ -8,6 +8,7 @@ import { LoginRequest } from '../../models/login.model';
 import { VerifyRequest } from '../../models/register.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language.service';
+import { TokenRefreshService } from '../../../../core/services/token-refresh.service';
 
 @Component({
   selector: 'app-login-form',
@@ -36,6 +37,7 @@ export class LoginForm {
   pendingEmail = '';
 
   private readonly languageService = inject(LanguageService);
+  private readonly tokenRefreshService = inject(TokenRefreshService);
 
   constructor(
     private fb: FormBuilder,
@@ -83,6 +85,7 @@ export class LoginForm {
 
         sessionStorage.setItem('accessToken',  response.data.tokens.accessToken);
         sessionStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+        this.tokenRefreshService.scheduleProactiveRefresh(response.data.tokens.accessToken);
 
         this.router.navigate(['/dashboard']);
       },
@@ -143,6 +146,7 @@ export class LoginForm {
             }
             sessionStorage.setItem('accessToken', resp.data.tokens.accessToken);
             sessionStorage.setItem('refreshToken', resp.data.tokens.refreshToken);
+            this.tokenRefreshService.scheduleProactiveRefresh(resp.data.tokens.accessToken);
             this.router.navigate(['/dashboard']);
           },
           error: () => {

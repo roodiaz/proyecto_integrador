@@ -1,4 +1,5 @@
 ﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Security;
 using InvestLab.Data;
 using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
@@ -16,6 +17,7 @@ public class AuthService : IAuthService
 {
     private readonly InvestLabDbContext _context;
     private readonly LimitsOptions _limits;
+    private readonly JwtSettings _jwtSettings;
     private readonly IJwtService _jwtService;
     private readonly IPasswordHasher<InvestLab.Data.User> _passwordHasher;
     private readonly ILogger<AuthService> _logger;
@@ -40,7 +42,7 @@ public class AuthService : IAuthService
     /// <param name="logger">Logger para el registro de eventos del servicio.</param>
     /// <param name="emailProviderResolver">Resolver utilizado para obtener el proveedor de envío de correos electrónicos activo.</param>
     /// <param name="limitsOptions">Opciones de configuración de límites de la aplicación.</param>
-    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailProviderResolver emailProviderResolver, IVerificationCodeService verificationCodeService, IOptions<LimitsOptions> limitsOptions)
+    public AuthService(IUserRepository userRepository, IUserTempCredentialRepository tempRepository, IRefreshTokenRepository refreshTokenRepository, IUserSettingRepository userSettingRepository, IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher<User> passwordHasher, ILogger<AuthService> logger, IEmailProviderResolver emailProviderResolver, IVerificationCodeService verificationCodeService, IOptions<LimitsOptions> limitsOptions, IOptions<JwtSettings> jwtSettings)
     {
         _userRepository = userRepository;
         _tempRepository = tempRepository;
@@ -53,6 +55,7 @@ public class AuthService : IAuthService
         _emailProviderResolver = emailProviderResolver;
         _verificationCodeService = verificationCodeService;
         _limits = limitsOptions.Value;
+        _jwtSettings = jwtSettings.Value;
     }
 
     /// <summary>
@@ -243,7 +246,7 @@ public class AuthService : IAuthService
     /// </summary>
     /// <param name="dto">Credenciales de inicio de sesión del usuario (email y contraseña).</param>
     /// <returns>Una respuesta con los tokens generados si el inicio de sesión es exitoso, o el motivo del fallo.</returns>
-    public async Task<Response> LoginAsync(LoginDto dto)
+    public async Task<Response> LoginAsync(LoginDto dto, string? ipAddress = null, string? userAgent = null)
     {
         try
         {
@@ -316,9 +319,11 @@ public class AuthService : IAuthService
             var refreshToken = new RefreshToken
             {
                 UserId = user.Id,
-                Token = tokens.RefreshToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
+                Token = TokenHasher.Hash(tokens.RefreshToken),
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
+                IsRevoked = false,
+                CreatedByIp = ipAddress,
+                UserAgent = userAgent
             };
 
             await _refreshTokenRepository.AddAsync(refreshToken);
@@ -345,14 +350,27 @@ public class AuthService : IAuthService
     /// </summary>
     /// <param name="refreshToken">Token de actualización (refresh token) actual del usuario.</param>
     /// <returns>Una respuesta con los nuevos tokens generados, o el motivo del fallo si el token es inválido o expiró.</returns>
-    public async Task<Response> RefreshTokenAsync(string refreshToken)
+    public async Task<Response> RefreshTokenAsync(string refreshToken, string? ipAddress = null, string? userAgent = null)
     {
         try
         {
-            var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+            var hashedToken = TokenHasher.Hash(refreshToken);
+            var storedToken = await _refreshTokenRepository.GetByTokenAsync(hashedToken);
 
-            if (storedToken == null || storedToken.IsRevoked)
+            if (storedToken == null)
                 return Response.Fail("Token inválido", INVALID_TOKEN);
+
+            if (storedToken.IsRevoked)
+            {
+                // El token ya fue rotado/revocado y se está reutilizando: posible robo de token.
+                // Se revocan todas las sesiones del usuario como medida de mitigación.
+                _logger.LogWarning("Reuso de refresh token detectado para el usuario {UserId}. Se revocan todas sus sesiones.", storedToken.UserId);
+
+                await _refreshTokenRepository.RevokeAllByUserIdAsync(storedToken.UserId);
+                await _unitOfWork.SaveChangesAsync();
+
+                return Response.Fail("Token inválido", INVALID_TOKEN);
+            }
 
             if (storedToken.ExpiresAt < DateTime.UtcNow)
                 return Response.Fail("Token expirado", TOKEN_EXPIRED);
@@ -360,14 +378,17 @@ public class AuthService : IAuthService
             var user = storedToken.User;
 
             storedToken.IsRevoked = true;
+            storedToken.RevokedAt = DateTime.UtcNow;
 
             var tokens = await _jwtService.GenerateTokensAsync(user);
 
             var newToken = new RefreshToken
             {
                 UserId = user.Id,
-                Token = tokens.RefreshToken,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                Token = TokenHasher.Hash(tokens.RefreshToken),
+                ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
+                CreatedByIp = ipAddress,
+                UserAgent = userAgent
             };
 
             await _refreshTokenRepository.AddAsync(newToken);
@@ -392,7 +413,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var storedToken = await _refreshTokenRepository.GetByTokenAsync(refreshToken);
+            var storedToken = await _refreshTokenRepository.GetByTokenAsync(TokenHasher.Hash(refreshToken));
 
             if (storedToken == null || storedToken.IsRevoked)
             {
@@ -401,6 +422,7 @@ public class AuthService : IAuthService
             }
 
             storedToken.IsRevoked = true;
+            storedToken.RevokedAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -495,7 +517,7 @@ public class AuthService : IAuthService
             user.FailedLoginAttempts = 0;
             user.LockedUntil = null;
 
-            await _refreshTokenRepository.DeleteByUserIdAsync(user.Id);
+            await _refreshTokenRepository.RevokeAllByUserIdAsync(user.Id);
 
             await _unitOfWork.SaveChangesAsync();
 

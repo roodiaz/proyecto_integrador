@@ -194,6 +194,9 @@ CREATE TABLE refresh_tokens (
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    revoked_at TIMESTAMP WITH TIME ZONE,
+    created_by_ip VARCHAR(64),
+    user_agent VARCHAR(256),
 
     CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES users(id)
 );

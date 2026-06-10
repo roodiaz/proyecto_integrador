@@ -1,4 +1,5 @@
 using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Security;
 using InvestLab.Models.DTOs.Auth;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
@@ -31,11 +32,12 @@ public class AuthServiceTests
     private readonly Mock<IEmailProviderResolver> _emailProviderResolver = new();
     private readonly Mock<IVerificationCodeService> _verificationCodeService = new();
     private readonly LimitsOptions _limits = new() { InitialBalance = 10000 };
+    private readonly JwtSettings _jwtSettings = new() { SecretKey = "test", Issuer = "test", Audience = "test", ExpirationMinutes = 15, RefreshTokenExpirationDays = 7 };
 
     private AuthService CreateService()
     {
         _emailProviderResolver.Setup(x => x.GetProvider()).Returns(_emailProvider.Object);
-        return new(_userRepository.Object, _tempRepository.Object, _refreshTokenRepository.Object, _userSettingRepository.Object, _unitOfWork.Object, _jwtService.Object, _passwordHasher.Object, _logger.Object, _emailProviderResolver.Object, _verificationCodeService.Object, Options.Create(_limits));
+        return new(_userRepository.Object, _tempRepository.Object, _refreshTokenRepository.Object, _userSettingRepository.Object, _unitOfWork.Object, _jwtService.Object, _passwordHasher.Object, _logger.Object, _emailProviderResolver.Object, _verificationCodeService.Object, Options.Create(_limits), Options.Create(_jwtSettings));
     }
 
     private static User UserEntity(int id = 1, string email = "user@test.com", bool isActive = true, string passwordHash = "hash") =>
@@ -375,7 +377,7 @@ public class AuthServiceTests
     public async Task RefreshTokenAsync_WhenTokenIsValid_ShouldReturnSuccessResponseWithNewTokens()
     {
         var stored = RefreshTokenEntity();
-        _refreshTokenRepository.Setup(r => r.GetByTokenAsync(stored.Token)).ReturnsAsync(stored);
+        _refreshTokenRepository.Setup(r => r.GetByTokenAsync(TokenHasher.Hash(stored.Token))).ReturnsAsync(stored);
         _jwtService.Setup(j => j.GenerateTokensAsync(stored.User)).ReturnsAsync(new TokenDto { AccessToken = "access2", RefreshToken = "refresh2", ExpiresAt = DateTime.UtcNow.AddHours(1) });
 
         var result = await CreateService().RefreshTokenAsync(stored.Token);
@@ -403,7 +405,7 @@ public class AuthServiceTests
     public async Task RefreshTokenAsync_WhenTokenIsExpired_ShouldReturnErrorResponse()
     {
         var stored = RefreshTokenEntity(expiresAt: DateTime.UtcNow.AddDays(-1));
-        _refreshTokenRepository.Setup(r => r.GetByTokenAsync(stored.Token)).ReturnsAsync(stored);
+        _refreshTokenRepository.Setup(r => r.GetByTokenAsync(TokenHasher.Hash(stored.Token))).ReturnsAsync(stored);
 
         var result = await CreateService().RefreshTokenAsync(stored.Token);
 
@@ -430,7 +432,7 @@ public class AuthServiceTests
     public async Task LogoutAsync_WhenTokenIsValid_ShouldRevokeTokenAndReturnSuccessResponse()
     {
         var stored = RefreshTokenEntity();
-        _refreshTokenRepository.Setup(r => r.GetByTokenAsync(stored.Token)).ReturnsAsync(stored);
+        _refreshTokenRepository.Setup(r => r.GetByTokenAsync(TokenHasher.Hash(stored.Token))).ReturnsAsync(stored);
 
         var result = await CreateService().LogoutAsync(stored.Token);
 
@@ -578,7 +580,7 @@ public class AuthServiceTests
         Assert.True(temp.IsUsed);
         Assert.Equal("newHashedPassword", user.PasswordHash);
         Assert.NotNull(user.PasswordChangedAt);
-        _refreshTokenRepository.Verify(r => r.DeleteByUserIdAsync(user.Id), Times.Once);
+        _refreshTokenRepository.Verify(r => r.RevokeAllByUserIdAsync(user.Id), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 

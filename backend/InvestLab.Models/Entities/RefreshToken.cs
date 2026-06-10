@@ -32,6 +32,17 @@ public partial class RefreshToken
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
 
+    [Column("revoked_at")]
+    public DateTime? RevokedAt { get; set; }
+
+    [Column("created_by_ip")]
+    [StringLength(64)]
+    public string? CreatedByIp { get; set; }
+
+    [Column("user_agent")]
+    [StringLength(256)]
+    public string? UserAgent { get; set; }
+
     [ForeignKey("UserId")]
     [InverseProperty("RefreshTokens")]
     public virtual User User { get; set; } = null!;

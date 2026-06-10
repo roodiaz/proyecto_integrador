@@ -7,5 +7,7 @@
         Task AddAsync(RefreshToken token);
 
         Task DeleteByUserIdAsync(int userId);
+
+        Task RevokeAllByUserIdAsync(int userId);
     }
 }

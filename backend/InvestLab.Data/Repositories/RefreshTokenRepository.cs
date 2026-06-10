@@ -46,5 +46,21 @@ namespace InvestLab.Data.Repositories
         {
             await _context.RefreshTokens.Where(x => x.UserId == userId).ExecuteDeleteAsync();
         }
+
+        /// <summary>
+        /// Revoca lógicamente todos los tokens de actualización activos de un usuario,
+        /// preservando el registro para auditoría.
+        /// </summary>
+        /// <param name="userId">Identificador del usuario.</param>
+        public async Task RevokeAllByUserIdAsync(int userId)
+        {
+            var now = DateTime.UtcNow;
+
+            await _context.RefreshTokens
+                .Where(x => x.UserId == userId && !x.IsRevoked)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.IsRevoked, true)
+                    .SetProperty(x => x.RevokedAt, now));
+        }
     }
 }

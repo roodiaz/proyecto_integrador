@@ -182,6 +182,7 @@ public class UserService : IUserService
             user.PasswordChangedAt = DateTime.UtcNow;
 
             await _userRepository.UpdateAsync(user);
+            await _refreshTokenRepository.RevokeAllByUserIdAsync(userId);
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Password actualizado {UserId}", userId);
@@ -288,6 +289,7 @@ public class UserService : IUserService
             user.UpdateAt = DateTime.UtcNow;
 
             await _userRepository.UpdateAsync(user);
+            await _refreshTokenRepository.RevokeAllByUserIdAsync(userId);
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Email actualizado correctamente {UserId}", userId);
