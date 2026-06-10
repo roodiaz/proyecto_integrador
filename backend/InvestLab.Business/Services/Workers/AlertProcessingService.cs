@@ -89,13 +89,31 @@ public class AlertProcessingService : IAlertProcessingService
 
                 if (settings?.EmailNotifications == true)
                 {
-                    try
+                    var recipient = alert.User?.Email;
+
+                    if (string.IsNullOrWhiteSpace(recipient))
                     {
-                        await _emailProviderResolver.GetProvider().SendAsync("mail@test.com", "Alerta InvestLab", notification.Message);
+                        _logger.LogWarning("No se pudo enviar el email de alerta: el usuario {UserId} no tiene un email configurado", alert.UserId);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogError(ex, "Error al enviar email de alerta para el usuario {UserId} y alerta {AlertId}", alert.UserId, alert.Id);
+                        try
+                        {
+                            var trend = alert.Operator switch
+                            {
+                                AlertOperator.GreaterThan or AlertOperator.GreaterThanOrEqual => "up",
+                                AlertOperator.LessThan or AlertOperator.LessThanOrEqual => "down",
+                                _ => "neutral"
+                            };
+
+                            var body = EmailTemplates.AlertTriggered(alert.Asset.Symbol, notification.Message, market.Price, notification.CreatedAt, trend);
+
+                            await _emailProviderResolver.GetProvider().SendAsync(recipient, $"Alerta InvestLab: {alert.Asset.Symbol}", body);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error al enviar email de alerta para el usuario {UserId} y alerta {AlertId}", alert.UserId, alert.Id);
+                        }
                     }
                 }
             }

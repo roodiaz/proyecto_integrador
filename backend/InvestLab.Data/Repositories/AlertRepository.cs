@@ -154,12 +154,14 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
-        /// Obtiene todas las alertas activas del sistema, incluyendo el activo asociado a cada una.
+        /// Obtiene todas las alertas activas del sistema, incluyendo el activo y el usuario asociados a cada una.
         /// </summary>
-        /// <returns>Lista de alertas activas con su activo asociado.</returns>
+        /// <returns>Lista de alertas activas con su activo y usuario asociados.</returns>
         public async Task<List<Alert>> GetActiveAlertsAsync()
         {
-            return await _context.Alerts.Include(x => x.Asset)
+            return await _context.Alerts
+                .Include(x => x.Asset)
+                .Include(x => x.User)
                 .Where(x => x.IsActive)
                 .ToListAsync();
         }

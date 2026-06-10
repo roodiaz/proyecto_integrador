@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+</head>
+<body style="font-family: Arial, sans-serif; background:#f4f6f8; padding:40px;">
+
+    <div style="max-width:600px; margin:auto; background:white; border-radius:12px; overflow:hidden;">
+
+        <div style="height:6px; background:{{ACCENT_COLOR}};"></div>
+
+        <div style="padding:40px;">
+
+            <h2 style="color:#1f2937; margin-top:0;">
+                {{TREND_ICON}} Alerta activada: {{SYMBOL}}
+            </h2>
+
+            <p style="color:#374151; font-size:15px; line-height:1.5;">
+                {{MESSAGE}}
+            </p>
+
+            <div style="
+                margin:30px 0;
+                padding:20px;
+                text-align:center;
+                background:#f3f4f6;
+                border-radius:8px;">
+                <div style="font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
+                    Precio actual
+                </div>
+                <div style="font-size:32px; font-weight:bold; color:#1f2937;">
+                    ${{PRICE}}
+                </div>
+            </div>
+
+            <p style="color:#9ca3af; font-size:13px; margin-bottom:0;">
+                Activada el {{DATE}}
+            </p>
+
+            <hr style="margin-top:30px; border:none; border-top:1px solid #e5e7eb;">
+
+            <small style="color:#6b7280;">
+                Recibís este correo porque tenés activadas las notificaciones por email en InvestLab.
+                Podés desactivarlas en cualquier momento desde la configuración de tu cuenta.
+            </small>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
