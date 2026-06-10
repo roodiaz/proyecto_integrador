@@ -398,6 +398,12 @@
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
+
+            @if (passwordForm.get('currentPassword')?.touched && passwordForm.get('currentPassword')?.hasError('required')) {
+            <span class="field-error">
+              {{ 'SETTINGS.SECURITY.VALIDATION.CURRENT_PASSWORD_REQUIRED' | translate }}
+            </span>
+            }
           </div>
 
           <div class="field-group">
@@ -411,6 +417,20 @@
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
+
+            @if (passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.hasError('required')) {
+            <span class="field-error">
+              {{ 'SETTINGS.SECURITY.VALIDATION.PASSWORD_REQUIRED' | translate }}
+            </span>
+            }
+
+            @if (passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.hasError('weakPassword')) {
+            <span class="field-error">
+              {{ 'SETTINGS.SECURITY.VALIDATION.PASSWORD_WEAK' | translate }}
+            </span>
+            }
+
+            <app-password-requirements [password]="passwordForm.get('newPassword')?.value || ''"></app-password-requirements>
           </div>
 
           <div class="field-group">
@@ -424,6 +444,12 @@
                 <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
             </div>
+
+            @if (passwordForm.get('confirmPassword')?.touched && passwordForm.get('confirmPassword')?.hasError('required')) {
+            <span class="field-error">
+              {{ 'SETTINGS.SECURITY.VALIDATION.CONFIRM_REQUIRED' | translate }}
+            </span>
+            }
 
             @if (passwordForm.get('confirmPassword')?.hasError('passwordMismatch')) {
             <span class="field-error">

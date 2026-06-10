@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using InvestLab.Models.Validation;
 
 namespace InvestLab.Models.DTOs.Auth;
 
@@ -12,7 +13,7 @@ public class ResetPasswordDto
     public string Code { get; set; }
 
     [Required(ErrorMessage = "La nueva contraseña es requerida")]
-    [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+    [StrongPassword]
     public string NewPassword { get; set; }
 
     [Required(ErrorMessage = "La confirmación de la contraseña es requerida")]

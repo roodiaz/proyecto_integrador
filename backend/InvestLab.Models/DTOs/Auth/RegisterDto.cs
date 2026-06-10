@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using InvestLab.Models.Validation;
 
 public class RegisterDto
 {
@@ -14,7 +15,7 @@ public class RegisterDto
     public string Phone { get; set; }
 
     [Required(ErrorMessage = "La contraseña es requerida")]
-    [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+    [StrongPassword]
     public string Password { get; set; }
 
     [Required(ErrorMessage = "Debe confirmar la contraseña")]

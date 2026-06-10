@@ -182,13 +182,15 @@
               </mat-error>
             }
 
-            @if (password?.hasError('minlength')) {
+            @if (password?.hasError('weakPassword')) {
               <mat-error>
-                {{ 'AUTH.REGISTER.VALIDATION.PASSWORD_MIN' | translate }}
+                {{ 'AUTH.REGISTER.VALIDATION.PASSWORD_WEAK' | translate }}
               </mat-error>
             }
 
           </mat-form-field>
+
+          <app-password-requirements [password]="password?.value || ''"></app-password-requirements>
 
           <!-- Confirm Password -->
           <mat-form-field appearance="outline" class="full-width">

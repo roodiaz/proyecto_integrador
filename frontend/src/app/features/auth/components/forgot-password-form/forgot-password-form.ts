@@ -8,6 +8,8 @@ import { AuthService } from '../../services/auth.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { ForgotPasswordRequest, ResetPasswordRequest } from '../../models/forgot-password.model';
 import { TranslateModule } from '@ngx-translate/core';
+import { strongPasswordValidator } from '../../../../shared/validators/password-policy.validator';
+import { PasswordRequirementsComponent } from '../../../../shared/components/password-requirements/password-requirements.component';
 
 @Component({
   selector: 'app-forgot-password-form',
@@ -18,7 +20,8 @@ import { TranslateModule } from '@ngx-translate/core';
     RouterModule,
     MaterialModule,
     MatProgressSpinnerModule,
-    TranslateModule
+    TranslateModule,
+    PasswordRequirementsComponent
   ],
   templateUrl: './forgot-password-form.html',
   styleUrl: './forgot-password-form.css'
@@ -56,7 +59,7 @@ export class ForgotPasswordForm {
 
     this.resetForm = this.fb.group({
       code:            ['', [Validators.required]],
-      newPassword:     ['', [Validators.required, Validators.minLength(6)]],
+      newPassword:     ['', [Validators.required, strongPasswordValidator()]],
       confirmPassword: ['', [Validators.required]]
     }, { validator: this.passwordMatchValidator });
   }

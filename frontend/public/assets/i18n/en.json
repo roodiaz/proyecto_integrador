@@ -31,6 +31,16 @@
     "PREV_PAGE": "Previous",
     "NEXT_PAGE": "Next"
   },
+  "PASSWORD_POLICY": {
+    "TITLE": "Password must contain:",
+    "REQUIREMENTS": {
+      "MIN_LENGTH": "Between 8 and 64 characters",
+      "UPPERCASE": "An uppercase letter",
+      "LOWERCASE": "A lowercase letter",
+      "NUMBER": "A number",
+      "SPECIAL": "A special character (! @ # $ % ^ & * ( ) - _ + = ? . , ; : /)"
+    }
+  },
   "ERRORS": {
     "INTERNAL_ERROR": "Internal server error. Please try again.",
     "USER_NOT_FOUND": "User not found.",
@@ -150,7 +160,7 @@
         "EMAIL_REQUIRED": "Email is required.",
         "EMAIL_INVALID": "Invalid email.",
         "PASSWORD_REQUIRED": "Password is required.",
-        "PASSWORD_MIN": "Minimum 6 characters.",
+        "PASSWORD_WEAK": "Password does not meet the minimum security requirements.",
         "CONFIRM_REQUIRED": "Confirm password is required.",
         "PASSWORDS_MISMATCH": "Passwords do not match."
       }
@@ -171,7 +181,7 @@
         "EMAIL_INVALID": "Invalid email.",
         "CODE_REQUIRED": "Code is required.",
         "PASSWORD_REQUIRED": "Password is required.",
-        "PASSWORD_MIN": "Minimum 6 characters.",
+        "PASSWORD_WEAK": "Password does not meet the minimum security requirements.",
         "PASSWORDS_MISMATCH": "Passwords do not match."
       }
     },
@@ -826,6 +836,10 @@
       "CHANGING_BUTTON": "Changing...",
       "SECURITY_NOTE": "All information is encrypted using institutional-grade AES-256 protocols before being stored on our servers.",
       "VALIDATION": {
+        "CURRENT_PASSWORD_REQUIRED": "Current password is required.",
+        "PASSWORD_REQUIRED": "New password is required.",
+        "PASSWORD_WEAK": "Password does not meet the minimum security requirements.",
+        "CONFIRM_REQUIRED": "Confirm password is required.",
         "PASSWORDS_MISMATCH": "Passwords do not match."
       }
     },

@@ -11,6 +11,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ThemeService, Theme } from '../../../../core/services/theme.service';
 import { LanguageService, Language } from '../../../../core/services/language.service';
+import { strongPasswordValidator } from '../../../../shared/validators/password-policy.validator';
+import { PasswordRequirementsComponent } from '../../../../shared/components/password-requirements/password-requirements.component';
 
 @Component({
   selector: 'app-user-profile',
@@ -20,7 +22,8 @@ import { LanguageService, Language } from '../../../../core/services/language.se
     ReactiveFormsModule,
     FormsModule,
     MaterialModule,
-    TranslateModule
+    TranslateModule,
+    PasswordRequirementsComponent
   ],
   templateUrl: './user-profile.html',
   styleUrls: ['./user-profile.css']
@@ -88,9 +91,9 @@ export class UserProfile implements OnInit {
     });
 
     this.passwordForm = this.fb.group({
-      currentPassword: [''],
-      newPassword: [''],
-      confirmPassword: ['']
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, strongPasswordValidator()]],
+      confirmPassword: ['', [Validators.required]]
     });
 
     this.passwordForm.get('newPassword')?.valueChanges.subscribe(() => {
@@ -335,16 +338,17 @@ export class UserProfile implements OnInit {
     const newPassword = form.get('newPassword');
     const confirmPassword = form.get('confirmPassword');
 
-    if (!newPassword?.value && !confirmPassword?.value) {
-      confirmPassword?.setErrors(null);
+    if (!confirmPassword) return;
+
+    if (newPassword?.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ ...confirmPassword.errors, passwordMismatch: true });
       return;
     }
 
-    if (newPassword?.value !== confirmPassword?.value) {
-      confirmPassword?.setErrors({ passwordMismatch: true });
-    } else {
-      confirmPassword?.setErrors(null);
-    }
+    if (!confirmPassword.errors) return;
+
+    const { passwordMismatch, ...rest } = confirmPassword.errors;
+    confirmPassword.setErrors(Object.keys(rest).length ? rest : null);
   }
 
   /**
@@ -356,6 +360,7 @@ export class UserProfile implements OnInit {
     if (this.changingPassword) return;
 
     if (!this.passwordForm.valid) {
+      this.passwordForm.markAllAsTouched();
       this.notificationService.error(this.languageService.instant('SETTINGS.FORM_ERRORS.FORM_INVALID_PASSWORD'));
       return;
     }

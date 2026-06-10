@@ -8,6 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language.service';
+import { strongPasswordValidator } from '../../../../shared/validators/password-policy.validator';
+import { PasswordRequirementsComponent } from '../../../../shared/components/password-requirements/password-requirements.component';
 
 @Component({
   selector: 'app-register-form',
@@ -18,7 +20,8 @@ import { LanguageService } from '../../../../core/services/language.service';
     MaterialModule,
     RouterModule,
     MatProgressSpinnerModule,
-    TranslateModule
+    TranslateModule,
+    PasswordRequirementsComponent
   ],
   templateUrl: './register-form.html',
   styleUrl: './register-form.css'
@@ -42,7 +45,7 @@ export class RegisterForm {
       fullName:        ['', [Validators.required]],
       email:           ['', [Validators.required, Validators.email]],
       phone:           ['', [Validators.pattern(/^[+]?[\d\s\-\(\)]+$/)]],
-      password:        ['', [Validators.required, Validators.minLength(6)]],
+      password:        ['', [Validators.required, strongPasswordValidator()]],
       confirmPassword: ['', [Validators.required]]
     }, { validator: this.passwordMatchValidator });
   }

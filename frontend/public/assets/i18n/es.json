@@ -31,6 +31,16 @@
     "PREV_PAGE": "Anterior",
     "NEXT_PAGE": "Siguiente"
   },
+  "PASSWORD_POLICY": {
+    "TITLE": "La contraseña debe contener:",
+    "REQUIREMENTS": {
+      "MIN_LENGTH": "Entre 8 y 64 caracteres",
+      "UPPERCASE": "Una letra mayúscula",
+      "LOWERCASE": "Una letra minúscula",
+      "NUMBER": "Un número",
+      "SPECIAL": "Un carácter especial (! @ # $ % ^ & * ( ) - _ + = ? . , ; : /)"
+    }
+  },
   "ERRORS": {
     "INTERNAL_ERROR": "Error interno del servidor. Por favor, intentá de nuevo.",
     "USER_NOT_FOUND": "Usuario no encontrado.",
@@ -150,7 +160,7 @@
         "EMAIL_REQUIRED": "El email es requerido.",
         "EMAIL_INVALID": "Email inválido.",
         "PASSWORD_REQUIRED": "La contraseña es requerida.",
-        "PASSWORD_MIN": "Mínimo 6 caracteres.",
+        "PASSWORD_WEAK": "La contraseña no cumple los requisitos mínimos de seguridad.",
         "CONFIRM_REQUIRED": "Confirmar contraseña es requerido.",
         "PASSWORDS_MISMATCH": "Las contraseñas no coinciden."
       }
@@ -171,7 +181,7 @@
         "EMAIL_INVALID": "Email inválido.",
         "CODE_REQUIRED": "El código es requerido.",
         "PASSWORD_REQUIRED": "La contraseña es requerida.",
-        "PASSWORD_MIN": "Mínimo 6 caracteres.",
+        "PASSWORD_WEAK": "La contraseña no cumple los requisitos mínimos de seguridad.",
         "PASSWORDS_MISMATCH": "Las contraseñas no coinciden."
       }
     },
@@ -826,6 +836,10 @@
       "CHANGING_BUTTON": "Cambiando...",
       "SECURITY_NOTE": "Toda la información se cifra mediante protocolos de grado institucional AES-256 antes de guardarse en nuestros servidores.",
       "VALIDATION": {
+        "CURRENT_PASSWORD_REQUIRED": "La contraseña actual es requerida.",
+        "PASSWORD_REQUIRED": "La nueva contraseña es requerida.",
+        "PASSWORD_WEAK": "La contraseña no cumple los requisitos mínimos de seguridad.",
+        "CONFIRM_REQUIRED": "Confirmar contraseña es requerido.",
         "PASSWORDS_MISMATCH": "Las contraseñas no coinciden."
       }
     },
