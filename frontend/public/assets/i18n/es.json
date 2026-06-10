@@ -37,6 +37,7 @@
     "INVALID_CREDENTIALS": "Email o contraseña incorrectos.",
     "ACCOUNT_NOT_VERIFIED": "Debés verificar tu cuenta antes de iniciar sesión.",
     "ACCOUNT_LOCKED": "Tu cuenta fue bloqueada temporalmente por múltiples intentos fallidos. Podrás volver a intentarlo en {{minutes}} minuto(s).",
+    "RATE_LIMIT_EXCEEDED": "Demasiadas solicitudes. Intenta nuevamente más tarde.",
     "EMAIL_ALREADY_REGISTERED": "El email ya está registrado.",
     "PASSWORDS_DO_NOT_MATCH": "Las contraseñas no coinciden.",
     "ACCOUNT_NOT_FOUND_FOR_EMAIL": "No existe una cuenta asociada a ese email.",

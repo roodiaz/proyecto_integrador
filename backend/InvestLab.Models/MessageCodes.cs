@@ -5,6 +5,7 @@ public static class MessageCodes
     // ── Generic ──────────────────────────────────────────────────────────────
     public const string INTERNAL_ERROR = "INTERNAL_ERROR";
     public const string SUCCESS = "SUCCESS";
+    public const string RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED";
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     public const string PASSWORDS_DO_NOT_MATCH = "PASSWORDS_DO_NOT_MATCH";

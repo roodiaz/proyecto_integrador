@@ -25,6 +25,7 @@ builder.Services.AddExternalProviders(builder.Configuration);
 builder.Services.AddEmailProviders(builder.Configuration);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
+builder.Services.AddCustomRateLimiting(builder.Configuration);
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<MarketPriceRefreshWorker>();
@@ -62,6 +63,8 @@ app.UseCors("AllowAngular");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 // ─── ENDPOINTS ─────────────────────────────────────────────────────────────
 app.MapHealthChecks("/health", new HealthCheckOptions

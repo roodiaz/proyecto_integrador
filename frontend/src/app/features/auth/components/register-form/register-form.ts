@@ -95,6 +95,10 @@ export class RegisterForm {
       error: error => {
         this.isLoading    = false;
         const code = error.error?.code;
+        if (code === 'RATE_LIMIT_EXCEEDED') {
+          this.errorMessage = error.error?.message || this.languageService.instant('ERRORS.RATE_LIMIT_EXCEEDED');
+          return;
+        }
         this.errorMessage = code
           ? this.languageService.instant(`ERRORS.${code}`)
           : this.languageService.instant('ERRORS.INTERNAL_ERROR');

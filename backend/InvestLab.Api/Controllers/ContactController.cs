@@ -1,7 +1,9 @@
-﻿using InvestLab.Business.Interfaces.Api;
+﻿using InvestLab.Api.Extensions;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Contact;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace InvestLab.Api.Controllers;
 
@@ -34,6 +36,7 @@ public class ContactController : ControllerBase
     /// <response code="400">
     /// Error al procesar la solicitud.
     /// </response>
+    [EnableRateLimiting(RateLimitPolicies.Contact)]
     [HttpPost("contact")]
     public async Task<IActionResult> Send([FromBody] ContactMessageDto dto)
     {

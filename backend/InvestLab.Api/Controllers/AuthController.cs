@@ -1,6 +1,8 @@
-﻿using InvestLab.Models.DTOs.Auth;
+﻿using InvestLab.Api.Extensions;
+using InvestLab.Models.DTOs.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
 /// Controlador encargado de la autenticación y gestión de acceso de usuarios.
@@ -28,6 +30,7 @@ public class AuthController : BaseController
     /// <response code="200">Usuario registrado correctamente</response>
     /// <response code="400">Datos inválidos o email ya registrado</response>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Register)]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -100,6 +103,7 @@ public class AuthController : BaseController
     /// <response code="200">Login exitoso</response>
     /// <response code="400">Credenciales inválidas</response>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Login)]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
@@ -148,6 +152,7 @@ public class AuthController : BaseController
     /// <response code="200">Código de recuperación enviado correctamente</response>
     /// <response code="400">Email inexistente o error en el envío</response>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordRecovery)]
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
@@ -172,6 +177,7 @@ public class AuthController : BaseController
     /// <response code="200">Contraseña restablecida correctamente</response>
     /// <response code="400">Código inválido, expirado o contraseñas inválidas</response>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.PasswordRecovery)]
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {

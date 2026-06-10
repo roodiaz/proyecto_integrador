@@ -100,6 +100,10 @@ export class LoginForm {
           });
           return;
         }
+        if (code === 'RATE_LIMIT_EXCEEDED') {
+          this.loginError = error.error?.message || this.languageService.instant('ERRORS.RATE_LIMIT_EXCEEDED');
+          return;
+        }
         this.loginError = code
           ? this.languageService.instant(`ERRORS.${code}`)
           : this.languageService.instant('ERRORS.INVALID_CREDENTIALS');

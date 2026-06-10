@@ -1,8 +1,10 @@
-﻿using InvestLab.Business.Interfaces.Api;
+﻿using InvestLab.Api.Extensions;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 /// <summary>
 /// Controlador encargado de la gestión del perfil del usuario autenticado.
@@ -108,6 +110,7 @@ public class UserController : BaseController
     /// <response code="200">Código de verificación enviado correctamente</response>
     /// <response code="400">Datos inválidos, email en uso o error al enviar el código</response>
     /// <response code="401">Usuario no autenticado</response>
+    [EnableRateLimiting(RateLimitPolicies.EmailChange)]
     [HttpPost("request-email-change")]
     public async Task<IActionResult> RequestEmailChange([FromBody] RequestEmailChangeDto dto)
     {
@@ -136,6 +139,7 @@ public class UserController : BaseController
     /// <response code="200">Email actualizado correctamente</response>
     /// <response code="400">Código inválido, expirado o ya utilizado</response>
     /// <response code="401">Usuario no autenticado</response>
+    [EnableRateLimiting(RateLimitPolicies.EmailChange)]
     [HttpPost("confirm-email-change")]
     public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeDto dto)
     {
