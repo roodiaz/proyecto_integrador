@@ -56,6 +56,12 @@ public partial class User
     [Column("profile_image_url")]
     public string? ProfileImageUrl { get; set; }
 
+    [Column("failed_login_attempts")]
+    public int FailedLoginAttempts { get; set; }
+
+    [Column("locked_until")]
+    public DateTime? LockedUntil { get; set; }
+
     [InverseProperty("User")]
     public virtual ICollection<Alert> Alerts { get; set; } = new List<Alert>();
 

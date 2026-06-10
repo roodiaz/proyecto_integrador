@@ -21,7 +21,9 @@ CREATE TABLE users (
     password_changed_at TIMESTAMP WITH TIME ZONE DEFAULT, 
     last_login_at TIMESTAMP WITH TIME ZONE, -- Último login del usuario
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00
+    balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00,
+    failed_login_attempts INT NOT NULL DEFAULT 0, -- Intentos fallidos de login consecutivos
+    locked_until TIMESTAMP WITH TIME ZONE -- Fecha/hora hasta la cual la cuenta permanece bloqueada
 );
 
 -- ============================================

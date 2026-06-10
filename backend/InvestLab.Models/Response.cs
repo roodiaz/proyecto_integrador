@@ -17,14 +17,14 @@ public class Response
         };
     }
 
-    public static Response Fail(string message, string? code = null)
+    public static Response Fail(string message, string? code = null, object? data = null)
     {
         return new Response
         {
             Success = false,
             Message = message,
             Code = code,
-            Data = null
+            Data = data
         };
     }
 }

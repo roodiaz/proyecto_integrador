@@ -26,6 +26,7 @@ public static class MessageCodes
     public const string RECOVERY_EMAIL_SENT = "RECOVERY_EMAIL_SENT";
     public const string RECOVERY_EMAIL_FAILED = "RECOVERY_EMAIL_FAILED";
     public const string PASSWORD_RESET_SUCCESS = "PASSWORD_RESET_SUCCESS";
+    public const string ACCOUNT_LOCKED = "ACCOUNT_LOCKED";
 
     // ── Verification codes ───────────────────────────────────────────────────
     public const string VERIFICATION_CODE_NOT_FOUND = "VERIFICATION_CODE_NOT_FOUND";

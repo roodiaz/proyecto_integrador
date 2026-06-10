@@ -252,13 +252,64 @@ public class AuthService : IAuthService
             if (user == null)
                 return Response.Fail("Email o contraseña incorrectos", INVALID_CREDENTIALS);
 
+            if (user.LockedUntil.HasValue)
+            {
+                if (user.LockedUntil.Value > DateTime.UtcNow)
+                {
+                    var remainingMinutes = (int)Math.Ceiling((user.LockedUntil.Value - DateTime.UtcNow).TotalMinutes);
+
+                    _logger.LogWarning("Login rechazado: la cuenta del usuario {UserId} está bloqueada temporalmente hasta {LockedUntil}", user.Id, user.LockedUntil);
+
+                    return Response.Fail(
+                        $"Tu cuenta se encuentra bloqueada temporalmente por múltiples intentos fallidos. Podrás volver a intentarlo en {remainingMinutes} minuto(s).",
+                        ACCOUNT_LOCKED,
+                        new { remainingMinutes, lockedUntil = user.LockedUntil });
+                }
+
+                // El período de bloqueo ya expiró: desbloqueo automático.
+                user.FailedLoginAttempts = 0;
+                user.LockedUntil = null;
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("Cuenta desbloqueada automáticamente para el usuario {UserId}", user.Id);
+            }
+
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
             if (result == PasswordVerificationResult.Failed)
+            {
+                user.FailedLoginAttempts++;
+
+                if (user.FailedLoginAttempts >= _limits.MaxFailedLoginAttempts)
+                {
+                    user.LockedUntil = DateTime.UtcNow.AddMinutes(_limits.LockoutDurationMinutes);
+                    user.FailedLoginAttempts = 0;
+
+                    await _unitOfWork.SaveChangesAsync();
+
+                    _logger.LogWarning("Cuenta bloqueada temporalmente por múltiples intentos fallidos. UserId={UserId}", user.Id);
+
+                    return Response.Fail(
+                        $"Tu cuenta fue bloqueada temporalmente por múltiples intentos fallidos. Podrás volver a intentarlo en {_limits.LockoutDurationMinutes} minuto(s).",
+                        ACCOUNT_LOCKED,
+                        new { remainingMinutes = _limits.LockoutDurationMinutes, lockedUntil = user.LockedUntil });
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogWarning("Intento de login fallido para el usuario {UserId}. Intentos consecutivos: {Attempts}", user.Id, user.FailedLoginAttempts);
+
                 return Response.Fail("Email o contraseña incorrectos", INVALID_CREDENTIALS);
+            }
 
             if (!user.IsActive)
                 return Response.Fail("Debes verificar tu cuenta", ACCOUNT_NOT_VERIFIED);
+
+            var hadPreviousFailedAttempts = user.FailedLoginAttempts > 0;
+
+            user.FailedLoginAttempts = 0;
+            user.LockedUntil = null;
 
             var tokens = await _jwtService.GenerateTokensAsync(user);
 
@@ -275,6 +326,9 @@ public class AuthService : IAuthService
             user.LastLoginAt = DateTime.UtcNow;
 
             await _unitOfWork.SaveChangesAsync();
+
+            if (hadPreviousFailedAttempts)
+                _logger.LogInformation("Login exitoso para el usuario {UserId} luego de intentos fallidos previos", user.Id);
 
             return Response.Ok(new { tokens }, code: LOGIN_SUCCESS);
         }
@@ -438,6 +492,8 @@ public class AuthService : IAuthService
 
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.NewPassword);
             user.PasswordChangedAt = DateTime.UtcNow;
+            user.FailedLoginAttempts = 0;
+            user.LockedUntil = null;
 
             await _refreshTokenRepository.DeleteByUserIdAsync(user.Id);
 

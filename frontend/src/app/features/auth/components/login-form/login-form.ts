@@ -69,6 +69,12 @@ export class LoginForm {
             this.verificationCode = '';
             return;
           }
+          if (response.code === 'ACCOUNT_LOCKED') {
+            this.loginError = this.languageService.instant('ERRORS.ACCOUNT_LOCKED', {
+              minutes: (response.data as any)?.remainingMinutes
+            });
+            return;
+          }
           this.loginError = response.code
             ? this.languageService.instant(`ERRORS.${response.code}`)
             : response.message;
@@ -86,6 +92,12 @@ export class LoginForm {
           this.pendingEmail = this.loginForm.value.email;
           this.verificationStatus = 'pendingCode';
           this.verificationCode = '';
+          return;
+        }
+        if (code === 'ACCOUNT_LOCKED') {
+          this.loginError = this.languageService.instant('ERRORS.ACCOUNT_LOCKED', {
+            minutes: error.error?.data?.remainingMinutes
+          });
           return;
         }
         this.loginError = code

@@ -36,6 +36,7 @@
     "USER_NOT_FOUND": "User not found.",
     "INVALID_CREDENTIALS": "Incorrect email or password.",
     "ACCOUNT_NOT_VERIFIED": "You must verify your account before logging in.",
+    "ACCOUNT_LOCKED": "Your account was temporarily locked due to multiple failed login attempts. You can try again in {{minutes}} minute(s).",
     "EMAIL_ALREADY_REGISTERED": "This email is already registered.",
     "PASSWORDS_DO_NOT_MATCH": "Passwords do not match.",
     "ACCOUNT_NOT_FOUND_FOR_EMAIL": "No account associated with that email.",
