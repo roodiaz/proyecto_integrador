@@ -55,6 +55,7 @@ public class AuthController : BaseController
     /// <response code="200">Cuenta verificada correctamente</response>
     /// <response code="400">Código inválido o expirado</response>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.VerificationCode)]
     [HttpPost("verify-code")]
     public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
     {
@@ -79,6 +80,7 @@ public class AuthController : BaseController
     /// <response code="200">Código reenviado correctamente</response>
     /// <response code="400">Error en el envío o usuario inválido</response>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.VerificationCode)]
     [HttpPost("resend-code")]
     public async Task<IActionResult> ResendCode([FromBody] ResendCodeDto dto)
     {

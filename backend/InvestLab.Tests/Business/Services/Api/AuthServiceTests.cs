@@ -153,16 +153,16 @@ public class AuthServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta de error.</summary>
+    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva el mismo error que un código inválido (sin revelar que la cuenta no existe).</summary>
     [Fact]
-    public async Task VerifyAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task VerifyAsync_WhenUserDoesNotExist_ShouldReturnInvalidCodeErrorResponse()
     {
         _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
         var result = await CreateService().VerifyAsync(new VerifyDto { Email = "x@test.com", Code = "123456" });
 
         Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
+        Assert.Equal("Código inválido", result.Message);
     }
 
     /// <summary>Verifica que, si la cuenta ya está activa, se devuelva una respuesta exitosa indicando que ya fue verificada.</summary>
@@ -262,16 +262,17 @@ public class AuthServiceTests
         _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(user, "Verificación de cuenta", null), Times.Once);
     }
 
-    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta de error.</summary>
+    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta genérica de éxito (sin revelar que la cuenta no existe).</summary>
     [Fact]
-    public async Task ResendCodeAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task ResendCodeAsync_WhenUserDoesNotExist_ShouldReturnGenericSuccessResponse()
     {
         _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
         var result = await CreateService().ResendCodeAsync(new ResendCodeDto { Email = "x@test.com" });
 
-        Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
+        Assert.True(result.Success);
+        Assert.Equal("Si la cuenta existe y no está verificada, te enviamos un nuevo código", result.Message);
+        _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), It.IsAny<string>(), null), Times.Never);
     }
 
     /// <summary>Verifica que, si la cuenta ya está verificada, se devuelva una respuesta de error indicando que no corresponde reenviar el código.</summary>
@@ -467,22 +468,22 @@ public class AuthServiceTests
 
     // ---------- ForgotPasswordAsync ----------
 
-    /// <summary>Verifica que, si no existe una cuenta asociada al email indicado, se devuelva una respuesta de error.</summary>
+    /// <summary>Verifica que, si no existe una cuenta asociada al email indicado, se devuelva una respuesta genérica de éxito (sin revelar que la cuenta no existe).</summary>
     [Fact]
-    public async Task ForgotPasswordAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task ForgotPasswordAsync_WhenUserDoesNotExist_ShouldReturnGenericSuccessResponse()
     {
         _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
         var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = "x@test.com" });
 
-        Assert.False(result.Success);
-        Assert.Equal("No existe una cuenta asociada a ese email", result.Message);
+        Assert.True(result.Success);
+        Assert.Equal("Si existe una cuenta asociada a ese email, te enviamos un código de recuperación", result.Message);
         _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), It.IsAny<string>(), null), Times.Never);
     }
 
-    /// <summary>Verifica que, si el usuario existe y el correo se envía correctamente, se devuelva una respuesta exitosa indicando que el código fue enviado.</summary>
+    /// <summary>Verifica que, si el usuario existe, se genere y envíe el código de recuperación y se devuelva la respuesta genérica de éxito.</summary>
     [Fact]
-    public async Task ForgotPasswordAsync_WhenEmailIsSentSuccessfully_ShouldReturnSuccessResponseWithEmailSentTrue()
+    public async Task ForgotPasswordAsync_WhenEmailIsSentSuccessfully_ShouldReturnGenericSuccessResponse()
     {
         var user = UserEntity();
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
@@ -491,13 +492,13 @@ public class AuthServiceTests
         var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = user.Email });
 
         Assert.True(result.Success);
-        Assert.Equal("Se envió un código de recuperación a tu correo electrónico", result.Message);
+        Assert.Equal("Si existe una cuenta asociada a ese email, te enviamos un código de recuperación", result.Message);
         _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(user, "Recuperación de contraseña", null), Times.Once);
     }
 
-    /// <summary>Verifica que, si el envío del correo falla, se devuelva igualmente una respuesta exitosa pero indicando que el correo no pudo enviarse.</summary>
+    /// <summary>Verifica que, si el envío del correo falla, se devuelva igualmente la respuesta genérica de éxito (sin revelar el fallo de envío).</summary>
     [Fact]
-    public async Task ForgotPasswordAsync_WhenEmailSendingFails_ShouldReturnSuccessResponseWithEmailSentFalse()
+    public async Task ForgotPasswordAsync_WhenEmailSendingFails_ShouldReturnGenericSuccessResponse()
     {
         var user = UserEntity();
         _userRepository.Setup(r => r.GetByEmailAsync(user.Email)).ReturnsAsync(user);
@@ -506,7 +507,7 @@ public class AuthServiceTests
         var result = await CreateService().ForgotPasswordAsync(new ForgotPasswordDto { Email = user.Email });
 
         Assert.True(result.Success);
-        Assert.Equal("No pudimos enviar el correo de recuperación. Intente nuevamente.", result.Message);
+        Assert.Equal("Si existe una cuenta asociada a ese email, te enviamos un código de recuperación", result.Message);
     }
 
     /// <summary>Verifica que, ante una excepción del repositorio, se devuelva una respuesta genérica de error.</summary>
@@ -536,16 +537,16 @@ public class AuthServiceTests
         _userRepository.Verify(r => r.GetByEmailAsync(It.IsAny<string>()), Times.Never);
     }
 
-    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva una respuesta de error.</summary>
+    /// <summary>Verifica que, si no existe un usuario con el email indicado, se devuelva el mismo error que un código inválido (sin revelar que la cuenta no existe).</summary>
     [Fact]
-    public async Task ResetPasswordAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task ResetPasswordAsync_WhenUserDoesNotExist_ShouldReturnInvalidCodeErrorResponse()
     {
         _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
         var result = await CreateService().ResetPasswordAsync(new ResetPasswordDto { Email = "x@test.com", Code = "123456", NewPassword = "secret1", ConfirmPassword = "secret1" });
 
         Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
+        Assert.Equal("Código inválido", result.Message);
     }
 
     /// <summary>Verifica que, si el código de verificación es inválido o expirado, se devuelva la respuesta de error informada por el servicio de validación.</summary>

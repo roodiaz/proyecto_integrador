@@ -23,9 +23,7 @@ public static class MessageCodes
     public const string ACCOUNT_VERIFIED = "ACCOUNT_VERIFIED";
     public const string CODE_RESENT = "CODE_RESENT";
     public const string CODE_RESEND_FAILED = "CODE_RESEND_FAILED";
-    public const string ACCOUNT_NOT_FOUND_FOR_EMAIL = "ACCOUNT_NOT_FOUND_FOR_EMAIL";
     public const string RECOVERY_EMAIL_SENT = "RECOVERY_EMAIL_SENT";
-    public const string RECOVERY_EMAIL_FAILED = "RECOVERY_EMAIL_FAILED";
     public const string PASSWORD_RESET_SUCCESS = "PASSWORD_RESET_SUCCESS";
     public const string ACCOUNT_LOCKED = "ACCOUNT_LOCKED";
 

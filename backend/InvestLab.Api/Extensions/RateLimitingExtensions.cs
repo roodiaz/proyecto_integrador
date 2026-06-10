@@ -16,6 +16,7 @@ namespace InvestLab.Api.Extensions
         public const string PasswordRecovery = "RateLimit_PasswordRecovery";
         public const string EmailChange = "RateLimit_EmailChange";
         public const string Contact = "RateLimit_Contact";
+        public const string VerificationCode = "RateLimit_VerificationCode";
     }
 
     /// <summary>
@@ -29,7 +30,8 @@ namespace InvestLab.Api.Extensions
             [RateLimitPolicies.Register] = "Se alcanzó el límite de registros permitidos. Intenta nuevamente más tarde.",
             [RateLimitPolicies.PasswordRecovery] = "Se alcanzó temporalmente el límite de solicitudes de recuperación de contraseña.",
             [RateLimitPolicies.EmailChange] = "Has realizado demasiadas solicitudes. Intenta nuevamente más tarde.",
-            [RateLimitPolicies.Contact] = "Has alcanzado el límite de mensajes permitidos. Intenta nuevamente más tarde."
+            [RateLimitPolicies.Contact] = "Has alcanzado el límite de mensajes permitidos. Intenta nuevamente más tarde.",
+            [RateLimitPolicies.VerificationCode] = "Has realizado demasiados intentos con códigos de verificación. Intenta nuevamente más tarde."
         };
 
         public const string Default = "Has realizado demasiadas solicitudes. Intenta nuevamente más tarde.";
@@ -70,6 +72,7 @@ namespace InvestLab.Api.Extensions
                 AddFixedWindowPolicy(rateLimiterOptions, RateLimitPolicies.PasswordRecovery, options.PasswordRecovery);
                 AddFixedWindowPolicy(rateLimiterOptions, RateLimitPolicies.EmailChange, options.EmailChange);
                 AddFixedWindowPolicy(rateLimiterOptions, RateLimitPolicies.Contact, options.Contact);
+                AddFixedWindowPolicy(rateLimiterOptions, RateLimitPolicies.VerificationCode, options.VerificationCode);
 
                 rateLimiterOptions.OnRejected = async (context, cancellationToken) =>
                 {

@@ -7,6 +7,7 @@ public class RateLimitingOptions
     public RateLimitRule PasswordRecovery { get; set; } = new();
     public RateLimitRule EmailChange { get; set; } = new();
     public RateLimitRule Contact { get; set; } = new();
+    public RateLimitRule VerificationCode { get; set; } = new();
 }
 
 public class RateLimitRule

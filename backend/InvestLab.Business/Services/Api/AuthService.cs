@@ -160,8 +160,9 @@ public class AuthService : IAuthService
             var user = await _userRepository.GetByEmailAsync(dto.Email);
             if (user == null)
             {
+                // No se revela que la cuenta no existe: se devuelve el mismo error que un código inválido.
                 _logger.LogWarning("Verify: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+                return Response.Fail("Código inválido", VERIFICATION_CODE_INVALID);
             }
             if (user.IsActive)
             {
@@ -205,8 +206,15 @@ public class AuthService : IAuthService
 
             if (user == null)
             {
+                // Respuesta genérica: no revela que la cuenta no existe, para evitar enumeración de usuarios.
                 _logger.LogWarning("Resend: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+
+                return Response.Ok(new
+                {
+                    requiresVerification = true,
+                    email = dto.Email,
+                    emailSent = true
+                }, "Si la cuenta existe y no está verificada, te enviamos un nuevo código", CODE_RESENT);
             }
 
             if (user.IsActive)
@@ -453,25 +461,22 @@ public class AuthService : IAuthService
             if (user == null)
             {
                 _logger.LogWarning("ForgotPassword: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("No existe una cuenta asociada a ese email", ACCOUNT_NOT_FOUND_FOR_EMAIL);
+            }
+            else
+            {
+                var emailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Recuperación de contraseña");
+
+                if (emailSent)
+                    _logger.LogInformation("Código de recuperación enviado a {Email}", user.Email);
+                else
+                    _logger.LogWarning("No se pudo enviar el código de recuperación a {Email}", user.Email);
             }
 
-            var emailSent = await _verificationCodeService.GenerateAndSendCodeAsync(user, "Recuperación de contraseña");
-
-            if (emailSent)
-                _logger.LogInformation("Código de recuperación enviado a {Email}", user.Email);
-            else
-                _logger.LogWarning("No se pudo enviar el código de recuperación a {Email}", user.Email);
-
-            return Response.Ok(new
-            {
-                email = user.Email,
-                emailSent
-            },
-            emailSent
-                ? "Se envió un código de recuperación a tu correo electrónico"
-                : "No pudimos enviar el correo de recuperación. Intente nuevamente.",
-            emailSent ? RECOVERY_EMAIL_SENT : RECOVERY_EMAIL_FAILED);
+            // Respuesta genérica: no revela si la cuenta existe ni si el envío fue exitoso,
+            // para evitar enumeración de usuarios a través de este endpoint.
+            return Response.Ok(new { email = dto.Email },
+                "Si existe una cuenta asociada a ese email, te enviamos un código de recuperación",
+                RECOVERY_EMAIL_SENT);
         }
         catch (Exception ex)
         {
@@ -498,8 +503,9 @@ public class AuthService : IAuthService
 
             if (user == null)
             {
+                // No se revela que la cuenta no existe: se devuelve el mismo error que un código inválido.
                 _logger.LogWarning("ResetPassword: usuario no encontrado {Email}", dto.Email);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+                return Response.Fail("Código inválido", VERIFICATION_CODE_INVALID);
             }
 
             var validation = await _verificationCodeService.ValidateCodeAsync(user, dto.Code);
