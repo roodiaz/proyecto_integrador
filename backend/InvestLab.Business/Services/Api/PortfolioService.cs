@@ -410,12 +410,13 @@ public class PortfolioService : IPortfolioService
             var marketMetadata = await _marketMetadataRepository.GetAsync();
 
             var totalBalance = user.Balance + holdingsValue;
-            var profitLoss = totalBalance - _limits.InitialBalance;
-            var profitPercent = _limits.InitialBalance == 0 ? 0 : (profitLoss / _limits.InitialBalance) * 100;
+            var profitLoss = totalBalance - user.InitialBalance;
+            var profitPercent = user.InitialBalance == 0 ? 0 : (profitLoss / user.InitialBalance) * 100;
             var realizedProfitLoss = profitLoss - unrealizedProfitLoss;
 
             var response = new PortfolioBalanceCardsDto
             {
+                PortfolioName = user.PortfolioName,
                 CurrentBalance = Math.Round(user.Balance, 2),
                 TotalBalance = Math.Round(totalBalance, 2),
                 ProfitLoss = Math.Round(profitLoss, 2),
@@ -714,11 +715,12 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Reinicia la simulación del portfolio de un usuario, eliminando su historial, transacciones y posiciones, restableciendo el balance al valor inicial y reiniciando el contador de operaciones diarias.
+    /// Reinicia la simulación del portfolio de un usuario, eliminando su historial, transacciones y posiciones, y volviendo a configurar el nombre del portfolio y el saldo inicial.
     /// </summary>
     /// <param name="userId">Identificador del usuario cuyo portfolio se desea reiniciar.</param>
+    /// <param name="dto">Nuevo nombre de portfolio y saldo inicial de la simulación.</param>
     /// <returns>Una respuesta indicando si el portfolio se reinició correctamente o el motivo del error.</returns>
-    public async Task<Response> ResetSimulationAsync(int userId)
+    public async Task<Response> ResetSimulationAsync(int userId, SetupPortfolioDto dto)
     {
         try
         {
@@ -733,8 +735,11 @@ public class PortfolioService : IPortfolioService
             await _portfolioHistoryRepository.DeleteByUserIdAsync(userId);
             await _transactionRepository.DeleteByUserIdAsync(userId);
             await _portfolioRepository.DeleteByUserIdAsync(userId);
-            await _userRepository.UpdateBalanceAsync(userId, _limits.InitialBalance);
             await _userSettingRepository.ResetOperationsUsedTodayAsync(userId);
+
+            user.PortfolioName = dto.PortfolioName.Trim();
+            user.InitialBalance = dto.InitialBalance;
+            user.Balance = dto.InitialBalance;
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -745,6 +750,81 @@ public class PortfolioService : IPortfolioService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error al reiniciar portfolio: UserId={UserId}", userId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Obtiene la configuración actual del portfolio de simulación de un usuario: nombre, saldo inicial y si ya completó el wizard de configuración inicial.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con la configuración del portfolio o el motivo del error.</returns>
+    public async Task<Response> GetPortfolioSettingsAsync(int userId)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("Usuario no encontrado al consultar configuración de portfolio: {UserId}", userId);
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+            }
+
+            var response = new PortfolioSettingsDto
+            {
+                PortfolioName = user.PortfolioName,
+                InitialBalance = user.InitialBalance,
+                PortfolioConfigured = user.PortfolioConfigured
+            };
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al consultar configuración de portfolio: UserId={UserId}", userId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Configura por primera vez el portfolio de simulación de un usuario, asignando el nombre del portfolio y el saldo inicial elegidos.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="dto">Nombre de portfolio y saldo inicial elegidos por el usuario.</param>
+    /// <returns>Una respuesta indicando si la configuración se realizó correctamente o el motivo del error.</returns>
+    public async Task<Response> SetupPortfolioAsync(int userId, SetupPortfolioDto dto)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("Usuario no encontrado al configurar portfolio: {UserId}", userId);
+                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+            }
+
+            if (user.PortfolioConfigured)
+            {
+                _logger.LogWarning("El portfolio ya fue configurado: UserId={UserId}", userId);
+                return Response.Fail("El portfolio ya fue configurado. Para volver a definirlo, reiniciá la simulación.", PORTFOLIO_ALREADY_CONFIGURED);
+            }
+
+            user.PortfolioName = dto.PortfolioName.Trim();
+            user.InitialBalance = dto.InitialBalance;
+            user.Balance = dto.InitialBalance;
+            user.PortfolioConfigured = true;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Portfolio configurado correctamente: UserId={UserId}", userId);
+
+            return Response.Ok(null, "Portfolio configurado correctamente", PORTFOLIO_SETUP_SUCCESS);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al configurar portfolio: UserId={UserId}", userId);
             return Response.Fail("Error interno", INTERNAL_ERROR);
         }
     }

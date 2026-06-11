@@ -11,7 +11,9 @@ import {
   OpenPositionsFilter,
   PagedOpenPositions,
   TransactionFilter,
-  PagedTransactions
+  PagedTransactions,
+  PortfolioSettings,
+  SetupPortfolioRequest
 } from '../models/portfolio.model';
 
 @Injectable({
@@ -66,7 +68,15 @@ export class PortfolioService {
     return this.http.post(`${this.apiUrl}/export/transactions`, filter, { responseType: 'blob' });
   }
 
-  resetSimulation(): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/reset-simulation`, {});
+  resetSimulation(dto: SetupPortfolioRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/reset-simulation`, dto);
+  }
+
+  getPortfolioSettings(): Observable<ApiResponse<PortfolioSettings>> {
+    return this.http.get<ApiResponse<PortfolioSettings>>(`${this.apiUrl}/settings`);
+  }
+
+  setupPortfolio(dto: SetupPortfolioRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/setup`, dto);
   }
 }

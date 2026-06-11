@@ -277,6 +277,57 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
+    /// Obtiene la configuración actual del portfolio de simulación del usuario autenticado:
+    /// nombre, saldo inicial y si ya completó el wizard de configuración inicial.
+    /// </summary>
+    /// <returns>Configuración del portfolio del usuario.</returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpGet("settings")]
+    public async Task<IActionResult> GetSettings()
+    {
+        _logger.LogInformation("Consultando configuración de portfolio: UserId={UserId}", UserId);
+
+        var result = await _portfolioService.GetPortfolioSettingsAsync(UserId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener configuración de portfolio: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Configura por primera vez el portfolio de simulación del usuario autenticado,
+    /// asignando el nombre del portfolio y el saldo inicial elegidos.
+    /// </summary>
+    /// <param name="dto">Nombre de portfolio y saldo inicial elegidos por el usuario.</param>
+    /// <returns>Resultado de la operación.</returns>
+    /// <response code="200">Portfolio configurado correctamente</response>
+    /// <response code="400">Error en la configuración o el portfolio ya fue configurado</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("setup")]
+    public async Task<IActionResult> Setup([FromBody] SetupPortfolioDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _logger.LogInformation("Configurando portfolio: UserId={UserId}", UserId);
+
+        var result = await _portfolioService.SetupPortfolioAsync(UserId, dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al configurar portfolio: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Genera y descarga un archivo Excel con las tenencias actuales del usuario.
     /// </summary>
     [HttpPost("export/holdings")]
@@ -316,11 +367,14 @@ public class PortfolioController : BaseController
     /// <response code="400">Error al reiniciar el portfolio</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpPost("reset-simulation")]
-    public async Task<IActionResult> ResetSimulation()
+    public async Task<IActionResult> ResetSimulation([FromBody] SetupPortfolioDto dto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         _logger.LogInformation("Reiniciando simulación de portfolio: UserId={UserId}", UserId);
 
-        var result = await _portfolioService.ResetSimulationAsync(UserId);
+        var result = await _portfolioService.ResetSimulationAsync(UserId, dto);
 
         if (!result.Success)
         {

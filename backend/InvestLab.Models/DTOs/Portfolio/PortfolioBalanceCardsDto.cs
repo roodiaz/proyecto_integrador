@@ -2,6 +2,8 @@
 
 public class PortfolioBalanceCardsDto
 {
+    public string? PortfolioName { get; set; }
+
     public decimal CurrentBalance { get; set; }
 
     public decimal TotalBalance { get; set; }

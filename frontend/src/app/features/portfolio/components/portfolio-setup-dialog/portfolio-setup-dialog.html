@@ -1,0 +1,70 @@
+<div class="modal-container">
+  <div class="modal-header">
+    <h2>
+      {{ (mode === 'create' ? 'PORTFOLIO.SETUP_DIALOG.CREATE_TITLE' : 'PORTFOLIO.SETUP_DIALOG.RESET_TITLE') | translate }}
+    </h2>
+
+    @if (mode === 'reset') {
+      <button class="close-btn" type="button" (click)="onCancel()">✕</button>
+    }
+  </div>
+
+  <div class="modal-body">
+    @if (mode === 'create') {
+      <p class="dialog-subtitle">{{ 'PORTFOLIO.SETUP_DIALOG.CREATE_SUBTITLE' | translate }}</p>
+    }
+
+    @if (mode === 'reset') {
+      <div class="reset-warning">
+        <mat-icon>warning</mat-icon>
+        <span>{{ 'PORTFOLIO.SETUP_DIALOG.RESET_WARNING' | translate }}</span>
+      </div>
+    }
+
+    <form [formGroup]="form" class="setup-form">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'PORTFOLIO.SETUP_DIALOG.NAME_LABEL' | translate }}</mat-label>
+
+        <input matInput formControlName="portfolioName" [placeholder]="'PORTFOLIO.SETUP_DIALOG.NAME_PLACEHOLDER' | translate" [maxlength]="nameMaxLength" />
+
+        <mat-hint>{{ 'PORTFOLIO.SETUP_DIALOG.NAME_HINT' | translate: { min: nameMinLength, max: nameMaxLength } }}</mat-hint>
+
+        @if (portfolioName?.hasError('required')) {
+          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_REQUIRED' | translate }}</mat-error>
+        } @else if (portfolioName?.hasError('minlength') || portfolioName?.hasError('maxlength')) {
+          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_LENGTH' | translate: { min: nameMinLength, max: nameMaxLength } }}</mat-error>
+        } @else if (portfolioName?.hasError('pattern')) {
+          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_PATTERN' | translate }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'PORTFOLIO.SETUP_DIALOG.BALANCE_LABEL' | translate }}</mat-label>
+
+        <input matInput type="number" formControlName="initialBalance" [min]="balanceMin" [max]="balanceMax" />
+
+        <span matTextPrefix>$&nbsp;</span>
+
+        <mat-hint>{{ 'PORTFOLIO.SETUP_DIALOG.BALANCE_HINT' | translate: { min: balanceMin, max: balanceMax } }}</mat-hint>
+
+        @if (initialBalance?.hasError('required')) {
+          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.BALANCE_REQUIRED' | translate }}</mat-error>
+        } @else if (initialBalance?.hasError('min') || initialBalance?.hasError('max')) {
+          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.BALANCE_RANGE' | translate: { min: balanceMin, max: balanceMax } }}</mat-error>
+        }
+      </mat-form-field>
+
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    @if (mode === 'reset') {
+      <button class="cancel-btn" type="button" (click)="onCancel()">{{ 'PORTFOLIO.SETUP_DIALOG.CANCEL_BUTTON' | translate }}</button>
+    }
+
+    <button class="confirm-btn" type="button" (click)="onConfirm()" [disabled]="form.invalid">
+      {{ 'PORTFOLIO.SETUP_DIALOG.CONFIRM_BUTTON' | translate }}
+    </button>
+  </div>
+</div>

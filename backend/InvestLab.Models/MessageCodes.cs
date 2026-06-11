@@ -77,6 +77,8 @@ public static class MessageCodes
     public const string POSITION_NOT_FOUND = "POSITION_NOT_FOUND";
     public const string SELL_SUCCESS = "SELL_SUCCESS";
     public const string PORTFOLIO_RESET_SUCCESS = "PORTFOLIO_RESET_SUCCESS";
+    public const string PORTFOLIO_SETUP_SUCCESS = "PORTFOLIO_SETUP_SUCCESS";
+    public const string PORTFOLIO_ALREADY_CONFIGURED = "PORTFOLIO_ALREADY_CONFIGURED";
 
     // ── Market ───────────────────────────────────────────────────────────────
     public const string INVALID_SYMBOL_FORMAT = "INVALID_SYMBOL_FORMAT";

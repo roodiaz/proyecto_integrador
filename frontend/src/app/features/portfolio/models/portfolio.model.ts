@@ -18,6 +18,7 @@ export interface PortfolioItem {
 }
 
 export interface PortfolioBalanceCards {
+  portfolioName: string | null;
   currentBalance: number;
   totalBalance: number;
   profitLoss: number;
@@ -27,6 +28,17 @@ export interface PortfolioBalanceCards {
   totalOperations: number;
   maxOperations: number;
   lastMarketCloseDate: string;
+}
+
+export interface PortfolioSettings {
+  portfolioName: string | null;
+  initialBalance: number;
+  portfolioConfigured: boolean;
+}
+
+export interface SetupPortfolioRequest {
+  portfolioName: string;
+  initialBalance: number;
 }
 
 export interface PortfolioPieChartItem {

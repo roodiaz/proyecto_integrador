@@ -58,7 +58,9 @@ public class AuthServiceTests
     [Fact]
     public async Task RegisterAsync_WhenDataIsValid_ShouldCreateUserAndReturnSuccessResponse()
     {
+        User? createdUser = null;
         _userRepository.Setup(r => r.GetByEmailAsync("new@test.com")).ReturnsAsync((User?)null);
+        _userRepository.Setup(r => r.AddAsync(It.IsAny<User>())).Callback<User>(u => createdUser = u);
         _passwordHasher.Setup(h => h.HashPassword(It.IsAny<User>(), It.IsAny<string>())).Returns("hashed");
         _verificationCodeService.Setup(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), "Verificación de cuenta", null)).ReturnsAsync(true);
 
@@ -68,6 +70,10 @@ public class AuthServiceTests
         _userRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once);
         _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), "Verificación de cuenta", null), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.AtLeastOnce);
+        Assert.NotNull(createdUser);
+        Assert.Equal(_limits.InitialBalance, createdUser!.InitialBalance);
+        Assert.False(createdUser.PortfolioConfigured);
+        Assert.Null(createdUser.PortfolioName);
     }
 
     /// <summary>Verifica que, si la contraseña y su confirmación no coinciden, se devuelva una respuesta de error sin crear el usuario.</summary>

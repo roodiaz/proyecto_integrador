@@ -196,6 +196,21 @@ html, body {
   --hover:         rgba(0, 0, 0, 0.04);
 }
 
+/* ── Portfolio Setup Dialog ── */
+[data-theme="light"] app-portfolio-setup-dialog {
+  --bg:            #f5f7ff;
+  --surface:       #eef1fa;
+  --surface-mid:   #e4e8f5;
+  --border:        #dde2f0;
+  --text:          #1a1d2e;
+  --text-muted:    #5a6380;
+  --accent:        #527bd9;
+  --accent-on:     #002e6a;
+  --amber:         #b45309;
+  --amber-dim:     rgba(180, 83, 9, 0.1);
+  --hover:         rgba(0, 0, 0, 0.04);
+}
+
 /* ── Market ── */
 [data-theme="light"] app-market {
   --mkt-text:             #1a1d2e;

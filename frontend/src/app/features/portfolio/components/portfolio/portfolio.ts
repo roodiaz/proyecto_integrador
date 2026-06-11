@@ -13,6 +13,7 @@ import { LanguageService } from '../../../../core/services/language.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
+import { PortfolioSetupDialog } from '../portfolio-setup-dialog/portfolio-setup-dialog';
 import { BuyData, SellData, PortfolioModalResult } from '../../models/portfolio.modal.model';
 import {
   PortfolioBalanceCards,
@@ -20,6 +21,7 @@ import {
   PortfolioLineChartItem,
   TransactionFilter,
   PortfolioTransaction,
+  SetupPortfolioRequest,
 } from '../../models/portfolio.model';
 
 /**
@@ -48,6 +50,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   // ── Tarjetas de resumen ──
   portfolioSummary: PortfolioBalanceCards = {
+    portfolioName: null,
     currentBalance: 0,
     totalBalance: 0,
     profitLoss: 0,
@@ -743,26 +746,24 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   // ── Reinicio de la simulación ──
 
   /**
-   * Pide confirmación al usuario antes de reiniciar la simulación (carga el diálogo
-   * de confirmación de forma diferida) y, si confirma, ejecuta el reinicio.
+   * Abre el diálogo de configuración del portfolio en modo `reset` (con el nombre
+   * actual precargado) y, si el usuario confirma, ejecuta el reinicio.
    */
   async confirmResetSimulation(): Promise<void> {
-    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
-
-    const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
+    const dialogRef = this.dialog.open(PortfolioSetupDialog, {
       width: '420px',
       backdropClass: 'blur-backdrop',
       data: {
-        title: this.languageService.instant('PORTFOLIO.RESET_DIALOG.TITLE'),
-        message: this.languageService.instant('PORTFOLIO.RESET_DIALOG.MESSAGE')
+        mode: 'reset',
+        currentName: this.portfolioSummary.portfolioName
       }
     });
 
-    const result = await dialogRef.afterClosed().toPromise();
+    const result: SetupPortfolioRequest | undefined = await dialogRef.afterClosed().toPromise();
 
     if (!result) return;
 
-    this.resetSimulation();
+    this.resetSimulation(result);
   }
 
   /**
@@ -770,8 +771,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
    * y borra tenencias, operaciones e historial), notifica el resultado al usuario y,
    * si fue exitoso, recarga todos los datos del portfolio.
    */
-  resetSimulation(): void {
-    this.portfolioService.resetSimulation().subscribe({
+  resetSimulation(dto: SetupPortfolioRequest): void {
+    this.portfolioService.resetSimulation(dto).subscribe({
       next: response => {
         this.snackBarService.fromResponse(response.success, response.code, response.message);
         if (response.success) this.refreshPortfolio();

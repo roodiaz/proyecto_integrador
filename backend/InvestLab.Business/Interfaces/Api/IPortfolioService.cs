@@ -15,13 +15,17 @@ namespace InvestLab.Business.Interfaces.Api
 
         Task<Response> GetBalanceCardsAsync(int userId);
 
+        Task<Response> GetPortfolioSettingsAsync(int userId);
+
+        Task<Response> SetupPortfolioAsync(int userId, SetupPortfolioDto dto);
+
         Task<Response> GetPieChartAsync(int userId);
 
         Task<Response> GetOpenPositionsAsync(int userId, PortfolioOpenPositionsFilterDto filter);
 
         Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter);
 
-        Task<Response> ResetSimulationAsync(int userId);
+        Task<Response> ResetSimulationAsync(int userId, SetupPortfolioDto dto);
 
         Task<byte[]> ExportHoldingsToExcelAsync(int userId, PortfolioOpenPositionsFilterDto filter);
     }

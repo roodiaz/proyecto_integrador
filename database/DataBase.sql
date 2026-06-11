@@ -23,7 +23,10 @@ CREATE TABLE users (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00,
     failed_login_attempts INT NOT NULL DEFAULT 0, -- Intentos fallidos de login consecutivos
-    locked_until TIMESTAMP WITH TIME ZONE -- Fecha/hora hasta la cual la cuenta permanece bloqueada
+    locked_until TIMESTAMP WITH TIME ZONE, -- Fecha/hora hasta la cual la cuenta permanece bloqueada
+    portfolio_name VARCHAR(100), -- Nombre elegido por el usuario para su portfolio de simulación
+    initial_balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00, -- Saldo inicial elegido por el usuario
+    portfolio_configured BOOLEAN NOT NULL DEFAULT FALSE -- Indica si el usuario ya completó el wizard de configuración inicial
 );
 
 -- ============================================

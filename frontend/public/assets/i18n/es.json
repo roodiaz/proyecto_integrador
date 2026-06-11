@@ -548,11 +548,32 @@
       "EXPORT_TRANSACTIONS_FAILED": "Error al exportar las operaciones",
       "BUY_ERROR": "Error al realizar la compra",
       "SELL_ERROR": "Error al vender activo",
-      "RESET_ERROR": "Error al reiniciar el portfolio"
+      "RESET_ERROR": "Error al reiniciar el portfolio",
+      "PORTFOLIO_ALREADY_CONFIGURED": "Tu portfolio ya fue configurado"
     },
     "RESET_DIALOG": {
       "TITLE": "Reiniciar portfolio",
       "MESSAGE": "¿Estás segura de que querés reiniciar tu portfolio? Se eliminarán tus tenencias, operaciones e historial de evolución. Tu saldo volverá al monto inicial."
+    },
+    "SETUP_DIALOG": {
+      "CREATE_TITLE": "Configurá tu portfolio",
+      "CREATE_SUBTITLE": "Antes de empezar, elegí un nombre para tu portfolio y el saldo inicial con el que querés simular tus inversiones.",
+      "RESET_TITLE": "Reiniciar portfolio",
+      "RESET_WARNING": "Se eliminarán tus tenencias, operaciones e historial de evolución. Tu saldo volverá al nuevo monto inicial que definas.",
+      "NAME_LABEL": "Nombre del portfolio",
+      "NAME_PLACEHOLDER": "Ej: Mi Portfolio",
+      "NAME_HINT": "Entre {{min}} y {{max}} caracteres. Letras, números y espacios.",
+      "BALANCE_LABEL": "Saldo inicial",
+      "BALANCE_HINT": "Entre ${{min}} y ${{max}} USD.",
+      "CONFIRM_BUTTON": "Confirmar",
+      "CANCEL_BUTTON": "Cancelar",
+      "ERRORS": {
+        "NAME_REQUIRED": "El nombre del portfolio es requerido.",
+        "NAME_LENGTH": "El nombre debe tener entre {{min}} y {{max}} caracteres.",
+        "NAME_PATTERN": "El nombre solo puede contener letras, números y espacios.",
+        "BALANCE_REQUIRED": "El saldo inicial es requerido.",
+        "BALANCE_RANGE": "El saldo inicial debe estar entre ${{min}} y ${{max}} USD."
+      }
     },
     "CHART_VALUE_LABEL": "Valor: ${{value}}"
   },

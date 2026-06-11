@@ -62,6 +62,17 @@ public partial class User
     [Column("locked_until")]
     public DateTime? LockedUntil { get; set; }
 
+    [Column("portfolio_name")]
+    [StringLength(100)]
+    public string? PortfolioName { get; set; }
+
+    [Column("initial_balance")]
+    [Precision(18, 2)]
+    public decimal InitialBalance { get; set; }
+
+    [Column("portfolio_configured")]
+    public bool PortfolioConfigured { get; set; }
+
     [InverseProperty("User")]
     public virtual ICollection<Alert> Alerts { get; set; } = new List<Alert>();
 

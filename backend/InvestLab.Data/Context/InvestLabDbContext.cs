@@ -131,6 +131,8 @@ public partial class InvestLabDbContext : DbContext
             entity.Property(e => e.Balance).HasDefaultValue(10000.00m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.InitialBalance).HasDefaultValue(10000.00m);
+            entity.Property(e => e.PortfolioConfigured).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<UserSetting>(entity =>

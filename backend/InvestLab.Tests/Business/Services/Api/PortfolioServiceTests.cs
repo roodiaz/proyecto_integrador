@@ -44,7 +44,7 @@ public class PortfolioServiceTests
         return new(_userRepository.Object, _userSettingRepository.Object, _assetRepository.Object, _portfolioRepository.Object, _transactionRepository.Object, _providerResolver.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object, _marketPriceCacheService.Object);
     }
 
-    private static User UserEntity(int id = 1, decimal balance = 1000) => new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance };
+    private static User UserEntity(int id = 1, decimal balance = 1000, decimal initialBalance = 10000) => new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance, InitialBalance = initialBalance, PortfolioName = "Mi Portfolio", PortfolioConfigured = true };
 
     private static UserSetting Settings(int operationsUsedToday = 0) => new() { Id = 1, UserId = 1, OperationsUsedToday = operationsUsedToday };
 
@@ -57,6 +57,8 @@ public class PortfolioServiceTests
     private static BuyAssetDto BuyDto(string symbol = "AAPL", decimal quantity = 5) => new() { Symbol = symbol, Quantity = quantity };
 
     private static SellAssetDto SellDto(string symbol = "AAPL", decimal quantity = 5) => new() { Symbol = symbol, Quantity = quantity };
+
+    private static SetupPortfolioDto SetupDto(string portfolioName = "Mi Portfolio", decimal initialBalance = 15000) => new() { PortfolioName = portfolioName, InitialBalance = initialBalance };
 
     // ---------- BuyAsync ----------
 
@@ -655,7 +657,7 @@ public class PortfolioServiceTests
     {
         _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((User?)null);
 
-        var result = await CreateService().ResetSimulationAsync(1);
+        var result = await CreateService().ResetSimulationAsync(1, SetupDto());
 
         Assert.False(result.Success);
         Assert.Equal("Usuario no encontrado", result.Message);
@@ -666,18 +668,22 @@ public class PortfolioServiceTests
     [Fact]
     public async Task ResetSimulationAsync_WhenDataIsValid_ShouldClearPortfolioDataAndResetBalance()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        var user = UserEntity();
+        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
 
-        var result = await CreateService().ResetSimulationAsync(1);
+        var dto = SetupDto(portfolioName: "Nuevo Portfolio", initialBalance: 25000);
+        var result = await CreateService().ResetSimulationAsync(1, dto);
 
         Assert.True(result.Success);
         Assert.Equal("Portfolio reiniciado correctamente", result.Message);
         _portfolioHistoryRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _transactionRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _portfolioRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
-        _userRepository.Verify(r => r.UpdateBalanceAsync(1, _limits.InitialBalance), Times.Once);
         _userSettingRepository.Verify(r => r.ResetOperationsUsedTodayAsync(1), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+        Assert.Equal("Nuevo Portfolio", user.PortfolioName);
+        Assert.Equal(25000, user.InitialBalance);
+        Assert.Equal(25000, user.Balance);
     }
 
     /// <summary>Verifica que, ante una excepción inesperada durante el reinicio, se registre el error y se devuelva una respuesta genérica de error.</summary>
@@ -687,7 +693,7 @@ public class PortfolioServiceTests
         _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(UserEntity());
         _portfolioHistoryRepository.Setup(r => r.DeleteByUserIdAsync(It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
 
-        var result = await CreateService().ResetSimulationAsync(1);
+        var result = await CreateService().ResetSimulationAsync(1, SetupDto());
 
         Assert.False(result.Success);
         Assert.Equal("Error interno", result.Message);
