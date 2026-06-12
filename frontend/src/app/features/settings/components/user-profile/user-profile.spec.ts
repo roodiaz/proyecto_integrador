@@ -28,7 +28,7 @@ describe('UserProfile', () => {
       phone: '123',
       birthDate: null,
       profileImageUrl: null,
-      settings: { currency: 'USD', emailNotifications: true }
+      settings: { currency: 'USD', emailNotifications: true, theme: 'dark', language: 'es' }
     }
   };
 

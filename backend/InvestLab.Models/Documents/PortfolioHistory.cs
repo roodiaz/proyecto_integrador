@@ -12,6 +12,9 @@ namespace InvestLab.Models.Documents
         [BsonElement("userId")]
         public int UserId { get; set; }
 
+        [BsonElement("portfolioId")]
+        public int PortfolioId { get; set; }
+
         [BsonElement("date")]
         public DateTime Date { get; set; }
 

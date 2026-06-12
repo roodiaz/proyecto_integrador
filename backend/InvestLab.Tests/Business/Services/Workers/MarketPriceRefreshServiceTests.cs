@@ -1,5 +1,6 @@
 using InvestLab.Business.Interfaces.Api;
 using InvestLab.Business.Services.Workers;
+using InvestLab.Models.DTOs.Market;
 using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using Moq;
@@ -15,8 +16,13 @@ public class MarketPriceRefreshServiceTests
 {
     private readonly Mock<IAssetRepository> _assetRepository = new();
     private readonly Mock<IMarketPriceCacheService> _marketPriceCacheService = new();
+    private readonly Mock<IMarketStatusService> _marketStatusService = new();
 
-    private MarketPriceRefreshService CreateService() => new(_assetRepository.Object, _marketPriceCacheService.Object);
+    private MarketPriceRefreshService CreateService()
+    {
+        _marketStatusService.Setup(s => s.IsMarketOpen()).Returns(true);
+        return new(_assetRepository.Object, _marketPriceCacheService.Object, _marketStatusService.Object);
+    }
 
     private static Asset AssetEntity(int id, string symbol) => new() { Id = id, Symbol = symbol };
 
@@ -55,6 +61,19 @@ public class MarketPriceRefreshServiceTests
 
         await CreateService().RefreshAsync();
 
+        _marketPriceCacheService.Verify(s => s.RefreshPricesAsync(It.IsAny<List<string>>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, si el mercado está cerrado, no se consulten los activos ni se actualice la caché de precios.</summary>
+    [Fact]
+    public async Task RefreshAsync_WhenMarketIsClosed_ShouldNotRefreshPrices()
+    {
+        var service = CreateService();
+        _marketStatusService.Setup(s => s.IsMarketOpen()).Returns(false);
+
+        await service.RefreshAsync();
+
+        _assetRepository.Verify(r => r.GetAllAsync(), Times.Never);
         _marketPriceCacheService.Verify(s => s.RefreshPricesAsync(It.IsAny<List<string>>()), Times.Never);
     }
 }

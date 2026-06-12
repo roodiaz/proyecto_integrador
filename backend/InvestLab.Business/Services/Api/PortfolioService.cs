@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using InvestLab.Business.Interfaces;
 using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data;
@@ -8,6 +8,7 @@ using InvestLab.Models;
 using InvestLab.Models.DTOs.Market;
 using InvestLab.Models.DTOs.Portfolio;
 using InvestLab.Models.Options;
+using InvestLab.Models.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using static InvestLab.Models.Enums;
@@ -25,24 +26,24 @@ public class PortfolioService : IPortfolioService
     private readonly IAssetService _assetService;
 
     // repositorios
-    private readonly IUserRepository _userRepository;
     private readonly IUserSettingRepository _userSettingRepository;
     private readonly IAssetRepository _assetRepository;
-    private readonly IPortfolioRepository _portfolioRepository;
+    private readonly IUserPortfolioRepository _userPortfolioRepository;
+    private readonly IPortfolioHoldingRepository _portfolioHoldingRepository;
     private readonly ITransactionRepository _transactionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
     private readonly IMarketMetadataRepository _marketMetadataRepository;
 
     /// <summary>
-    /// Inicializa una nueva instancia de <see cref="PortfolioService"/> inyectando los repositorios, opciones y servicios necesarios para gestionar el portfolio del usuario.
+    /// Inicializa una nueva instancia de <see cref="PortfolioService"/> inyectando los repositorios, opciones y servicios necesarios para gestionar los portfolios del usuario.
     /// </summary>
-    /// <param name="userRepository">Repositorio de usuarios.</param>
     /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
     /// <param name="assetRepository">Repositorio de activos.</param>
-    /// <param name="portfolioRepository">Repositorio de portfolios.</param>
+    /// <param name="userPortfolioRepository">Repositorio de portfolios de usuario.</param>
+    /// <param name="portfolioHoldingRepository">Repositorio de posiciones de portfolio.</param>
     /// <param name="transactionRepository">Repositorio de transacciones.</param>
-    /// <param name="externalProvider">Proveedor externo de datos de mercado.</param>
+    /// <param name="providerResolver">Resolver del proveedor externo de datos de mercado.</param>
     /// <param name="unitOfWork">Unidad de trabajo para confirmar los cambios en la base de datos.</param>
     /// <param name="portfolioHistoryRepository">Repositorio del historial de portfolio.</param>
     /// <param name="limits">Opciones de límites de operaciones y balance inicial.</param>
@@ -51,12 +52,12 @@ public class PortfolioService : IPortfolioService
     /// <param name="marketMetadataRepository">Repositorio de metadatos de mercado.</param>
     /// <param name="assetService">Servicio de activos.</param>
     /// <param name="marketPriceCacheService">Servicio de cache de precios de mercado para datos informativos.</param>
-    public PortfolioService(IUserRepository userRepository, IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository, IMarketProviderResolver providerResolver, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
+    public PortfolioService(IUserSettingRepository userSettingRepository, IAssetRepository assetRepository, IUserPortfolioRepository userPortfolioRepository, IPortfolioHoldingRepository portfolioHoldingRepository, ITransactionRepository transactionRepository, IMarketProviderResolver providerResolver, IUnitOfWork unitOfWork, IPortfolioHistoryRepository portfolioHistoryRepository, IOptions<LimitsOptions> limits, ILogger<PortfolioService> logger, IMarketPriceService marketPriceService, IMarketMetadataRepository marketMetadataRepository, IAssetService assetService, IMarketPriceCacheService marketPriceCacheService)
     {
-        _userRepository = userRepository;
         _userSettingRepository = userSettingRepository;
         _assetRepository = assetRepository;
-        _portfolioRepository = portfolioRepository;
+        _userPortfolioRepository = userPortfolioRepository;
+        _portfolioHoldingRepository = portfolioHoldingRepository;
         _transactionRepository = transactionRepository;
         _providerResolver = providerResolver;
         _unitOfWork = unitOfWork;
@@ -70,20 +71,226 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Realiza la compra de un activo para un usuario, validando saldo, límites diarios y disponibilidad del precio, y actualiza el portfolio y las transacciones correspondientes.
+    /// Obtiene la lista de portfolios pertenecientes a un usuario.
     /// </summary>
-    /// <param name="userId">Identificador del usuario que realiza la compra.</param>
-    /// <param name="dto">Datos de la operación de compra, incluyendo símbolo y cantidad.</param>
-    /// <returns>Una respuesta indicando si la compra se realizó correctamente o el motivo del error.</returns>
-    public async Task<Response> BuyAsync(int userId, BuyAssetDto dto)
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <returns>Una respuesta con la lista de portfolios del usuario.</returns>
+    public async Task<Response> GetUserPortfoliosAsync(int userId)
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
+            var portfolios = await _userPortfolioRepository.GetByUserAsync(userId);
+
+            var response = portfolios
+                .Select(x => new UserPortfolioDto
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    InitialBalance = x.InitialBalance,
+                    CurrentBalance = x.CurrentBalance,
+                    IsActive = x.IsActive
+                })
+                .ToList();
+
+            return Response.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener portfolios: UserId={UserId}", userId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Crea un nuevo portfolio para un usuario, validando el nombre, el saldo inicial y el límite máximo de portfolios permitidos.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="dto">Nombre y saldo inicial del nuevo portfolio.</param>
+    /// <returns>Una respuesta con el portfolio creado o el motivo del error.</returns>
+    public async Task<Response> CreatePortfolioAsync(int userId, SetupPortfolioDto dto)
+    {
+        try
+        {
+            var count = await _userPortfolioRepository.CountByUserAsync(userId);
+
+            if (count >= PortfolioPolicy.MaxPortfolios)
             {
-                _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+                _logger.LogWarning("Límite de portfolios alcanzado: UserId={UserId}", userId);
+                return Response.Fail("Alcanzaste el máximo de portfolios permitidos", MAX_PORTFOLIOS_REACHED);
+            }
+
+            var portfolio = new UserPortfolio
+            {
+                UserId = userId,
+                Name = dto.PortfolioName.Trim(),
+                InitialBalance = dto.InitialBalance,
+                CurrentBalance = dto.InitialBalance,
+                IsActive = count == 0,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _userPortfolioRepository.InsertAsync(portfolio);
+            await _unitOfWork.SaveChangesAsync();
+
+            var response = new UserPortfolioDto
+            {
+                Id = portfolio.Id,
+                Name = portfolio.Name,
+                InitialBalance = portfolio.InitialBalance,
+                CurrentBalance = portfolio.CurrentBalance,
+                IsActive = portfolio.IsActive
+            };
+
+            _logger.LogInformation("Portfolio creado correctamente: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolio.Id);
+
+            return Response.Ok(response, "Portfolio creado correctamente", PORTFOLIO_CREATED_SUCCESS);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al crear portfolio: UserId={UserId}", userId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Marca un portfolio del usuario como el portfolio activo.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio a activar.</param>
+    /// <returns>Una respuesta indicando si la activación se realizó correctamente o el motivo del error.</returns>
+    public async Task<Response> SetActivePortfolioAsync(int userId, int portfolioId)
+    {
+        try
+        {
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            await _userPortfolioRepository.SetActiveAsync(userId, portfolioId);
+
+            _logger.LogInformation("Portfolio activado correctamente: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+
+            return Response.Ok(null, "Portfolio activado correctamente", PORTFOLIO_ACTIVATED_SUCCESS);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al activar portfolio: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Elimina un portfolio del usuario, junto con sus posiciones, transacciones e historial. No permite eliminar el último portfolio del usuario.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio a eliminar.</param>
+    /// <returns>Una respuesta indicando si la eliminación se realizó correctamente o el motivo del error.</returns>
+    public async Task<Response> DeletePortfolioAsync(int userId, int portfolioId)
+    {
+        try
+        {
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            var count = await _userPortfolioRepository.CountByUserAsync(userId);
+            if (count <= 1)
+            {
+                _logger.LogWarning("No se puede eliminar el último portfolio: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("No podés eliminar tu último portfolio", CANNOT_DELETE_LAST_PORTFOLIO);
+            }
+
+            await _portfolioHistoryRepository.DeleteByPortfolioIdAsync(portfolioId);
+            await _transactionRepository.DeleteByPortfolioIdAsync(portfolioId);
+            await _portfolioHoldingRepository.DeleteByPortfolioIdAsync(portfolioId);
+            await _userPortfolioRepository.DeleteAsync(portfolio);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            if (portfolio.IsActive)
+            {
+                var remaining = await _userPortfolioRepository.GetByUserAsync(userId);
+                var next = remaining.FirstOrDefault();
+
+                if (next != null)
+                    await _userPortfolioRepository.SetActiveAsync(userId, next.Id);
+            }
+
+            _logger.LogInformation("Portfolio eliminado correctamente: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+
+            return Response.Ok(null, "Portfolio eliminado correctamente", PORTFOLIO_DELETED_SUCCESS);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al eliminar portfolio: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Reinicia un portfolio del usuario, eliminando su historial, transacciones y posiciones, y volviendo a configurar el nombre y el saldo inicial.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio a reiniciar.</param>
+    /// <param name="dto">Nuevo nombre de portfolio y saldo inicial de la simulación.</param>
+    /// <returns>Una respuesta indicando si el portfolio se reinició correctamente o el motivo del error.</returns>
+    public async Task<Response> ResetPortfolioAsync(int userId, int portfolioId, SetupPortfolioDto dto)
+    {
+        try
+        {
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado al reiniciar: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            await _portfolioHistoryRepository.DeleteByPortfolioIdAsync(portfolioId);
+            await _transactionRepository.DeleteByPortfolioIdAsync(portfolioId);
+            await _portfolioHoldingRepository.DeleteByPortfolioIdAsync(portfolioId);
+            await _userSettingRepository.ResetOperationsUsedTodayAsync(userId);
+
+            portfolio.Name = dto.PortfolioName.Trim();
+            portfolio.InitialBalance = dto.InitialBalance;
+            portfolio.CurrentBalance = dto.InitialBalance;
+            portfolio.UpdatedAt = DateTime.UtcNow;
+
+            await _userPortfolioRepository.UpdateAsync(portfolio);
+            await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation("Portfolio reiniciado correctamente: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+
+            return Response.Ok(null, "Portfolio reiniciado correctamente", PORTFOLIO_RESET_SUCCESS);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al reiniciar portfolio: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+            return Response.Fail("Error interno", INTERNAL_ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Realiza la compra de un activo para un portfolio del usuario, validando saldo, límites diarios y disponibilidad del precio, y actualiza el portfolio y las transacciones correspondientes.
+    /// </summary>
+    /// <param name="userId">Identificador del usuario que realiza la compra.</param>
+    /// <param name="portfolioId">Identificador del portfolio sobre el cual se realiza la compra.</param>
+    /// <param name="dto">Datos de la operación de compra, incluyendo símbolo y cantidad.</param>
+    /// <returns>Una respuesta indicando si la compra se realizó correctamente o el motivo del error.</returns>
+    public async Task<Response> BuyAsync(int userId, int portfolioId, BuyAssetDto dto)
+    {
+        try
+        {
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
             }
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
@@ -112,49 +319,54 @@ public class PortfolioService : IPortfolioService
 
             var total = dto.Quantity * market.Price;
 
-            if (user.Balance < total)
+            if (portfolio.CurrentBalance < total)
             {
                 _logger.LogWarning("Saldo insuficiente: {UserId}", userId);
                 return Response.Fail("Saldo insuficiente. Podés vender activos o reiniciar tu portfolio simulado.", INSUFFICIENT_BALANCE);
             }
 
-            var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
-            if (portfolio == null)
+            var holding = await _portfolioHoldingRepository.GetByPortfolioAndAssetAsync(portfolioId, asset.Id);
+            if (holding == null)
             {
-                portfolio = new Portfolio
+                holding = new PortfolioHolding
                 {
                     UserId = userId,
+                    PortfolioId = portfolioId,
                     AssetId = asset.Id,
                     Quantity = dto.Quantity,
                     AvgPrice = market.Price
                 };
 
-                await _portfolioRepository.InsertAsync(portfolio);
+                await _portfolioHoldingRepository.InsertAsync(holding);
             }
             else
             {
-                var currentTotal = portfolio.Quantity * portfolio.AvgPrice;
+                var currentTotal = holding.Quantity * holding.AvgPrice;
                 var newTotal = dto.Quantity * market.Price;
 
-                portfolio.Quantity += dto.Quantity;
-                portfolio.AvgPrice = (currentTotal + newTotal) / portfolio.Quantity;
+                holding.Quantity += dto.Quantity;
+                holding.AvgPrice = (currentTotal + newTotal) / holding.Quantity;
 
-                await _portfolioRepository.UpdateAsync(portfolio);
+                await _portfolioHoldingRepository.UpdateAsync(holding);
             }
 
-            var balanceBefore = user.Balance;
-            user.Balance -= total;
+            var balanceBefore = portfolio.CurrentBalance;
+            portfolio.CurrentBalance -= total;
+            portfolio.UpdatedAt = DateTime.UtcNow;
+
+            await _userPortfolioRepository.UpdateAsync(portfolio);
 
             var transaction = new Transaction
             {
                 UserId = userId,
+                PortfolioId = portfolioId,
                 AssetId = asset.Id,
                 Type = TransactionType.Buy,
                 Quantity = dto.Quantity,
                 Price = market.Price,
                 Total = total,
                 BalanceBefore = balanceBefore,
-                BalanceAfter = user.Balance,
+                BalanceAfter = portfolio.CurrentBalance,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -163,7 +375,7 @@ public class PortfolioService : IPortfolioService
 
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Compra realizada: UserId={UserId}, Asset={Asset}, Quantity={Quantity}", userId, asset.Symbol, dto.Quantity);
+            _logger.LogInformation("Compra realizada: UserId={UserId}, PortfolioId={PortfolioId}, Asset={Asset}, Quantity={Quantity}", userId, portfolioId, asset.Symbol, dto.Quantity);
 
             return Response.Ok(null, "Compra realizada correctamente", BUY_SUCCESS);
         }
@@ -176,20 +388,21 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Realiza la venta de un activo perteneciente al portfolio de un usuario, validando cantidad disponible, límites diarios y disponibilidad del precio, y actualiza el portfolio y las transacciones correspondientes.
+    /// Realiza la venta de un activo perteneciente a un portfolio del usuario, validando cantidad disponible, límites diarios y disponibilidad del precio, y actualiza el portfolio y las transacciones correspondientes.
     /// </summary>
     /// <param name="userId">Identificador del usuario que realiza la venta.</param>
+    /// <param name="portfolioId">Identificador del portfolio sobre el cual se realiza la venta.</param>
     /// <param name="dto">Datos de la operación de venta, incluyendo símbolo y cantidad.</param>
     /// <returns>Una respuesta indicando si la venta se realizó correctamente o el motivo del error.</returns>
-    public async Task<Response> SellAsync(int userId, SellAssetDto dto)
+    public async Task<Response> SellAsync(int userId, int portfolioId, SellAssetDto dto)
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
             {
-                _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
             }
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
@@ -211,15 +424,15 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
             }
 
-            var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
-            if (portfolio == null)
+            var holding = await _portfolioHoldingRepository.GetByPortfolioAndAssetAsync(portfolioId, asset.Id);
+            if (holding == null)
             {
-                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, AssetId={AssetId}", userId, asset.Id);
+                _logger.LogWarning("Posición no encontrada: PortfolioId={PortfolioId}, AssetId={AssetId}", portfolioId, asset.Id);
                 return Response.Fail("Activo no encontrado en portfolio", POSITION_NOT_FOUND);
             }
-            if (portfolio.Quantity < dto.Quantity)
+            if (holding.Quantity < dto.Quantity)
             {
-                _logger.LogWarning("Cantidad insuficiente: UserId={UserId}, AssetId={AssetId}", userId, asset.Id);
+                _logger.LogWarning("Cantidad insuficiente: PortfolioId={PortfolioId}, AssetId={AssetId}", portfolioId, asset.Id);
                 return Response.Fail("Cantidad insuficiente", INSUFFICIENT_SHARES);
             }
 
@@ -231,26 +444,30 @@ public class PortfolioService : IPortfolioService
             }
 
             var total = dto.Quantity * market.Price;
-            portfolio.Quantity -= dto.Quantity;
+            holding.Quantity -= dto.Quantity;
 
-            if (portfolio.Quantity == 0)
-                await _portfolioRepository.DeleteAsync(portfolio);
+            if (holding.Quantity == 0)
+                await _portfolioHoldingRepository.DeleteAsync(holding);
             else
-                await _portfolioRepository.UpdateAsync(portfolio);
+                await _portfolioHoldingRepository.UpdateAsync(holding);
 
-            var balanceBefore = user.Balance;
-            user.Balance += total;
+            var balanceBefore = portfolio.CurrentBalance;
+            portfolio.CurrentBalance += total;
+            portfolio.UpdatedAt = DateTime.UtcNow;
+
+            await _userPortfolioRepository.UpdateAsync(portfolio);
 
             var transaction = new Transaction
             {
                 UserId = userId,
+                PortfolioId = portfolioId,
                 AssetId = asset.Id,
                 Type = TransactionType.Sell,
                 Quantity = dto.Quantity,
                 Price = market.Price,
                 Total = total,
                 BalanceBefore = balanceBefore,
-                BalanceAfter = user.Balance,
+                BalanceAfter = portfolio.CurrentBalance,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -259,7 +476,7 @@ public class PortfolioService : IPortfolioService
 
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Venta realizada: UserId={UserId}, Asset={Asset}, Quantity={Quantity}", userId, asset.Symbol, dto.Quantity);
+            _logger.LogInformation("Venta realizada: UserId={UserId}, PortfolioId={PortfolioId}, Asset={Asset}, Quantity={Quantity}", userId, portfolioId, asset.Symbol, dto.Quantity);
 
             return Response.Ok(null, "Venta realizada correctamente", SELL_SUCCESS);
         }
@@ -272,15 +489,23 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Obtiene la información de la posición actual de un usuario sobre un activo específico, incluyendo cantidad, precio promedio y precio actual de mercado, para utilizarse antes de una venta.
+    /// Obtiene la información de la posición actual de un portfolio sobre un activo específico, incluyendo cantidad, precio promedio y precio actual de mercado, para utilizarse antes de una venta.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="symbol">Símbolo del activo a consultar.</param>
     /// <returns>Una respuesta con los datos de la posición o el motivo del error si no se encuentra.</returns>
-    public async Task<Response> GetPositionForSellAsync(int userId, string symbol)
+    public async Task<Response> GetPositionForSellAsync(int userId, int portfolioId, string symbol)
     {
         try
         {
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
             var asset = await _assetRepository.GetAsync(symbol);
             if (asset == null)
             {
@@ -288,10 +513,10 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Activo no encontrado", ASSET_NOT_FOUND);
             }
 
-            var portfolio = await _portfolioRepository.GetByUserAndAssetAsync(userId, asset.Id);
-            if (portfolio == null)
+            var holding = await _portfolioHoldingRepository.GetByPortfolioAndAssetAsync(portfolioId, asset.Id);
+            if (holding == null)
             {
-                _logger.LogWarning("Posición no encontrada: UserId={UserId}, AssetId={AssetId}", userId, asset.Id);
+                _logger.LogWarning("Posición no encontrada: PortfolioId={PortfolioId}, AssetId={AssetId}", portfolioId, asset.Id);
                 return Response.Fail("Posición no encontrada", POSITION_NOT_FOUND);
             }
 
@@ -305,12 +530,12 @@ public class PortfolioService : IPortfolioService
             var response = new PortfolioPositionDto
             {
                 Symbol = asset.Symbol,
-                Quantity = portfolio.Quantity,
-                AvgPrice = portfolio.AvgPrice,
+                Quantity = holding.Quantity,
+                AvgPrice = holding.AvgPrice,
                 CurrentPrice = market.Price
             };
 
-            _logger.LogInformation("Posición obtenida: UserId={UserId}, Asset={Asset}", userId, asset.Symbol);
+            _logger.LogInformation("Posición obtenida: UserId={UserId}, PortfolioId={PortfolioId}, Asset={Asset}", userId, portfolioId, asset.Symbol);
 
             return Response.Ok(response);
         }
@@ -364,19 +589,20 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Obtiene un resumen del estado financiero del portfolio del usuario, incluyendo balance actual, ganancia/pérdida, porcentaje de rentabilidad y cantidad de operaciones realizadas.
+    /// Obtiene un resumen del estado financiero de un portfolio del usuario, incluyendo balance actual, ganancia/pérdida, porcentaje de rentabilidad y cantidad de operaciones realizadas.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <returns>Una respuesta con las tarjetas de balance del portfolio o el motivo del error.</returns>
-    public async Task<Response> GetBalanceCardsAsync(int userId)
+    public async Task<Response> GetBalanceCardsAsync(int userId, int portfolioId)
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
             {
-                _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
             }
 
             var settings = await _userSettingRepository.GetByUserIdAsync(userId);
@@ -386,16 +612,16 @@ public class PortfolioService : IPortfolioService
                 return Response.Fail("Configuración no encontrada", SETTINGS_NOT_FOUND);
             }
 
-            var portfolio = await _portfolioRepository.GetByUserAsync(userId);
+            var holdings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolioId);
 
-            var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
+            var symbols = holdings.Select(x => x.Asset.Symbol).Distinct().ToList();
 
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             decimal holdingsValue = 0;
             decimal unrealizedProfitLoss = 0;
-            foreach (var item in portfolio)
+            foreach (var item in holdings)
             {
                 if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice))
                 {
@@ -409,15 +635,15 @@ public class PortfolioService : IPortfolioService
 
             var marketMetadata = await _marketMetadataRepository.GetAsync();
 
-            var totalBalance = user.Balance + holdingsValue;
-            var profitLoss = totalBalance - user.InitialBalance;
-            var profitPercent = user.InitialBalance == 0 ? 0 : (profitLoss / user.InitialBalance) * 100;
+            var totalBalance = portfolio.CurrentBalance + holdingsValue;
+            var profitLoss = totalBalance - portfolio.InitialBalance;
+            var profitPercent = portfolio.InitialBalance == 0 ? 0 : (profitLoss / portfolio.InitialBalance) * 100;
             var realizedProfitLoss = profitLoss - unrealizedProfitLoss;
 
             var response = new PortfolioBalanceCardsDto
             {
-                PortfolioName = user.PortfolioName,
-                CurrentBalance = Math.Round(user.Balance, 2),
+                PortfolioName = portfolio.Name,
+                CurrentBalance = Math.Round(portfolio.CurrentBalance, 2),
                 TotalBalance = Math.Round(totalBalance, 2),
                 ProfitLoss = Math.Round(profitLoss, 2),
                 ProfitLossPercent = Math.Round(profitPercent, 2),
@@ -428,7 +654,7 @@ public class PortfolioService : IPortfolioService
                 LastMarketCloseDate = marketMetadata?.LastMarketCloseDate
             };
 
-            _logger.LogInformation("Resumen portfolio obtenido: UserId={UserId}", userId);
+            _logger.LogInformation("Resumen portfolio obtenido: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(response);
         }
@@ -440,23 +666,31 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Calcula la distribución porcentual del valor del portfolio del usuario por activo, para ser representada en un gráfico de torta.
+    /// Calcula la distribución porcentual del valor de un portfolio del usuario por activo, para ser representada en un gráfico de torta.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <returns>Una respuesta con la lista de elementos del gráfico de torta del portfolio o el motivo del error.</returns>
-    public async Task<Response> GetPieChartAsync(int userId)
+    public async Task<Response> GetPieChartAsync(int userId, int portfolioId)
     {
         try
         {
-            var portfolio = await _portfolioRepository.GetByUserAsync(userId);
-
-            if (!portfolio.Any())
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
             {
-                _logger.LogWarning("Portfolio vacío: UserId={UserId}", userId);
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            var holdings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolioId);
+
+            if (!holdings.Any())
+            {
+                _logger.LogWarning("Portfolio vacío: PortfolioId={PortfolioId}", portfolioId);
                 return Response.Ok(new List<PortfolioPieChartItemDto>());
             }
 
-            var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
+            var symbols = holdings.Select(x => x.Asset.Symbol).Distinct().ToList();
 
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
@@ -464,7 +698,7 @@ public class PortfolioService : IPortfolioService
             var positions = new List<(string Symbol, decimal Value)>();
             decimal totalPortfolioValue = 0;
 
-            foreach (var item in portfolio)
+            foreach (var item in holdings)
             {
                 if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice))
                     continue;
@@ -485,7 +719,7 @@ public class PortfolioService : IPortfolioService
                 .OrderByDescending(x => x.Percentage)
                 .ToList();
 
-            _logger.LogInformation("Pie chart portfolio obtenido: UserId={UserId}", userId);
+            _logger.LogInformation("Pie chart portfolio obtenido: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(response);
         }
@@ -497,25 +731,33 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Obtiene las posiciones abiertas del portfolio de un usuario, aplicando filtros de búsqueda, estado de ganancia/pérdida, ordenamiento y paginación.
+    /// Obtiene las posiciones abiertas de un portfolio del usuario, aplicando filtros de búsqueda, estado de ganancia/pérdida, ordenamiento y paginación.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="filter">Filtros de búsqueda, ordenamiento y paginación a aplicar sobre las posiciones.</param>
     /// <returns>Una respuesta con el total de posiciones y la lista paginada de posiciones abiertas, o el motivo del error.</returns>
-    public async Task<Response> GetOpenPositionsAsync(int userId, PortfolioOpenPositionsFilterDto filter)
+    public async Task<Response> GetOpenPositionsAsync(int userId, int portfolioId, PortfolioOpenPositionsFilterDto filter)
     {
         try
         {
-            var portfolio = await _portfolioRepository.GetPagedByUserAsync(userId);
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
 
-            var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
+            var holdings = await _portfolioHoldingRepository.GetPagedByPortfolioAsync(portfolioId);
+
+            var symbols = holdings.Select(x => x.Asset.Symbol).Distinct().ToList();
 
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             var positions = new List<PortfolioOpenPositionDto>();
 
-            foreach (var item in portfolio)
+            foreach (var item in holdings)
             {
                 if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice))
                     continue;
@@ -568,7 +810,7 @@ public class PortfolioService : IPortfolioService
 
             positions = positions.Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize).ToList();
 
-            _logger.LogInformation("Open positions obtenidas: UserId={UserId}", userId);
+            _logger.LogInformation("Open positions obtenidas: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(new
             {
@@ -584,15 +826,23 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Obtiene la evolución histórica del valor total del portfolio de un usuario dentro de un período determinado, para ser representada en un gráfico de líneas.
+    /// Obtiene la evolución histórica del valor total de un portfolio del usuario dentro de un período determinado, para ser representada en un gráfico de líneas.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="filter">Filtro que indica el período de tiempo a consultar.</param>
     /// <returns>Una respuesta con la lista de puntos del gráfico de líneas del portfolio o el motivo del error.</returns>
-    public async Task<Response> GetLineChartAsync(int userId, PortfolioLineChartFilterDto filter)
+    public async Task<Response> GetLineChartAsync(int userId, int portfolioId, PortfolioLineChartFilterDto filter)
     {
         try
         {
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
             var fromDate = filter.Period switch
             {
                 "7d" => DateTime.UtcNow.AddDays(-7),
@@ -602,7 +852,7 @@ public class PortfolioService : IPortfolioService
                 _ => DateTime.UtcNow.AddDays(-7)
             };
 
-            var history = await _portfolioHistoryRepository.GetByUserAndDateAsync(userId, fromDate);
+            var history = await _portfolioHistoryRepository.GetByPortfolioAndDateAsync(portfolioId, fromDate);
 
             var response = history
                 .OrderBy(x => x.Date)
@@ -613,7 +863,7 @@ public class PortfolioService : IPortfolioService
                 })
                 .ToList();
 
-            _logger.LogInformation("Line chart portfolio obtenido: UserId={UserId}", userId);
+            _logger.LogInformation("Line chart portfolio obtenido: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(response);
         }
@@ -626,21 +876,25 @@ public class PortfolioService : IPortfolioService
     }
 
     /// <summary>
-    /// Exporta las posiciones abiertas del portfolio a un archivo Excel (.xlsx),
+    /// Exporta las posiciones abiertas de un portfolio a un archivo Excel (.xlsx),
     /// aplicando los mismos filtros y orden que la vista paginada pero sin límite de filas.
     /// </summary>
-    public async Task<byte[]> ExportHoldingsToExcelAsync(int userId, PortfolioOpenPositionsFilterDto filter)
+    public async Task<byte[]> ExportHoldingsToExcelAsync(int userId, int portfolioId, PortfolioOpenPositionsFilterDto filter)
     {
-        var portfolio = await _portfolioRepository.GetPagedByUserAsync(userId);
+        var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+        if (portfolio == null)
+            return [];
 
-        var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
+        var holdings = await _portfolioHoldingRepository.GetPagedByPortfolioAsync(portfolioId);
+
+        var symbols = holdings.Select(x => x.Asset.Symbol).Distinct().ToList();
         var marketPricesResponse = symbols.Count == 0
             ? new MarketPricesResponseDto()
             : await _marketPriceCacheService.GetPricesAsync(symbols);
         var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
         var positions = new List<PortfolioOpenPositionDto>();
-        foreach (var item in portfolio)
+        foreach (var item in holdings)
         {
             if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var currentPrice)) continue;
             var variationPercent = ((currentPrice - item.AvgPrice) / item.AvgPrice) * 100;
@@ -712,120 +966,5 @@ public class PortfolioService : IPortfolioService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
         return stream.ToArray();
-    }
-
-    /// <summary>
-    /// Reinicia la simulación del portfolio de un usuario, eliminando su historial, transacciones y posiciones, y volviendo a configurar el nombre del portfolio y el saldo inicial.
-    /// </summary>
-    /// <param name="userId">Identificador del usuario cuyo portfolio se desea reiniciar.</param>
-    /// <param name="dto">Nuevo nombre de portfolio y saldo inicial de la simulación.</param>
-    /// <returns>Una respuesta indicando si el portfolio se reinició correctamente o el motivo del error.</returns>
-    public async Task<Response> ResetSimulationAsync(int userId, SetupPortfolioDto dto)
-    {
-        try
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                _logger.LogWarning("Usuario no encontrado al reiniciar portfolio: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
-            }
-
-            await _portfolioHistoryRepository.DeleteByUserIdAsync(userId);
-            await _transactionRepository.DeleteByUserIdAsync(userId);
-            await _portfolioRepository.DeleteByUserIdAsync(userId);
-            await _userSettingRepository.ResetOperationsUsedTodayAsync(userId);
-
-            user.PortfolioName = dto.PortfolioName.Trim();
-            user.InitialBalance = dto.InitialBalance;
-            user.Balance = dto.InitialBalance;
-
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("Portfolio reiniciado correctamente: UserId={UserId}", userId);
-
-            return Response.Ok(null, "Portfolio reiniciado correctamente", PORTFOLIO_RESET_SUCCESS);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al reiniciar portfolio: UserId={UserId}", userId);
-            return Response.Fail("Error interno", INTERNAL_ERROR);
-        }
-    }
-
-    /// <summary>
-    /// Obtiene la configuración actual del portfolio de simulación de un usuario: nombre, saldo inicial y si ya completó el wizard de configuración inicial.
-    /// </summary>
-    /// <param name="userId">Identificador del usuario.</param>
-    /// <returns>Una respuesta con la configuración del portfolio o el motivo del error.</returns>
-    public async Task<Response> GetPortfolioSettingsAsync(int userId)
-    {
-        try
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                _logger.LogWarning("Usuario no encontrado al consultar configuración de portfolio: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
-            }
-
-            var response = new PortfolioSettingsDto
-            {
-                PortfolioName = user.PortfolioName,
-                InitialBalance = user.InitialBalance,
-                PortfolioConfigured = user.PortfolioConfigured
-            };
-
-            return Response.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al consultar configuración de portfolio: UserId={UserId}", userId);
-            return Response.Fail("Error interno", INTERNAL_ERROR);
-        }
-    }
-
-    /// <summary>
-    /// Configura por primera vez el portfolio de simulación de un usuario, asignando el nombre del portfolio y el saldo inicial elegidos.
-    /// </summary>
-    /// <param name="userId">Identificador del usuario.</param>
-    /// <param name="dto">Nombre de portfolio y saldo inicial elegidos por el usuario.</param>
-    /// <returns>Una respuesta indicando si la configuración se realizó correctamente o el motivo del error.</returns>
-    public async Task<Response> SetupPortfolioAsync(int userId, SetupPortfolioDto dto)
-    {
-        try
-        {
-            var user = await _userRepository.GetByIdAsync(userId);
-
-            if (user == null)
-            {
-                _logger.LogWarning("Usuario no encontrado al configurar portfolio: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado", USER_NOT_FOUND);
-            }
-
-            if (user.PortfolioConfigured)
-            {
-                _logger.LogWarning("El portfolio ya fue configurado: UserId={UserId}", userId);
-                return Response.Fail("El portfolio ya fue configurado. Para volver a definirlo, reiniciá la simulación.", PORTFOLIO_ALREADY_CONFIGURED);
-            }
-
-            user.PortfolioName = dto.PortfolioName.Trim();
-            user.InitialBalance = dto.InitialBalance;
-            user.Balance = dto.InitialBalance;
-            user.PortfolioConfigured = true;
-
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("Portfolio configurado correctamente: UserId={UserId}", userId);
-
-            return Response.Ok(null, "Portfolio configurado correctamente", PORTFOLIO_SETUP_SUCCESS);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error al configurar portfolio: UserId={UserId}", userId);
-            return Response.Fail("Error interno", INTERNAL_ERROR);
-        }
     }
 }

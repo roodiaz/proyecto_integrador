@@ -130,6 +130,9 @@ public class DailySnapshotWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IDailySnapshotWorker>();
 
+            // Migración a múltiples portfolios: completa "portfolioId" en históricos preexistentes.
+            await service.BackfillPortfolioHistoryPortfolioIdsAsync();
+
             // Si el mercado ya cerró, guarda los precios de hoy antes de generar snapshots.
             // Esto cubre el caso en que el worker arrancó o se reinició después de las 16:05 NY.
             if (nowNy >= nowNy.Date.AddHours(16).AddMinutes(5) &&

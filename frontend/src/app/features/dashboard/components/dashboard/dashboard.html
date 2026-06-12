@@ -2,9 +2,22 @@
 
   <!-- HEADER -->
   <div class="dashboard-header">
-    <div class="dashboard-title-block">
-      <h1 class="dashboard-title">{{ 'DASHBOARD.TITLE' | translate }}</h1>
-      <p class="dashboard-subtitle">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+    <div class="dashboard-header-top">
+      <div class="dashboard-title-block">
+        <h1 class="dashboard-title">{{ 'DASHBOARD.TITLE' | translate }}</h1>
+        <p class="dashboard-subtitle">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+      </div>
+
+      @if (portfolios.length > 1) {
+        <mat-form-field class="portfolio-select" appearance="outline">
+          <mat-label>{{ 'DASHBOARD.PORTFOLIO_SELECT_LABEL' | translate }}</mat-label>
+          <mat-select [value]="activeId" (selectionChange)="onPortfolioChange($event.value)">
+            @for (portfolio of portfolios; track portfolio.id) {
+              <mat-option [value]="portfolio.id">{{ portfolio.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
     </div>
 
     <div class="header-stats">

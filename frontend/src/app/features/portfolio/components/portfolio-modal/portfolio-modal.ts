@@ -7,6 +7,7 @@ import { PortfolioService } from '../../services/portfolio.service';
 import { BuyData, SellData, PortfolioModalData, PortfolioPosition, PortfolioModalResult } from '../../models/portfolio.modal.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { LanguageService } from '../../../../core/services/language.service';
+import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
@@ -56,7 +57,8 @@ export class PortfolioModal implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: PortfolioModalData,
     private portfolioService: PortfolioService,
     private snackBarService: SnackBarService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private activePortfolioService: ActivePortfolioService
   ) {
     this.mode = data.mode;
     this.symbol = data.symbol ?? '';
@@ -86,7 +88,7 @@ export class PortfolioModal implements OnInit {
    * existe la posición, notifica el error al usuario y cierra el modal.
    */
   loadPosition(): void {
-    this.portfolioService.getPosition(this.symbol).subscribe({
+    this.portfolioService.getPosition(this.activePortfolioService.activeId!, this.symbol).subscribe({
       next: response => {
         if (!response.success || !response.data) {
           this.snackBarService.fromResponse(response.success, response.code, response.message || this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));

@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Portfolio;
 using InvestLab.Models.DTOs.Transaction;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,7 @@ namespace InvestLab.Api.Controllers;
 
 /// <summary>
 /// Controlador encargado de la gestión
-/// de portfolio y operaciones.
+/// de portfolios y operaciones.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -27,20 +27,158 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
-    /// Realiza una compra de activo utilizando
-    /// el saldo disponible del usuario autenticado.
+    /// Obtiene los portfolios del usuario autenticado.
     /// </summary>
+    /// <returns>Lista de portfolios del usuario.</returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpGet]
+    public async Task<IActionResult> GetUserPortfolios()
+    {
+        _logger.LogInformation("Consultando portfolios: UserId={UserId}", UserId);
+
+        var result = await _portfolioService.GetUserPortfoliosAsync(UserId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al obtener portfolios: {Message}", result.Message);
+
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Crea un nuevo portfolio para el usuario autenticado.
+    /// </summary>
+    /// <param name="dto">Nombre de portfolio y saldo inicial elegidos por el usuario.</param>
+    /// <returns>El portfolio creado.</returns>
+    /// <response code="200">Portfolio creado correctamente</response>
+    /// <response code="400">Error en la creación o límite de portfolios alcanzado</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost]
+    public async Task<IActionResult> CreatePortfolio([FromBody] SetupPortfolioDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _logger.LogInformation("Creando portfolio: UserId={UserId}", UserId);
+
+        var result = await _portfolioService.CreatePortfolioAsync(UserId, dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al crear portfolio: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Marca un portfolio del usuario autenticado como el portfolio activo.
+    /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio a activar.</param>
+    /// <returns>Resultado de la operación.</returns>
+    /// <response code="200">Portfolio activado correctamente</response>
+    /// <response code="400">Portfolio no encontrado</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("{portfolioId:int}/activate")]
+    public async Task<IActionResult> SetActivePortfolio(int portfolioId)
+    {
+        _logger.LogInformation("Activando portfolio: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
+
+        var result = await _portfolioService.SetActivePortfolioAsync(UserId, portfolioId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al activar portfolio: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Elimina un portfolio del usuario autenticado, junto con sus posiciones,
+    /// transacciones e historial. No permite eliminar el último portfolio.
+    /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio a eliminar.</param>
+    /// <returns>Resultado de la operación.</returns>
+    /// <response code="200">Portfolio eliminado correctamente</response>
+    /// <response code="400">Portfolio no encontrado o es el último del usuario</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpDelete("{portfolioId:int}")]
+    public async Task<IActionResult> DeletePortfolio(int portfolioId)
+    {
+        _logger.LogInformation("Eliminando portfolio: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
+
+        var result = await _portfolioService.DeletePortfolioAsync(UserId, portfolioId);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al eliminar portfolio: {Message}", result.Message);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Reinicia un portfolio del usuario autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Elimina las tenencias actuales, el historial de operaciones simuladas
+    /// y el historial de evolución del portfolio.
+    /// Además, restablece el nombre y el saldo inicial del portfolio y reinicia el contador
+    /// diario de operaciones utilizadas.
+    ///
+    /// No elimina favoritos, alertas, notificaciones ni preferencias del usuario.
+    /// </remarks>
+    /// <param name="portfolioId">Identificador del portfolio a reiniciar.</param>
+    /// <param name="dto">Nuevo nombre de portfolio y saldo inicial elegidos por el usuario.</param>
+    /// <returns>Resultado de la operación de reinicio.</returns>
+    /// <response code="200">Portfolio reiniciado correctamente</response>
+    /// <response code="400">Error al reiniciar el portfolio</response>
+    /// <response code="401">Usuario no autenticado</response>
+    [HttpPost("{portfolioId:int}/reset")]
+    public async Task<IActionResult> ResetPortfolio(int portfolioId, [FromBody] SetupPortfolioDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        _logger.LogInformation("Reiniciando portfolio: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
+
+        var result = await _portfolioService.ResetPortfolioAsync(UserId, portfolioId, dto);
+
+        if (!result.Success)
+        {
+            _logger.LogWarning("Error al reiniciar portfolio: UserId={UserId}, PortfolioId={PortfolioId}, Message={Message}", UserId, portfolioId, result.Message);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Portfolio reiniciado correctamente: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Realiza una compra de activo utilizando
+    /// el saldo disponible de un portfolio del usuario autenticado.
+    /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio sobre el cual operar.</param>
     /// <param name="dto">Datos de compra del activo</param>
     /// <returns>Resultado de la operación</returns>
     /// <response code="200">Compra realizada correctamente</response>
     /// <response code="400">Error en la operación</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("buy")]
-    public async Task<IActionResult> Buy([FromBody] BuyAssetDto dto)
+    [HttpPost("{portfolioId:int}/buy")]
+    public async Task<IActionResult> Buy(int portfolioId, [FromBody] BuyAssetDto dto)
     {
-        _logger.LogInformation("Compra solicitada por usuario {UserId}", UserId);
+        _logger.LogInformation("Compra solicitada por usuario {UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _portfolioService.BuyAsync(UserId, dto);
+        var result = await _portfolioService.BuyAsync(UserId, portfolioId, dto);
 
         if (!result.Success)
         {
@@ -53,20 +191,21 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
-    /// Realiza una venta de activo del portfolio
+    /// Realiza una venta de activo de un portfolio
     /// del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio sobre el cual operar.</param>
     /// <param name="dto">Datos de venta del activo</param>
     /// <returns>Resultado de la operación</returns>
     /// <response code="200">Venta realizada correctamente</response>
     /// <response code="400">Error en la operación</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("sell")]
-    public async Task<IActionResult> Sell([FromBody] SellAssetDto dto)
+    [HttpPost("{portfolioId:int}/sell")]
+    public async Task<IActionResult> Sell(int portfolioId, [FromBody] SellAssetDto dto)
     {
-        _logger.LogInformation("Venta solicitada por usuario {UserId}", UserId);
+        _logger.LogInformation("Venta solicitada por usuario {UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _portfolioService.SellAsync(UserId, dto);
+        var result = await _portfolioService.SellAsync(UserId, portfolioId, dto);
 
         if (!result.Success)
         {
@@ -80,19 +219,20 @@ public class PortfolioController : BaseController
 
     /// <summary>
     /// Obtiene la posición actual de un activo
-    /// dentro del portfolio del usuario autenticado.
+    /// dentro de un portfolio del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="symbol">Nombre del activo</param>
     /// <returns>Información de la posición</returns>
     /// <response code="200">Posición obtenida correctamente</response>
     /// <response code="404">Posición no encontrada</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("{symbol}")]
-    public async Task<IActionResult> GetPosition(string symbol)
+    [HttpGet("{portfolioId:int}/position/{symbol}")]
+    public async Task<IActionResult> GetPosition(int portfolioId, string symbol)
     {
-        _logger.LogInformation("Consultando posición: UserId={UserId}, AssetId={AssetId}", UserId, symbol);
+        _logger.LogInformation("Consultando posición: UserId={UserId}, PortfolioId={PortfolioId}, AssetId={AssetId}", UserId, portfolioId, symbol);
 
-        var result = await _portfolioService.GetPositionForSellAsync(UserId, symbol);
+        var result = await _portfolioService.GetPositionForSellAsync(UserId, portfolioId, symbol);
 
         if (!result.Success)
         {
@@ -132,20 +272,21 @@ public class PortfolioController : BaseController
 
     /// <summary>
     /// Obtiene la información de las cards principales
-    /// del portfolio del usuario autenticado.
+    /// de un portfolio del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <returns>
     /// Saldo inicial, saldo actual,
     /// ganancia/pérdida y porcentaje de rendimiento.
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("balance-cards")]
-    public async Task<IActionResult> GetBalanceCards()
+    [HttpGet("{portfolioId:int}/balance-cards")]
+    public async Task<IActionResult> GetBalanceCards(int portfolioId)
     {
-        _logger.LogInformation("Consultando resumen portfolio: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando resumen portfolio: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _portfolioService.GetBalanceCardsAsync(UserId);
+        var result = await _portfolioService.GetBalanceCardsAsync(UserId, portfolioId);
 
         if (!result.Success)
         {
@@ -159,21 +300,22 @@ public class PortfolioController : BaseController
 
     /// <summary>
     /// Obtiene la información necesaria para
-    /// construir el gráfico de torta del portfolio
+    /// construir el gráfico de torta de un portfolio
     /// del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <returns>
     /// Lista de activos con porcentaje de participación
     /// y valor actual dentro del portfolio.
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("pie-chart")]
-    public async Task<IActionResult> GetPieChart()
+    [HttpGet("{portfolioId:int}/pie-chart")]
+    public async Task<IActionResult> GetPieChart(int portfolioId)
     {
-        _logger.LogInformation("Consultando pie chart portfolio: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando pie chart portfolio: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _portfolioService.GetPieChartAsync(UserId);
+        var result = await _portfolioService.GetPieChartAsync(UserId, portfolioId);
 
         if (!result.Success)
         {
@@ -186,9 +328,10 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
-    /// Obtiene las posiciones abiertas del portfolio
+    /// Obtiene las posiciones abiertas de un portfolio
     /// del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="filter">
     /// Parámetros de paginación,
     /// filtrado y ordenamiento.
@@ -198,12 +341,12 @@ public class PortfolioController : BaseController
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("open-positions")]
-    public async Task<IActionResult> GetOpenPositions([FromBody] PortfolioOpenPositionsFilterDto filter)
+    [HttpPost("{portfolioId:int}/open-positions")]
+    public async Task<IActionResult> GetOpenPositions(int portfolioId, [FromBody] PortfolioOpenPositionsFilterDto filter)
     {
-        _logger.LogInformation("Consultando open positions: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando open positions: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _portfolioService.GetOpenPositionsAsync(UserId, filter);
+        var result = await _portfolioService.GetOpenPositionsAsync(UserId, portfolioId, filter);
 
         if (!result.Success)
         {
@@ -216,9 +359,10 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
-    /// Obtiene la evolución histórica del portfolio
+    /// Obtiene la evolución histórica de un portfolio
     /// del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="filter">
     /// Período de tiempo del gráfico.
     /// </param>
@@ -228,12 +372,12 @@ public class PortfolioController : BaseController
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("line-chart")]
-    public async Task<IActionResult> GetLineChart([FromBody] PortfolioLineChartFilterDto filter)
+    [HttpPost("{portfolioId:int}/line-chart")]
+    public async Task<IActionResult> GetLineChart(int portfolioId, [FromBody] PortfolioLineChartFilterDto filter)
     {
-        _logger.LogInformation("Consultando line chart portfolio: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando line chart portfolio: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _portfolioService.GetLineChartAsync(UserId, filter);
+        var result = await _portfolioService.GetLineChartAsync(UserId, portfolioId, filter);
 
         if (!result.Success)
         {
@@ -247,29 +391,30 @@ public class PortfolioController : BaseController
 
     /// <summary>
     /// Obtiene el historial de operaciones
-    /// (compras y ventas) del usuario autenticado.
+    /// (compras y ventas) de un portfolio del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="filter">
     /// Parámetros de paginación,
     /// filtrado y ordenamiento.
     /// </param>
     /// <returns>
     /// Lista paginada de transacciones
-    /// realizadas por el usuario.
+    /// realizadas en el portfolio.
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="400">Error al obtener el historial de transacciones</response>
     /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("history")]
-    public async Task<IActionResult> GetTransactionHistory( [FromBody] TransactionFilterDto filter)
+    [HttpPost("{portfolioId:int}/history")]
+    public async Task<IActionResult> GetTransactionHistory(int portfolioId, [FromBody] TransactionFilterDto filter)
     {
-        _logger.LogInformation(  "Consultando historial de transacciones: UserId={UserId}",     UserId);
+        _logger.LogInformation("Consultando historial de transacciones: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _transactionService.GetTransactionHistoryAsync( UserId, filter);
+        var result = await _transactionService.GetTransactionHistoryAsync(UserId, portfolioId, filter);
 
         if (!result.Success)
         {
-            _logger.LogWarning(   "Error al obtener historial de transacciones: {Message}",      result.Message);
+            _logger.LogWarning("Error al obtener historial de transacciones: {Message}", result.Message);
             return BadRequest(result);
         }
 
@@ -277,113 +422,24 @@ public class PortfolioController : BaseController
     }
 
     /// <summary>
-    /// Obtiene la configuración actual del portfolio de simulación del usuario autenticado:
-    /// nombre, saldo inicial y si ya completó el wizard de configuración inicial.
+    /// Genera y descarga un archivo Excel con las tenencias actuales de un portfolio del usuario.
     /// </summary>
-    /// <returns>Configuración del portfolio del usuario.</returns>
-    /// <response code="200">Información obtenida correctamente</response>
-    /// <response code="401">Usuario no autenticado</response>
-    [HttpGet("settings")]
-    public async Task<IActionResult> GetSettings()
+    [HttpPost("{portfolioId:int}/export/holdings")]
+    public async Task<IActionResult> ExportHoldings(int portfolioId, [FromBody] PortfolioOpenPositionsFilterDto filter)
     {
-        _logger.LogInformation("Consultando configuración de portfolio: UserId={UserId}", UserId);
-
-        var result = await _portfolioService.GetPortfolioSettingsAsync(UserId);
-
-        if (!result.Success)
-        {
-            _logger.LogWarning("Error al obtener configuración de portfolio: {Message}", result.Message);
-            return BadRequest(result);
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Configura por primera vez el portfolio de simulación del usuario autenticado,
-    /// asignando el nombre del portfolio y el saldo inicial elegidos.
-    /// </summary>
-    /// <param name="dto">Nombre de portfolio y saldo inicial elegidos por el usuario.</param>
-    /// <returns>Resultado de la operación.</returns>
-    /// <response code="200">Portfolio configurado correctamente</response>
-    /// <response code="400">Error en la configuración o el portfolio ya fue configurado</response>
-    /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("setup")]
-    public async Task<IActionResult> Setup([FromBody] SetupPortfolioDto dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        _logger.LogInformation("Configurando portfolio: UserId={UserId}", UserId);
-
-        var result = await _portfolioService.SetupPortfolioAsync(UserId, dto);
-
-        if (!result.Success)
-        {
-            _logger.LogWarning("Error al configurar portfolio: {Message}", result.Message);
-            return BadRequest(result);
-        }
-
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Genera y descarga un archivo Excel con las tenencias actuales del usuario.
-    /// </summary>
-    [HttpPost("export/holdings")]
-    public async Task<IActionResult> ExportHoldings([FromBody] PortfolioOpenPositionsFilterDto filter)
-    {
-        _logger.LogInformation("Exportando tenencias a Excel: UserId={UserId}", UserId);
-        var bytes = await _portfolioService.ExportHoldingsToExcelAsync(UserId, filter);
+        _logger.LogInformation("Exportando tenencias a Excel: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
+        var bytes = await _portfolioService.ExportHoldingsToExcelAsync(UserId, portfolioId, filter);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "tenencias.xlsx");
     }
 
     /// <summary>
-    /// Genera y descarga un archivo Excel con el historial de operaciones del usuario.
+    /// Genera y descarga un archivo Excel con el historial de operaciones de un portfolio del usuario.
     /// </summary>
-    [HttpPost("export/transactions")]
-    public async Task<IActionResult> ExportTransactions([FromBody] TransactionFilterDto filter)
+    [HttpPost("{portfolioId:int}/export/transactions")]
+    public async Task<IActionResult> ExportTransactions(int portfolioId, [FromBody] TransactionFilterDto filter)
     {
-        _logger.LogInformation("Exportando operaciones a Excel: UserId={UserId}", UserId);
-        var bytes = await _transactionService.ExportTransactionsToExcelAsync(UserId, filter);
+        _logger.LogInformation("Exportando operaciones a Excel: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
+        var bytes = await _transactionService.ExportTransactionsToExcelAsync(UserId, portfolioId, filter);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "operaciones.xlsx");
-    }
-
-    /// <summary>
-    /// Reinicia la simulación del portfolio del usuario autenticado.
-    /// </summary>
-    /// <remarks>
-    /// Elimina las tenencias actuales, el historial de operaciones simuladas
-    /// y el historial de evolución del portfolio.
-    /// Además, restablece el balance virtual inicial y reinicia el contador
-    /// diario de operaciones utilizadas.
-    /// 
-    /// No elimina favoritos, alertas, notificaciones ni preferencias del usuario.
-    /// </remarks>
-    /// <returns>
-    /// Resultado de la operación de reinicio.
-    /// </returns>
-    /// <response code="200">Portfolio reiniciado correctamente</response>
-    /// <response code="400">Error al reiniciar el portfolio</response>
-    /// <response code="401">Usuario no autenticado</response>
-    [HttpPost("reset-simulation")]
-    public async Task<IActionResult> ResetSimulation([FromBody] SetupPortfolioDto dto)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        _logger.LogInformation("Reiniciando simulación de portfolio: UserId={UserId}", UserId);
-
-        var result = await _portfolioService.ResetSimulationAsync(UserId, dto);
-
-        if (!result.Success)
-        {
-            _logger.LogWarning("Error al reiniciar simulación de portfolio: UserId={UserId}, Message={Message}", UserId, result.Message);
-            return BadRequest(result);
-        }
-
-        _logger.LogInformation("Simulación de portfolio reiniciada correctamente: UserId={UserId}", UserId);
-
-        return Ok(result);
     }
 }

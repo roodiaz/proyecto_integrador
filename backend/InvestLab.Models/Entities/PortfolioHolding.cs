@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,10 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InvestLab.Data;
 
-[Table("portfolio")]
-[Index("UserId", Name = "idx_portfolio_user")]
-[Index("UserId", "AssetId", Name = "uq_user_asset", IsUnique = true)]
-public partial class Portfolio
+[Table("portfolio_holdings")]
+[Index("UserId", Name = "idx_portfolio_holdings_user")]
+[Index("PortfolioId", Name = "idx_portfolio_holdings_portfolio")]
+[Index("PortfolioId", "AssetId", Name = "uq_portfolio_asset", IsUnique = true)]
+public partial class PortfolioHolding
 {
     [Key]
     [Column("id")]
@@ -17,6 +18,9 @@ public partial class Portfolio
 
     [Column("user_id")]
     public int UserId { get; set; }
+
+    [Column("portfolio_id")]
+    public int PortfolioId { get; set; }
 
     [Column("asset_id")]
     public int AssetId { get; set; }
@@ -30,10 +34,14 @@ public partial class Portfolio
     public decimal AvgPrice { get; set; }
 
     [ForeignKey("AssetId")]
-    [InverseProperty("Portfolios")]
+    [InverseProperty("PortfolioHoldings")]
     public virtual Asset Asset { get; set; } = null!;
 
     [ForeignKey("UserId")]
-    [InverseProperty("Portfolios")]
+    [InverseProperty("PortfolioHoldings")]
     public virtual User User { get; set; } = null!;
+
+    [ForeignKey("PortfolioId")]
+    [InverseProperty("PortfolioHoldings")]
+    public virtual UserPortfolio Portfolio { get; set; } = null!;
 }

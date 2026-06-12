@@ -17,8 +17,7 @@ public class UserService : IUserService
     // repositorios
     private readonly IUserRepository _userRepository;
     private readonly IUserSettingRepository _userSettingRepository;
-    private readonly IPortfolioRepository _portfolioRepository;
-    private readonly ITransactionRepository _transactionRepository;
+    private readonly IUserPortfolioRepository _userPortfolioRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
     private readonly INotificationRepository _notificationRepository;
@@ -36,8 +35,7 @@ public class UserService : IUserService
     /// <param name="logger">Registrador de eventos del servicio.</param>
     /// <param name="unitOfWork">Unidad de trabajo para confirmar cambios en la base de datos.</param>
     /// <param name="userSettingRepository">Repositorio de configuraciones de usuario.</param>
-    /// <param name="portfolioRepository">Repositorio de carteras de inversión.</param>
-    /// <param name="transactionRepository">Repositorio de transacciones.</param>
+    /// <param name="userPortfolioRepository">Repositorio de portfolios de usuario.</param>
     /// <param name="portfolioHistoryRepository">Repositorio del historial de carteras.</param>
     /// <param name="notificationRepository">Repositorio de notificaciones.</param>
     /// <param name="alertRepository">Repositorio de alertas.</param>
@@ -45,7 +43,7 @@ public class UserService : IUserService
     /// <param name="refreshTokenRepository">Repositorio de tokens de actualización.</param>
     /// <param name="userTempCredentialRepository">Repositorio de credenciales temporales de usuario.</param>
     public UserService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher, ILogger<UserService> logger, IUnitOfWork unitOfWork,
-       IUserSettingRepository userSettingRepository, IPortfolioRepository portfolioRepository, ITransactionRepository transactionRepository,  IPortfolioHistoryRepository portfolioHistoryRepository, INotificationRepository notificationRepository, IAlertRepository alertRepository, IFavoriteRepository favoriteRepository, IRefreshTokenRepository refreshTokenRepository, IUserTempCredentialRepository userTempCredentialRepository, IVerificationCodeService verificationCodeService)
+       IUserSettingRepository userSettingRepository, IUserPortfolioRepository userPortfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, INotificationRepository notificationRepository, IAlertRepository alertRepository, IFavoriteRepository favoriteRepository, IRefreshTokenRepository refreshTokenRepository, IUserTempCredentialRepository userTempCredentialRepository, IVerificationCodeService verificationCodeService)
     {
         _passwordHasher = passwordHasher;
         _logger = logger;
@@ -53,8 +51,7 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
         _userRepository = userRepository;
         _userSettingRepository = userSettingRepository;
-        _portfolioRepository = portfolioRepository;
-        _transactionRepository = transactionRepository;
+        _userPortfolioRepository = userPortfolioRepository;
         _portfolioHistoryRepository = portfolioHistoryRepository;
         _notificationRepository = notificationRepository;
         _alertRepository = alertRepository;
@@ -390,13 +387,16 @@ public class UserService : IUserService
                     File.Delete(oldFilePath);
             }
 
-            await _portfolioHistoryRepository.DeleteByUserIdAsync(userId);
+            // Las transacciones, posiciones y portfolios del usuario se eliminan en cascada
+            // a nivel de base de datos al borrar el usuario; solo el historial en Mongo
+            // requiere eliminación explícita por portfolio.
+            var portfolios = await _userPortfolioRepository.GetByUserAsync(userId);
+            foreach (var portfolio in portfolios)
+                await _portfolioHistoryRepository.DeleteByPortfolioIdAsync(portfolio.Id);
 
             await _notificationRepository.DeleteByUserIdAsync(userId);
             await _alertRepository.DeleteByUserIdAsync(userId);
             await _favoriteRepository.DeleteByUserIdAsync(userId);
-            await _transactionRepository.DeleteByUserIdAsync(userId);
-            await _portfolioRepository.DeleteByUserIdAsync(userId);
             await _refreshTokenRepository.DeleteByUserIdAsync(userId);
             await _userTempCredentialRepository.DeleteByUserIdAsync(userId);
             await _userSettingRepository.DeleteByUserIdAsync(userId);

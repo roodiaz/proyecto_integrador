@@ -1,5 +1,6 @@
 using InvestLab.Business.Interfaces;
 using InvestLab.Business.Interfaces.Workers;
+using InvestLab.Data;
 using InvestLab.Data.Interfaces;
 using InvestLab.Data.Repositories;
 using InvestLab.Integrations.Interfaces;
@@ -12,8 +13,8 @@ namespace InvestLab.Business.Services.Workers;
 public class DailySnapshotService : IDailySnapshotWorker
 {
     // Repositorios
-    private readonly IUserRepository _userRepository;
-    private readonly IPortfolioRepository _portfolioRepository;
+    private readonly IUserPortfolioRepository _userPortfolioRepository;
+    private readonly IPortfolioHoldingRepository _portfolioHoldingRepository;
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
     private readonly IPriceHistoryRepository _priceHistoryRepository;
     private readonly IAssetRepository _assetRepository;
@@ -31,8 +32,8 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// inyectando los repositorios y servicios necesarios para su funcionamiento.
     /// </summary>
     public DailySnapshotService(
-        IUserRepository userRepository,
-        IPortfolioRepository portfolioRepository,
+        IUserPortfolioRepository userPortfolioRepository,
+        IPortfolioHoldingRepository portfolioHoldingRepository,
         IPortfolioHistoryRepository portfolioHistoryRepository,
         IMarketProviderResolver providerResolver,
         ILogger<DailySnapshotService> logger,
@@ -43,8 +44,8 @@ public class DailySnapshotService : IDailySnapshotWorker
         IUnitOfWork unitOfWork,
         ITransactionRepository transactionRepository)
     {
-        _userRepository = userRepository;
-        _portfolioRepository = portfolioRepository;
+        _userPortfolioRepository = userPortfolioRepository;
+        _portfolioHoldingRepository = portfolioHoldingRepository;
         _portfolioHistoryRepository = portfolioHistoryRepository;
         _providerResolver = providerResolver;
         _logger = logger;
@@ -70,18 +71,18 @@ public class DailySnapshotService : IDailySnapshotWorker
     /// <param name="marketCloseUtc">Fecha/hora UTC del cierre del mercado (16:05 NY convertido a UTC).</param>
     public async Task GenerateDailyPortfolioSnapshotsAsync(DateTime marketCloseUtc)
     {
-        var users = await _userRepository.GetAllAsync();
+        var portfolios = await _userPortfolioRepository.GetAllAsync();
         var snapshotDate = marketCloseUtc.Date;
 
-        foreach (var user in users)
+        foreach (var portfolio in portfolios)
         {
             try
             {
-                // Evita generar más de un snapshot por día para el mismo usuario
-                var exists = await _portfolioHistoryRepository.ExistsByDateAsync(user.Id, snapshotDate);
+                // Evita generar más de un snapshot por día para el mismo portfolio
+                var exists = await _portfolioHistoryRepository.ExistsByDateAsync(portfolio.Id, snapshotDate);
                 if (exists)
                 {
-                    _logger.LogInformation("Snapshot ya existe para UserId={UserId} Fecha={Date}", user.Id, snapshotDate);
+                    _logger.LogInformation("Snapshot ya existe para PortfolioId={PortfolioId} Fecha={Date}", portfolio.Id, snapshotDate);
                     continue;
                 }
 
@@ -89,10 +90,10 @@ public class DailySnapshotService : IDailySnapshotWorker
                 // En una ejecución normal (16:05 NY) esta lista estará vacía.
                 // En un catch-up (ej: worker reiniciado a las 20:00) puede contener operaciones post-cierre
                 // que deben excluirse del snapshot del día.
-                var postCloseTransactions = await _transactionRepository.GetByUserAfterDateAsync(user.Id, marketCloseUtc);
+                var postCloseTransactions = await _transactionRepository.GetByPortfolioAfterDateAsync(portfolio.Id, marketCloseUtc);
 
                 // Reconstruye el balance al cierre revirtiendo las operaciones post-cierre
-                var balanceAtClose = user.Balance;
+                var balanceAtClose = portfolio.CurrentBalance;
                 foreach (var tx in postCloseTransactions)
                 {
                     if (tx.Type == TransactionType.Buy)  balanceAtClose += tx.Total;
@@ -100,8 +101,8 @@ public class DailySnapshotService : IDailySnapshotWorker
                 }
 
                 // Obtiene las posiciones actuales y calcula el ajuste de cantidad por activo
-                var portfolio = await _portfolioRepository.GetByUserAsync(user.Id);
-                var symbols = portfolio.Select(x => x.Asset.Symbol).Distinct().ToList();
+                var holdings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolio.Id);
+                var symbols = holdings.Select(x => x.Asset.Symbol).Distinct().ToList();
                 var pricesBySymbol = await _marketPriceService.GetHistoricalPricesAsync(symbols);
 
                 // Calcula delta de cantidad por activo derivado de operaciones post-cierre
@@ -113,7 +114,7 @@ public class DailySnapshotService : IDailySnapshotWorker
                     );
 
                 decimal holdingsValue = 0;
-                foreach (var item in portfolio)
+                foreach (var item in holdings)
                 {
                     if (!pricesBySymbol.TryGetValue(item.Asset.Symbol, out var price))
                     {
@@ -132,7 +133,8 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                 var history = new PortfolioHistory
                 {
-                    UserId            = user.Id,
+                    UserId            = portfolio.UserId,
+                    PortfolioId       = portfolio.Id,
                     Date              = snapshotDate,
                     AvailableBalance  = Math.Round(balanceAtClose, 2),
                     InvestedValue     = Math.Round(holdingsValue, 2),
@@ -141,11 +143,11 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                 await _portfolioHistoryRepository.InsertAsync(history);
 
-                _logger.LogInformation("Snapshot portfolio generado: UserId={UserId} Fecha={Date} Valor={TotalValue}", user.Id, snapshotDate, totalValue);
+                _logger.LogInformation("Snapshot portfolio generado: PortfolioId={PortfolioId} Fecha={Date} Valor={TotalValue}", portfolio.Id, snapshotDate, totalValue);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error generando snapshot portfolio: UserId={UserId}", user.Id);
+                _logger.LogError(ex, "Error generando snapshot portfolio: PortfolioId={PortfolioId}", portfolio.Id);
             }
         }
     }
@@ -169,32 +171,32 @@ public class DailySnapshotService : IDailySnapshotWorker
     public async Task RunHistoricalCatchUpAsync(DateTime lastCloseUtc)
     {
         var lastCloseDate = lastCloseUtc.Date;
-        var users = await _userRepository.GetAllAsync();
+        var portfolios = await _userPortfolioRepository.GetAllAsync();
 
-        foreach (var user in users)
+        foreach (var portfolio in portfolios)
         {
             try
             {
-                var latestSnapshot = await _portfolioHistoryRepository.GetLatestAsync(user.Id);
+                var latestSnapshot = await _portfolioHistoryRepository.GetLatestAsync(portfolio.Id);
 
                 DateTime startDate;
                 if (latestSnapshot == null)
-                    startDate = user.CreatedAt.Date;
+                    startDate = portfolio.CreatedAt.Date;
                 else
                     startDate = latestSnapshot.Date.Date.AddDays(1);
 
                 var missingDays = GetBusinessDaysBetween(startDate, lastCloseDate);
                 if (missingDays.Count == 0)
                 {
-                    _logger.LogInformation("Sin días bursátiles faltantes para UserId={UserId}", user.Id);
+                    _logger.LogInformation("Sin días bursátiles faltantes para PortfolioId={PortfolioId}", portfolio.Id);
                     continue;
                 }
 
-                _logger.LogInformation("Recuperando {Count} días para UserId={UserId} ({From} → {To})",
-                    missingDays.Count, user.Id, missingDays[0], missingDays[^1]);
+                _logger.LogInformation("Recuperando {Count} días para PortfolioId={PortfolioId} ({From} → {To})",
+                    missingDays.Count, portfolio.Id, missingDays[0], missingDays[^1]);
 
-                var currentPortfolio = await _portfolioRepository.GetByUserAsync(user.Id);
-                var allTransactions  = await _transactionRepository.GetAllByUserAsync(user.Id);
+                var currentHoldings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolio.Id);
+                var allTransactions  = await _transactionRepository.GetAllByPortfolioAsync(portfolio.Id);
 
                 foreach (var date in missingDays)
                 {
@@ -203,7 +205,7 @@ public class DailySnapshotService : IDailySnapshotWorker
                     var txAfterD = allTransactions.Where(tx => tx.CreatedAt >= cutoffUtc).ToList();
 
                     // Reconstruir balance al fin del día D
-                    var balanceAtD = user.Balance;
+                    var balanceAtD = portfolio.CurrentBalance;
                     foreach (var tx in txAfterD)
                     {
                         if (tx.Type == TransactionType.Buy)  balanceAtD += tx.Total;
@@ -212,7 +214,7 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                     // Reconstruir tenencias al fin del día D
                     // Clave: AssetId, Valor: (Symbol, Quantity)
-                    var holdingsAtD = currentPortfolio
+                    var holdingsAtD = currentHoldings
                         .ToDictionary(p => p.AssetId, p => (p.Asset.Symbol, p.Quantity));
 
                     foreach (var tx in txAfterD)
@@ -246,22 +248,44 @@ public class DailySnapshotService : IDailySnapshotWorker
 
                     await _portfolioHistoryRepository.InsertAsync(new PortfolioHistory
                     {
-                        UserId           = user.Id,
+                        UserId           = portfolio.UserId,
+                        PortfolioId      = portfolio.Id,
                         Date             = date,
                         AvailableBalance = Math.Round(balanceAtD, 2),
                         InvestedValue    = Math.Round(holdingsValue, 2),
                         TotalValue       = Math.Round(totalValue, 2)
                     });
 
-                    _logger.LogInformation("Snapshot histórico generado: UserId={UserId} Fecha={Date} Valor={Total}",
-                        user.Id, date, totalValue);
+                    _logger.LogInformation("Snapshot histórico generado: PortfolioId={PortfolioId} Fecha={Date} Valor={Total}",
+                        portfolio.Id, date, totalValue);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en catch-up histórico para UserId={UserId}", user.Id);
+                _logger.LogError(ex, "Error en catch-up histórico para PortfolioId={PortfolioId}", portfolio.Id);
             }
         }
+    }
+
+    /// <summary>
+    /// Completa el campo "portfolioId" en documentos históricos preexistentes que aún no lo
+    /// poseen, asignando el portfolio activo (o el primero) de cada usuario.
+    /// Operación idempotente: solo afecta documentos sin "portfolioId".
+    /// </summary>
+    public async Task BackfillPortfolioHistoryPortfolioIdsAsync()
+    {
+        var portfolios = await _userPortfolioRepository.GetAllAsync();
+
+        var portfolioIdByUserId = portfolios
+            .GroupBy(p => p.UserId)
+            .ToDictionary(
+                g => g.Key,
+                g => (g.FirstOrDefault(p => p.IsActive) ?? g.First()).Id);
+
+        if (portfolioIdByUserId.Count == 0)
+            return;
+
+        await _portfolioHistoryRepository.BackfillPortfolioIdsAsync(portfolioIdByUserId);
     }
 
     /// <summary>

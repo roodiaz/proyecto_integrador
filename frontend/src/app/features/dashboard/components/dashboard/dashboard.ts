@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import { DashboardService } from '../../services/dashboard.service';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import {
   DashboardTopCards,
   DashboardPerformanceChart,
@@ -13,9 +13,11 @@ import {
   DashboardPortfolioDistribution,
   DashboardPortfolioComposition
 } from '../../models/dashboard.models';
+import { UserPortfolio } from '../../../portfolio/models/portfolio.model';
 import Chart from 'chart.js/auto';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { LanguageService } from '../../../../core/services/language.service';
+import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -58,8 +60,13 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   loadingPortfolioDistribution = false;
   loadingPortfolioComposition = false;
 
+  private readonly subscriptions = new Subscription();
+  activeId: number | null = null;
+  portfolios: UserPortfolio[] = [];
+
   constructor(
     private dashboardService: DashboardService,
+    private activePortfolioService: ActivePortfolioService,
     private themeService: ThemeService,
     private languageService: LanguageService
   ) {
@@ -79,11 +86,32 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    this.loadTopCards();
-    this.loadPerformanceChart();
-    this.loadLatestTransactions();
-    this.loadPortfolioDistribution();
-    this.loadPortfolioComposition(this.selectedCompositionDate);
+    this.subscriptions.add(
+      this.activePortfolioService.portfolios$.subscribe(portfolios => {
+        this.portfolios = portfolios;
+      })
+    );
+
+    this.subscriptions.add(
+      this.activePortfolioService.activeId$.subscribe(activeId => {
+        const changed = this.activeId !== null && this.activeId !== activeId;
+        this.activeId = activeId;
+        if (changed) this.loadAll();
+      })
+    );
+
+    if (this.activeId !== null) {
+      this.loadAll();
+    } else {
+      this.activePortfolioService.loadPortfolios().subscribe(() => {
+        if (this.activeId !== null) this.loadAll();
+      });
+    }
+  }
+
+  onPortfolioChange(portfolioId: number): void {
+    if (portfolioId === this.activeId) return;
+    this.activePortfolioService.setActive(portfolioId);
   }
 
   ngAfterViewInit(): void {
@@ -94,10 +122,20 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroyChart();
     this.destroyCompositionChart();
+    this.subscriptions.unsubscribe();
 
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+  }
+
+  /** Vuelve a cargar toda la información del dashboard para el portfolio activo. */
+  private loadAll(): void {
+    this.loadTopCards();
+    this.loadPerformanceChart();
+    this.loadLatestTransactions();
+    this.loadPortfolioDistribution();
+    this.loadPortfolioComposition(this.selectedCompositionDate);
   }
 
   @HostListener('window:resize')
@@ -141,7 +179,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   loadTopCards(): void {
     this.loadingTopCards = true;
 
-    this.dashboardService.getTopCards()
+    this.dashboardService.getTopCards(this.activeId!)
       .pipe(finalize(() => this.loadingTopCards = false))
       .subscribe({
         next: response => {
@@ -158,7 +196,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.loadingPerformanceChart = true;
     this.destroyChart();
 
-    this.dashboardService.getPerformanceChart(this.selectedPeriod).subscribe({
+    this.dashboardService.getPerformanceChart(this.activeId!, this.selectedPeriod).subscribe({
       next: response => {
         this.loadingPerformanceChart = false;
 
@@ -182,7 +220,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   loadLatestTransactions(): void {
     this.loadingLatestTransactions = true;
 
-    this.dashboardService.getLatestTransactions()
+    this.dashboardService.getLatestTransactions(this.activeId!)
       .pipe(finalize(() => this.loadingLatestTransactions = false))
       .subscribe({
         next: response => {
@@ -196,7 +234,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   loadPortfolioDistribution(): void {
     this.loadingPortfolioDistribution = true;
 
-    this.dashboardService.getPortfolioDistribution()
+    this.dashboardService.getPortfolioDistribution(this.activeId!)
       .pipe(finalize(() => this.loadingPortfolioDistribution = false))
       .subscribe({
         next: response => {
@@ -211,7 +249,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.loadingPortfolioComposition = true;
     this.destroyCompositionChart();
 
-    this.dashboardService.getPortfolioComposition(date)
+    this.dashboardService.getPortfolioComposition(this.activeId!, date)
       .pipe(finalize(() => this.loadingPortfolioComposition = false))
       .subscribe({
         next: response => {

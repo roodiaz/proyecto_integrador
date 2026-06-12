@@ -19,25 +19,25 @@ export class DashboardService {
 
     constructor(private http: HttpClient) { }
 
-    getTopCards():
+    getTopCards(portfolioId: number):
         Observable<ApiResponse<DashboardTopCards>> {
         return this.http.get<ApiResponse<DashboardTopCards>>(
-            `${this.apiUrl}/top-cards`
+            `${this.apiUrl}/top-cards?portfolioId=${portfolioId}`
         );
     }
 
-    getPerformanceChart(period: string):
+    getPerformanceChart(portfolioId: number, period: string):
         Observable<ApiResponse<DashboardPerformanceChart>> {
         const filter: DashboardPerformanceChartFilter = { period };
         return this.http.post<ApiResponse<DashboardPerformanceChart>>(
-            `${this.apiUrl}/performance-chart`, filter
+            `${this.apiUrl}/performance-chart?portfolioId=${portfolioId}`, filter
         );
     }
 
-    getLatestTransactions():
+    getLatestTransactions(portfolioId: number):
         Observable<ApiResponse<DashboardLatestTransaction[]>> {
         return this.http.get<ApiResponse<DashboardLatestTransaction[]>>(
-            `${this.apiUrl}/latest-transactions`
+            `${this.apiUrl}/latest-transactions?portfolioId=${portfolioId}`
         );
     }
 
@@ -48,17 +48,17 @@ export class DashboardService {
         );
     }
 
-    getPortfolioDistribution():
+    getPortfolioDistribution(portfolioId: number):
         Observable<ApiResponse<DashboardPortfolioDistribution[]>> {
         return this.http.get<ApiResponse<DashboardPortfolioDistribution[]>>(
-            `${this.apiUrl}/portfolio-distribution`
+            `${this.apiUrl}/portfolio-distribution?portfolioId=${portfolioId}`
         );
     }
 
-    getPortfolioComposition(date: string):
+    getPortfolioComposition(portfolioId: number, date: string):
         Observable<ApiResponse<DashboardPortfolioComposition>> {
         return this.http.get<ApiResponse<DashboardPortfolioComposition>>(
-            `${this.apiUrl}/portfolio-composition?date=${date}`
+            `${this.apiUrl}/portfolio-composition?portfolioId=${portfolioId}&date=${date}`
         );
     }
 }

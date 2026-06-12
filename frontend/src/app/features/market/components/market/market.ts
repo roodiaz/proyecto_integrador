@@ -15,6 +15,7 @@ import { LanguageService } from '../../../../core/services/language.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PortfolioModal } from '../../../portfolio/components/portfolio-modal/portfolio-modal';
 import { PortfolioService } from '../../../portfolio/services/portfolio.service';
+import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
 import { BuyData, SellData, PortfolioModalResult } from '../../../portfolio/models/portfolio.modal.model';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -113,6 +114,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private marketService: MarketService,
     private watchlistService: WatchlistService,
     private portfolioService: PortfolioService,
+    private activePortfolioService: ActivePortfolioService,
     private snackBarService: SnackBarService,
     private languageService: LanguageService,
     private dialog: MatDialog,
@@ -373,7 +375,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
 
     this.loadingPositionStatus = true;
 
-    this.portfolioService.getPosition(symbol).subscribe({
+    this.portfolioService.getPosition(this.activePortfolioService.activeId!, symbol).subscribe({
       next: response => {
         this.loadingPositionStatus = false;
         this.hasPositionForSelectedAsset = !!(response.success && response.data && response.data.quantity > 0);
@@ -599,7 +601,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @param data Datos de la compra confirmados en el modal (símbolo y cantidad).
    */
   onBuyComplete(data: BuyData): void {
-    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+    this.portfolioService.buyAsset(this.activePortfolioService.activeId!, data.ticker, data.quantity).subscribe({
       next: response => {
         this.snackBarService.fromResponse(
           response.success,
@@ -620,7 +622,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @param data Datos de la venta confirmados en el modal (símbolo y cantidad).
    */
   sellPosition(data: SellData): void {
-    this.portfolioService.sell(data).subscribe({
+    this.portfolioService.sell(this.activePortfolioService.activeId!, data).subscribe({
       next: response => {
         this.snackBarService.fromResponse(
           response.success,

@@ -22,8 +22,7 @@ public class UserServiceTests
     private readonly Mock<ILogger<UserService>> _logger = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IUserSettingRepository> _userSettingRepository = new();
-    private readonly Mock<IPortfolioRepository> _portfolioRepository = new();
-    private readonly Mock<ITransactionRepository> _transactionRepository = new();
+    private readonly Mock<IUserPortfolioRepository> _userPortfolioRepository = new();
     private readonly Mock<IPortfolioHistoryRepository> _portfolioHistoryRepository = new();
     private readonly Mock<INotificationRepository> _notificationRepository = new();
     private readonly Mock<IAlertRepository> _alertRepository = new();
@@ -33,7 +32,7 @@ public class UserServiceTests
     private readonly Mock<IVerificationCodeService> _verificationCodeService = new();
 
     private UserService CreateService() => new(_userRepository.Object, _passwordHasher.Object, _logger.Object, _unitOfWork.Object, _userSettingRepository.Object,
-        _portfolioRepository.Object, _transactionRepository.Object, _portfolioHistoryRepository.Object, _notificationRepository.Object, _alertRepository.Object,
+        _userPortfolioRepository.Object, _portfolioHistoryRepository.Object, _notificationRepository.Object, _alertRepository.Object,
         _favoriteRepository.Object, _refreshTokenRepository.Object, _userTempCredentialRepository.Object, _verificationCodeService.Object);
 
     private static UserSetting Settings(int userId = 1) => new() { Id = 1, UserId = userId, Currency = "USD", EmailNotifications = true };
@@ -269,17 +268,22 @@ public class UserServiceTests
     {
         var user = UserEntity();
         _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        var portfolios = new List<UserPortfolio>
+        {
+            new() { Id = 10, UserId = 1, Name = "Mi Portfolio", InitialBalance = 1000m, CurrentBalance = 1000m, IsActive = true },
+            new() { Id = 11, UserId = 1, Name = "Otro Portfolio", InitialBalance = 2000m, CurrentBalance = 2000m, IsActive = false }
+        };
+        _userPortfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolios);
 
         var result = await CreateService().DeleteAccountAsync(1);
 
         Assert.True(result.Success);
         Assert.Equal("Cuenta eliminada correctamente", result.Message);
-        _portfolioHistoryRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
+        _portfolioHistoryRepository.Verify(r => r.DeleteByPortfolioIdAsync(10), Times.Once);
+        _portfolioHistoryRepository.Verify(r => r.DeleteByPortfolioIdAsync(11), Times.Once);
         _notificationRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _alertRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _favoriteRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
-        _transactionRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
-        _portfolioRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _refreshTokenRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _userTempCredentialRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
         _userSettingRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
@@ -292,7 +296,7 @@ public class UserServiceTests
     public async Task DeleteAccountAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
         _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(UserEntity());
-        _portfolioHistoryRepository.Setup(r => r.DeleteByUserIdAsync(It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
+        _userPortfolioRepository.Setup(r => r.GetByUserAsync(It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
 
         var result = await CreateService().DeleteAccountAsync(1);
 

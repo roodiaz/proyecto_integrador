@@ -17,15 +17,15 @@ using static InvestLab.Models.Enums;
 namespace InvestLab.Tests.Business.Services.Api;
 
 /// <summary>
-/// Pruebas unitarias de <see cref="PortfolioService"/>, cubriendo los métodos invocados desde <c>PortfolioController</c>
-/// para la compra y venta de activos, la consulta de posiciones y precios, los resúmenes, gráficos del portfolio y el reinicio de la simulación.
+/// Pruebas unitarias de <see cref="PortfolioService"/>, cubriendo la gestión de portfolios (crear, activar, eliminar,
+/// reiniciar), la compra y venta de activos, la consulta de posiciones y precios, los resúmenes y gráficos del portfolio.
 /// </summary>
 public class PortfolioServiceTests
 {
-    private readonly Mock<IUserRepository> _userRepository = new();
     private readonly Mock<IUserSettingRepository> _userSettingRepository = new();
     private readonly Mock<IAssetRepository> _assetRepository = new();
-    private readonly Mock<IPortfolioRepository> _portfolioRepository = new();
+    private readonly Mock<IUserPortfolioRepository> _userPortfolioRepository = new();
+    private readonly Mock<IPortfolioHoldingRepository> _portfolioHoldingRepository = new();
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<IExternalProvider> _externalProvider = new();
     private readonly Mock<IMarketProviderResolver> _providerResolver = new();
@@ -41,16 +41,25 @@ public class PortfolioServiceTests
     private PortfolioService CreateService()
     {
         _providerResolver.Setup(x => x.GetProvider()).Returns(_externalProvider.Object);
-        return new(_userRepository.Object, _userSettingRepository.Object, _assetRepository.Object, _portfolioRepository.Object, _transactionRepository.Object, _providerResolver.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object, _marketPriceCacheService.Object);
+        return new(_userSettingRepository.Object, _assetRepository.Object, _userPortfolioRepository.Object, _portfolioHoldingRepository.Object, _transactionRepository.Object, _providerResolver.Object, _unitOfWork.Object, _portfolioHistoryRepository.Object, Options.Create(_limits), _logger.Object, _marketPriceService.Object, _marketMetadataRepository.Object, _assetService.Object, _marketPriceCacheService.Object);
     }
 
-    private static User UserEntity(int id = 1, decimal balance = 1000, decimal initialBalance = 10000) => new() { Id = id, Username = "user", Email = "user@test.com", PasswordHash = "hash", Phone = "123", Balance = balance, InitialBalance = initialBalance, PortfolioName = "Mi Portfolio", PortfolioConfigured = true };
+    private static UserPortfolio PortfolioEntity(int id = 1, int userId = 1, decimal currentBalance = 1000, decimal initialBalance = 10000, string name = "Mi Portfolio", bool isActive = true) => new()
+    {
+        Id = id,
+        UserId = userId,
+        Name = name,
+        InitialBalance = initialBalance,
+        CurrentBalance = currentBalance,
+        IsActive = isActive,
+        CreatedAt = DateTime.UtcNow
+    };
 
     private static UserSetting Settings(int operationsUsedToday = 0) => new() { Id = 1, UserId = 1, OperationsUsedToday = operationsUsedToday };
 
     private static Asset AssetEntity(int id = 1, string symbol = "AAPL") => new() { Id = id, Symbol = symbol };
 
-    private static Portfolio PortfolioEntity(Asset asset, decimal quantity = 10, decimal avgPrice = 100) => new() { Id = 1, UserId = 1, AssetId = asset.Id, Asset = asset, Quantity = quantity, AvgPrice = avgPrice };
+    private static PortfolioHolding HoldingEntity(Asset asset, int portfolioId = 1, decimal quantity = 10, decimal avgPrice = 100) => new() { Id = 1, UserId = 1, PortfolioId = portfolioId, AssetId = asset.Id, Asset = asset, Quantity = quantity, AvgPrice = avgPrice };
 
     private static MarketPriceDto Price(string symbol, decimal price = 150) => new() { Symbol = symbol, Price = price };
 
@@ -60,28 +69,174 @@ public class PortfolioServiceTests
 
     private static SetupPortfolioDto SetupDto(string portfolioName = "Mi Portfolio", decimal initialBalance = 15000) => new() { PortfolioName = portfolioName, InitialBalance = initialBalance };
 
-    // ---------- BuyAsync ----------
+    // ---------- GetUserPortfoliosAsync ----------
 
-    /// <summary>Verifica que, si el usuario no existe, se devuelva una respuesta de error sin realizar la compra.</summary>
+    /// <summary>Verifica que se devuelva la lista de portfolios del usuario con sus datos básicos.</summary>
     [Fact]
-    public async Task BuyAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task GetUserPortfoliosAsync_WhenDataIsValid_ShouldReturnPortfolioList()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((User?)null);
+        var portfolios = new List<UserPortfolio> { PortfolioEntity(id: 1, name: "Mi Portfolio"), PortfolioEntity(id: 2, name: "Otro Portfolio", isActive: false) };
+        _userPortfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolios);
 
-        var result = await CreateService().BuyAsync(1, BuyDto());
+        var result = await CreateService().GetUserPortfoliosAsync(1);
+
+        Assert.True(result.Success);
+        var data = Assert.IsType<List<UserPortfolioDto>>(result.Data);
+        Assert.Equal(2, data.Count);
+        Assert.Equal("Mi Portfolio", data[0].Name);
+        Assert.True(data[0].IsActive);
+        Assert.False(data[1].IsActive);
+    }
+
+    // ---------- CreatePortfolioAsync ----------
+
+    /// <summary>Verifica que, si el usuario alcanzó el máximo de portfolios permitidos, se devuelva una respuesta de error sin crear el portfolio.</summary>
+    [Fact]
+    public async Task CreatePortfolioAsync_WhenMaxPortfoliosReached_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.CountByUserAsync(1)).ReturnsAsync(3);
+
+        var result = await CreateService().CreatePortfolioAsync(1, SetupDto());
 
         Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
+        Assert.Equal("Alcanzaste el máximo de portfolios permitidos", result.Message);
+        _userPortfolioRepository.Verify(r => r.InsertAsync(It.IsAny<UserPortfolio>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, con datos válidos, se cree el portfolio y se marque como activo si es el primero del usuario.</summary>
+    [Fact]
+    public async Task CreatePortfolioAsync_WhenDataIsValidAndIsFirstPortfolio_ShouldCreateActivePortfolio()
+    {
+        _userPortfolioRepository.Setup(r => r.CountByUserAsync(1)).ReturnsAsync(0);
+
+        var dto = SetupDto(portfolioName: "Mi Portfolio", initialBalance: 15000);
+        var result = await CreateService().CreatePortfolioAsync(1, dto);
+
+        Assert.True(result.Success);
+        Assert.Equal("Portfolio creado correctamente", result.Message);
+        var data = Assert.IsType<UserPortfolioDto>(result.Data);
+        Assert.Equal("Mi Portfolio", data.Name);
+        Assert.Equal(15000, data.InitialBalance);
+        Assert.Equal(15000, data.CurrentBalance);
+        Assert.True(data.IsActive);
+        _userPortfolioRepository.Verify(r => r.InsertAsync(It.Is<UserPortfolio>(p => p.Name == "Mi Portfolio" && p.IsActive)), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    /// <summary>Verifica que, si el usuario ya tiene portfolios, el nuevo portfolio se cree inactivo.</summary>
+    [Fact]
+    public async Task CreatePortfolioAsync_WhenUserAlreadyHasPortfolios_ShouldCreateInactivePortfolio()
+    {
+        _userPortfolioRepository.Setup(r => r.CountByUserAsync(1)).ReturnsAsync(1);
+
+        var result = await CreateService().CreatePortfolioAsync(1, SetupDto());
+
+        Assert.True(result.Success);
+        _userPortfolioRepository.Verify(r => r.InsertAsync(It.Is<UserPortfolio>(p => !p.IsActive)), Times.Once);
+    }
+
+    // ---------- SetActivePortfolioAsync ----------
+
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task SetActivePortfolioAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync((UserPortfolio?)null);
+
+        var result = await CreateService().SetActivePortfolioAsync(1, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("Portfolio no encontrado", result.Message);
+        _userPortfolioRepository.Verify(r => r.SetActiveAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, con datos válidos, se marque el portfolio indicado como activo.</summary>
+    [Fact]
+    public async Task SetActivePortfolioAsync_WhenDataIsValid_ShouldActivatePortfolio()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(2, 1)).ReturnsAsync(PortfolioEntity(id: 2, isActive: false));
+
+        var result = await CreateService().SetActivePortfolioAsync(1, 2);
+
+        Assert.True(result.Success);
+        Assert.Equal("Portfolio activado correctamente", result.Message);
+        _userPortfolioRepository.Verify(r => r.SetActiveAsync(1, 2), Times.Once);
+    }
+
+    // ---------- DeletePortfolioAsync ----------
+
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task DeletePortfolioAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync((UserPortfolio?)null);
+
+        var result = await CreateService().DeletePortfolioAsync(1, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("Portfolio no encontrado", result.Message);
+        _userPortfolioRepository.Verify(r => r.DeleteAsync(It.IsAny<UserPortfolio>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, si el portfolio es el último del usuario, no se permita eliminarlo.</summary>
+    [Fact]
+    public async Task DeletePortfolioAsync_WhenIsLastPortfolio_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _userPortfolioRepository.Setup(r => r.CountByUserAsync(1)).ReturnsAsync(1);
+
+        var result = await CreateService().DeletePortfolioAsync(1, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("No podés eliminar tu último portfolio", result.Message);
+        _userPortfolioRepository.Verify(r => r.DeleteAsync(It.IsAny<UserPortfolio>()), Times.Never);
+    }
+
+    /// <summary>Verifica que, con datos válidos, se eliminen las posiciones, transacciones, historial y el portfolio, activando otro restante si era el activo.</summary>
+    [Fact]
+    public async Task DeletePortfolioAsync_WhenDataIsValid_ShouldRemoveAllRelatedDataAndActivateAnother()
+    {
+        var portfolio = PortfolioEntity(id: 1, isActive: true);
+        var remaining = PortfolioEntity(id: 2, isActive: false);
+
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
+        _userPortfolioRepository.Setup(r => r.CountByUserAsync(1)).ReturnsAsync(2);
+        _userPortfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync([remaining]);
+
+        var result = await CreateService().DeletePortfolioAsync(1, 1);
+
+        Assert.True(result.Success);
+        Assert.Equal("Portfolio eliminado correctamente", result.Message);
+        _portfolioHistoryRepository.Verify(r => r.DeleteByPortfolioIdAsync(1), Times.Once);
+        _transactionRepository.Verify(r => r.DeleteByPortfolioIdAsync(1), Times.Once);
+        _portfolioHoldingRepository.Verify(r => r.DeleteByPortfolioIdAsync(1), Times.Once);
+        _userPortfolioRepository.Verify(r => r.DeleteAsync(portfolio), Times.Once);
+        _userPortfolioRepository.Verify(r => r.SetActiveAsync(1, 2), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    // ---------- BuyAsync ----------
+
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error sin realizar la compra.</summary>
+    [Fact]
+    public async Task BuyAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
+
+        var result = await CreateService().BuyAsync(1, 1, BuyDto());
+
+        Assert.False(result.Success);
+        Assert.Equal("Portfolio no encontrado", result.Message);
     }
 
     /// <summary>Verifica que, si no existe configuración del usuario, se devuelva una respuesta de error sin realizar la compra.</summary>
     [Fact]
     public async Task BuyAsync_WhenUserSettingsDoNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync((UserSetting?)null);
 
-        var result = await CreateService().BuyAsync(1, BuyDto());
+        var result = await CreateService().BuyAsync(1, 1, BuyDto());
 
         Assert.False(result.Success);
         Assert.Equal("Configuración no encontrada", result.Message);
@@ -91,10 +246,10 @@ public class PortfolioServiceTests
     [Fact]
     public async Task BuyAsync_WhenDailyOperationsLimitIsReached_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(operationsUsedToday: 10));
 
-        var result = await CreateService().BuyAsync(1, BuyDto());
+        var result = await CreateService().BuyAsync(1, 1, BuyDto());
 
         Assert.False(result.Success);
         Assert.Equal("Límite diario alcanzado", result.Message);
@@ -104,11 +259,11 @@ public class PortfolioServiceTests
     [Fact]
     public async Task BuyAsync_WhenAssetDoesNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync((Asset?)null);
 
-        var result = await CreateService().BuyAsync(1, BuyDto(symbol: "XXXX"));
+        var result = await CreateService().BuyAsync(1, 1, BuyDto(symbol: "XXXX"));
 
         Assert.False(result.Success);
         Assert.Equal("Activo no encontrado", result.Message);
@@ -118,56 +273,57 @@ public class PortfolioServiceTests
     [Fact]
     public async Task BuyAsync_WhenMarketPriceIsUnavailable_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync(AssetEntity());
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync((MarketPriceDto?)null);
 
-        var result = await CreateService().BuyAsync(1, BuyDto());
+        var result = await CreateService().BuyAsync(1, 1, BuyDto());
 
         Assert.False(result.Success);
         Assert.Equal("No se pudo obtener el precio", result.Message);
     }
 
-    /// <summary>Verifica que, si el saldo del usuario es insuficiente para cubrir la operación, se devuelva una respuesta de error sin realizar la compra.</summary>
+    /// <summary>Verifica que, si el saldo del portfolio es insuficiente para cubrir la operación, se devuelva una respuesta de error sin realizar la compra.</summary>
     [Fact]
-    public async Task BuyAsync_WhenUserHasInsufficientBalance_ShouldReturnErrorResponse()
+    public async Task BuyAsync_WhenPortfolioHasInsufficientBalance_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity(balance: 100));
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity(currentBalance: 100));
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync(AssetEntity());
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 150));
 
-        var result = await CreateService().BuyAsync(1, BuyDto(quantity: 5));
+        var result = await CreateService().BuyAsync(1, 1, BuyDto(quantity: 5));
 
         Assert.False(result.Success);
         Assert.Equal("Saldo insuficiente. Podés vender activos o reiniciar tu portfolio simulado.", result.Message);
-        _portfolioRepository.Verify(r => r.InsertAsync(It.IsAny<Portfolio>()), Times.Never);
+        _portfolioHoldingRepository.Verify(r => r.InsertAsync(It.IsAny<PortfolioHolding>()), Times.Never);
     }
 
-    /// <summary>Verifica que, con datos válidos y sin posición previa del activo, se cree una nueva posición, se descuente el saldo y se registre la transacción.</summary>
+    /// <summary>Verifica que, con datos válidos y sin posición previa del activo, se cree una nueva posición, se descuente el saldo del portfolio y se registre la transacción.</summary>
     [Fact]
     public async Task BuyAsync_WhenDataIsValidAndNoPreviousPosition_ShouldCreatePositionAndDecreaseBalance()
     {
-        var user = UserEntity(balance: 1000);
+        var portfolio = PortfolioEntity(currentBalance: 1000);
         var settings = Settings(operationsUsedToday: 0);
         var asset = AssetEntity();
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(settings);
         _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync(asset);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 150));
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync((Portfolio?)null);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync((PortfolioHolding?)null);
 
-        var result = await CreateService().BuyAsync(1, BuyDto(quantity: 5));
+        var result = await CreateService().BuyAsync(1, 1, BuyDto(quantity: 5));
 
         Assert.True(result.Success);
         Assert.Equal("Compra realizada correctamente", result.Message);
-        Assert.Equal(250, user.Balance);
+        Assert.Equal(250, portfolio.CurrentBalance);
         Assert.Equal(1, settings.OperationsUsedToday);
-        _portfolioRepository.Verify(r => r.InsertAsync(It.Is<Portfolio>(p => p.Quantity == 5 && p.AvgPrice == 150)), Times.Once);
+        _portfolioHoldingRepository.Verify(r => r.InsertAsync(It.Is<PortfolioHolding>(p => p.Quantity == 5 && p.AvgPrice == 150 && p.PortfolioId == 1)), Times.Once);
         _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
             t.Type == TransactionType.Buy &&
+            t.PortfolioId == 1 &&
             t.Total == 750 &&
             t.BalanceBefore == 1000 &&
             t.BalanceAfter == 250)), Times.Once);
@@ -178,32 +334,32 @@ public class PortfolioServiceTests
     [Fact]
     public async Task BuyAsync_WhenDataIsValidAndPositionAlreadyExists_ShouldUpdatePositionWithWeightedAveragePrice()
     {
-        var user = UserEntity(balance: 5000);
+        var portfolio = PortfolioEntity(currentBalance: 5000);
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset, quantity: 10, avgPrice: 100);
+        var holding = HoldingEntity(asset, quantity: 10, avgPrice: 100);
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync(asset);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 150));
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
 
-        var result = await CreateService().BuyAsync(1, BuyDto(quantity: 10));
+        var result = await CreateService().BuyAsync(1, 1, BuyDto(quantity: 10));
 
         Assert.True(result.Success);
-        Assert.Equal(20, portfolio.Quantity);
-        Assert.Equal(125, portfolio.AvgPrice);
-        _portfolioRepository.Verify(r => r.UpdateAsync(portfolio), Times.Once);
-        _portfolioRepository.Verify(r => r.InsertAsync(It.IsAny<Portfolio>()), Times.Never);
+        Assert.Equal(20, holding.Quantity);
+        Assert.Equal(125, holding.AvgPrice);
+        _portfolioHoldingRepository.Verify(r => r.UpdateAsync(holding), Times.Once);
+        _portfolioHoldingRepository.Verify(r => r.InsertAsync(It.IsAny<PortfolioHolding>()), Times.Never);
     }
 
     /// <summary>Verifica que, ante una excepción inesperada, se registre el error y se devuelva una respuesta genérica de error.</summary>
     [Fact]
     public async Task BuyAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
 
-        var result = await CreateService().BuyAsync(1, BuyDto());
+        var result = await CreateService().BuyAsync(1, 1, BuyDto());
 
         Assert.False(result.Success);
         Assert.Equal("Error interno", result.Message);
@@ -211,26 +367,26 @@ public class PortfolioServiceTests
 
     // ---------- SellAsync ----------
 
-    /// <summary>Verifica que, si el usuario no existe, se devuelva una respuesta de error sin realizar la venta.</summary>
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error sin realizar la venta.</summary>
     [Fact]
-    public async Task SellAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task SellAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((User?)null);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
 
-        var result = await CreateService().SellAsync(1, SellDto());
+        var result = await CreateService().SellAsync(1, 1, SellDto());
 
         Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
+        Assert.Equal("Portfolio no encontrado", result.Message);
     }
 
     /// <summary>Verifica que, si no existe configuración del usuario, se devuelva una respuesta de error sin realizar la venta.</summary>
     [Fact]
     public async Task SellAsync_WhenUserSettingsDoNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync((UserSetting?)null);
 
-        var result = await CreateService().SellAsync(1, SellDto());
+        var result = await CreateService().SellAsync(1, 1, SellDto());
 
         Assert.False(result.Success);
         Assert.Equal("Configuración no encontrada", result.Message);
@@ -240,10 +396,10 @@ public class PortfolioServiceTests
     [Fact]
     public async Task SellAsync_WhenDailyOperationsLimitIsReached_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(operationsUsedToday: 10));
 
-        var result = await CreateService().SellAsync(1, SellDto());
+        var result = await CreateService().SellAsync(1, 1, SellDto());
 
         Assert.False(result.Success);
         Assert.Equal("Límite diario alcanzado", result.Message);
@@ -253,28 +409,28 @@ public class PortfolioServiceTests
     [Fact]
     public async Task SellAsync_WhenAssetDoesNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync((Asset?)null);
 
-        var result = await CreateService().SellAsync(1, SellDto(symbol: "XXXX"));
+        var result = await CreateService().SellAsync(1, 1, SellDto(symbol: "XXXX"));
 
         Assert.False(result.Success);
         Assert.Equal("Activo no encontrado", result.Message);
     }
 
-    /// <summary>Verifica que, si el usuario no posee el activo en su portfolio, se devuelva una respuesta de error sin realizar la venta.</summary>
+    /// <summary>Verifica que, si el portfolio no posee el activo, se devuelva una respuesta de error sin realizar la venta.</summary>
     [Fact]
-    public async Task SellAsync_WhenUserDoesNotOwnTheAsset_ShouldReturnErrorResponse()
+    public async Task SellAsync_WhenPortfolioDoesNotOwnTheAsset_ShouldReturnErrorResponse()
     {
         var asset = AssetEntity();
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync((Portfolio?)null);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync((PortfolioHolding?)null);
 
-        var result = await CreateService().SellAsync(1, SellDto());
+        var result = await CreateService().SellAsync(1, 1, SellDto());
 
         Assert.False(result.Success);
         Assert.Equal("Activo no encontrado en portfolio", result.Message);
@@ -285,14 +441,14 @@ public class PortfolioServiceTests
     public async Task SellAsync_WhenQuantityIsGreaterThanAvailable_ShouldReturnErrorResponse()
     {
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset, quantity: 3);
+        var holding = HoldingEntity(asset, quantity: 3);
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
 
-        var result = await CreateService().SellAsync(1, SellDto(quantity: 5));
+        var result = await CreateService().SellAsync(1, 1, SellDto(quantity: 5));
 
         Assert.False(result.Success);
         Assert.Equal("Cantidad insuficiente", result.Message);
@@ -302,27 +458,28 @@ public class PortfolioServiceTests
     [Fact]
     public async Task SellAsync_WhenSellingFullPosition_ShouldDeletePositionAndIncreaseBalance()
     {
-        var user = UserEntity(balance: 0);
+        var portfolio = PortfolioEntity(currentBalance: 0);
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset, quantity: 5, avgPrice: 100);
+        var holding = HoldingEntity(asset, quantity: 5, avgPrice: 100);
         var settings = Settings();
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(settings);
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 150));
 
-        var result = await CreateService().SellAsync(1, SellDto(quantity: 5));
+        var result = await CreateService().SellAsync(1, 1, SellDto(quantity: 5));
 
         Assert.True(result.Success);
         Assert.Equal("Venta realizada correctamente", result.Message);
-        Assert.Equal(750, user.Balance);
+        Assert.Equal(750, portfolio.CurrentBalance);
         Assert.Equal(1, settings.OperationsUsedToday);
-        _portfolioRepository.Verify(r => r.DeleteAsync(portfolio), Times.Once);
-        _portfolioRepository.Verify(r => r.UpdateAsync(It.IsAny<Portfolio>()), Times.Never);
+        _portfolioHoldingRepository.Verify(r => r.DeleteAsync(holding), Times.Once);
+        _portfolioHoldingRepository.Verify(r => r.UpdateAsync(It.IsAny<PortfolioHolding>()), Times.Never);
         _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
             t.Type == TransactionType.Sell &&
+            t.PortfolioId == 1 &&
             t.Total == 750 &&
             t.BalanceBefore == 0 &&
             t.BalanceAfter == 750)), Times.Once);
@@ -333,20 +490,20 @@ public class PortfolioServiceTests
     public async Task SellAsync_WhenSellingPartialPosition_ShouldUpdateRemainingQuantity()
     {
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset, quantity: 10, avgPrice: 100);
+        var holding = HoldingEntity(asset, quantity: 10, avgPrice: 100);
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 150));
 
-        var result = await CreateService().SellAsync(1, SellDto(quantity: 4));
+        var result = await CreateService().SellAsync(1, 1, SellDto(quantity: 4));
 
         Assert.True(result.Success);
-        Assert.Equal(6, portfolio.Quantity);
-        _portfolioRepository.Verify(r => r.UpdateAsync(portfolio), Times.Once);
-        _portfolioRepository.Verify(r => r.DeleteAsync(It.IsAny<Portfolio>()), Times.Never);
+        Assert.Equal(6, holding.Quantity);
+        _portfolioHoldingRepository.Verify(r => r.UpdateAsync(holding), Times.Once);
+        _portfolioHoldingRepository.Verify(r => r.DeleteAsync(It.IsAny<PortfolioHolding>()), Times.Never);
     }
 
     // ---------- Balance audit (BalanceBefore / BalanceAfter) ----------
@@ -355,17 +512,17 @@ public class PortfolioServiceTests
     [Fact]
     public async Task BuyAsync_WhenPurchaseIsSuccessful_ShouldRecordBalanceBeforeAndAfterInTransaction()
     {
-        var user = UserEntity(balance: 10000);
+        var portfolio = PortfolioEntity(currentBalance: 10000);
         var asset = AssetEntity();
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetService.Setup(s => s.GetOrCreateAsync(It.IsAny<string>())).ReturnsAsync(asset);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 122.936m));
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync((Portfolio?)null);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync((PortfolioHolding?)null);
 
         // Qty=5, Price=122.936 → Total=614.68
-        await CreateService().BuyAsync(1, BuyDto(quantity: 5));
+        await CreateService().BuyAsync(1, 1, BuyDto(quantity: 5));
 
         _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
             t.BalanceBefore == 10000m &&
@@ -376,18 +533,18 @@ public class PortfolioServiceTests
     [Fact]
     public async Task SellAsync_WhenSaleIsSuccessful_ShouldRecordBalanceBeforeAndAfterInTransaction()
     {
-        var user = UserEntity(balance: 9385.32m);
+        var portfolio = PortfolioEntity(currentBalance: 9385.32m);
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset, quantity: 5, avgPrice: 122.936m);
+        var holding = HoldingEntity(asset, quantity: 5, avgPrice: 122.936m);
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 160m));
 
         // Qty=5, Price=160 → Total=800
-        await CreateService().SellAsync(1, SellDto(quantity: 5));
+        await CreateService().SellAsync(1, 1, SellDto(quantity: 5));
 
         _transactionRepository.Verify(r => r.InsertAsync(It.Is<Transaction>(t =>
             t.BalanceBefore == 9385.32m &&
@@ -396,28 +553,42 @@ public class PortfolioServiceTests
 
     // ---------- GetPositionForSellAsync ----------
 
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task GetPositionForSellAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
+
+        var result = await CreateService().GetPositionForSellAsync(1, 1, "AAPL");
+
+        Assert.False(result.Success);
+        Assert.Equal("Portfolio no encontrado", result.Message);
+    }
+
     /// <summary>Verifica que, si el activo no existe, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task GetPositionForSellAsync_WhenAssetDoesNotExist_ShouldReturnErrorResponse()
     {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync((Asset?)null);
 
-        var result = await CreateService().GetPositionForSellAsync(1, "XXXX");
+        var result = await CreateService().GetPositionForSellAsync(1, 1, "XXXX");
 
         Assert.False(result.Success);
         Assert.Equal("Activo no encontrado", result.Message);
     }
 
-    /// <summary>Verifica que, si el usuario no tiene una posición abierta del activo, se devuelva una respuesta de error.</summary>
+    /// <summary>Verifica que, si el portfolio no tiene una posición abierta del activo, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task GetPositionForSellAsync_WhenPositionDoesNotExist_ShouldReturnErrorResponse()
     {
         var asset = AssetEntity();
 
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync((Portfolio?)null);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync((PortfolioHolding?)null);
 
-        var result = await CreateService().GetPositionForSellAsync(1, "AAPL");
+        var result = await CreateService().GetPositionForSellAsync(1, 1, "AAPL");
 
         Assert.False(result.Success);
         Assert.Equal("Posición no encontrada", result.Message);
@@ -428,13 +599,14 @@ public class PortfolioServiceTests
     public async Task GetPositionForSellAsync_WhenMarketPriceIsUnavailable_ShouldReturnErrorResponse()
     {
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset);
+        var holding = HoldingEntity(asset);
 
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync((MarketPriceDto?)null);
 
-        var result = await CreateService().GetPositionForSellAsync(1, "AAPL");
+        var result = await CreateService().GetPositionForSellAsync(1, 1, "AAPL");
 
         Assert.False(result.Success);
         Assert.Equal("No se pudo obtener el precio", result.Message);
@@ -445,13 +617,14 @@ public class PortfolioServiceTests
     public async Task GetPositionForSellAsync_WhenDataIsValid_ShouldReturnPositionDetails()
     {
         var asset = AssetEntity();
-        var portfolio = PortfolioEntity(asset, quantity: 8, avgPrice: 90);
+        var holding = HoldingEntity(asset, quantity: 8, avgPrice: 90);
 
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _assetRepository.Setup(r => r.GetAsync(It.IsAny<string>())).ReturnsAsync(asset);
-        _portfolioRepository.Setup(r => r.GetByUserAndAssetAsync(1, asset.Id)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAndAssetAsync(1, asset.Id)).ReturnsAsync(holding);
         _externalProvider.Setup(p => p.GetPriceAsync(It.IsAny<string>())).ReturnsAsync(Price("AAPL", 120));
 
-        var result = await CreateService().GetPositionForSellAsync(1, "AAPL");
+        var result = await CreateService().GetPositionForSellAsync(1, 1, "AAPL");
 
         Assert.True(result.Success);
         var data = Assert.IsType<PortfolioPositionDto>(result.Data);
@@ -505,26 +678,26 @@ public class PortfolioServiceTests
 
     // ---------- GetBalanceCardsAsync ----------
 
-    /// <summary>Verifica que, si el usuario no existe, se devuelva una respuesta de error.</summary>
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error.</summary>
     [Fact]
-    public async Task GetBalanceCardsAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task GetBalanceCardsAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((User?)null);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
 
-        var result = await CreateService().GetBalanceCardsAsync(1);
+        var result = await CreateService().GetBalanceCardsAsync(1, 1);
 
         Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
+        Assert.Equal("Portfolio no encontrado", result.Message);
     }
 
     /// <summary>Verifica que, si no existe configuración del usuario, se devuelva una respuesta de error.</summary>
     [Fact]
     public async Task GetBalanceCardsAsync_WhenUserSettingsDoNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync((UserSetting?)null);
 
-        var result = await CreateService().GetBalanceCardsAsync(1);
+        var result = await CreateService().GetBalanceCardsAsync(1, 1);
 
         Assert.False(result.Success);
         Assert.Equal("Configuración no encontrada", result.Message);
@@ -535,15 +708,15 @@ public class PortfolioServiceTests
     public async Task GetBalanceCardsAsync_WhenDataIsValid_ShouldReturnComputedBalanceCards()
     {
         var asset = AssetEntity();
-        var portfolio = new List<Portfolio> { PortfolioEntity(asset, quantity: 10) };
+        var holdings = new List<PortfolioHolding> { HoldingEntity(asset, quantity: 10) };
 
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(UserEntity(balance: 9000));
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity(currentBalance: 9000, initialBalance: 10000));
         _userSettingRepository.Setup(r => r.GetByUserIdAsync(1)).ReturnsAsync(Settings(operationsUsedToday: 2));
-        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolio);
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAsync(1)).ReturnsAsync(holdings);
         _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 150)] });
         _marketMetadataRepository.Setup(r => r.GetAsync()).ReturnsAsync((MarketMetadata?)null);
 
-        var result = await CreateService().GetBalanceCardsAsync(1);
+        var result = await CreateService().GetBalanceCardsAsync(1, 1);
 
         Assert.True(result.Success);
         var data = Assert.IsType<PortfolioBalanceCardsDto>(result.Data);
@@ -558,13 +731,26 @@ public class PortfolioServiceTests
 
     // ---------- GetPieChartAsync ----------
 
-    /// <summary>Verifica que, cuando el usuario no tiene posiciones en su portfolio, se devuelva una lista vacía.</summary>
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task GetPieChartAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
+
+        var result = await CreateService().GetPieChartAsync(1, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("Portfolio no encontrado", result.Message);
+    }
+
+    /// <summary>Verifica que, cuando el portfolio no tiene posiciones, se devuelva una lista vacía.</summary>
     [Fact]
     public async Task GetPieChartAsync_WhenPortfolioIsEmpty_ShouldReturnEmptyList()
     {
-        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(new List<Portfolio>());
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAsync(1)).ReturnsAsync(new List<PortfolioHolding>());
 
-        var result = await CreateService().GetPieChartAsync(1);
+        var result = await CreateService().GetPieChartAsync(1, 1);
 
         Assert.True(result.Success);
         var data = Assert.IsType<List<PortfolioPieChartItemDto>>(result.Data);
@@ -578,12 +764,13 @@ public class PortfolioServiceTests
     {
         var aapl = AssetEntity(1, "AAPL");
         var msft = AssetEntity(2, "MSFT");
-        var portfolio = new List<Portfolio> { PortfolioEntity(aapl, quantity: 10), new() { Id = 2, UserId = 1, AssetId = msft.Id, Asset = msft, Quantity = 5, AvgPrice = 50 } };
+        var holdings = new List<PortfolioHolding> { HoldingEntity(aapl, quantity: 10), new() { Id = 2, UserId = 1, PortfolioId = 1, AssetId = msft.Id, Asset = msft, Quantity = 5, AvgPrice = 50 } };
 
-        _portfolioRepository.Setup(r => r.GetByUserAsync(1)).ReturnsAsync(portfolio);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _portfolioHoldingRepository.Setup(r => r.GetByPortfolioAsync(1)).ReturnsAsync(holdings);
         _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 100), Price("MSFT", 50)] });
 
-        var result = await CreateService().GetPieChartAsync(1);
+        var result = await CreateService().GetPieChartAsync(1, 1);
 
         Assert.True(result.Success);
         var data = Assert.IsType<List<PortfolioPieChartItemDto>>(result.Data);
@@ -601,12 +788,13 @@ public class PortfolioServiceTests
     public async Task GetOpenPositionsAsync_WhenDataIsValid_ShouldReturnPositionsWithComputedValues()
     {
         var asset = AssetEntity();
-        var portfolio = new List<Portfolio> { PortfolioEntity(asset, quantity: 10, avgPrice: 100) };
+        var holdings = new List<PortfolioHolding> { HoldingEntity(asset, quantity: 10, avgPrice: 100) };
 
-        _portfolioRepository.Setup(r => r.GetPagedByUserAsync(1)).ReturnsAsync(portfolio);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _portfolioHoldingRepository.Setup(r => r.GetPagedByPortfolioAsync(1)).ReturnsAsync(holdings);
         _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 120)] });
 
-        var result = await CreateService().GetOpenPositionsAsync(1, new PortfolioOpenPositionsFilterDto());
+        var result = await CreateService().GetOpenPositionsAsync(1, 1, new PortfolioOpenPositionsFilterDto());
 
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
@@ -618,18 +806,31 @@ public class PortfolioServiceTests
     {
         var aapl = AssetEntity(1, "AAPL");
         var msft = AssetEntity(2, "MSFT");
-        var portfolio = new List<Portfolio> { PortfolioEntity(aapl, quantity: 10, avgPrice: 100), new() { Id = 2, UserId = 1, AssetId = msft.Id, Asset = msft, Quantity = 5, AvgPrice = 50 } };
+        var holdings = new List<PortfolioHolding> { HoldingEntity(aapl, quantity: 10, avgPrice: 100), new() { Id = 2, UserId = 1, PortfolioId = 1, AssetId = msft.Id, Asset = msft, Quantity = 5, AvgPrice = 50 } };
 
-        _portfolioRepository.Setup(r => r.GetPagedByUserAsync(1)).ReturnsAsync(portfolio);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _portfolioHoldingRepository.Setup(r => r.GetPagedByPortfolioAsync(1)).ReturnsAsync(holdings);
         _marketPriceCacheService.Setup(p => p.GetPricesAsync(It.IsAny<List<string>>())).ReturnsAsync(new MarketPricesResponseDto { Prices = [Price("AAPL", 120), Price("MSFT", 60)] });
 
-        var result = await CreateService().GetOpenPositionsAsync(1, new PortfolioOpenPositionsFilterDto { Symbol = "AAPL" });
+        var result = await CreateService().GetOpenPositionsAsync(1, 1, new PortfolioOpenPositionsFilterDto { Symbol = "AAPL" });
 
         Assert.True(result.Success);
         Assert.NotNull(result.Data);
     }
 
     // ---------- GetLineChartAsync ----------
+
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error.</summary>
+    [Fact]
+    public async Task GetLineChartAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
+    {
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
+
+        var result = await CreateService().GetLineChartAsync(1, 1, new PortfolioLineChartFilterDto { Period = "7d" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Portfolio no encontrado", result.Message);
+    }
 
     /// <summary>Verifica que, con datos válidos, se devuelva la evolución histórica del valor del portfolio ordenada por fecha.</summary>
     [Fact]
@@ -638,9 +839,10 @@ public class PortfolioServiceTests
         var date1 = new DateTime(2026, 1, 1);
         var date2 = new DateTime(2026, 1, 2);
 
-        _portfolioHistoryRepository.Setup(r => r.GetByUserAndDateAsync(It.IsAny<int>(), It.IsAny<DateTime>())).ReturnsAsync(new List<PortfolioHistory> { new() { UserId = 1, Date = date2, TotalValue = 1100 }, new() { UserId = 1, Date = date1, TotalValue = 1000 } });
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _portfolioHistoryRepository.Setup(r => r.GetByPortfolioAndDateAsync(1, It.IsAny<DateTime>())).ReturnsAsync(new List<PortfolioHistory> { new() { UserId = 1, PortfolioId = 1, Date = date2, TotalValue = 1100 }, new() { UserId = 1, PortfolioId = 1, Date = date1, TotalValue = 1000 } });
 
-        var result = await CreateService().GetLineChartAsync(1, new PortfolioLineChartFilterDto { Period = "7d" });
+        var result = await CreateService().GetLineChartAsync(1, 1, new PortfolioLineChartFilterDto { Period = "7d" });
 
         Assert.True(result.Success);
         var data = Assert.IsType<List<PortfolioLineChartItemDto>>(result.Data);
@@ -649,51 +851,51 @@ public class PortfolioServiceTests
         Assert.Equal(1000, data[0].TotalValue);
     }
 
-    // ---------- ResetSimulationAsync ----------
+    // ---------- ResetPortfolioAsync ----------
 
-    /// <summary>Verifica que, si el usuario no existe, se devuelva una respuesta de error sin reiniciar la simulación.</summary>
+    /// <summary>Verifica que, si el portfolio no existe o no pertenece al usuario, se devuelva una respuesta de error sin reiniciarlo.</summary>
     [Fact]
-    public async Task ResetSimulationAsync_WhenUserDoesNotExist_ShouldReturnErrorResponse()
+    public async Task ResetPortfolioAsync_WhenPortfolioDoesNotExist_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((User?)null);
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPortfolio?)null);
 
-        var result = await CreateService().ResetSimulationAsync(1, SetupDto());
+        var result = await CreateService().ResetPortfolioAsync(1, 1, SetupDto());
 
         Assert.False(result.Success);
-        Assert.Equal("Usuario no encontrado", result.Message);
-        _portfolioRepository.Verify(r => r.DeleteByUserIdAsync(It.IsAny<int>()), Times.Never);
+        Assert.Equal("Portfolio no encontrado", result.Message);
+        _portfolioHoldingRepository.Verify(r => r.DeleteByPortfolioIdAsync(It.IsAny<int>()), Times.Never);
     }
 
     /// <summary>Verifica que, con datos válidos, se eliminen el historial, las transacciones y las posiciones, se restablezca el balance inicial y se reinicien las operaciones diarias.</summary>
     [Fact]
-    public async Task ResetSimulationAsync_WhenDataIsValid_ShouldClearPortfolioDataAndResetBalance()
+    public async Task ResetPortfolioAsync_WhenDataIsValid_ShouldClearPortfolioDataAndResetBalance()
     {
-        var user = UserEntity();
-        _userRepository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
+        var portfolio = PortfolioEntity();
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(portfolio);
 
         var dto = SetupDto(portfolioName: "Nuevo Portfolio", initialBalance: 25000);
-        var result = await CreateService().ResetSimulationAsync(1, dto);
+        var result = await CreateService().ResetPortfolioAsync(1, 1, dto);
 
         Assert.True(result.Success);
         Assert.Equal("Portfolio reiniciado correctamente", result.Message);
-        _portfolioHistoryRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
-        _transactionRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
-        _portfolioRepository.Verify(r => r.DeleteByUserIdAsync(1), Times.Once);
+        _portfolioHistoryRepository.Verify(r => r.DeleteByPortfolioIdAsync(1), Times.Once);
+        _transactionRepository.Verify(r => r.DeleteByPortfolioIdAsync(1), Times.Once);
+        _portfolioHoldingRepository.Verify(r => r.DeleteByPortfolioIdAsync(1), Times.Once);
         _userSettingRepository.Verify(r => r.ResetOperationsUsedTodayAsync(1), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
-        Assert.Equal("Nuevo Portfolio", user.PortfolioName);
-        Assert.Equal(25000, user.InitialBalance);
-        Assert.Equal(25000, user.Balance);
+        Assert.Equal("Nuevo Portfolio", portfolio.Name);
+        Assert.Equal(25000, portfolio.InitialBalance);
+        Assert.Equal(25000, portfolio.CurrentBalance);
     }
 
     /// <summary>Verifica que, ante una excepción inesperada durante el reinicio, se registre el error y se devuelva una respuesta genérica de error.</summary>
     [Fact]
-    public async Task ResetSimulationAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
+    public async Task ResetPortfolioAsync_WhenRepositoryThrows_ShouldReturnErrorResponse()
     {
-        _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(UserEntity());
-        _portfolioHistoryRepository.Setup(r => r.DeleteByUserIdAsync(It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
+        _userPortfolioRepository.Setup(r => r.GetByIdAndUserAsync(1, 1)).ReturnsAsync(PortfolioEntity());
+        _portfolioHistoryRepository.Setup(r => r.DeleteByPortfolioIdAsync(It.IsAny<int>())).ThrowsAsync(new Exception("db error"));
 
-        var result = await CreateService().ResetSimulationAsync(1, SetupDto());
+        var result = await CreateService().ResetPortfolioAsync(1, 1, SetupDto());
 
         Assert.False(result.Success);
         Assert.Equal("Error interno", result.Message);

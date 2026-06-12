@@ -40,8 +40,35 @@
   margin-bottom: 32px;
 }
 
+.dashboard-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .dashboard-title-block {
   margin-bottom: 24px;
+}
+
+.portfolio-select {
+  min-width: 220px;
+}
+
+.portfolio-select .mat-mdc-text-field-wrapper {
+  background: var(--card-bg);
+}
+
+@media (max-width: 768px) {
+  .dashboard-header-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portfolio-select {
+    min-width: 100%;
+  }
 }
 
 .dashboard-title {

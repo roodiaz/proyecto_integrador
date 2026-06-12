@@ -11,6 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language.service';
 import { TokenRefreshService } from '../../../../core/services/token-refresh.service';
 import { PortfolioService } from '../../../portfolio/services/portfolio.service';
+import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
 import { PortfolioSetupDialog } from '../../../portfolio/components/portfolio-setup-dialog/portfolio-setup-dialog';
 import { SetupPortfolioRequest } from '../../../portfolio/models/portfolio.model';
 
@@ -43,6 +44,7 @@ export class LoginForm {
   private readonly languageService = inject(LanguageService);
   private readonly tokenRefreshService = inject(TokenRefreshService);
   private readonly portfolioService = inject(PortfolioService);
+  private readonly activePortfolioService = inject(ActivePortfolioService);
   private readonly dialog = inject(MatDialog);
 
   constructor(
@@ -61,9 +63,9 @@ export class LoginForm {
     sessionStorage.setItem('refreshToken', data.tokens.refreshToken);
     this.tokenRefreshService.scheduleProactiveRefresh(data.tokens.accessToken);
 
-    this.portfolioService.getPortfolioSettings().subscribe({
-      next: settings => {
-        if (settings.success && settings.data && !settings.data.portfolioConfigured) {
+    this.activePortfolioService.loadPortfolios().subscribe({
+      next: res => {
+        if ((res.data ?? []).length === 0) {
           this.openPortfolioSetupDialog();
           return;
         }
@@ -85,8 +87,8 @@ export class LoginForm {
         return;
       }
 
-      this.portfolioService.setupPortfolio(result).subscribe({
-        next: () => this.router.navigate(['/dashboard']),
+      this.portfolioService.createPortfolio(result).subscribe({
+        next: () => this.activePortfolioService.refresh().subscribe(() => this.router.navigate(['/dashboard'])),
         error: () => this.router.navigate(['/dashboard'])
       });
     });

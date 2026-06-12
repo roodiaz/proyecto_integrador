@@ -82,7 +82,10 @@
     "INVALID_SYMBOL_FORMAT": "You must enter a valid symbol.",
     "INVALID_RANGE": "Invalid range. Allowed values: 1d, 1w, 1m, 3m, 6m, 1y.",
     "MARKET_INDICES_UNAVAILABLE": "Could not retrieve market indices.",
-    "MARKET_OVERVIEW_ERROR": "An error occurred while retrieving the market overview."
+    "MARKET_OVERVIEW_ERROR": "An error occurred while retrieving the market overview.",
+    "MAX_PORTFOLIOS_REACHED": "You have reached the maximum number of portfolios allowed.",
+    "CANNOT_DELETE_LAST_PORTFOLIO": "You cannot delete your last portfolio.",
+    "PORTFOLIO_NOT_FOUND": "Portfolio not found."
   },
   "SUCCESS": {
     "REGISTRATION_SUCCESS": "Account created. Check your email to verify it.",
@@ -106,6 +109,9 @@
     "BUY_SUCCESS": "Purchase completed successfully.",
     "SELL_SUCCESS": "Sale completed successfully.",
     "PORTFOLIO_RESET_SUCCESS": "Portfolio reset successfully.",
+    "PORTFOLIO_CREATED_SUCCESS": "Portfolio created successfully.",
+    "PORTFOLIO_DELETED_SUCCESS": "Portfolio deleted successfully.",
+    "PORTFOLIO_ACTIVATED_SUCCESS": "Portfolio activated successfully.",
     "CONTACT_MESSAGE_SENT": "Message sent successfully.",
     "LOGOUT_SUCCESS": "Logged out successfully."
   },
@@ -231,6 +237,7 @@
   "DASHBOARD": {
     "TITLE": "Dashboard",
     "SUBTITLE": "Summary of your financial activity",
+    "PORTFOLIO_SELECT_LABEL": "Portfolio",
     "BALANCE": "Balance",
     "TOTAL_BALANCE": "Total Balance",
     "AVAILABLE_BALANCE": "Available Balance",
@@ -549,15 +556,29 @@
       "BUY_ERROR": "Error placing the purchase",
       "SELL_ERROR": "Error selling the asset",
       "RESET_ERROR": "Error resetting the portfolio",
-      "PORTFOLIO_ALREADY_CONFIGURED": "Your portfolio has already been configured"
+      "CREATE_ERROR": "Error creating the portfolio",
+      "DELETE_ERROR": "Error deleting the portfolio"
     },
     "RESET_DIALOG": {
       "TITLE": "Reset portfolio",
       "MESSAGE": "Are you sure you want to reset your portfolio? Your holdings, operations, and evolution history will be deleted. Your balance will return to the initial amount."
     },
+    "TABS": {
+      "ADD_PORTFOLIO": "Add portfolio",
+      "MAX_REACHED_TOOLTIP": "You have reached the maximum of 3 portfolios",
+      "DELETE_BUTTON": "Delete Portfolio"
+    },
+    "DELETE_DIALOG": {
+      "TITLE": "Delete portfolio",
+      "MESSAGE": "Are you sure you want to delete the portfolio \"{{name}}\"? All its holdings, operations, and evolution history will be deleted. This action cannot be undone.",
+      "CONFIRM_BUTTON": "Delete",
+      "CANNOT_DELETE_LAST": "You cannot delete your last portfolio."
+    },
     "SETUP_DIALOG": {
       "CREATE_TITLE": "Set up your portfolio",
       "CREATE_SUBTITLE": "Before you start, choose a name for your portfolio and the initial balance you want to use for your simulated investments.",
+      "ADD_TITLE": "New portfolio",
+      "ADD_SUBTITLE": "Choose a name for your new portfolio and the initial balance you want to use for your simulated investments.",
       "RESET_TITLE": "Reset portfolio",
       "RESET_WARNING": "Your holdings, operations, and evolution history will be deleted. Your balance will return to the new initial amount you set.",
       "NAME_LABEL": "Portfolio name",
@@ -998,6 +1019,12 @@
       "NAV_LOGIN": "Log In",
       "NAV_REGISTER": "Sign Up",
       "NAV_CONTACT": "Contact"
+    }
+  },
+  "SHARED": {
+    "CONFIRM_DIALOG": {
+      "CANCEL_BUTTON": "Cancel",
+      "CONFIRM_BUTTON": "Confirm"
     }
   }
 }

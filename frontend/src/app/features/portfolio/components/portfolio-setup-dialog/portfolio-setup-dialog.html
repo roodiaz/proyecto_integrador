@@ -1,10 +1,10 @@
 <div class="modal-container">
   <div class="modal-header">
     <h2>
-      {{ (mode === 'create' ? 'PORTFOLIO.SETUP_DIALOG.CREATE_TITLE' : 'PORTFOLIO.SETUP_DIALOG.RESET_TITLE') | translate }}
+      {{ (mode === 'create' ? 'PORTFOLIO.SETUP_DIALOG.CREATE_TITLE' : mode === 'add-portfolio' ? 'PORTFOLIO.SETUP_DIALOG.ADD_TITLE' : 'PORTFOLIO.SETUP_DIALOG.RESET_TITLE') | translate }}
     </h2>
 
-    @if (mode === 'reset') {
+    @if (mode !== 'create') {
       <button class="close-btn" type="button" (click)="onCancel()">✕</button>
     }
   </div>
@@ -12,6 +12,10 @@
   <div class="modal-body">
     @if (mode === 'create') {
       <p class="dialog-subtitle">{{ 'PORTFOLIO.SETUP_DIALOG.CREATE_SUBTITLE' | translate }}</p>
+    }
+
+    @if (mode === 'add-portfolio') {
+      <p class="dialog-subtitle">{{ 'PORTFOLIO.SETUP_DIALOG.ADD_SUBTITLE' | translate }}</p>
     }
 
     @if (mode === 'reset') {
@@ -59,7 +63,7 @@
   </div>
 
   <div class="modal-footer">
-    @if (mode === 'reset') {
+    @if (mode !== 'create') {
       <button class="cancel-btn" type="button" (click)="onCancel()">{{ 'PORTFOLIO.SETUP_DIALOG.CANCEL_BUTTON' | translate }}</button>
     }
 

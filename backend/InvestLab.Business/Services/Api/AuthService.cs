@@ -100,11 +100,7 @@ public class AuthService : IAuthService
                 Email = registerDto.Email,
                 Phone = registerDto.Phone,
                 IsActive = false,
-                CreatedAt = DateTime.UtcNow,
-                Balance = _limits.InitialBalance,
-                InitialBalance = _limits.InitialBalance,
-                PortfolioConfigured = false,
-                PortfolioName = null
+                CreatedAt = DateTime.UtcNow
             };
 
             user.PasswordHash = _passwordHasher.HashPassword(user, registerDto.Password);

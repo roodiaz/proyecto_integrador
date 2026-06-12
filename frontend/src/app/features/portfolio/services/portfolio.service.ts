@@ -12,7 +12,7 @@ import {
   PagedOpenPositions,
   TransactionFilter,
   PagedTransactions,
-  PortfolioSettings,
+  UserPortfolio,
   SetupPortfolioRequest
 } from '../models/portfolio.model';
 
@@ -24,59 +24,67 @@ export class PortfolioService {
 
   constructor(private http: HttpClient) { }
 
-  getBalanceCards(): Observable<ApiResponse<PortfolioBalanceCards>> {
-    return this.http.get<ApiResponse<PortfolioBalanceCards>>(`${this.apiUrl}/balance-cards`);
+  getUserPortfolios(): Observable<ApiResponse<UserPortfolio[]>> {
+    return this.http.get<ApiResponse<UserPortfolio[]>>(this.apiUrl);
   }
 
-  getPieChart(): Observable<ApiResponse<PortfolioPieChartItem[]>> {
-    return this.http.get<ApiResponse<PortfolioPieChartItem[]>>(`${this.apiUrl}/pie-chart`);
+  createPortfolio(dto: SetupPortfolioRequest): Observable<ApiResponse<UserPortfolio>> {
+    return this.http.post<ApiResponse<UserPortfolio>>(this.apiUrl, dto);
   }
 
-  getLineChart(period: string): Observable<ApiResponse<PortfolioLineChartItem[]>> {
-    return this.http.post<ApiResponse<PortfolioLineChartItem[]>>(`${this.apiUrl}/line-chart`, { period });
+  setActivePortfolio(portfolioId: number): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/${portfolioId}/activate`, {});
   }
 
-  getOpenPositions(filter: OpenPositionsFilter): Observable<ApiResponse<PagedOpenPositions>> {
-    return this.http.post<ApiResponse<PagedOpenPositions>>(`${this.apiUrl}/open-positions`, filter);
+  deletePortfolio(portfolioId: number): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>(`${this.apiUrl}/${portfolioId}`);
   }
 
-  getTransactionHistory(filter: TransactionFilter): Observable<ApiResponse<PagedTransactions>> {
-    return this.http.post<ApiResponse<PagedTransactions>>(`${this.apiUrl}/history`, filter);
+  resetPortfolio(portfolioId: number, dto: SetupPortfolioRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/${portfolioId}/reset`, dto);
+  }
+
+  getBalanceCards(portfolioId: number): Observable<ApiResponse<PortfolioBalanceCards>> {
+    return this.http.get<ApiResponse<PortfolioBalanceCards>>(`${this.apiUrl}/${portfolioId}/balance-cards`);
+  }
+
+  getPieChart(portfolioId: number): Observable<ApiResponse<PortfolioPieChartItem[]>> {
+    return this.http.get<ApiResponse<PortfolioPieChartItem[]>>(`${this.apiUrl}/${portfolioId}/pie-chart`);
+  }
+
+  getLineChart(portfolioId: number, period: string): Observable<ApiResponse<PortfolioLineChartItem[]>> {
+    return this.http.post<ApiResponse<PortfolioLineChartItem[]>>(`${this.apiUrl}/${portfolioId}/line-chart`, { period });
+  }
+
+  getOpenPositions(portfolioId: number, filter: OpenPositionsFilter): Observable<ApiResponse<PagedOpenPositions>> {
+    return this.http.post<ApiResponse<PagedOpenPositions>>(`${this.apiUrl}/${portfolioId}/open-positions`, filter);
+  }
+
+  getTransactionHistory(portfolioId: number, filter: TransactionFilter): Observable<ApiResponse<PagedTransactions>> {
+    return this.http.post<ApiResponse<PagedTransactions>>(`${this.apiUrl}/${portfolioId}/history`, filter);
   }
 
   getAssetPrice(symbol: string): Observable<ApiResponse<{ symbol: string; currentPrice: number }>> {
     return this.http.get<ApiResponse<{ symbol: string; currentPrice: number }>>(`${this.apiUrl}/price/${symbol}`);
   }
 
-  buyAsset(symbol: string, quantity: number): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/buy`, { symbol, quantity });
+  buyAsset(portfolioId: number, symbol: string, quantity: number): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/${portfolioId}/buy`, { symbol, quantity });
   }
 
-  getPosition(symbol: string): Observable<ApiResponse<PortfolioPosition>> {
-    return this.http.get<ApiResponse<PortfolioPosition>>(`${this.apiUrl}/${symbol}`);
+  getPosition(portfolioId: number, symbol: string): Observable<ApiResponse<PortfolioPosition>> {
+    return this.http.get<ApiResponse<PortfolioPosition>>(`${this.apiUrl}/${portfolioId}/position/${symbol}`);
   }
 
-  sell(data: SellData): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/sell`, data);
+  sell(portfolioId: number, data: SellData): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/${portfolioId}/sell`, data);
   }
 
-  exportHoldings(filter: OpenPositionsFilter): Observable<Blob> {
-    return this.http.post(`${this.apiUrl}/export/holdings`, filter, { responseType: 'blob' });
+  exportHoldings(portfolioId: number, filter: OpenPositionsFilter): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/${portfolioId}/export/holdings`, filter, { responseType: 'blob' });
   }
 
-  exportTransactions(filter: TransactionFilter): Observable<Blob> {
-    return this.http.post(`${this.apiUrl}/export/transactions`, filter, { responseType: 'blob' });
-  }
-
-  resetSimulation(dto: SetupPortfolioRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/reset-simulation`, dto);
-  }
-
-  getPortfolioSettings(): Observable<ApiResponse<PortfolioSettings>> {
-    return this.http.get<ApiResponse<PortfolioSettings>>(`${this.apiUrl}/settings`);
-  }
-
-  setupPortfolio(dto: SetupPortfolioRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/setup`, dto);
+  exportTransactions(portfolioId: number, filter: TransactionFilter): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/${portfolioId}/export/transactions`, filter, { responseType: 'blob' });
   }
 }

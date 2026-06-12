@@ -39,7 +39,7 @@ public partial class Asset
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 
     [InverseProperty("Asset")]
-    public virtual ICollection<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
+    public virtual ICollection<PortfolioHolding> PortfolioHoldings { get; set; } = new List<PortfolioHolding>();
 
     [InverseProperty("Asset")]
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();

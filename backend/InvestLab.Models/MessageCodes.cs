@@ -78,7 +78,12 @@ public static class MessageCodes
     public const string SELL_SUCCESS = "SELL_SUCCESS";
     public const string PORTFOLIO_RESET_SUCCESS = "PORTFOLIO_RESET_SUCCESS";
     public const string PORTFOLIO_SETUP_SUCCESS = "PORTFOLIO_SETUP_SUCCESS";
-    public const string PORTFOLIO_ALREADY_CONFIGURED = "PORTFOLIO_ALREADY_CONFIGURED";
+    public const string MAX_PORTFOLIOS_REACHED = "MAX_PORTFOLIOS_REACHED";
+    public const string CANNOT_DELETE_LAST_PORTFOLIO = "CANNOT_DELETE_LAST_PORTFOLIO";
+    public const string PORTFOLIO_NOT_FOUND = "PORTFOLIO_NOT_FOUND";
+    public const string PORTFOLIO_CREATED_SUCCESS = "PORTFOLIO_CREATED_SUCCESS";
+    public const string PORTFOLIO_DELETED_SUCCESS = "PORTFOLIO_DELETED_SUCCESS";
+    public const string PORTFOLIO_ACTIVATED_SUCCESS = "PORTFOLIO_ACTIVATED_SUCCESS";
 
     // ── Market ───────────────────────────────────────────────────────────────
     public const string INVALID_SYMBOL_FORMAT = "INVALID_SYMBOL_FORMAT";

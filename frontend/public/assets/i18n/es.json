@@ -82,7 +82,10 @@
     "INVALID_SYMBOL_FORMAT": "Debés ingresar un símbolo válido.",
     "INVALID_RANGE": "Rango inválido. Los valores permitidos son: 1d, 1w, 1m, 3m, 6m, 1y.",
     "MARKET_INDICES_UNAVAILABLE": "No se pudieron obtener los índices del mercado.",
-    "MARKET_OVERVIEW_ERROR": "Ocurrió un error al obtener el panorama de mercado."
+    "MARKET_OVERVIEW_ERROR": "Ocurrió un error al obtener el panorama de mercado.",
+    "MAX_PORTFOLIOS_REACHED": "Alcanzaste el máximo de portfolios permitidos.",
+    "CANNOT_DELETE_LAST_PORTFOLIO": "No podés eliminar tu último portfolio.",
+    "PORTFOLIO_NOT_FOUND": "Portfolio no encontrado."
   },
   "SUCCESS": {
     "REGISTRATION_SUCCESS": "Cuenta creada. Revisá tu email para verificarla.",
@@ -106,6 +109,9 @@
     "BUY_SUCCESS": "Compra realizada correctamente.",
     "SELL_SUCCESS": "Venta realizada correctamente.",
     "PORTFOLIO_RESET_SUCCESS": "Portfolio reiniciado correctamente.",
+    "PORTFOLIO_CREATED_SUCCESS": "Portfolio creado correctamente.",
+    "PORTFOLIO_DELETED_SUCCESS": "Portfolio eliminado correctamente.",
+    "PORTFOLIO_ACTIVATED_SUCCESS": "Portfolio activado correctamente.",
     "CONTACT_MESSAGE_SENT": "Mensaje enviado correctamente.",
     "LOGOUT_SUCCESS": "Sesión cerrada correctamente."
   },
@@ -231,6 +237,7 @@
   "DASHBOARD": {
     "TITLE": "Dashboard",
     "SUBTITLE": "Resumen de tu actividad financiera",
+    "PORTFOLIO_SELECT_LABEL": "Portfolio",
     "BALANCE": "Balance",
     "TOTAL_BALANCE": "Balance Total",
     "AVAILABLE_BALANCE": "Balance Disponible",
@@ -549,15 +556,29 @@
       "BUY_ERROR": "Error al realizar la compra",
       "SELL_ERROR": "Error al vender activo",
       "RESET_ERROR": "Error al reiniciar el portfolio",
-      "PORTFOLIO_ALREADY_CONFIGURED": "Tu portfolio ya fue configurado"
+      "CREATE_ERROR": "Error al crear el portfolio",
+      "DELETE_ERROR": "Error al eliminar el portfolio"
     },
     "RESET_DIALOG": {
       "TITLE": "Reiniciar portfolio",
       "MESSAGE": "¿Estás segura de que querés reiniciar tu portfolio? Se eliminarán tus tenencias, operaciones e historial de evolución. Tu saldo volverá al monto inicial."
     },
+    "TABS": {
+      "ADD_PORTFOLIO": "Agregar portfolio",
+      "MAX_REACHED_TOOLTIP": "Alcanzaste el máximo de 3 portfolios",
+      "DELETE_BUTTON": "Eliminar Portfolio"
+    },
+    "DELETE_DIALOG": {
+      "TITLE": "Eliminar portfolio",
+      "MESSAGE": "¿Estás segura de que querés eliminar el portfolio \"{{name}}\"? Se eliminarán todas sus tenencias, operaciones e historial de evolución. Esta acción no se puede deshacer.",
+      "CONFIRM_BUTTON": "Eliminar",
+      "CANNOT_DELETE_LAST": "No podés eliminar tu último portfolio."
+    },
     "SETUP_DIALOG": {
       "CREATE_TITLE": "Configurá tu portfolio",
       "CREATE_SUBTITLE": "Antes de empezar, elegí un nombre para tu portfolio y el saldo inicial con el que querés simular tus inversiones.",
+      "ADD_TITLE": "Nuevo portfolio",
+      "ADD_SUBTITLE": "Elegí un nombre para tu nuevo portfolio y el saldo inicial con el que querés simular tus inversiones.",
       "RESET_TITLE": "Reiniciar portfolio",
       "RESET_WARNING": "Se eliminarán tus tenencias, operaciones e historial de evolución. Tu saldo volverá al nuevo monto inicial que definas.",
       "NAME_LABEL": "Nombre del portfolio",
@@ -998,6 +1019,12 @@
       "NAV_LOGIN": "Ingresar",
       "NAV_REGISTER": "Registrarse",
       "NAV_CONTACT": "Contacto"
+    }
+  },
+  "SHARED": {
+    "CONFIRM_DIALOG": {
+      "CANCEL_BUTTON": "Cancelar",
+      "CONFIRM_BUTTON": "Confirmar"
     }
   }
 }

@@ -17,5 +17,11 @@
         Task RunHistoricalCatchUpAsync(DateTime lastCloseUtc);
 
         Task SaveDailyMarketHistoryAsync();
+
+        /// <summary>
+        /// Completa el campo "portfolioId" en documentos históricos preexistentes que aún
+        /// no lo poseen (migración a múltiples portfolios). Es idempotente.
+        /// </summary>
+        Task BackfillPortfolioHistoryPortfolioIdsAsync();
     }
 }

@@ -71,9 +71,6 @@ public class AuthServiceTests
         _verificationCodeService.Verify(v => v.GenerateAndSendCodeAsync(It.IsAny<User>(), "Verificación de cuenta", null), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.AtLeastOnce);
         Assert.NotNull(createdUser);
-        Assert.Equal(_limits.InitialBalance, createdUser!.InitialBalance);
-        Assert.False(createdUser.PortfolioConfigured);
-        Assert.Null(createdUser.PortfolioName);
     }
 
     /// <summary>Verifica que, si la contraseña y su confirmación no coinciden, se devuelva una respuesta de error sin crear el usuario.</summary>

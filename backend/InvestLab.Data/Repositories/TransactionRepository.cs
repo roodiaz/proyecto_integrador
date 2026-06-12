@@ -1,4 +1,4 @@
-﻿using InvestLab.Data.Context;
+using InvestLab.Data.Context;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models.DTOs.Transaction;
 using Microsoft.EntityFrameworkCore;
@@ -27,33 +27,33 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
-        /// Obtiene las últimas transacciones de un usuario, incluyendo el activo asociado, ordenadas por fecha de creación descendente.
+        /// Obtiene las últimas transacciones de un portfolio, incluyendo el activo asociado, ordenadas por fecha de creación descendente.
         /// </summary>
-        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="portfolioId">Identificador del portfolio.</param>
         /// <param name="take">Cantidad máxima de transacciones a obtener.</param>
-        /// <returns>Lista de las transacciones más recientes del usuario.</returns>
-        public async Task<List<Transaction>> GetLatestByUserAsync(int userId, int take)
+        /// <returns>Lista de las transacciones más recientes del portfolio.</returns>
+        public async Task<List<Transaction>> GetLatestByPortfolioAsync(int portfolioId, int take)
         {
             return await _context.Transactions
                 .Include(x => x.Asset)
-                .Where(x => x.UserId == userId)
+                .Where(x => x.PortfolioId == portfolioId)
                 .OrderByDescending(x => x.CreatedAt)
                 .Take(take)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// Busca transacciones de un usuario aplicando filtros de símbolo, tipo, rango de días y orden, devolviendo los resultados paginados.
+        /// Busca transacciones de un portfolio aplicando filtros de símbolo, tipo, rango de días y orden, devolviendo los resultados paginados.
         /// </summary>
-        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="portfolioId">Identificador del portfolio.</param>
         /// <param name="filter">Criterios de filtrado, paginación y orden a aplicar sobre la búsqueda.</param>
         /// <returns>Tupla con la lista de transacciones filtradas (proyectadas a DTO) y el total de registros que cumplen el filtro.</returns>
-        public async Task<(List<TransactionDto> Data, int Total)> SearchAsync(int userId, TransactionFilterDto filter)
+        public async Task<(List<TransactionDto> Data, int Total)> SearchAsync(int portfolioId, TransactionFilterDto filter)
         {
             var query = _context.Transactions
                 .AsNoTracking()
                 .Include(x => x.Asset)
-                .Where(x => x.UserId == userId);
+                .Where(x => x.PortfolioId == portfolioId);
 
             if (!string.IsNullOrWhiteSpace(filter.Symbol))
                 query = query.Where(x => EF.Functions.ILike(x.Asset.Symbol, $"%{filter.Symbol}%"));
@@ -105,45 +105,45 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
-        /// Obtiene todas las transacciones de un usuario posteriores a una fecha UTC dada.
+        /// Obtiene todas las transacciones de un portfolio posteriores a una fecha UTC dada.
         /// Se utiliza para reconstruir el estado del portfolio al cierre del mercado
         /// cuando el snapshot se genera de forma retroactiva.
         /// </summary>
-        /// <param name="userId">Identificador del usuario.</param>
+        /// <param name="portfolioId">Identificador del portfolio.</param>
         /// <param name="fromUtc">Fecha/hora UTC de referencia (exclusiva). Se devuelven transacciones con CreatedAt estrictamente mayor.</param>
         /// <returns>Lista de transacciones posteriores a la fecha indicada.</returns>
-        public async Task<List<Transaction>> GetByUserAfterDateAsync(int userId, DateTime fromUtc)
+        public async Task<List<Transaction>> GetByPortfolioAfterDateAsync(int portfolioId, DateTime fromUtc)
         {
             return await _context.Transactions
                 .AsNoTracking()
-                .Where(x => x.UserId == userId && x.CreatedAt > fromUtc)
+                .Where(x => x.PortfolioId == portfolioId && x.CreatedAt > fromUtc)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// Devuelve todas las transacciones de un usuario, incluyendo el activo asociado,
+        /// Devuelve todas las transacciones de un portfolio, incluyendo el activo asociado,
         /// ordenadas por fecha ascendente. Se utiliza para reconstruir estados históricos de portfolio.
         /// </summary>
-        public async Task<List<Transaction>> GetAllByUserAsync(int userId)
+        public async Task<List<Transaction>> GetAllByPortfolioAsync(int portfolioId)
         {
             return await _context.Transactions
                 .AsNoTracking()
                 .Include(x => x.Asset)
-                .Where(x => x.UserId == userId)
+                .Where(x => x.PortfolioId == portfolioId)
                 .OrderBy(x => x.CreatedAt)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// Devuelve todas las transacciones de un usuario que coincidan con los filtros indicados,
+        /// Devuelve todas las transacciones de un portfolio que coincidan con los filtros indicados,
         /// sin aplicar paginación. Se usa para generar el archivo de exportación.
         /// </summary>
-        public async Task<List<TransactionDto>> GetAllForExportAsync(int userId, TransactionFilterDto filter)
+        public async Task<List<TransactionDto>> GetAllForExportAsync(int portfolioId, TransactionFilterDto filter)
         {
             var query = _context.Transactions
                 .AsNoTracking()
                 .Include(x => x.Asset)
-                .Where(x => x.UserId == userId);
+                .Where(x => x.PortfolioId == portfolioId);
 
             if (!string.IsNullOrWhiteSpace(filter.Symbol))
                 query = query.Where(x => EF.Functions.ILike(x.Asset.Symbol, $"%{filter.Symbol}%"));
@@ -180,13 +180,13 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
-        /// Elimina todas las transacciones asociadas a un usuario.
+        /// Elimina todas las transacciones asociadas a un portfolio.
         /// </summary>
-        /// <param name="userId">Identificador del usuario cuyas transacciones se eliminarán.</param>
-        public async Task DeleteByUserIdAsync(int userId)
+        /// <param name="portfolioId">Identificador del portfolio cuyas transacciones se eliminarán.</param>
+        public async Task DeleteByPortfolioIdAsync(int portfolioId)
         {
             await _context.Transactions
-                .Where(x => x.UserId == userId)
+                .Where(x => x.PortfolioId == portfolioId)
                 .ExecuteDeleteAsync();
         }
     }

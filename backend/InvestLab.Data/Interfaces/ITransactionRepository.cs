@@ -1,4 +1,4 @@
-﻿using InvestLab.Models.DTOs.Transaction;
+using InvestLab.Models.DTOs.Transaction;
 
 namespace InvestLab.Data.Interfaces
 {
@@ -6,16 +6,16 @@ namespace InvestLab.Data.Interfaces
     {
         Task InsertAsync(Transaction transaction);
 
-        Task<List<Transaction>> GetLatestByUserAsync(int userId, int take);
+        Task<List<Transaction>> GetLatestByPortfolioAsync(int portfolioId, int take);
 
-        Task<(List<TransactionDto> Data, int Total)> SearchAsync( int userId,TransactionFilterDto filter);
+        Task<(List<TransactionDto> Data, int Total)> SearchAsync(int portfolioId, TransactionFilterDto filter);
 
-        Task DeleteByUserIdAsync(int userId);
+        Task DeleteByPortfolioIdAsync(int portfolioId);
 
-        Task<List<Transaction>> GetByUserAfterDateAsync(int userId, DateTime fromUtc);
+        Task<List<Transaction>> GetByPortfolioAfterDateAsync(int portfolioId, DateTime fromUtc);
 
-        Task<List<Transaction>> GetAllByUserAsync(int userId);
+        Task<List<Transaction>> GetAllByPortfolioAsync(int portfolioId);
 
-        Task<List<TransactionDto>> GetAllForExportAsync(int userId, TransactionFilterDto filter);
+        Task<List<TransactionDto>> GetAllForExportAsync(int portfolioId, TransactionFilterDto filter);
     }
 }

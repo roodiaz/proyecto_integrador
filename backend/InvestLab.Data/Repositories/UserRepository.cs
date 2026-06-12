@@ -78,22 +78,6 @@ namespace InvestLab.Data.Repositories
         }
 
         /// <summary>
-        /// Actualiza el saldo de un usuario y su fecha de última modificación. Si el usuario no existe, no realiza ninguna acción.
-        /// </summary>
-        /// <param name="userId">Identificador del usuario.</param>
-        /// <param name="balance">Nuevo saldo a asignar al usuario.</param>
-        public async Task UpdateBalanceAsync(int userId, decimal balance)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-
-            if (user == null)
-                return;
-
-            user.Balance = balance;
-            user.UpdateAt = DateTime.UtcNow;
-        }
-
-        /// <summary>
         /// Elimina un usuario del contexto de base de datos.
         /// </summary>
         /// <param name="user">Entidad de usuario a eliminar.</param>

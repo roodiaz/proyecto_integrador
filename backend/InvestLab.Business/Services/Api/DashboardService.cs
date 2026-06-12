@@ -1,10 +1,11 @@
-﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Data.Interfaces;
 using InvestLab.Models;
 using InvestLab.Models.DTOs.Dashboard;
 using InvestLab.Models.DTOs.Market;
 using Microsoft.Extensions.Logging;
 using static InvestLab.Models.Enums;
+using static InvestLab.Models.MessageCodes;
 
 namespace InvestLab.Business.Services.Api;
 
@@ -14,8 +15,8 @@ public class DashboardService : IDashboardService
     private readonly ILogger<DashboardService> _logger;
 
     // Repositorios
-    private readonly IUserRepository _userRepository;
-    private readonly IPortfolioRepository _portfolioRepository;
+    private readonly IUserPortfolioRepository _userPortfolioRepository;
+    private readonly IPortfolioHoldingRepository _portfolioHoldingRepository;
     private readonly IPortfolioHistoryRepository _portfolioHistoryRepository;
     private readonly IAlertRepository _alertRepository;
     private readonly IPriceHistoryRepository _priceHistoryRepository;
@@ -25,8 +26,8 @@ public class DashboardService : IDashboardService
     /// <summary>
     /// Inicializa una nueva instancia de <see cref="DashboardService"/> con los repositorios y servicios necesarios para construir la información del dashboard.
     /// </summary>
-    /// <param name="userRepository">Repositorio de usuarios.</param>
-    /// <param name="portfolioRepository">Repositorio de carteras de inversión.</param>
+    /// <param name="userPortfolioRepository">Repositorio de portfolios de usuario.</param>
+    /// <param name="portfolioHoldingRepository">Repositorio de posiciones de portfolio.</param>
     /// <param name="portfolioHistoryRepository">Repositorio del historial de carteras.</param>
     /// <param name="marketPriceCacheService">Servicio de caché de precios de mercado.</param>
     /// <param name="logger">Logger para registrar información y errores del servicio.</param>
@@ -34,13 +35,13 @@ public class DashboardService : IDashboardService
     /// <param name="priceHistoryRepository">Repositorio del historial de precios.</param>
     /// <param name="transactionRepository">Repositorio de transacciones.</param>
     /// <param name="notificationRepository">Repositorio de notificaciones.</param>
-    public DashboardService(IUserRepository userRepository, IPortfolioRepository portfolioRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IMarketPriceCacheService marketPriceCacheService, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository, INotificationRepository notificationRepository)
+    public DashboardService(IUserPortfolioRepository userPortfolioRepository, IPortfolioHoldingRepository portfolioHoldingRepository, IPortfolioHistoryRepository portfolioHistoryRepository, IMarketPriceCacheService marketPriceCacheService, ILogger<DashboardService> logger, IAlertRepository alertRepository, IPriceHistoryRepository priceHistoryRepository, ITransactionRepository transactionRepository, INotificationRepository notificationRepository)
     {
         _logger = logger;
         _marketPriceCacheService = marketPriceCacheService;
 
-        _userRepository = userRepository;
-        _portfolioRepository = portfolioRepository;
+        _userPortfolioRepository = userPortfolioRepository;
+        _portfolioHoldingRepository = portfolioHoldingRepository;
         _portfolioHistoryRepository = portfolioHistoryRepository;
         _alertRepository = alertRepository;
         _priceHistoryRepository = priceHistoryRepository;
@@ -49,30 +50,31 @@ public class DashboardService : IDashboardService
     }
 
     /// <summary>
-    /// Obtiene las tarjetas superiores del dashboard con el valor total de la cartera, la ganancia del día, los activos activos y la cantidad de alertas activas del usuario.
+    /// Obtiene las tarjetas superiores del dashboard con el valor total del portfolio, la ganancia del día, los activos activos y la cantidad de alertas activas del usuario.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
-    /// <returns>Una respuesta con los datos de las tarjetas superiores del dashboard, o un mensaje de error si el usuario no existe o ocurre un fallo interno.</returns>
-    public async Task<Response> GetTopCardsAsync(int userId)
+    /// <param name="portfolioId">Identificador del portfolio.</param>
+    /// <returns>Una respuesta con los datos de las tarjetas superiores del dashboard, o un mensaje de error si el portfolio no existe o ocurre un fallo interno.</returns>
+    public async Task<Response> GetTopCardsAsync(int userId, int portfolioId)
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
             {
-                _logger.LogWarning("Usuario no encontrado: {UserId}", userId);
-                return Response.Fail("Usuario no encontrado");
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
             }
 
-            var portfolio = await _portfolioRepository.GetByUserAsync(userId);
-            var symbols = portfolio.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
+            var holdings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolioId);
+            var symbols = holdings.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
 
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             decimal holdingsValue = 0;
 
-            foreach (var item in portfolio)
+            foreach (var item in holdings)
             {
                 if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol) || item.Quantity <= 0)
                     continue;
@@ -83,8 +85,8 @@ public class DashboardService : IDashboardService
                 holdingsValue += item.Quantity * currentPrice;
             }
 
-            var totalValue = user.Balance + holdingsValue;
-            var previous = await _portfolioHistoryRepository.GetPreviousAsync(userId);
+            var totalValue = portfolio.CurrentBalance + holdingsValue;
+            var previous = await _portfolioHistoryRepository.GetPreviousAsync(portfolioId);
 
             decimal todayProfit = 0;
             decimal todayProfitPercent = 0;
@@ -104,11 +106,11 @@ public class DashboardService : IDashboardService
                 TotalValue = Math.Round(totalValue, 2),
                 TodayProfit = Math.Round(todayProfit, 2),
                 TodayProfitPercent = Math.Round(todayProfitPercent, 2),
-                ActiveAssets = portfolio.Count(x => x.Quantity > 0),
+                ActiveAssets = holdings.Count(x => x.Quantity > 0),
                 ActiveAlerts = activeAlerts
             };
 
-            _logger.LogInformation("Dashboard top cards obtenidas: UserId={UserId}", userId);
+            _logger.LogInformation("Dashboard top cards obtenidas: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(response);
         }
@@ -120,23 +122,31 @@ public class DashboardService : IDashboardService
     }
 
     /// <summary>
-    /// Calcula la distribución de la cartera del usuario por sector, indicando el valor y el porcentaje que representa cada sector sobre el total invertido.
+    /// Calcula la distribución del portfolio del usuario por sector, indicando el valor y el porcentaje que representa cada sector sobre el total invertido.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
-    /// <returns>Una respuesta con la lista de distribución de la cartera por sector, o un mensaje de error si ocurre un fallo interno.</returns>
-    public async Task<Response> GetPortfolioDistributionAsync(int userId)
+    /// <param name="portfolioId">Identificador del portfolio.</param>
+    /// <returns>Una respuesta con la lista de distribución del portfolio por sector, o un mensaje de error si ocurre un fallo interno.</returns>
+    public async Task<Response> GetPortfolioDistributionAsync(int userId, int portfolioId)
     {
         try
         {
-            var portfolio = await _portfolioRepository.GetByUserAsync(userId);
-            var symbols = portfolio.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            var holdings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolioId);
+            var symbols = holdings.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
 
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             var items = new List<(string Sector, decimal Value)>();
 
-            foreach (var item in portfolio)
+            foreach (var item in holdings)
             {
                 if (item.Asset == null || string.IsNullOrWhiteSpace(item.Asset.Symbol) || item.Quantity <= 0)
                     continue;
@@ -166,7 +176,7 @@ public class DashboardService : IDashboardService
                 .OrderByDescending(x => x.Percentage)
                 .ToList();
 
-            _logger.LogInformation("Dashboard portfolio distribution obtenido: UserId={UserId}", userId);
+            _logger.LogInformation("Dashboard portfolio distribution obtenido: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(response);
         }
@@ -206,18 +216,22 @@ public class DashboardService : IDashboardService
     }
 
     /// <summary>
-    /// Genera el gráfico de desempeño de la cartera del usuario comparándolo contra los índices S&amp;P 500 y NASDAQ en el período solicitado, calculando además el valor actual y la variación porcentual.
+    /// Genera el gráfico de desempeño del portfolio del usuario comparándolo contra los índices S&amp;P 500 y NASDAQ en el período solicitado, calculando además el valor actual y la variación porcentual.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="filter">Filtro con el período del gráfico a generar (por ejemplo "1W", "1M", "3M" o "1Y").</param>
-    /// <returns>Una respuesta con los datos del gráfico de desempeño, o un mensaje de error si el usuario no existe, no hay datos suficientes o ocurre un fallo interno.</returns>
-    public async Task<Response> GetPerformanceChartAsync(int userId, DashboardPerformanceChartFilterDto filter)
+    /// <returns>Una respuesta con los datos del gráfico de desempeño, o un mensaje de error si el portfolio no existe, no hay datos suficientes o ocurre un fallo interno.</returns>
+    public async Task<Response> GetPerformanceChartAsync(int userId, int portfolioId, DashboardPerformanceChartFilterDto filter)
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null)
-                return Response.Fail("Usuario no encontrado");
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
 
             DateTime fromDate = filter.Period switch
             {
@@ -228,7 +242,7 @@ public class DashboardService : IDashboardService
                 _ => DateTime.UtcNow.AddMonths(-1)
             };
 
-            var portfolioHistory = await _portfolioHistoryRepository.GetByUserAndDateAsync(userId, fromDate);
+            var portfolioHistory = await _portfolioHistoryRepository.GetByPortfolioAndDateAsync(portfolioId, fromDate);
             var sp500History = await _priceHistoryRepository.GetBySymbolAndDateAsync("^GSPC", fromDate);
             var nasdaqHistory = await _priceHistoryRepository.GetBySymbolAndDateAsync("^IXIC", fromDate);
 
@@ -295,26 +309,26 @@ public class DashboardService : IDashboardService
                 })
                 .ToList();
 
-            var positions = await _portfolioRepository.GetByUserAsync(userId);
-            var symbols = positions.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
+            var holdings = await _portfolioHoldingRepository.GetByPortfolioAsync(portfolioId);
+            var symbols = holdings.Where(x => x.Asset != null && !string.IsNullOrWhiteSpace(x.Asset.Symbol) && x.Quantity > 0).Select(x => x.Asset.Symbol).Distinct().ToList();
 
             var marketPricesResponse = symbols.Count == 0 ? new MarketPricesResponseDto() : await _marketPriceCacheService.GetPricesAsync(symbols);
             var pricesBySymbol = marketPricesResponse.Prices.ToDictionary(x => x.Symbol, x => x.Price);
 
             decimal holdingsValue = 0;
 
-            foreach (var position in positions)
+            foreach (var holding in holdings)
             {
-                if (position.Asset == null || string.IsNullOrWhiteSpace(position.Asset.Symbol) || position.Quantity <= 0)
+                if (holding.Asset == null || string.IsNullOrWhiteSpace(holding.Asset.Symbol) || holding.Quantity <= 0)
                     continue;
 
-                if (!pricesBySymbol.TryGetValue(position.Asset.Symbol, out var currentPrice))
+                if (!pricesBySymbol.TryGetValue(holding.Asset.Symbol, out var currentPrice))
                     continue;
 
-                holdingsValue += position.Quantity * currentPrice;
+                holdingsValue += holding.Quantity * currentPrice;
             }
 
-            var currentValue = user.Balance + holdingsValue;
+            var currentValue = portfolio.CurrentBalance + holdingsValue;
             var firstValue = portfolioHistory.First().TotalValue;
 
             decimal variationPercent = 0;
@@ -338,27 +352,35 @@ public class DashboardService : IDashboardService
                 }
             };
 
-            _logger.LogInformation("Performance chart obtenido para UserId={UserId}", userId);
+            _logger.LogInformation("Performance chart obtenido para UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
 
             return Response.Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener performance chart para UserId={UserId}", userId);
+            _logger.LogError(ex, "Error al obtener performance chart para UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
             return Response.Fail("Error interno");
         }
     }
 
     /// <summary>
-    /// Obtiene las cinco operaciones más recientes realizadas por el usuario para mostrarlas en el dashboard.
+    /// Obtiene las cinco operaciones más recientes realizadas en el portfolio para mostrarlas en el dashboard.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
-    /// <returns>Una respuesta con la lista de las últimas operaciones del usuario, o un mensaje de error si ocurre un fallo interno.</returns>
-    public async Task<Response> GetLatestTransactionsAsync(int userId)
+    /// <param name="portfolioId">Identificador del portfolio.</param>
+    /// <returns>Una respuesta con la lista de las últimas operaciones del portfolio, o un mensaje de error si ocurre un fallo interno.</returns>
+    public async Task<Response> GetLatestTransactionsAsync(int userId, int portfolioId)
     {
         try
         {
-            var transactions = await _transactionRepository.GetLatestByUserAsync(userId, 5);
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            var transactions = await _transactionRepository.GetLatestByPortfolioAsync(portfolioId, 5);
 
             var response = transactions.Select(x => new DashboardLatestTransactionDto
             {
@@ -382,13 +404,21 @@ public class DashboardService : IDashboardService
     /// Si no existe ningún snapshot, retorna un objeto con valores en cero.
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
+    /// <param name="portfolioId">Identificador del portfolio.</param>
     /// <param name="date">Fecha de referencia para buscar el snapshot.</param>
     /// <returns>Composición del portfolio (efectivo disponible, capital invertido y total) junto con la fecha efectiva del snapshot.</returns>
-    public async Task<Response> GetPortfolioCompositionAsync(int userId, DateTime date)
+    public async Task<Response> GetPortfolioCompositionAsync(int userId, int portfolioId, DateTime date)
     {
         try
         {
-            var snapshot = await _portfolioHistoryRepository.GetOnOrBeforeAsync(userId, date);
+            var portfolio = await _userPortfolioRepository.GetByIdAndUserAsync(portfolioId, userId);
+            if (portfolio == null)
+            {
+                _logger.LogWarning("Portfolio no encontrado: UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
+                return Response.Fail("Portfolio no encontrado", PORTFOLIO_NOT_FOUND);
+            }
+
+            var snapshot = await _portfolioHistoryRepository.GetOnOrBeforeAsync(portfolioId, date);
 
             if (snapshot == null)
                 return Response.Ok(new DashboardPortfolioCompositionDto());
@@ -401,14 +431,14 @@ public class DashboardService : IDashboardService
                 EffectiveDate    = snapshot.Date
             };
 
-            _logger.LogInformation("Composición del portfolio obtenida: UserId={UserId} Fecha={Date} Efectiva={EffectiveDate}",
-                userId, date.Date, snapshot.Date.Date);
+            _logger.LogInformation("Composición del portfolio obtenida: UserId={UserId}, PortfolioId={PortfolioId}, Fecha={Date}, Efectiva={EffectiveDate}",
+                userId, portfolioId, date.Date, snapshot.Date.Date);
 
             return Response.Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al obtener composición del portfolio para UserId={UserId}", userId);
+            _logger.LogError(ex, "Error al obtener composición del portfolio para UserId={UserId}, PortfolioId={PortfolioId}", userId, portfolioId);
             return Response.Fail("Error interno");
         }
     }

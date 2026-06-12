@@ -30,10 +30,12 @@ export interface PortfolioBalanceCards {
   lastMarketCloseDate: string;
 }
 
-export interface PortfolioSettings {
-  portfolioName: string | null;
+export interface UserPortfolio {
+  id: number;
+  name: string;
   initialBalance: number;
-  portfolioConfigured: boolean;
+  currentBalance: number;
+  isActive: boolean;
 }
 
 export interface SetupPortfolioRequest {

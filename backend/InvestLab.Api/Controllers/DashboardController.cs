@@ -1,4 +1,4 @@
-﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Business.Interfaces.Api;
 using InvestLab.Models.DTOs.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +27,7 @@ public class DashboardController : BaseController
     /// Obtiene la información de las cards
     /// principales del dashboard del usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio activo.</param>
     /// <returns>
     /// Valor total del portfolio,
     /// ganancia diaria y cantidad de activos.
@@ -34,11 +35,11 @@ public class DashboardController : BaseController
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("top-cards")]
-    public async Task<IActionResult> GetTopCards()
+    public async Task<IActionResult> GetTopCards([FromQuery] int portfolioId)
     {
-        _logger.LogInformation("Consultando dashboard top cards: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando dashboard top cards: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _service.GetTopCardsAsync(UserId);
+        var result = await _service.GetTopCardsAsync(UserId, portfolioId);
 
         if (!result.Success)
         {
@@ -53,17 +54,18 @@ public class DashboardController : BaseController
     /// Obtiene la distribución del portfolio
     /// del usuario autenticado agrupada por sector.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio activo.</param>
     /// <returns>
     /// Distribución porcentual del portfolio por sector.
     /// </returns>
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("portfolio-distribution")]
-    public async Task<IActionResult> GetPortfolioDistribution()
+    public async Task<IActionResult> GetPortfolioDistribution([FromQuery] int portfolioId)
     {
-        _logger.LogInformation("Consultando dashboard portfolio distribution: UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando dashboard portfolio distribution: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _service.GetPortfolioDistributionAsync(UserId);
+        var result = await _service.GetPortfolioDistributionAsync(UserId, portfolioId);
 
         if (!result.Success)
         {
@@ -103,6 +105,7 @@ public class DashboardController : BaseController
     /// Obtiene la evolución comparativa entre el portfolio
     /// del usuario autenticado, el índice S&P 500 y NASDAQ.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio activo.</param>
     /// <param name="filter">
     /// Período del gráfico:
     /// 1W, 1M, 3M o 1Y.
@@ -112,11 +115,11 @@ public class DashboardController : BaseController
     /// y benchmarks junto con el resumen del período.
     /// </returns>
     [HttpPost("performance-chart")]
-    public async Task<IActionResult> GetPerformanceChart([FromBody] DashboardPerformanceChartFilterDto filter)
+    public async Task<IActionResult> GetPerformanceChart([FromQuery] int portfolioId, [FromBody] DashboardPerformanceChartFilterDto filter)
     {
-        _logger.LogInformation("Consultando performance chart para UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando performance chart para UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _service.GetPerformanceChartAsync(UserId, filter);
+        var result = await _service.GetPerformanceChartAsync(UserId, portfolioId, filter);
 
         if (!result.Success)
         {
@@ -131,16 +134,17 @@ public class DashboardController : BaseController
     /// Obtiene la composición histórica del portfolio del usuario autenticado para una fecha determinada.
     /// Si no existe snapshot exacto para esa fecha, retorna el snapshot más reciente anterior.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio activo.</param>
     /// <param name="date">Fecha de referencia en formato yyyy-MM-dd.</param>
     /// <returns>Efectivo disponible, capital invertido y valor total junto con la fecha efectiva del snapshot.</returns>
     /// <response code="200">Composición obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("portfolio-composition")]
-    public async Task<IActionResult> GetPortfolioComposition([FromQuery] DateTime date)
+    public async Task<IActionResult> GetPortfolioComposition([FromQuery] int portfolioId, [FromQuery] DateTime date)
     {
-        _logger.LogInformation("Consultando composición del portfolio: UserId={UserId} Date={Date}", UserId, date);
+        _logger.LogInformation("Consultando composición del portfolio: UserId={UserId}, PortfolioId={PortfolioId}, Date={Date}", UserId, portfolioId, date);
 
-        var result = await _service.GetPortfolioCompositionAsync(UserId, date);
+        var result = await _service.GetPortfolioCompositionAsync(UserId, portfolioId, date);
 
         if (!result.Success)
         {
@@ -155,6 +159,7 @@ public class DashboardController : BaseController
     /// Obtiene las últimas operaciones realizadas
     /// por el usuario autenticado.
     /// </summary>
+    /// <param name="portfolioId">Identificador del portfolio activo.</param>
     /// <returns>
     /// Últimas transacciones registradas en el portfolio.
     /// </returns>
@@ -162,11 +167,11 @@ public class DashboardController : BaseController
     /// <response code="400">Error en la consulta</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("latest-transactions")]
-    public async Task<IActionResult> GetLatestTransactions()
+    public async Task<IActionResult> GetLatestTransactions([FromQuery] int portfolioId)
     {
-        _logger.LogInformation("Consultando últimas operaciones para UserId={UserId}", UserId);
+        _logger.LogInformation("Consultando últimas operaciones para UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
 
-        var result = await _service.GetLatestTransactionsAsync(UserId);
+        var result = await _service.GetLatestTransactionsAsync(UserId, portfolioId);
 
         if (!result.Success)
         {

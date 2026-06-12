@@ -20,13 +20,15 @@ public partial class InvestLabDbContext : DbContext
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
-    public virtual DbSet<Portfolio> Portfolios { get; set; }
+    public virtual DbSet<PortfolioHolding> PortfolioHoldings { get; set; }
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<Transaction> Transactions { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserPortfolio> UserPortfolios { get; set; }
 
     public virtual DbSet<UserSetting> UserSettings { get; set; }
 
@@ -85,17 +87,37 @@ public partial class InvestLabDbContext : DbContext
                 .HasConstraintName("fk_notif_user");
         });
 
-        modelBuilder.Entity<Portfolio>(entity =>
+        modelBuilder.Entity<PortfolioHolding>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("portfolio_pkey");
+            entity.HasKey(e => e.Id).HasName("portfolio_holdings_pkey");
 
-            entity.HasOne(d => d.Asset).WithMany(p => p.Portfolios)
+            entity.HasOne(d => d.Asset).WithMany(p => p.PortfolioHoldings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_portfolio_asset");
+                .HasConstraintName("fk_portfolio_holdings_asset");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Portfolios)
+            entity.HasOne(d => d.User).WithMany(p => p.PortfolioHoldings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_portfolio_user");
+                .HasConstraintName("fk_portfolio_holdings_user");
+
+            entity.HasOne(d => d.Portfolio).WithMany(p => p.PortfolioHoldings)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_portfolio_holdings_portfolio");
+        });
+
+        modelBuilder.Entity<UserPortfolio>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("user_portfolios_pkey");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.IsActive).HasDefaultValue(false);
+
+            entity.HasIndex(e => e.UserId, "uq_user_portfolios_active")
+                .IsUnique()
+                .HasFilter("(is_active = true)");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserPortfolios)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_user_portfolios_user");
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>
@@ -122,17 +144,18 @@ public partial class InvestLabDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Transactions)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_transactions_user");
+
+            entity.HasOne(d => d.Portfolio).WithMany(p => p.Transactions)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_transactions_portfolio");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("users_pkey");
 
-            entity.Property(e => e.Balance).HasDefaultValue(10000.00m);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.InitialBalance).HasDefaultValue(10000.00m);
-            entity.Property(e => e.PortfolioConfigured).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<UserSetting>(entity =>

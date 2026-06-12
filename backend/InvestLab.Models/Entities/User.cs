@@ -39,10 +39,6 @@ public partial class User
     [Column("is_active")]
     public bool IsActive { get; set; }
 
-    [Column("balance")]
-    [Precision(18, 2)]
-    public decimal Balance { get; set; }
-
     [Column("phone")]
     [StringLength(20)]
     public string Phone { get; set; } = null!;
@@ -62,17 +58,6 @@ public partial class User
     [Column("locked_until")]
     public DateTime? LockedUntil { get; set; }
 
-    [Column("portfolio_name")]
-    [StringLength(100)]
-    public string? PortfolioName { get; set; }
-
-    [Column("initial_balance")]
-    [Precision(18, 2)]
-    public decimal InitialBalance { get; set; }
-
-    [Column("portfolio_configured")]
-    public bool PortfolioConfigured { get; set; }
-
     [InverseProperty("User")]
     public virtual ICollection<Alert> Alerts { get; set; } = new List<Alert>();
 
@@ -83,13 +68,16 @@ public partial class User
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     [InverseProperty("User")]
-    public virtual ICollection<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
+    public virtual ICollection<PortfolioHolding> PortfolioHoldings { get; set; } = new List<PortfolioHolding>();
 
     [InverseProperty("User")]
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     [InverseProperty("User")]
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+    [InverseProperty("User")]
+    public virtual ICollection<UserPortfolio> UserPortfolios { get; set; } = new List<UserPortfolio>();
 
     [InverseProperty("User")]
     public virtual UserSetting? UserSetting { get; set; }

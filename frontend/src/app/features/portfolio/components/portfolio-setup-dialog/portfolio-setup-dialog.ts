@@ -14,8 +14,8 @@ import {
   INITIAL_BALANCE_MIN
 } from '../../../../shared/validators/portfolio-setup.validator';
 
-/** Modo del diálogo: configuración inicial del portfolio o reinicio de la simulación. */
-export type PortfolioSetupDialogMode = 'create' | 'reset';
+/** Modo del diálogo: configuración inicial del portfolio, reinicio de la simulación o creación de un portfolio adicional. */
+export type PortfolioSetupDialogMode = 'create' | 'reset' | 'add-portfolio';
 
 /** Datos de entrada del diálogo de configuración/reinicio del portfolio. */
 export interface PortfolioSetupDialogData {

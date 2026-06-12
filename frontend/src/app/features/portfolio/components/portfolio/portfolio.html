@@ -1,6 +1,31 @@
 <div class="portfolio-container">
   <div class="portfolio-content">
 
+    <!-- ─── Portfolio Tabs ─────────────────────────────────────────────────── -->
+    <div class="portfolio-tabs">
+      @for (portfolio of portfolios; track portfolio.id; let i = $index) {
+        <button
+          class="portfolio-tab"
+          type="button"
+          [class.active]="portfolio.id === activeId"
+          (click)="onTabChange(i)"
+        >
+          {{ portfolio.name }}
+        </button>
+      }
+
+      @if (canCreateMore) {
+        <button
+          class="portfolio-tab add-tab"
+          type="button"
+          (click)="openAddPortfolioDialog()"
+          [title]="'PORTFOLIO.TABS.ADD_PORTFOLIO' | translate"
+        >
+          +
+        </button>
+      }
+    </div>
+
     <!-- ─── Header ─────────────────────────────────────────────────────────── -->
     <div class="section-header">
       <div class="title-container">
@@ -9,6 +34,13 @@
       </div>
 
       <div class="header-actions">
+        @if (!isOnlyPortfolio) {
+          <button class="delete-portfolio-btn" type="button" (click)="confirmDeletePortfolio()">
+            <mat-icon>delete</mat-icon>
+            {{ 'PORTFOLIO.TABS.DELETE_BUTTON' | translate }}
+          </button>
+        }
+
         <button class="reset-portfolio-btn" type="button" (click)="confirmResetSimulation()">
           <mat-icon>restart_alt</mat-icon>
           {{ 'PORTFOLIO.RESET_BUTTON' | translate }}

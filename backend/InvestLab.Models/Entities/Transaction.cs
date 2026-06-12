@@ -9,6 +9,7 @@ namespace InvestLab.Data;
 
 [Table("transactions")]
 [Index("UserId", Name = "idx_transactions_user")]
+[Index("PortfolioId", Name = "idx_transactions_portfolio")]
 public partial class Transaction
 {
     [Key]
@@ -17,6 +18,9 @@ public partial class Transaction
 
     [Column("user_id")]
     public int UserId { get; set; }
+
+    [Column("portfolio_id")]
+    public int PortfolioId { get; set; }
 
     [Column("asset_id")]
     public int AssetId { get; set; }
@@ -54,4 +58,8 @@ public partial class Transaction
     [ForeignKey("UserId")]
     [InverseProperty("Transactions")]
     public virtual User User { get; set; } = null!;
+
+    [ForeignKey("PortfolioId")]
+    [InverseProperty("Transactions")]
+    public virtual UserPortfolio Portfolio { get; set; } = null!;
 }

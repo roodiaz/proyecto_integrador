@@ -21,12 +21,8 @@ CREATE TABLE users (
     password_changed_at TIMESTAMP WITH TIME ZONE DEFAULT, 
     last_login_at TIMESTAMP WITH TIME ZONE, -- Último login del usuario
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00,
     failed_login_attempts INT NOT NULL DEFAULT 0, -- Intentos fallidos de login consecutivos
-    locked_until TIMESTAMP WITH TIME ZONE, -- Fecha/hora hasta la cual la cuenta permanece bloqueada
-    portfolio_name VARCHAR(100), -- Nombre elegido por el usuario para su portfolio de simulación
-    initial_balance DECIMAL(18,2) NOT NULL DEFAULT 10000.00, -- Saldo inicial elegido por el usuario
-    portfolio_configured BOOLEAN NOT NULL DEFAULT FALSE -- Indica si el usuario ya completó el wizard de configuración inicial
+    locked_until TIMESTAMP WITH TIME ZONE -- Fecha/hora hasta la cual la cuenta permanece bloqueada
 );
 
 -- ============================================
@@ -63,20 +59,39 @@ CREATE TABLE assets (
 );
 
 -- ============================================
--- PORTFOLIO
+-- USER PORTFOLIOS
 -- ============================================
--- Representa la posición actual del usuario en cada activo,
--- incluyendo cantidad y precio promedio de compra.
-CREATE TABLE portfolio (
+-- Representa cada portfolio de simulación del usuario (hasta 3),
+-- con su nombre, saldo inicial, balance actual y estado de activo.
+CREATE TABLE user_portfolios (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    initial_balance DECIMAL(18,2) NOT NULL,
+    current_balance DECIMAL(18,2) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE,
+
+    CONSTRAINT fk_user_portfolios_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- ============================================
+-- PORTFOLIO HOLDINGS
+-- ============================================
+-- Representa la posición actual de un portfolio en cada activo,
+-- incluyendo cantidad y precio promedio de compra.
+CREATE TABLE portfolio_holdings (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    portfolio_id INT NOT NULL,
     asset_id INT NOT NULL,
     quantity DECIMAL(18,6) NOT NULL,
     avg_price DECIMAL(18,4) NOT NULL,
 
-    CONSTRAINT fk_portfolio_user FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT fk_portfolio_asset FOREIGN KEY (asset_id) REFERENCES assets(id),
-    CONSTRAINT uq_user_asset UNIQUE (user_id, asset_id)
+    CONSTRAINT fk_portfolio_holdings_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_portfolio_holdings_asset FOREIGN KEY (asset_id) REFERENCES assets(id),
+    CONSTRAINT fk_portfolio_holdings_portfolio FOREIGN KEY (portfolio_id) REFERENCES user_portfolios(id) ON DELETE CASCADE
 );
 
 -- ============================================
@@ -87,6 +102,7 @@ CREATE TABLE portfolio (
 CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
+    portfolio_id INT NOT NULL,
     asset_id INT NOT NULL,
     type SMALLINT NOT NULL,  -- 1 = BUY / 2 = SELL
     quantity DECIMAL(18,6) NOT NULL,
@@ -98,6 +114,7 @@ CREATE TABLE transactions (
 
     CONSTRAINT fk_transactions_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_transactions_asset FOREIGN KEY (asset_id) REFERENCES assets(id),
+    CONSTRAINT fk_transactions_portfolio FOREIGN KEY (portfolio_id) REFERENCES user_portfolios(id) ON DELETE CASCADE,
 
     CONSTRAINT chk_transactions_type CHECK (type IN (1, 2))
 );
@@ -204,8 +221,13 @@ CREATE TABLE refresh_tokens (
     CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE INDEX idx_portfolio_user ON portfolio(user_id);
+CREATE INDEX idx_user_portfolios_user ON user_portfolios(user_id);
+CREATE UNIQUE INDEX uq_user_portfolios_active ON user_portfolios(user_id) WHERE is_active = TRUE;
+CREATE INDEX idx_portfolio_holdings_user ON portfolio_holdings(user_id);
+CREATE INDEX idx_portfolio_holdings_portfolio ON portfolio_holdings(portfolio_id);
+CREATE UNIQUE INDEX uq_portfolio_asset ON portfolio_holdings(portfolio_id, asset_id);
 CREATE INDEX idx_transactions_user ON transactions(user_id);
+CREATE INDEX idx_transactions_portfolio ON transactions(portfolio_id);
 CREATE INDEX idx_alerts_user ON alerts(user_id);
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_favorites_user ON favorites(user_id);

@@ -2,16 +2,18 @@ import { Component, OnInit, OnDestroy, AfterViewInit, effect } from '@angular/co
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { MatDialog } from '@angular/material/dialog';
 
 import { PortfolioService } from '../../services/portfolio.service';
+import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { LanguageService } from '../../../../core/services/language.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog';
 import { PortfolioModal } from '../portfolio-modal/portfolio-modal';
 import { PortfolioSetupDialog } from '../portfolio-setup-dialog/portfolio-setup-dialog';
 import { BuyData, SellData, PortfolioModalResult } from '../../models/portfolio.modal.model';
@@ -22,6 +24,7 @@ import {
   TransactionFilter,
   PortfolioTransaction,
   SetupPortfolioRequest,
+  UserPortfolio,
 } from '../../models/portfolio.model';
 
 /**
@@ -105,9 +108,14 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     { value: '1y', label: '1 año' },
   ];
 
+  // ── Multi-portfolio ──
+  portfolios: UserPortfolio[] = [];
+  activeId: number | null = null;
+
   // ── Internos ──
   private chartRequestsInProgress = 0;
   private viewInitialized = false;
+  private readonly subscriptions = new Subscription();
 
   private readonly PIE_COLORS = [
     '#A9C455', '#4DA3F5', '#FF6E40',
@@ -119,6 +127,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private snackBarService: SnackBarService,
     private portfolioService: PortfolioService,
+    private activePortfolioService: ActivePortfolioService,
     private dialog: MatDialog,
     private themeService: ThemeService,
     private languageService: LanguageService,
@@ -133,9 +142,28 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
   // ── Ciclo de vida ──
 
-  /** Carga toda la información del portfolio (resumen, gráficos, tenencias y operaciones). */
+  /** Carga la lista de portfolios del usuario y, una vez resuelto el activo, toda su información. */
   ngOnInit(): void {
-    this.refreshPortfolio();
+    this.subscriptions.add(
+      this.activePortfolioService.portfolios$.subscribe(portfolios => {
+        this.portfolios = portfolios;
+      })
+    );
+
+    this.subscriptions.add(
+      this.activePortfolioService.activeId$.subscribe(activeId => {
+        const changed = this.activeId !== null && this.activeId !== activeId;
+        this.activeId = activeId;
+        if (changed) this.refreshPortfolio();
+      })
+    );
+
+    this.activePortfolioService.loadPortfolios().subscribe({
+      next: () => {
+        if (this.activeId !== null) this.refreshPortfolio();
+      },
+      error: (err) => console.error('Portfolios error', err),
+    });
   }
 
   /** Marca la vista como lista y dispara el renderizado de los gráficos si ya hay datos cargados. */
@@ -144,13 +172,30 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     this.renderChartsWhenReady();
   }
 
-  /** Destruye los gráficos de Chart.js para liberar sus recursos al salir de la pantalla. */
+  /** Destruye los gráficos de Chart.js y cancela las suscripciones al salir de la pantalla. */
   ngOnDestroy(): void {
     this.pieChart?.destroy();
     this.lineChart?.destroy();
+    this.subscriptions.unsubscribe();
   }
 
   // ── Computados ──
+
+  /** @returns El índice del tab activo dentro de `portfolios`, según el portfolio activo. */
+  get activeTabIndex(): number {
+    const index = this.portfolios.findIndex(p => p.id === this.activeId);
+    return index >= 0 ? index : 0;
+  }
+
+  /** @returns `true` si el usuario puede crear un portfolio adicional (máximo 3). */
+  get canCreateMore(): boolean {
+    return this.activePortfolioService.canCreateMore;
+  }
+
+  /** @returns `true` si el portfolio activo es el único del usuario (no se puede eliminar). */
+  get isOnlyPortfolio(): boolean {
+    return this.portfolios.length <= 1;
+  }
 
   /** @returns La cantidad total de páginas de la tabla de tenencias, según el tamaño de página actual. */
   get totalPositionsPages(): number {
@@ -385,7 +430,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   /** Carga las tarjetas de resumen (saldo inicial/actual, ganancia o pérdida y operaciones del día). */
   loadBalanceCards(): void {
     this.loadingSummary = true;
-    this.portfolioService.getBalanceCards()
+    this.portfolioService.getBalanceCards(this.activeId!)
       .pipe(finalize(() => this.loadingSummary = false))
       .subscribe({
         next: (res) => {
@@ -405,7 +450,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   /** Carga el gráfico de distribución (torta), arma el ranking de "Top Activos" y lo renderiza. */
   loadPieChart(): void {
     this.beginChartLoading();
-    this.portfolioService.getPieChart()
+    this.portfolioService.getPieChart(this.activeId!)
       .pipe(finalize(() => this.endChartLoading()))
       .subscribe({
         next: (res) => {
@@ -425,7 +470,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   /** Vuelve a cargar únicamente el gráfico de evolución para el período seleccionado. */
   loadLineChart(): void {
     this.beginChartLoading();
-    this.portfolioService.getLineChart(this.selectedPeriod)
+    this.portfolioService.getLineChart(this.activeId!, this.selectedPeriod)
       .pipe(finalize(() => this.endChartLoading()))
       .subscribe({
         next: (res) => {
@@ -449,7 +494,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       sortDirection: this.sortDirection ?? undefined,
     };
 
-    this.portfolioService.getOpenPositions(filter)
+    this.portfolioService.getOpenPositions(this.activeId!, filter)
       .pipe(finalize(() => this.loadingPositions = false))
       .subscribe({
         next: (res) => {
@@ -477,7 +522,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       sortDirection: this.operationSortDirection ?? undefined,
     };
 
-    this.portfolioService.getTransactionHistory(filter)
+    this.portfolioService.getTransactionHistory(this.activeId!, filter)
       .pipe(finalize(() => this.loadingOperations = false))
       .subscribe({
         next: (res) => {
@@ -502,7 +547,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       sortBy: this.sortField ?? undefined,
       sortDirection: this.sortDirection ?? undefined,
     };
-    this.portfolioService.exportHoldings(filter)
+    this.portfolioService.exportHoldings(this.activeId!, filter)
       .pipe(finalize(() => this.downloadingHoldings = false))
       .subscribe({
         next: (blob) => this.triggerDownload(blob, 'tenencias.xlsx'),
@@ -522,7 +567,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       sortBy: this.operationSortField ?? undefined,
       sortDirection: this.operationSortDirection ?? undefined,
     };
-    this.portfolioService.exportTransactions(filter)
+    this.portfolioService.exportTransactions(this.activeId!, filter)
       .pipe(finalize(() => this.downloadingTransactions = false))
       .subscribe({
         next: (blob) => this.triggerDownload(blob, 'operaciones.xlsx'),
@@ -719,7 +764,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
    * @param data Datos de la compra confirmados en el modal (símbolo y cantidad).
    */
   onBuyComplete(data: BuyData): void {
-    this.portfolioService.buyAsset(data.ticker, data.quantity).subscribe({
+    this.portfolioService.buyAsset(this.activeId!, data.ticker, data.quantity).subscribe({
       next: (res) => {
         this.snackBarService.fromResponse(res.success, res.code, res.message);
         if (res.success) this.refreshPortfolio();
@@ -734,7 +779,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
    * @param data Datos de la venta confirmados en el modal (símbolo y cantidad).
    */
   sellPosition(data: SellData): void {
-    this.portfolioService.sell(data).subscribe({
+    this.portfolioService.sell(this.activeId!, data).subscribe({
       next: (res) => {
         this.snackBarService.fromResponse(res.success, res.code, res.message);
         if (res.success) this.refreshPortfolio();
@@ -763,23 +808,101 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
     if (!result) return;
 
-    this.resetSimulation(result);
+    this.resetPortfolio(result);
   }
 
   /**
-   * Reinicia la simulación a través del servicio de portfolio (vuelve al saldo inicial
-   * y borra tenencias, operaciones e historial), notifica el resultado al usuario y,
-   * si fue exitoso, recarga todos los datos del portfolio.
+   * Reinicia el portfolio activo a través del servicio de portfolio (vuelve al saldo
+   * inicial y borra tenencias, operaciones e historial), notifica el resultado al
+   * usuario y, si fue exitoso, recarga todos los datos del portfolio.
    */
-  resetSimulation(dto: SetupPortfolioRequest): void {
-    this.portfolioService.resetSimulation(dto).subscribe({
+  resetPortfolio(dto: SetupPortfolioRequest): void {
+    this.portfolioService.resetPortfolio(this.activeId!, dto).subscribe({
       next: response => {
         this.snackBarService.fromResponse(response.success, response.code, response.message);
-        if (response.success) this.refreshPortfolio();
+        if (response.success) {
+          this.activePortfolioService.refresh().subscribe();
+          this.refreshPortfolio();
+        }
       },
       error: error => {
         this.snackBarService.fromResponse(false, error.error?.code, error.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.RESET_ERROR'));
       }
+    });
+  }
+
+  // ── Gestión de portfolios (tabs) ──
+
+  /**
+   * Cambia el portfolio activo cuando el usuario selecciona otro tab.
+   * @param index Índice del tab seleccionado dentro de `portfolios`.
+   */
+  onTabChange(index: number): void {
+    const portfolio = this.portfolios[index];
+    if (!portfolio || portfolio.id === this.activeId) return;
+    this.activePortfolioService.setActive(portfolio.id);
+  }
+
+  /**
+   * Abre el diálogo de configuración en modo `add-portfolio` y, si el usuario confirma,
+   * crea el nuevo portfolio y lo selecciona como activo.
+   */
+  async openAddPortfolioDialog(): Promise<void> {
+    if (!this.canCreateMore) return;
+
+    const dialogRef = this.dialog.open(PortfolioSetupDialog, {
+      width: '420px',
+      backdropClass: 'blur-backdrop',
+      data: { mode: 'add-portfolio' }
+    });
+
+    const result: SetupPortfolioRequest | undefined = await dialogRef.afterClosed().toPromise();
+
+    if (!result) return;
+
+    this.portfolioService.createPortfolio(result).subscribe({
+      next: (res) => {
+        this.snackBarService.fromResponse(res.success, res.code, res.message);
+        if (res.success && res.data) {
+          const newId = res.data.id;
+          this.activePortfolioService.refresh().subscribe(() => {
+            this.activePortfolioService.setActive(newId);
+          });
+        }
+      },
+      error: (err) => this.snackBarService.fromResponse(false, err.error?.code, err.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.CREATE_ERROR')),
+    });
+  }
+
+  /**
+   * Abre un diálogo de confirmación y, si el usuario confirma, elimina el portfolio
+   * activo (no disponible si es el único portfolio del usuario).
+   */
+  async confirmDeletePortfolio(): Promise<void> {
+    if (this.isOnlyPortfolio || this.activeId === null) return;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      backdropClass: 'blur-backdrop',
+      data: {
+        title: this.languageService.instant('PORTFOLIO.DELETE_DIALOG.TITLE'),
+        message: this.languageService.instant('PORTFOLIO.DELETE_DIALOG.MESSAGE', { name: this.portfolioSummary.portfolioName ?? '' }),
+        confirmText: this.languageService.instant('PORTFOLIO.DELETE_DIALOG.CONFIRM_BUTTON'),
+        cancelText: this.languageService.instant('SHARED.CONFIRM_DIALOG.CANCEL_BUTTON'),
+        danger: true,
+      }
+    });
+
+    const confirmed = await dialogRef.afterClosed().toPromise();
+
+    if (!confirmed || this.activeId === null) return;
+
+    this.portfolioService.deletePortfolio(this.activeId).subscribe({
+      next: (res) => {
+        this.snackBarService.fromResponse(res.success, res.code, res.message);
+        if (res.success) this.activePortfolioService.refresh().subscribe();
+      },
+      error: (err) => this.snackBarService.fromResponse(false, err.error?.code, err.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.DELETE_ERROR')),
     });
   }
 
