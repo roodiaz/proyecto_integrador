@@ -5,6 +5,22 @@
   </div>
 
   <div class="modal-body">
+    @if (showPortfolioSelector) {
+      <div class="form-group">
+        <label for="portfolioSelect">{{ 'PORTFOLIO.MODAL.PORTFOLIO_LABEL' | translate }}</label>
+        <select
+          id="portfolioSelect"
+          class="form-input"
+          [ngModel]="selectedPortfolioId"
+          (ngModelChange)="onPortfolioChange($event)"
+        >
+          @for (portfolio of portfolios; track portfolio.id) {
+            <option [ngValue]="portfolio.id">{{ portfolio.name }}</option>
+          }
+        </select>
+      </div>
+    }
+
     @if (mode === 'buy') {
       <div class="buy-content">
         <div class="form-group">

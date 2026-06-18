@@ -478,7 +478,8 @@
       "TOOLTIP_PROFIT": "The difference between what you will receive from the sale and what you originally paid. Positive means you made money; negative means you lost.",
       "TOOLTIP_PROFIT_PCT": "The gain or loss expressed as a percentage of what you invested. For example, +15% means you recover your original investment plus an extra 15%.",
       "OP_TITLE_BUY": "New operation",
-      "OP_TITLE_SELL": "Sell asset"
+      "OP_TITLE_SELL": "Sell asset",
+      "PORTFOLIO_LABEL": "Portfolio"
     },
     "EXPORT": {
       "EXPORT_HOLDINGS": "Export Holdings",

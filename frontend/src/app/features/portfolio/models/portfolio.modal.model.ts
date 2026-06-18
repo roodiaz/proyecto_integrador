@@ -1,11 +1,13 @@
 export interface BuyData {
   ticker: string;
   quantity: number;
+  portfolioId: number;
 }
 
 export interface SellData {
   symbol: string;
   quantity: number;
+  portfolioId: number;
 }
 
 export interface PortfolioPosition {
@@ -18,7 +20,6 @@ export interface PortfolioPosition {
 export interface PortfolioModalData {
   mode: 'buy' | 'sell';
   symbol?: string;
-  currentBalance?: number;
 }
 
 export type PortfolioModalResult =

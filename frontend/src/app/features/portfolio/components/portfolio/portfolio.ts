@@ -429,7 +429,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
       panelClass: 'portfolio-dialog-panel',
-      data: { mode: 'buy', symbol, currentBalance: this.portfolioSummary.currentBalance },
+      data: { mode: 'buy', symbol },
     });
 
     dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {
@@ -806,10 +806,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
    * @param data Datos de la compra confirmados en el modal (símbolo y cantidad).
    */
   onBuyComplete(data: BuyData): void {
-    this.portfolioService.buyAsset(this.activeId!, data.ticker, data.quantity).subscribe({
+    this.portfolioService.buyAsset(data.portfolioId, data.ticker, data.quantity).subscribe({
       next: (res) => {
         this.snackBarService.fromResponse(res.success, res.code, res.message);
-        if (res.success) this.refreshPortfolio();
+        if (res.success && data.portfolioId === this.activeId) this.refreshPortfolio();
       },
       error: () => this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.BUY_ERROR')),
     });
@@ -821,10 +821,10 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
    * @param data Datos de la venta confirmados en el modal (símbolo y cantidad).
    */
   sellPosition(data: SellData): void {
-    this.portfolioService.sell(this.activeId!, data).subscribe({
+    this.portfolioService.sell(data.portfolioId, data).subscribe({
       next: (res) => {
         this.snackBarService.fromResponse(res.success, res.code, res.message);
-        if (res.success) this.refreshPortfolio();
+        if (res.success && data.portfolioId === this.activeId) this.refreshPortfolio();
       },
       error: (err) => this.snackBarService.fromResponse(false, err.error?.code, err.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.SELL_ERROR')),
     });

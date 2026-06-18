@@ -8,6 +8,7 @@ import { BuyData, SellData, PortfolioModalData, PortfolioPosition, PortfolioModa
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { LanguageService } from '../../../../core/services/language.service';
 import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
+import { UserPortfolio } from '../../models/portfolio.model';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
@@ -44,6 +45,10 @@ export class PortfolioModal implements OnInit {
   sellQuantity = 0;
   position?: PortfolioPosition;
 
+  // ── Portfolio destino de la operación ──
+  selectedPortfolioId!: number;
+  availableBalance = 0;
+
   /**
    * Inicializa el modal a partir de los datos recibidos al abrir el diálogo
    * (modo de operación y, opcionalmente, el símbolo del activo precargado).
@@ -62,6 +67,7 @@ export class PortfolioModal implements OnInit {
   ) {
     this.mode = data.mode;
     this.symbol = data.symbol ?? '';
+    this.selectedPortfolioId = this.activePortfolioService.activeId!;
 
     if (this.mode === 'buy' && this.symbol)
       this.buyTicker = this.symbol;
@@ -71,24 +77,65 @@ export class PortfolioModal implements OnInit {
 
   /**
    * Carga los datos iniciales según el modo del modal: la posición actual
-   * (modo venta) o el precio de mercado del ticker precargado (modo compra).
+   * (modo venta) o el precio de mercado y el saldo disponible (modo compra),
+   * ambos para el portfolio seleccionado.
    */
   ngOnInit(): void {
     if (this.mode === 'sell' && this.symbol)
       this.loadPosition();
 
-    if (this.mode === 'buy' && this.buyTicker)
-      this.loadMarketPrice();
+    if (this.mode === 'buy') {
+      this.loadBalance();
+      if (this.buyTicker) this.loadMarketPrice();
+    }
+  }
+
+  // ── Selección de portfolio ──
+
+  /** @returns Los portfolios del usuario, para mostrar el selector cuando tiene más de uno. */
+  get portfolios(): UserPortfolio[] {
+    return this.activePortfolioService.portfolios;
+  }
+
+  /** @returns `true` si el usuario tiene más de un portfolio y debe elegir a cuál aplicar la operación. */
+  get showPortfolioSelector(): boolean {
+    return this.portfolios.length > 1;
+  }
+
+  /**
+   * Cambia el portfolio destino de la operación y recarga los datos que dependen
+   * de él (la posición en modo venta, el saldo disponible en modo compra).
+   * @param portfolioId Identificador del portfolio elegido.
+   */
+  onPortfolioChange(portfolioId: number): void {
+    if (portfolioId === this.selectedPortfolioId) return;
+    this.selectedPortfolioId = portfolioId;
+
+    if (this.mode === 'sell') this.loadPosition();
+    if (this.mode === 'buy') this.loadBalance();
   }
 
   // ── Carga de datos ──
+
+  /** Obtiene el saldo disponible del portfolio seleccionado para validar el costo de la compra. */
+  loadBalance(): void {
+    this.portfolioService.getBalanceCards(this.selectedPortfolioId).subscribe({
+      next: response => {
+        this.availableBalance = response.data?.currentBalance ?? 0;
+      },
+      error: error => {
+        console.error('loadBalance error', error);
+        this.availableBalance = 0;
+      }
+    });
+  }
 
   /**
    * Obtiene la posición actual del activo a vender. Si la operación falla o no
    * existe la posición, notifica el error al usuario y cierra el modal.
    */
   loadPosition(): void {
-    this.portfolioService.getPosition(this.activePortfolioService.activeId!, this.symbol).subscribe({
+    this.portfolioService.getPosition(this.selectedPortfolioId, this.symbol).subscribe({
       next: response => {
         if (!response.success || !response.data) {
           this.snackBarService.fromResponse(response.success, response.code, response.message || this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
@@ -149,9 +196,9 @@ export class PortfolioModal implements OnInit {
       : this.languageService.instant('PORTFOLIO.MODAL.OP_TITLE_SELL');
   }
 
-  /** @returns El saldo disponible del usuario para realizar compras. */
+  /** @returns El saldo disponible del portfolio seleccionado para realizar compras. */
   get currentBalance(): number {
-    return this.data.currentBalance ?? 0;
+    return this.availableBalance;
   }
 
   // ── Cálculos de compra ──
@@ -208,7 +255,8 @@ export class PortfolioModal implements OnInit {
 
     const data: BuyData = {
       ticker: this.buyTicker.trim().toUpperCase(),
-      quantity: this.buyQuantity
+      quantity: this.buyQuantity,
+      portfolioId: this.selectedPortfolioId
     };
 
     this.dialogRef.close({ mode: 'buy', data });
@@ -225,7 +273,8 @@ export class PortfolioModal implements OnInit {
 
     const data: SellData = {
       symbol: this.symbol,
-      quantity: this.sellQuantity
+      quantity: this.sellQuantity,
+      portfolioId: this.selectedPortfolioId
     };
 
     this.dialogRef.close({ mode: 'sell', data });

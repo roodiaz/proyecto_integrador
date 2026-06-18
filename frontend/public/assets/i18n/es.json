@@ -478,7 +478,8 @@
       "TOOLTIP_PROFIT": "La diferencia entre lo que vas a recibir por la venta y lo que pagaste originalmente. Positivo significa que ganaste dinero; negativo que perdiste.",
       "TOOLTIP_PROFIT_PCT": "La ganancia o pérdida expresada como porcentaje de lo que invertiste. Por ejemplo, +15% significa que recuperás tu inversión original más un 15% extra.",
       "OP_TITLE_BUY": "Nueva operación",
-      "OP_TITLE_SELL": "Vender activo"
+      "OP_TITLE_SELL": "Vender activo",
+      "PORTFOLIO_LABEL": "Portfolio"
     },
     "EXPORT": {
       "EXPORT_HOLDINGS": "Exportar Tenencias",

@@ -601,7 +601,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @param data Datos de la compra confirmados en el modal (símbolo y cantidad).
    */
   onBuyComplete(data: BuyData): void {
-    this.portfolioService.buyAsset(this.activePortfolioService.activeId!, data.ticker, data.quantity).subscribe({
+    this.portfolioService.buyAsset(data.portfolioId, data.ticker, data.quantity).subscribe({
       next: response => {
         this.snackBarService.fromResponse(
           response.success,
@@ -622,7 +622,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * @param data Datos de la venta confirmados en el modal (símbolo y cantidad).
    */
   sellPosition(data: SellData): void {
-    this.portfolioService.sell(this.activePortfolioService.activeId!, data).subscribe({
+    this.portfolioService.sell(data.portfolioId, data).subscribe({
       next: response => {
         this.snackBarService.fromResponse(
           response.success,
