@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
 import { MaterialModule } from '../../../../shared/material.module';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest, LoginData } from '../../models/login.model';
@@ -10,10 +9,7 @@ import { VerifyRequest } from '../../models/register.model';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../../../../core/services/language.service';
 import { TokenRefreshService } from '../../../../core/services/token-refresh.service';
-import { PortfolioService } from '../../../portfolio/services/portfolio.service';
 import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
-import { PortfolioSetupDialog } from '../../../portfolio/components/portfolio-setup-dialog/portfolio-setup-dialog';
-import { SetupPortfolioRequest } from '../../../portfolio/models/portfolio.model';
 
 @Component({
   selector: 'app-login-form',
@@ -43,9 +39,7 @@ export class LoginForm {
 
   private readonly languageService = inject(LanguageService);
   private readonly tokenRefreshService = inject(TokenRefreshService);
-  private readonly portfolioService = inject(PortfolioService);
   private readonly activePortfolioService = inject(ActivePortfolioService);
-  private readonly dialog = inject(MatDialog);
 
   constructor(
     private fb: FormBuilder,
@@ -65,32 +59,10 @@ export class LoginForm {
 
     this.activePortfolioService.loadPortfolios().subscribe({
       next: res => {
-        if ((res.data ?? []).length === 0) {
-          this.openPortfolioSetupDialog();
-          return;
-        }
-        this.router.navigate(['/dashboard']);
+        const hasPortfolios = (res.data ?? []).length > 0;
+        this.router.navigate([hasPortfolios ? '/dashboard' : '/portfolio']);
       },
       error: () => this.router.navigate(['/dashboard'])
-    });
-  }
-
-  private openPortfolioSetupDialog(): void {
-    const dialogRef = this.dialog.open(PortfolioSetupDialog, {
-      data: { mode: 'create' },
-      disableClose: true
-    });
-
-    dialogRef.afterClosed().subscribe((result?: SetupPortfolioRequest) => {
-      if (!result) {
-        this.router.navigate(['/dashboard']);
-        return;
-      }
-
-      this.portfolioService.createPortfolio(result).subscribe({
-        next: () => this.activePortfolioService.refresh().subscribe(() => this.router.navigate(['/dashboard'])),
-        error: () => this.router.navigate(['/dashboard'])
-      });
     });
   }
 

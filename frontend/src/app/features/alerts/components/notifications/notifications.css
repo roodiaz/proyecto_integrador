@@ -117,7 +117,7 @@
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--surface-high);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   color: var(--text-muted);
 }
 
@@ -135,7 +135,7 @@
   font-weight: 600;
   padding: 0.45rem 1rem;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -188,7 +188,7 @@
 .search-input {
   width: 100%;
   background: var(--surface-low);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 8px;
   padding: 0.55rem 0.875rem 0.55rem 2.5rem;
   font-size: 0.875rem;
@@ -216,7 +216,7 @@
   font-weight: 600;
   padding: 0.55rem 1rem;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
@@ -254,7 +254,7 @@
   font-weight: 600;
   padding: 0.55rem 1rem;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -279,7 +279,7 @@
   gap: 1rem;
   padding: 1rem;
   background: var(--surface);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 8px;
   flex-wrap: wrap;
 }
@@ -301,7 +301,7 @@
 
 .filter-select {
   background: var(--surface-low);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 0.8rem;
@@ -317,7 +317,7 @@
 
 .filter-date {
   background: var(--surface-low);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   font-size: 0.8rem;
@@ -354,7 +354,7 @@
   flex-direction: column;
   gap: 0.6rem;
   background: var(--surface);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 10px;
   padding: 1rem;
   transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
@@ -475,7 +475,7 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
@@ -548,7 +548,7 @@
   gap: 1rem;
   padding: 1rem 1.25rem;
   background: var(--surface);
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 10px;
 }
 
@@ -583,7 +583,7 @@
   font-weight: 600;
   padding: 5px 12px;
   border-radius: 6px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   background: transparent;
   color: var(--text);
   cursor: pointer;
@@ -615,7 +615,7 @@
   width: 30px;
   height: 30px;
   border-radius: 6px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   background: transparent;
   color: var(--text);
   font-size: 12px;

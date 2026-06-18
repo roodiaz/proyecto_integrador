@@ -25,7 +25,7 @@
 .modal-container {
   background: var(--bg);
   border-radius: 12px;
-  border: 1px solid var(--border);
+ /* border: 1px solid var(--border); */ 
   overflow: hidden;
   min-width: 480px;
   max-width: 560px;
@@ -127,7 +127,7 @@
 .form-input {
   width: 100%;
   padding: 0.6rem 0.875rem;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 8px;
   background: var(--input-bg);
   color: var(--text);
@@ -151,7 +151,7 @@
 .price-display {
   width: 100%;
   padding: 0.6rem 0.875rem;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
   border-radius: 8px;
   background: var(--input-bg);
   color: var(--text);
@@ -177,7 +177,7 @@
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 16px;
-  border: 1px solid var(--border);
+  /*mborder: 1px solid var(--border); */
 }
 
 .operation-info h3 {
@@ -222,7 +222,7 @@
   border-radius: 10px;
   padding: 16px;
   margin-top: 16px;
-  border: 1px solid var(--border);
+  /* border: 1px solid var(--border); */
 }
 
 .summary-row {
@@ -319,7 +319,7 @@
 
 .cancel-btn {
   padding: 0.55rem 1.1rem;
-  border: 1px solid var(--border);
+ /* border: 1px solid var(--border); */
   background: transparent;
   color: var(--text-muted);
   border-radius: 8px;
@@ -361,7 +361,7 @@
 
 .sell-btn {
   background: var(--red-dim);
-  border: 1px solid var(--red);
+  /* border: 1px solid var(--red); */
   color: var(--red);
 }
 

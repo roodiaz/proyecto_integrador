@@ -160,9 +160,51 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
 
     this.activePortfolioService.loadPortfolios().subscribe({
       next: () => {
-        if (this.activeId !== null) this.refreshPortfolio();
+        if (this.activeId !== null) {
+          this.refreshPortfolio();
+        } else {
+          this.openInitialSetupDialog();
+        }
       },
       error: (err) => console.error('Portfolios error', err),
+    });
+  }
+
+  /**
+   * Abre el wizard obligatorio de configuración inicial cuando el usuario todavía
+   * no tiene ningún portfolio (primer login), y crea el portfolio elegido.
+   */
+  private openInitialSetupDialog(): void {
+    const dialogRef = this.dialog.open(PortfolioSetupDialog, {
+      width: '460px',
+      maxWidth: '95vw',
+      backdropClass: 'blur-backdrop',
+      data: { mode: 'create' },
+    });
+
+    dialogRef.afterClosed().subscribe((result?: SetupPortfolioRequest) => {
+      if (!result) {
+        this.openInitialSetupDialog();
+        return;
+      }
+
+      this.portfolioService.createPortfolio(result).subscribe({
+        next: (res) => {
+          this.snackBarService.fromResponse(res.success, res.code, res.message);
+          if (res.success && res.data) {
+            const newId = res.data.id;
+            this.activePortfolioService.refresh().subscribe(() => {
+              this.activePortfolioService.setActive(newId);
+            });
+          } else {
+            this.openInitialSetupDialog();
+          }
+        },
+        error: (err) => {
+          this.snackBarService.fromResponse(false, err.error?.code, err.error?.message ?? this.languageService.instant('PORTFOLIO.ERRORS.CREATE_ERROR'));
+          this.openInitialSetupDialog();
+        },
+      });
     });
   }
 
@@ -796,7 +838,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
    */
   async confirmResetSimulation(): Promise<void> {
     const dialogRef = this.dialog.open(PortfolioSetupDialog, {
-      width: '420px',
+      width: '460px',
+      maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       data: {
         mode: 'reset',
@@ -851,7 +894,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     if (!this.canCreateMore) return;
 
     const dialogRef = this.dialog.open(PortfolioSetupDialog, {
-      width: '420px',
+      width: '460px',
+      maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       data: { mode: 'add-portfolio' }
     });
@@ -882,7 +926,8 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
     if (this.isOnlyPortfolio || this.activeId === null) return;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '420px',
+      width: '460px',
+      maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       data: {
         title: this.languageService.instant('PORTFOLIO.DELETE_DIALOG.TITLE'),
