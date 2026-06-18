@@ -13,12 +13,12 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
 	phone VARCHAR(20) NOT NULL,
-	birth_date TIMESTAMP WITH TIME ZONE DEFAULT,
+	birth_date TIMESTAMP WITH TIME ZONE,
 	profile_image_url TEXT,
-    password_hash VARCHAR(256) NOT NULL DEFAULT,
+    password_hash VARCHAR(256) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	update_at TIMESTAMP WITH TIME ZONE DEFAULT,
-    password_changed_at TIMESTAMP WITH TIME ZONE DEFAULT, 
+	update_at TIMESTAMP WITH TIME ZONE,
+    password_changed_at TIMESTAMP WITH TIME ZONE,
     last_login_at TIMESTAMP WITH TIME ZONE, -- Último login del usuario
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     failed_login_attempts INT NOT NULL DEFAULT 0, -- Intentos fallidos de login consecutivos
@@ -259,7 +259,9 @@ VALUES
 ('DIS', 'The Walt Disney Company', 'Entertainment'),
 ('BA', 'The Boeing Company', 'Aerospace'),
 ('XOM', 'Exxon Mobil Corporation', 'Energy'),
-('JNJ', 'Johnson & Johnson', 'Healthcare');
+('JNJ', 'Johnson & Johnson', 'Healthcare'),
+('UBER', 'Uber Technologies Inc', 'Road & Rail'),
+('COO', 'The Cooper Companies, Inc.', 'Unknown');
 
 INSERT INTO assets (symbol, name, sector)
 VALUES
