@@ -114,12 +114,15 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
       args:
-        API_URL: http://localhost:8080/api
-        SERVER_URL: http://localhost:8080
+        API_URL: /api
+        SERVER_URL: ""
 
     container_name: investlab.frontend
 
     restart: always
+
+    depends_on:
+      - investlab.api
 
     ports:
       - "4200:80"
