@@ -3,6 +3,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { PortfolioService } from '../../services/portfolio.service';
 import { BuyData, SellData, PortfolioModalData, PortfolioPosition, PortfolioModalResult } from '../../models/portfolio.modal.model';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
@@ -44,10 +46,15 @@ export class PortfolioModal implements OnInit {
   // ── Datos de venta ──
   sellQuantity = 0;
   position?: PortfolioPosition;
+  loadingPosition = false;
 
   // ── Portfolio destino de la operación ──
   selectedPortfolioId!: number;
   availableBalance = 0;
+
+  /** Portfolios donde el usuario tiene una posición abierta (cantidad > 0) del activo a vender. */
+  private sellablePortfolios: UserPortfolio[] = [];
+  private positionsBySellablePortfolio = new Map<number, PortfolioPosition>();
 
   /**
    * Inicializa el modal a partir de los datos recibidos al abrir el diálogo
@@ -82,7 +89,7 @@ export class PortfolioModal implements OnInit {
    */
   ngOnInit(): void {
     if (this.mode === 'sell' && this.symbol)
-      this.loadPosition();
+      this.loadSellablePositions();
 
     if (this.mode === 'buy') {
       this.loadBalance();
@@ -92,18 +99,22 @@ export class PortfolioModal implements OnInit {
 
   // ── Selección de portfolio ──
 
-  /** @returns Los portfolios del usuario, para mostrar el selector cuando tiene más de uno. */
+  /**
+   * @returns Los portfolios entre los que el usuario puede elegir para esta operación:
+   * todos en modo compra, o solo aquellos donde tiene una posición abierta del activo
+   * en modo venta.
+   */
   get portfolios(): UserPortfolio[] {
-    return this.activePortfolioService.portfolios;
+    return this.mode === 'sell' ? this.sellablePortfolios : this.activePortfolioService.portfolios;
   }
 
-  /** @returns `true` si el usuario tiene más de un portfolio y debe elegir a cuál aplicar la operación. */
+  /** @returns `true` si el usuario tiene más de un portfolio entre los que elegir para esta operación. */
   get showPortfolioSelector(): boolean {
     return this.portfolios.length > 1;
   }
 
   /**
-   * Cambia el portfolio destino de la operación y recarga los datos que dependen
+   * Cambia el portfolio destino de la operación y actualiza los datos que dependen
    * de él (la posición en modo venta, el saldo disponible en modo compra).
    * @param portfolioId Identificador del portfolio elegido.
    */
@@ -111,7 +122,11 @@ export class PortfolioModal implements OnInit {
     if (portfolioId === this.selectedPortfolioId) return;
     this.selectedPortfolioId = portfolioId;
 
-    if (this.mode === 'sell') this.loadPosition();
+    if (this.mode === 'sell') {
+      this.position = this.positionsBySellablePortfolio.get(portfolioId);
+      this.sellQuantity = 1;
+    }
+
     if (this.mode === 'buy') this.loadBalance();
   }
 
@@ -131,26 +146,49 @@ export class PortfolioModal implements OnInit {
   }
 
   /**
-   * Obtiene la posición actual del activo a vender. Si la operación falla o no
-   * existe la posición, notifica el error al usuario y cierra el modal.
+   * Busca, entre todos los portfolios del usuario, en cuáles tiene una posición abierta
+   * (cantidad > 0) del activo a vender. Si no la tiene en ninguno, notifica el error y
+   * cierra el modal; en caso contrario, preselecciona el portfolio activo (si tiene
+   * posición ahí) o el primero disponible.
    */
-  loadPosition(): void {
-    this.portfolioService.getPosition(this.selectedPortfolioId, this.symbol).subscribe({
-      next: response => {
-        if (!response.success || !response.data) {
-          this.snackBarService.fromResponse(response.success, response.code, response.message || this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
-          this.onClose();
-          return;
-        }
+  private loadSellablePositions(): void {
+    const portfolios = this.activePortfolioService.portfolios;
 
-        this.position = response.data;
-        this.sellQuantity = 1;
-      },
-      error: error => {
-        console.error('loadPosition error', error);
+    if (portfolios.length === 0) {
+      this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
+      this.onClose();
+      return;
+    }
+
+    this.loadingPosition = true;
+
+    forkJoin(
+      portfolios.map(portfolio =>
+        this.portfolioService.getPosition(portfolio.id, this.symbol).pipe(
+          map(response => ({ portfolio, position: response.success ? response.data ?? null : null })),
+          catchError(() => of({ portfolio, position: null as PortfolioPosition | null }))
+        )
+      )
+    ).subscribe(results => {
+      this.loadingPosition = false;
+
+      for (const { portfolio, position } of results) {
+        if (position && position.quantity > 0) {
+          this.sellablePortfolios.push(portfolio);
+          this.positionsBySellablePortfolio.set(portfolio.id, position);
+        }
+      }
+
+      if (this.sellablePortfolios.length === 0) {
         this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
         this.onClose();
+        return;
       }
+
+      const preferred = this.sellablePortfolios.find(p => p.id === this.selectedPortfolioId);
+      this.selectedPortfolioId = (preferred ?? this.sellablePortfolios[0]).id;
+      this.position = this.positionsBySellablePortfolio.get(this.selectedPortfolioId);
+      this.sellQuantity = 1;
     });
   }
 

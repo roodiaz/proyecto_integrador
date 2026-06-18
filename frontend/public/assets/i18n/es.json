@@ -479,7 +479,8 @@
       "TOOLTIP_PROFIT_PCT": "La ganancia o pérdida expresada como porcentaje de lo que invertiste. Por ejemplo, +15% significa que recuperás tu inversión original más un 15% extra.",
       "OP_TITLE_BUY": "Nueva operación",
       "OP_TITLE_SELL": "Vender activo",
-      "PORTFOLIO_LABEL": "Portfolio"
+      "PORTFOLIO_LABEL": "Portfolio",
+      "LOADING_POSITION": "Buscando tu posición en cada portfolio..."
     },
     "EXPORT": {
       "EXPORT_HOLDINGS": "Exportar Tenencias",

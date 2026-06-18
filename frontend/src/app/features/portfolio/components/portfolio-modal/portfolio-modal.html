@@ -79,7 +79,13 @@
       </div>
     }
 
-    @if (mode === 'sell') {
+    @if (mode === 'sell' && loadingPosition) {
+      <div class="sell-content">
+        <p class="dialog-subtitle">{{ 'PORTFOLIO.MODAL.LOADING_POSITION' | translate }}</p>
+      </div>
+    }
+
+    @if (mode === 'sell' && !loadingPosition) {
       <div class="sell-content">
         <div class="operation-info">
           <h3>{{ 'PORTFOLIO.MODAL.OP_INFO_TITLE' | translate }}</h3>

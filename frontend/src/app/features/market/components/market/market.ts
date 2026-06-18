@@ -2,6 +2,8 @@ import { AfterViewInit, Component, OnDestroy, OnInit, effect } from '@angular/co
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 import Chart from 'chart.js/auto';
@@ -373,17 +375,25 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    const portfolios = this.activePortfolioService.portfolios;
+
+    if (portfolios.length === 0) {
+      this.hasPositionForSelectedAsset = false;
+      return;
+    }
+
     this.loadingPositionStatus = true;
 
-    this.portfolioService.getPosition(this.activePortfolioService.activeId!, symbol).subscribe({
-      next: response => {
-        this.loadingPositionStatus = false;
-        this.hasPositionForSelectedAsset = !!(response.success && response.data && response.data.quantity > 0);
-      },
-      error: () => {
-        this.loadingPositionStatus = false;
-        this.hasPositionForSelectedAsset = false;
-      }
+    forkJoin(
+      portfolios.map(portfolio =>
+        this.portfolioService.getPosition(portfolio.id, symbol).pipe(
+          map(response => !!(response.success && response.data && response.data.quantity > 0)),
+          catchError(() => of(false))
+        )
+      )
+    ).subscribe(results => {
+      this.loadingPositionStatus = false;
+      this.hasPositionForSelectedAsset = results.some(hasPosition => hasPosition);
     });
   }
 
