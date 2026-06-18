@@ -26,7 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\InvestLab.Business\InvestLab.Business.csproj" />
     <ProjectReference Include="..\InvestLab.Data\InvestLab.Data.csproj" />
-    <ProjectReference Include="..\InvestLab.Workers\InvestLab.Workers.csproj" />
   </ItemGroup>
 
 </Project>

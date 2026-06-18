@@ -2,8 +2,8 @@ using InvestLab.Api.Extensions;
 using InvestLab.Api.Middleware;
 using InvestLab.Integrations.DependencyInjection;
 using InvestLab.Models.DTOs.Auth;
+using InvestLab.Business.Workers;
 using InvestLab.Models.Options;
-using InvestLab.Workers;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Text.Json;
 

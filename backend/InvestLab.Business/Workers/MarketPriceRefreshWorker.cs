@@ -1,9 +1,9 @@
-﻿using InvestLab.Business.Interfaces.Workers;
+using InvestLab.Business.Interfaces.Workers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace InvestLab.Workers
+namespace InvestLab.Business.Workers
 {
     public class MarketPriceRefreshWorker : BackgroundService
     {
