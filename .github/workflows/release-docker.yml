@@ -1,6 +1,10 @@
 name: Generar release Docker
 
 on:
+  push:
+    branches:
+      - staging
+
   workflow_dispatch:
     inputs:
       version:
@@ -8,12 +12,16 @@ on:
         required: true
         default: "1.0.0"
 
+concurrency:
+  group: docker-staging
+  cancel-in-progress: true
+
 jobs:
   build-release:
     runs-on: ubuntu-latest
 
     env:
-      VERSION: ${{ inputs.version }}
+      VERSION: ${{ github.event.inputs.version || format('0.0.0-staging.{0}', github.run_number) }}
 
     steps:
       - name: Descargar repositorio
@@ -79,8 +87,8 @@ jobs:
       - name: Publicar paquete descargable
         uses: actions/upload-artifact@v4
         with:
-          name: investlab-release-v${{ inputs.version }}
-          path: release/v${{ inputs.version }}
+          name: investlab-release-v${{ env.VERSION }}
+          path: release/v${{ env.VERSION }}
           if-no-files-found: error
           retention-days: 7
           compression-level: 6
