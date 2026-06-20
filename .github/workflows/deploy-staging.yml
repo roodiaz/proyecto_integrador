@@ -1,0 +1,29 @@
+# .github/workflows/deploy-staging.yml
+
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Ir al proyecto y actualizar staging
+        run: |
+          cd ~/apps/proyecto_integrador
+          git fetch origin
+          git checkout staging
+          git pull origin staging
+
+      - name: Levantar backend con Docker Compose
+        run: |
+          cd ~/apps/proyecto_integrador/backend
+          docker compose -f docker-compose.yml up -d --build
+
+      - name: Limpiar imágenes viejas
+        run: |
+          docker image prune -f
