@@ -47,6 +47,80 @@
   background: var(--il-border-muted);
 }
 
+/* ─── Estado del mercado ─── */
+.market-status-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0 6px;
+  box-sizing: border-box;
+}
+
+.market-state-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--il-text-sec);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.market-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ae176;
+  box-shadow: 0 0 14px rgba(74, 225, 118, 0.75);
+  flex-shrink: 0;
+}
+
+.market-state-row.closed .market-state-dot {
+  background: #ff5451;
+  box-shadow: 0 0 14px rgba(255, 84, 81, 0.75);
+}
+
+.market-state-row.closed .market-state-label {
+  color: var(--il-danger);
+}
+
+.market-state-countdown {
+  padding: 0 12px;
+  color: var(--il-text-dim);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.market-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0 12px;
+  color: var(--il-text-dim);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.market-status-icon {
+  font-size: 17px !important;
+  width: 17px !important;
+  height: 17px !important;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--il-accent);
+  font-family: 'Material Icons' !important;
+}
+
+.market-status-text {
+  white-space: normal;
+  overflow: hidden;
+}
+
 .more-action--danger {
   color: var(--il-danger);
 }
