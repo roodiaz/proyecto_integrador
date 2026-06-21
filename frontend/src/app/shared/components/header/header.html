@@ -17,7 +17,7 @@
     </button>
 
     <mat-menu #notifMenu="matMenu" class="notif-menu-panel" xPosition="before">
-      <div class="notif-menu" (click)="$event.stopPropagation()">
+      <div class="notif-menu">
 
         <div class="notif-menu-header">
           {{ 'HEADER.NOTIFICATIONS' | translate }}
@@ -46,7 +46,7 @@
           </div>
         }
 
-        <button mat-button class="notif-menu-action" (click)="goToNotifications()">
+        <button mat-menu-item class="notif-menu-action" (click)="goToNotifications()">
           {{ 'HEADER.VIEW_ALL' | translate }}
           <mat-icon>arrow_forward</mat-icon>
         </button>
@@ -65,7 +65,7 @@
     </button>
 
     <mat-menu #userMenu="matMenu" class="user-menu-panel" xPosition="before">
-      <div class="user-menu" (click)="$event.stopPropagation()">
+      <div class="user-menu">
 
         <div class="user-menu-info">
           @if (profileImageUrl) {
