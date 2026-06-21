@@ -10,7 +10,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    { provide: TRANSLATE_HTTP_LOADER_CONFIG, useValue: { prefix: '/assets/i18n/', suffix: '.json' } },
+    // El sufijo incluye un cache-buster: sin esto, "/assets/i18n/es.json" es siempre la
+    // misma URL entre deploys y el navegador (o un proxy/CDN) puede servir una versión
+    // vieja en caché aunque el archivo ya se haya actualizado en el servidor.
+    { provide: TRANSLATE_HTTP_LOADER_CONFIG, useValue: { prefix: '/assets/i18n/', suffix: `.json?v=${Date.now()}` } },
     provideTranslateService({
       lang: 'es',
       fallbackLang: 'es',
