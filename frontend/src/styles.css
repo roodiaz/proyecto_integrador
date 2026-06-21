@@ -494,38 +494,23 @@ html, body {
   max-height: calc(100vh - 64px) !important;
 }
 
-/* Importante: solo `max-height` (no `height` fija) — si el formulario es corto
-   (p. ej. Crear Alerta) el diálogo se achica a su contenido en vez de quedar
-   forzado a 100vh con un hueco vacío entre el formulario y los botones. */
+/* Todos los modales de mobile ocupan el alto real de la pantalla (100dvh,
+   no 100vh — evita el hueco/scroll fantasma de la barra de direcciones),
+   aunque el formulario sea corto: el footer queda pegado abajo y el body
+   absorbe el espacio de sobra en vez de dejar un hueco vacío al fondo. */
 @media (max-width: 600px) {
   .mobile-fullscreen-dialog {
     max-width: 100vw !important;
     width: 100vw !important;
-    max-height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
     margin: 0 !important;
   }
 
-  .mobile-fullscreen-dialog .mat-mdc-dialog-container {
-    max-height: 100vh;
-  }
-
+  .mobile-fullscreen-dialog .mat-mdc-dialog-container,
   .mobile-fullscreen-dialog .mdc-dialog__surface {
-    max-height: 100vh !important;
-  }
-
-  /* Excepción: el de Agregar a Watchlist sí queremos que ocupe el alto real
-     de la pantalla aunque la lista sea corta (no que se achique a su
-     contenido como Crear Alerta) — por eso fuerza `height`, no solo `max-height`. */
-  .watchlist-dialog.mobile-fullscreen-dialog .mat-mdc-dialog-container,
-  .watchlist-dialog.mobile-fullscreen-dialog .mdc-dialog__surface {
     height: 100dvh !important;
-  }
-
-  /* Misma excepción para Crear/Reiniciar/Agregar portfolio: ocupan el alto
-     real de la pantalla aunque el formulario sea corto. */
-  .portfolio-setup-dialog-panel.mobile-fullscreen-dialog .mat-mdc-dialog-container,
-  .portfolio-setup-dialog-panel.mobile-fullscreen-dialog .mdc-dialog__surface {
-    height: 100dvh !important;
+    max-height: 100dvh !important;
   }
 }
 

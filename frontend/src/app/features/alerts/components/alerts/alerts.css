@@ -205,21 +205,6 @@
   gap: 8px;
 }
 
-.notification-badge {
-  background: var(--accent-red);
-  color: #2a0a0a;
-  border-radius: 999px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-}
-
 /* ── Tab Content ── */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
@@ -704,11 +689,19 @@ input:checked + .slider:before { transform: translateX(22px); }
 
   .alerts-header {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: stretch;
   }
 
-  .new-alert-btn { justify-content: center; }
+  /* "Nueva Alerta" tenía demasiada presencia (botón grande a todo el ancho) —
+     ya existe el FAB "Operar" como acceso rápido global, así que aquí alcanza
+     con un botón más chico, sin estirarse a todo el ancho. */
+  .new-alert-btn {
+    align-self: flex-start;
+    justify-content: center;
+    padding: 8px 16px;
+    font-size: 12px;
+  }
 
   .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .summary-card  { padding: 16px; }
@@ -717,25 +710,36 @@ input:checked + .slider:before { transform: translateX(22px); }
   .filter-toolbar { flex-wrap: wrap; }
   .search-wrap    { min-width: 0; }
 
-  .tabs { border-bottom: none; flex-direction: column; }
+  /* Apiladas en columna casi no se notaba que eran tabs — vuelven a quedar
+     una al lado de la otra, como segmented control (igual que Ingresar/
+     Registrarse en el header público), para que se note que son un switch. */
+  .tabs {
+    border-bottom: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 0;
+  }
 
-  /* El celeste de inactivo (--text-secondary) y el de activo (--accent-primary) son
-     casi el mismo tono — la única señal era una barra de 3px, insuficiente. Ahora el
-     tab activo además cambia el color del texto a blanco y suma un fondo tintado. */
   .tab {
-    border-bottom: 1px solid var(--border-color);
-    border-left: 3px solid transparent;
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 999px;
+    border-bottom: none;
     top: 0;
     color: var(--text-muted);
     font-weight: 500;
   }
 
   .tab.active {
-    background: rgba(173, 198, 255, 0.1);
-    border-bottom-color: var(--border-color);
-    border-left: 4px solid var(--accent-primary);
-    color: var(--text-primary);
+    background: var(--accent-primary);
+    color: var(--accent-on);
     font-weight: 700;
+  }
+
+  .notification-tab {
+    justify-content: center;
   }
 }
 

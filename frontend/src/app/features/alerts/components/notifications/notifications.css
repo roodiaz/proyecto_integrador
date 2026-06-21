@@ -669,7 +669,7 @@
   }
 
   .search-wrap {
-    width: 100%;
+    min-width: 0;
   }
 
   .notif-list {

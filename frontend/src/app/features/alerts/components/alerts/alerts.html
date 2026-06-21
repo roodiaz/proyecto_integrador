@@ -23,9 +23,6 @@
 
         <button class="tab notification-tab" [class.active]="activeView === 'history'" (click)="setActiveView('history')">
           {{ 'ALERTS.TAB_NOTIFICATIONS' | translate }}
-          @if (unreadNotificationsCount > 0) {
-            <span class="notification-badge">{{ unreadNotificationsCount }}</span>
-          }
         </button>
       </div>
     </div>
