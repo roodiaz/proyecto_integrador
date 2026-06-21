@@ -237,7 +237,8 @@
     "VIEW_ALL": "View all",
     "PROFILE": "Profile",
     "SETTINGS": "Settings",
-    "LOGOUT": "Log Out"
+    "LOGOUT": "Log Out",
+    "LAST_LOGIN": "Last login"
   },
   "DASHBOARD": {
     "TITLE": "Dashboard",

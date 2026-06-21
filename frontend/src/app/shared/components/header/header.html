@@ -82,6 +82,7 @@
 
         @if (profile?.lastLoginAt) {
           <div class="user-menu-last-login">
+            <span class="user-menu-last-login-label">{{ 'HEADER.LAST_LOGIN' | translate }}</span>
             <span class="user-menu-last-login-value">{{ profile?.lastLoginAt | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
         }

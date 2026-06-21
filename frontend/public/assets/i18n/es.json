@@ -237,7 +237,8 @@
     "VIEW_ALL": "Ver todas",
     "PROFILE": "Perfil",
     "SETTINGS": "Configuración",
-    "LOGOUT": "Cerrar Sesión"
+    "LOGOUT": "Cerrar Sesión",
+    "LAST_LOGIN": "Último ingreso"
   },
   "DASHBOARD": {
     "TITLE": "Dashboard",
