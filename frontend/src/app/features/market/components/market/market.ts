@@ -424,25 +424,33 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const portfolios = this.activePortfolioService.portfolios;
-
-    if (portfolios.length === 0) {
-      this.hasPositionForSelectedAsset = false;
-      return;
-    }
-
     this.loadingPositionStatus = true;
 
-    forkJoin(
-      portfolios.map(portfolio =>
-        this.portfolioService.getPosition(portfolio.id, symbol).pipe(
-          map(response => !!(response.success && response.data && response.data.quantity > 0)),
-          catchError(() => of(false))
+    // `activePortfolioService.portfolios` solo se carga al visitar Dashboard o Portfolio
+    // en la sesión — si se llega a Mercado sin haber pasado por esas pantallas puede
+    // estar vacía todavía, así que la cargamos primero en vez de asumirla lista.
+    const portfolios$ = this.activePortfolioService.portfolios.length > 0
+      ? of(this.activePortfolioService.portfolios)
+      : this.activePortfolioService.loadPortfolios().pipe(map(() => this.activePortfolioService.portfolios));
+
+    portfolios$.subscribe(portfolios => {
+      if (portfolios.length === 0) {
+        this.loadingPositionStatus = false;
+        this.hasPositionForSelectedAsset = false;
+        return;
+      }
+
+      forkJoin(
+        portfolios.map(portfolio =>
+          this.portfolioService.getPosition(portfolio.id, symbol).pipe(
+            map(response => !!(response.success && response.data && response.data.quantity > 0)),
+            catchError(() => of(false))
+          )
         )
-      )
-    ).subscribe(results => {
-      this.loadingPositionStatus = false;
-      this.hasPositionForSelectedAsset = results.some(hasPosition => hasPosition);
+      ).subscribe(results => {
+        this.loadingPositionStatus = false;
+        this.hasPositionForSelectedAsset = results.some(hasPosition => hasPosition);
+      });
     });
   }
 

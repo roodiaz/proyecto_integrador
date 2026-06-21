@@ -3,6 +3,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { PortfolioService } from '../../services/portfolio.service';
@@ -13,6 +14,15 @@ import { ActivePortfolioService } from '../../../../core/services/active-portfol
 import { UserPortfolio } from '../../models/portfolio.model';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
+
+/**
+ * Códigos de error que el backend devuelve cuando un portfolio puntual
+ * genuinamente no tiene una posición vendible del activo (sin posición, sin
+ * portfolio o activo inexistente). Cualquier otro código (p. ej. el precio de
+ * mercado no disponible) es una falla real al verificar, no una ausencia de
+ * posición, y no debe interpretarse como "no tenés este activo".
+ */
+const NO_POSITION_CODES = ['POSITION_NOT_FOUND', 'PORTFOLIO_NOT_FOUND', 'ASSET_NOT_FOUND'];
 
 /**
  * Modal de operaciones del portfolio: permite comprar un nuevo activo o vender
@@ -57,6 +67,13 @@ export class PortfolioModal implements OnInit {
   private positionsBySellablePortfolio = new Map<number, PortfolioPosition>();
 
   /**
+   * `true` cuando la venta llega con un portfolio ya fijado (p. ej. desde la
+   * pantalla Portfolio, parado sobre uno): la operación es directamente sobre
+   * ese portfolio, sin buscar entre el resto ni mostrar el selector.
+   */
+  private scopedToPortfolio = false;
+
+  /**
    * Inicializa el modal a partir de los datos recibidos al abrir el diálogo
    * (modo de operación y, opcionalmente, el símbolo del activo precargado).
    * @param dialogRef Referencia al diálogo, usada para cerrarlo y devolver el resultado de la operación.
@@ -74,7 +91,8 @@ export class PortfolioModal implements OnInit {
   ) {
     this.mode = data.mode;
     this.symbol = data.symbol ?? '';
-    this.selectedPortfolioId = this.activePortfolioService.activeId!;
+    this.scopedToPortfolio = this.mode === 'sell' && data.portfolioId != null;
+    this.selectedPortfolioId = data.portfolioId ?? this.activePortfolioService.activeId!;
 
     if (this.mode === 'buy' && this.symbol)
       this.buyTicker = this.symbol;
@@ -88,13 +106,36 @@ export class PortfolioModal implements OnInit {
    * ambos para el portfolio seleccionado.
    */
   ngOnInit(): void {
-    if (this.mode === 'sell' && this.symbol)
-      this.loadSellablePositions();
+    if (this.mode === 'sell' && this.symbol) {
+      if (this.scopedToPortfolio) this.loadScopedPosition();
+      else this.loadSellablePositions();
+    }
 
     if (this.mode === 'buy') {
-      this.loadBalance();
+      this.ensurePortfoliosLoaded().subscribe(portfolios => {
+        if (portfolios.length === 0) return;
+
+        if (!this.selectedPortfolioId) {
+          const active = portfolios.find(p => p.id === this.activePortfolioService.activeId);
+          this.selectedPortfolioId = (active ?? portfolios[0]).id;
+        }
+        this.loadBalance();
+      });
+
       if (this.buyTicker) this.loadMarketPrice();
     }
+  }
+
+  /**
+   * Asegura que la lista de portfolios del usuario esté cargada antes de operar con
+   * ella. `activePortfolioService.portfolios` solo se carga al visitar Dashboard o
+   * Portfolio en la sesión — si el modal se abre desde otro lado (p. ej. el FAB Operar
+   * en mobile) puede estar vacía todavía.
+   */
+  private ensurePortfoliosLoaded() {
+    return this.activePortfolioService.portfolios.length > 0
+      ? of(this.activePortfolioService.portfolios)
+      : this.activePortfolioService.loadPortfolios().pipe(map(() => this.activePortfolioService.portfolios));
   }
 
   // ── Selección de portfolio ──
@@ -108,8 +149,13 @@ export class PortfolioModal implements OnInit {
     return this.mode === 'sell' ? this.sellablePortfolios : this.activePortfolioService.portfolios;
   }
 
-  /** @returns `true` si el usuario tiene más de un portfolio entre los que elegir para esta operación. */
+  /**
+   * @returns `true` si corresponde mostrar el selector de portfolio: en compra, solo si hay
+   * más de uno para elegir; en venta, siempre que se haya buscado el activo entre todos los
+   * portfolios (aunque el resultado sea uno solo) — nunca si la venta ya viene fija a uno.
+   */
   get showPortfolioSelector(): boolean {
+    if (this.mode === 'sell') return !this.scopedToPortfolio;
     return this.portfolios.length > 1;
   }
 
@@ -150,44 +196,86 @@ export class PortfolioModal implements OnInit {
    * (cantidad > 0) del activo a vender. Si no la tiene en ninguno, notifica el error y
    * cierra el modal; en caso contrario, preselecciona el portfolio activo (si tiene
    * posición ahí) o el primero disponible.
+   *
+   * `activePortfolioService.portfolios` solo se carga cuando se visitó Dashboard o
+   * Portfolio en la sesión — si se llega acá desde otro lado (p. ej. el FAB Operar en
+   * mobile, sin haber pasado por esas pantallas) puede estar vacío todavía, así que lo
+   * cargamos primero en vez de asumir que ya está listo.
    */
   private loadSellablePositions(): void {
-    const portfolios = this.activePortfolioService.portfolios;
-
-    if (portfolios.length === 0) {
-      this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
-      this.onClose();
-      return;
-    }
-
     this.loadingPosition = true;
 
-    forkJoin(
-      portfolios.map(portfolio =>
-        this.portfolioService.getPosition(portfolio.id, this.symbol).pipe(
-          map(response => ({ portfolio, position: response.success ? response.data ?? null : null })),
-          catchError(() => of({ portfolio, position: null as PortfolioPosition | null }))
-        )
-      )
-    ).subscribe(results => {
-      this.loadingPosition = false;
-
-      for (const { portfolio, position } of results) {
-        if (position && position.quantity > 0) {
-          this.sellablePortfolios.push(portfolio);
-          this.positionsBySellablePortfolio.set(portfolio.id, position);
-        }
-      }
-
-      if (this.sellablePortfolios.length === 0) {
+    this.ensurePortfoliosLoaded().subscribe(portfolios => {
+      if (portfolios.length === 0) {
+        this.loadingPosition = false;
         this.snackBarService.error(this.languageService.instant('PORTFOLIO.ERRORS.POSITION_NOT_FOUND'));
         this.onClose();
         return;
       }
 
-      const preferred = this.sellablePortfolios.find(p => p.id === this.selectedPortfolioId);
-      this.selectedPortfolioId = (preferred ?? this.sellablePortfolios[0]).id;
-      this.position = this.positionsBySellablePortfolio.get(this.selectedPortfolioId);
+      forkJoin(
+        portfolios.map(portfolio =>
+          this.portfolioService.getPosition(portfolio.id, this.symbol).pipe(
+            map(response => ({ portfolio, position: response.success ? response.data ?? null : null, checkFailed: false })),
+            catchError((err: HttpErrorResponse) => {
+              const checkFailed = !NO_POSITION_CODES.includes(err.error?.code);
+              return of({ portfolio, position: null as PortfolioPosition | null, checkFailed });
+            })
+          )
+        )
+      ).subscribe(results => {
+        this.loadingPosition = false;
+
+        for (const { portfolio, position } of results) {
+          if (position && position.quantity > 0) {
+            this.sellablePortfolios.push(portfolio);
+            this.positionsBySellablePortfolio.set(portfolio.id, position);
+          }
+        }
+
+        if (this.sellablePortfolios.length === 0) {
+          // Si no encontramos posición vendible pero alguna verificación falló por una razón
+          // real (no "no tiene posición"), no afirmamos que el usuario no tiene el activo:
+          // avisamos que no pudimos confirmarlo y lo invitamos a reintentar.
+          const anyCheckFailed = results.some(r => r.checkFailed);
+          const messageKey = anyCheckFailed ? 'PORTFOLIO.ERRORS.POSITION_CHECK_FAILED' : 'PORTFOLIO.ERRORS.POSITION_NOT_FOUND';
+          this.snackBarService.error(this.languageService.instant(messageKey));
+          this.onClose();
+          return;
+        }
+
+        const preferred = this.sellablePortfolios.find(p => p.id === this.selectedPortfolioId);
+        this.selectedPortfolioId = (preferred ?? this.sellablePortfolios[0]).id;
+        this.position = this.positionsBySellablePortfolio.get(this.selectedPortfolioId);
+        this.sellQuantity = 1;
+      });
+    });
+  }
+
+  /**
+   * Carga la posición del activo directamente en el portfolio ya fijado (sin buscar
+   * en el resto). Si no tiene una posición abierta ahí, notifica el error y cierra el modal.
+   */
+  private loadScopedPosition(): void {
+    this.loadingPosition = true;
+
+    this.portfolioService.getPosition(this.selectedPortfolioId, this.symbol).pipe(
+      map(response => ({ position: response.success ? response.data ?? null : null, checkFailed: false })),
+      catchError((err: HttpErrorResponse) => {
+        const checkFailed = !NO_POSITION_CODES.includes(err.error?.code);
+        return of({ position: null as PortfolioPosition | null, checkFailed });
+      })
+    ).subscribe(({ position, checkFailed }) => {
+      this.loadingPosition = false;
+
+      if (!position || position.quantity <= 0) {
+        const messageKey = checkFailed ? 'PORTFOLIO.ERRORS.POSITION_CHECK_FAILED' : 'PORTFOLIO.ERRORS.POSITION_NOT_FOUND';
+        this.snackBarService.error(this.languageService.instant(messageKey));
+        this.onClose();
+        return;
+      }
+
+      this.position = position;
       this.sellQuantity = 1;
     });
   }
