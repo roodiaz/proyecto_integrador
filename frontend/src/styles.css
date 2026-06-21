@@ -472,11 +472,13 @@ html, body {
   }
 }
 
-/* Backdrop con blur */
+/* Backdrop con blur. Más liviano que antes (0.55→0.35): con el backdrop ya
+   muy oscuro, el modal translúcido encima no tenía casi nada de la página
+   real que mostrar y se veía igual que un fondo sólido. */
 .blur-backdrop {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  background-color: rgba(0, 0, 0, 0.55) !important;
+  background-color: rgba(0, 0, 0, 0.35) !important;
 }
 
 /* ── Dialogs que en mobile pasan a pantalla completa (p. ej. crear/editar alerta) ── */
@@ -510,17 +512,38 @@ html, body {
   .mobile-fullscreen-dialog .mdc-dialog__surface {
     max-height: 100vh !important;
   }
+
+  /* Excepción: el de Agregar a Watchlist sí queremos que ocupe el alto real
+     de la pantalla aunque la lista sea corta (no que se achique a su
+     contenido como Crear Alerta) — por eso fuerza `height`, no solo `max-height`. */
+  .watchlist-dialog.mobile-fullscreen-dialog .mat-mdc-dialog-container,
+  .watchlist-dialog.mobile-fullscreen-dialog .mdc-dialog__surface {
+    height: 100dvh !important;
+  }
+
+  /* Misma excepción para Crear/Reiniciar/Agregar portfolio: ocupan el alto
+     real de la pantalla aunque el formulario sea corto. */
+  .portfolio-setup-dialog-panel.mobile-fullscreen-dialog .mat-mdc-dialog-container,
+  .portfolio-setup-dialog-panel.mobile-fullscreen-dialog .mdc-dialog__surface {
+    height: 100dvh !important;
+  }
 }
 
-/* ── Portfolio dialog ── */
-.portfolio-dialog-panel .mat-mdc-dialog-container {
-  --mdc-dialog-container-color: var(--il-portfolio-dialog-bg);
+/* ── Superficie de Material transparente en TODOS los diálogos ──
+   Por defecto el tema de Material le pone su propio fondo sólido a
+   .mdc-dialog__surface — eso queda detrás de nuestro .modal-container y tapa
+   por completo el efecto "tarjeta translúcida" (el backdrop-filter termina
+   difuminando ese fondo sólido en vez de la página real de atrás). Cada
+   modal ya pone su propio fondo/blur/sombra, así que la superficie de
+   Material no necesita ninguno propio. */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
+/* ── Portfolio dialog (Comprar/Vender) ── */
 .portfolio-dialog-panel .mdc-dialog__surface {
-  background: var(--il-portfolio-dialog-bg) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
-  border-radius: 12px !important;
+  border-radius: 16px !important;
   overflow: hidden !important;
 }
 
@@ -536,6 +559,51 @@ html, body {
 
 .mat-mdc-menu-item:hover:not([disabled]) {
   background: var(--il-surface-high) !important;
+}
+
+/* ── Backdrop de mat-menu (notificaciones / usuario) ──
+   mat-menu no tiene un backdrop oscuro/difuminado como MatDialog — Header.ts
+   le agrega esta clase al <body> mientras alguno de los dos desplegables está
+   abierto, para que la app se difumine igual que detrás de un modal.
+   El backdrop "transparente" de los menús no es transparente por color: CDK
+   lo deja con opacity:0 a propósito (solo detecta el click afuera), así que
+   sin forzar opacity:1 el blur/oscurecido de arriba nunca se llega a ver. */
+body.app-menu-backdrop .cdk-overlay-backdrop {
+  opacity: 1 !important;
+  visibility: visible !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Mismo estilo "tarjeta translúcida" que los modales, para los desplegables
+   de notificaciones y usuario del header. */
+.notif-menu-panel.mat-mdc-menu-panel,
+.user-menu-panel.mat-mdc-menu-panel {
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08) !important;
+}
+
+/* Mismo estilo "tarjeta translúcida" para los bottom sheets de mobile
+   (FAB "Operar" y menú "Más" del bottom nav). */
+.glass-bottom-sheet .mat-bottom-sheet-container {
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-bottom: none;
+  box-shadow:
+    0 -8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08);
 }
 
 /* ── SNACKBAR / TOAST ── */

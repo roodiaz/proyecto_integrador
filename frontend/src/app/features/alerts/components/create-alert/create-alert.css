@@ -18,10 +18,21 @@
   color: var(--dlg-text);
 }
 
+/* Mismo estilo "tarjeta translúcida" que las cards de Login/Registro/Contacto.
+   Sobre un fondo de app que también es oscuro, el blur solo no se notaba —
+   el brillo/borde celeste (el acento de marca de la app)
+   es lo que hace que la tarjeta se despegue del fondo. */
 .dialog-wrapper {
-  background: var(--dlg-bg);
-  border: 1px solid var(--dlg-border);
-  border-radius: 12px;
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08);
   overflow: hidden;
   min-width: 480px;
   max-width: 560px;
@@ -36,8 +47,8 @@
   align-items: center;
   gap: 1rem;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--dlg-border);
-  background: var(--dlg-surface);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .header-icon {
@@ -125,8 +136,12 @@
 }
 
 /* ── Secciones ── */
+/* Antes el fondo de la sección era el mismo que el de los inputs de adentro
+   (--dlg-input en los dos) — el input se perdía contra su propio contenedor.
+   Con --dlg-surface (más claro) la sección queda como una "tarjeta" y el
+   input como un campo más oscuro adentro, igual que en Comprar/Vender. */
 .form-section {
-  background: var(--dlg-input);
+  background: var(--dlg-surface);
   border: 1px solid var(--dlg-border);
   border-radius: 8px;
   padding: 1rem 1.25rem;
@@ -340,8 +355,8 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--dlg-border);
-  background: var(--dlg-surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .btn-cancel {
@@ -349,7 +364,7 @@
   font-weight: 600;
   padding: 0.5rem 1.1rem;
   border-radius: 8px;
-  border: 1px solid var(--dlg-border);
+  border: none;
   background: transparent;
   color: var(--dlg-muted);
   cursor: pointer;
@@ -393,6 +408,7 @@
 :host-context(.mobile-fullscreen-dialog) .dialog-wrapper {
   max-height: 100vh;
   border-radius: 0;
+  border: none;
 }
 
 /* Tablet / pantallas medianas */

@@ -1,35 +1,39 @@
-<mat-toolbar class="main-toolbar">
+<div class="public-shell">
 
-  <div class="toolbar-left">
+  <mat-toolbar class="main-toolbar">
 
-    <button class="back-button" type="button" routerLink="/">
-      {{ 'HOME.PUBLIC_LAYOUT.BACK_HOME' | translate }}
-    </button>
+    <div class="toolbar-left">
 
-    <span class="toolbar-divider"></span>
+      <button class="back-button" type="button" routerLink="/">
+        {{ 'HOME.PUBLIC_LAYOUT.BACK_HOME' | translate }}
+      </button>
 
-    <a class="brand-wordmark" routerLink="/">
-      Invest<span class="brand-accent">Lab</span>
-    </a>
+      <span class="toolbar-divider"></span>
 
-  </div>
+      <a class="brand-wordmark" routerLink="/">
+        Invest<span class="brand-accent">Lab</span>
+      </a>
 
-  <div class="toolbar-right">
+    </div>
 
-    <a class="nav-link" routerLink="/login" routerLinkActive="active">
-      {{ 'HOME.PUBLIC_LAYOUT.NAV_LOGIN' | translate }}
-    </a>
+    <div class="toolbar-right">
 
-    <a class="nav-link" routerLink="/registro" routerLinkActive="active">
-      {{ 'HOME.PUBLIC_LAYOUT.NAV_REGISTER' | translate }}
-    </a>
+      <a class="nav-link" routerLink="/login" routerLinkActive="active">
+        {{ 'HOME.PUBLIC_LAYOUT.NAV_LOGIN' | translate }}
+      </a>
 
-    <a class="nav-link" routerLink="/contacto" routerLinkActive="active">
-      {{ 'HOME.PUBLIC_LAYOUT.NAV_CONTACT' | translate }}
-    </a>
+      <a class="nav-link" routerLink="/registro" routerLinkActive="active">
+        {{ 'HOME.PUBLIC_LAYOUT.NAV_REGISTER' | translate }}
+      </a>
 
-  </div>
+      <a class="nav-link" routerLink="/contacto" routerLinkActive="active">
+        {{ 'HOME.PUBLIC_LAYOUT.NAV_CONTACT' | translate }}
+      </a>
 
-</mat-toolbar>
+    </div>
 
-<router-outlet></router-outlet>
+  </mat-toolbar>
+
+  <router-outlet></router-outlet>
+
+</div>

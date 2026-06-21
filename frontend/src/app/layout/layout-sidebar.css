@@ -17,14 +17,16 @@
   margin-left: 0;
 }
 
+/* Sin padding propio: cada página (.dashboard-container, .portfolio-container,
+   etc.) ya define su propio padding (32px desktop / 16px mobile). Si esta capa
+   le suma OTRO padding encima, las cards quedan más adentro que el header
+   (que solo tiene un nivel de padding) — quedan desalineados. */
 .content-area {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
   background: transparent;
 }
 
 .main-content.mobile .content-area {
-  padding: 16px;
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
 }

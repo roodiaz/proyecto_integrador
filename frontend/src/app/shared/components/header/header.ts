@@ -11,6 +11,7 @@ import { Notification } from '../../../features/alerts/models/notifications.mode
 import { UserSessionService } from '../../../core/services/user-session.service';
 import { AuthSessionService } from '../../../core/services/auth-session.service';
 import { ProfileData } from '../../../features/settings/models/user-profile.model';
+import { ViewportService } from '../../../core/services/viewport.service';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
@@ -52,7 +53,8 @@ export class Header implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private userSessionService: UserSessionService,
     private authSessionService: AuthSessionService,
-    private router: Router
+    private router: Router,
+    public viewportService: ViewportService
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +71,24 @@ export class Header implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unreadSub?.unsubscribe();
     this.profileSub?.unsubscribe();
+    document.body.classList.remove('app-menu-backdrop');
+  }
+
+  // ── Backdrop de los desplegables (notificaciones / usuario) ───────────────
+
+  /**
+   * mat-menu no expone un backdrop oscuro/difuminado como MatDialog — esta
+   * clase en el `<body>` activa ese efecto vía CSS global (sección
+   * "Backdrop de mat-menu" en styles.css) mientras cualquiera de los dos
+   * desplegables del header esté abierto.
+   */
+  onMenuOpened(): void {
+    document.body.classList.add('app-menu-backdrop');
+  }
+
+  /** Quita el backdrop al cerrar el desplegable. */
+  onMenuClosed(): void {
+    document.body.classList.remove('app-menu-backdrop');
   }
 
   // ── Notificaciones ─────────────────────────────────────────────────────────

@@ -27,37 +27,40 @@
 
     <form [formGroup]="form" class="setup-form">
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ 'PORTFOLIO.SETUP_DIALOG.NAME_LABEL' | translate }}</mat-label>
+      <div class="field-group">
+        <label class="field-label">{{ 'PORTFOLIO.SETUP_DIALOG.NAME_LABEL' | translate }}</label>
 
-        <input matInput formControlName="portfolioName" [placeholder]="'PORTFOLIO.SETUP_DIALOG.NAME_PLACEHOLDER' | translate" [maxlength]="nameMaxLength" />
-
-        <mat-hint>{{ 'PORTFOLIO.SETUP_DIALOG.NAME_HINT' | translate: { min: nameMinLength, max: nameMaxLength } }}</mat-hint>
+        <div class="field-input-wrap">
+          <input class="field-input" formControlName="portfolioName" [placeholder]="'PORTFOLIO.SETUP_DIALOG.NAME_PLACEHOLDER' | translate" [maxlength]="nameMaxLength" />
+        </div>
 
         @if (portfolioName?.hasError('required')) {
-          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_REQUIRED' | translate }}</mat-error>
+          <span class="field-error">{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_REQUIRED' | translate }}</span>
         } @else if (portfolioName?.hasError('minlength') || portfolioName?.hasError('maxlength')) {
-          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_LENGTH' | translate: { min: nameMinLength, max: nameMaxLength } }}</mat-error>
+          <span class="field-error">{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_LENGTH' | translate: { min: nameMinLength, max: nameMaxLength } }}</span>
         } @else if (portfolioName?.hasError('pattern')) {
-          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_PATTERN' | translate }}</mat-error>
+          <span class="field-error">{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.NAME_PATTERN' | translate }}</span>
+        } @else {
+          <span class="field-hint">{{ 'PORTFOLIO.SETUP_DIALOG.NAME_HINT' | translate: { min: nameMinLength, max: nameMaxLength } }}</span>
         }
-      </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ 'PORTFOLIO.SETUP_DIALOG.BALANCE_LABEL' | translate }}</mat-label>
+      <div class="field-group">
+        <label class="field-label">{{ 'PORTFOLIO.SETUP_DIALOG.BALANCE_LABEL' | translate }}</label>
 
-        <input matInput type="number" formControlName="initialBalance" [min]="balanceMin" [max]="balanceMax" />
-
-        <span matTextPrefix>$&nbsp;</span>
-
-        <mat-hint>{{ 'PORTFOLIO.SETUP_DIALOG.BALANCE_HINT' | translate: { min: balanceMin, max: balanceMax } }}</mat-hint>
+        <div class="field-input-wrap">
+          <span class="field-prefix">$</span>
+          <input class="field-input with-prefix" type="number" formControlName="initialBalance" [min]="balanceMin" [max]="balanceMax" />
+        </div>
 
         @if (initialBalance?.hasError('required')) {
-          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.BALANCE_REQUIRED' | translate }}</mat-error>
+          <span class="field-error">{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.BALANCE_REQUIRED' | translate }}</span>
         } @else if (initialBalance?.hasError('min') || initialBalance?.hasError('max')) {
-          <mat-error>{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.BALANCE_RANGE' | translate: { min: balanceMin, max: balanceMax } }}</mat-error>
+          <span class="field-error">{{ 'PORTFOLIO.SETUP_DIALOG.ERRORS.BALANCE_RANGE' | translate: { min: balanceMin, max: balanceMax } }}</span>
+        } @else {
+          <span class="field-hint">{{ 'PORTFOLIO.SETUP_DIALOG.BALANCE_HINT' | translate: { min: balanceMin, max: balanceMax } }}</span>
         }
-      </mat-form-field>
+      </div>
 
     </form>
   </div>

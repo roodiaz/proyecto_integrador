@@ -3,12 +3,16 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .register-layout {
   display: flex;
-  height: calc(100vh - 72px);
+  flex: 1;
+  min-height: 0;
   background: #0e1117;
   color: white;
   overflow: hidden;
@@ -274,7 +278,6 @@
 @media (max-width: 1024px) {
   .register-layout {
     flex-direction: column;
-    height: auto;
     overflow: visible;
   }
 
@@ -282,9 +285,12 @@
     display: none;
   }
 
+  /* flex:1 (no un -72px fijo): se estira para llenar lo que el shell del
+     layout público le deja libre, sea cual sea el alto real del header. */
   .register-section {
     width: 100%;
-    min-height: calc(100vh - 72px);
+    flex: 1;
+    min-height: 0;
     padding-top: 56px;
     border-left: none;
   }

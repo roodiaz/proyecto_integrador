@@ -17,9 +17,21 @@
 }
 
 /* ── Container ── */
+/* Mismo estilo "tarjeta translúcida" que las cards de Login/Registro/Contacto.
+   Sobre un fondo de app que también es oscuro, el blur solo no se notaba —
+   el brillo/borde celeste (el acento de marca de la app)
+   es lo que hace que la tarjeta se despegue del fondo. */
 .modal-container {
-  background: var(--bg);
-  border-radius: 12px;
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08);
   overflow: hidden;
   width: 100%;
   max-width: 520px;
@@ -32,8 +44,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .modal-header h2 {
@@ -70,7 +82,7 @@
 /* ── Body ── */
 .modal-body {
   padding: 20px;
-  background: var(--bg);
+  background: transparent;
 }
 
 .dialog-subtitle {
@@ -103,16 +115,75 @@
 }
 
 /* ── Form ── */
+/* Antes usaba mat-form-field (el spacing/altura default de Material, distinto
+   al resto de los modales) — ahora los mismos label+input que Comprar/Vender
+   y Crear Alerta, para que los 3 modales se vean consistentes. */
 .setup-form {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.full-width {
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.field-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-input {
   width: 100%;
+  padding: 0.65rem 0.875rem;
+  border: none;
+  border-radius: 8px;
+  background: #0e0e0e;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
   box-sizing: border-box;
-  margin: 0;
+  transition: box-shadow 0.2s;
+}
+
+.field-input.with-prefix { padding-left: 1.75rem; }
+
+.field-input:focus {
+  box-shadow: 0 0 0 2px rgba(173, 198, 255, 0.15);
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.field-prefix {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.field-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.field-error {
+  font-size: 0.7rem;
+  color: #ffb4ab;
 }
 
 /* ── Footer ── */
@@ -121,13 +192,13 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 14px 20px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .cancel-btn {
   padding: 0.55rem 1.1rem;
-  /* border: 1px solid var(--border); */
+  border: none;
   background: transparent;
   color: var(--text-muted);
   border-radius: 8px;
@@ -185,6 +256,8 @@
   flex: 1;
   min-height: 0;
   max-width: none;
+  border-radius: 0;
+  border: none;
 }
 
 :host-context(.mobile-fullscreen-dialog) .modal-body {

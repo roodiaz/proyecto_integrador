@@ -16,10 +16,21 @@
 }
 
 /* ── Container ── */
+/* Mismo estilo "tarjeta translúcida" que las cards de Login/Registro/Contacto.
+   Sobre un fondo de app que también es oscuro, el blur solo no se notaba —
+   el brillo/borde celeste (el acento de marca de la app)
+   es lo que hace que la tarjeta se despegue del fondo. */
 .modal-container {
-  background: var(--bg);
-  border-radius: 12px;
-  /* border: 1px solid var(--border); */
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08);
   overflow: hidden;
   min-width: 380px;
   max-width: 480px;
@@ -31,8 +42,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .modal-header h2 {
@@ -69,7 +80,7 @@
 /* ── Body ── */
 .modal-body {
   padding: 20px;
-  background: var(--bg);
+  background: transparent;
 }
 
 .dialog-message {
@@ -85,13 +96,13 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 14px 20px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .cancel-btn {
   padding: 0.55rem 1.1rem;
-  /* border: 1px solid var(--border); */
+  border: none;
   background: transparent;
   color: var(--text-muted);
   border-radius: 8px;

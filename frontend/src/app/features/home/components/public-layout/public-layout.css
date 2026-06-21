@@ -2,11 +2,30 @@
    PUBLIC LAYOUT — Stylesheet
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* El alto del toolbar varía (72px fijo en desktop, auto en mobile con 2 filas) —
+   las pantallas de auth restaban un "-72px" fijo para llenar el resto de la
+   pantalla, lo que sobraba/faltaba apenas el header cambiaba de alto. Con este
+   shell en flex column + min-height:100dvh, lo que router-outlet inserta se
+   estira con flex:1 para llenar el espacio real que quede, sea cual sea. */
+.public-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.public-shell > router-outlet + * {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .main-toolbar {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   height: 72px;
+  flex-shrink: 0;
   padding: 0 32px;
   background: rgba(19, 19, 19, 0.85);
   backdrop-filter: blur(16px);
