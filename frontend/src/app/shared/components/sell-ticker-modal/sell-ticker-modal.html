@@ -10,7 +10,7 @@
     <div class="field-group">
       <label class="field-label">{{ 'PORTFOLIO.MODAL.TICKER_LABEL' | translate }}</label>
 
-      <div class="field-input-wrap">
+      <div class="ticker-search">
         <input
           class="field-input"
           type="text"
@@ -19,6 +19,10 @@
           [placeholder]="'MARKET.SEARCH_SYMBOL_PLACEHOLDER' | translate"
           autocomplete="off"
         />
+
+        <button type="button" class="search-btn" [disabled]="!ticker.trim()" (click)="onContinue()">
+          <mat-icon class="search-icon">search</mat-icon>
+        </button>
       </div>
     </div>
   </div>
