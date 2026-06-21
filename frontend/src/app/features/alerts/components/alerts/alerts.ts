@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, Subscription } from 'rxjs';
+import { finalize } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { Alert, AlertDto, AlertFilterDto, ALERT_CONDITIONS } from '../../models/alert.model';
 import { Notifications } from '../notifications/notifications';
@@ -30,7 +30,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
   templateUrl: './alerts.html',
   styleUrls: ['./alerts.css']
 })
-export class Alerts implements OnInit, OnDestroy {
+export class Alerts implements OnInit {
 
   // ── Vista ──────────────────────────────────────────────────────────────────
   /** Tab activo: lista de alertas o historial de notificaciones. */
@@ -61,8 +61,6 @@ export class Alerts implements OnInit, OnDestroy {
   pausedAlerts = 0;
   triggeredToday = 0;
   limitAlerts = 10;
-  /** Cantidad de notificaciones no leídas para el badge del tab, sincronizada con el servicio compartido. */
-  unreadNotificationsCount = 0;
 
   // ── Estados de carga ───────────────────────────────────────────────────────
   loadingAlerts = false;
@@ -71,9 +69,6 @@ export class Alerts implements OnInit, OnDestroy {
   // ── Paginación ─────────────────────────────────────────────────────────────
   alertsPerPage = 10;
   currentPage = 1;
-
-  /** Suscripción al contador compartido de notificaciones no leídas. */
-  private unreadNotificationsSub?: Subscription;
 
   constructor(
     private dialog: MatDialog,
@@ -89,10 +84,6 @@ export class Alerts implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadAlerts();
     this.loadStats();
-
-    this.unreadNotificationsSub = this.unreadNotificationsService.watchCount().subscribe(count => {
-      this.unreadNotificationsCount = count;
-    });
 
     // Abre el modal de nueva alerta si viene con un ticker por query param,
     // o el historial de notificaciones si viene con view=history (p. ej. desde la campana del Header)
@@ -112,10 +103,6 @@ export class Alerts implements OnInit, OnDestroy {
         replaceUrl: true
       });
     });
-  }
-
-  ngOnDestroy(): void {
-    this.unreadNotificationsSub?.unsubscribe();
   }
 
   // ── Navegación ─────────────────────────────────────────────────────────────

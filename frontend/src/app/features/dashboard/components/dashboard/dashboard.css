@@ -712,9 +712,19 @@
   .dashboard-container {
     padding: 16px;
   }
+  /* "Valor Total" y "Ganancia/Pérdida" tienen contenido más largo (monto +
+     variación) y quedan mejor solas en su fila; "Activos" y "Alertas Activas"
+     son un número corto cada una, así que esas dos sí se juntan en una fila. */
   .header-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
+
+  .stat-card:nth-child(1) { grid-column: 1 / -1; grid-row: 1; }
+  .stat-card:nth-child(3) { grid-column: 1 / -1; grid-row: 2; }
+  .stat-card:nth-child(2) { grid-column: 1; grid-row: 3; }
+  .stat-card:nth-child(4) { grid-column: 2; grid-row: 3; }
+
   .dashboard-title {
     font-size: 28px;
   }

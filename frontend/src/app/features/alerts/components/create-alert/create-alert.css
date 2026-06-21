@@ -403,10 +403,19 @@
 /* ── Responsive ── */
 
 /* Mobile a pantalla completa (FAB Operar > Crear alerta, o desde Mercado/Alertas):
-   el wrapper ya usa flex column + body flex:1, solo hace falta soltar el tope de
-   92vh para que ocupe lo que necesite (corto = se achica, largo = scrollea adentro). */
+   ocupa el alto real de la pantalla — el body (ya flex:1) absorbe el espacio
+   de sobra y el footer queda pegado abajo, en vez de quedar achicado al
+   contenido con un hueco entre el form y los botones. */
+:host-context(.mobile-fullscreen-dialog) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 :host-context(.mobile-fullscreen-dialog) .dialog-wrapper {
-  max-height: 100vh;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
   border-radius: 0;
   border: none;
 }

@@ -8,11 +8,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [MatIconModule, MatTooltipModule],
   template: `
     <button
+      #tooltip="matTooltip"
       class="info-tooltip-btn"
       type="button"
       [matTooltip]="text"
       matTooltipPosition="above"
       [matTooltipShowDelay]="100"
+      matTooltipTouchGestures="off"
+      (click)="tooltip.toggle(); $event.stopPropagation()"
       aria-label="Más información"
     >
       <mat-icon>help_outline</mat-icon>

@@ -234,6 +234,21 @@
   margin: 0;
 }
 
+/* Con las cards ahora a mitad de ancho, el título (flex:0 0 auto, nunca se
+   achica) empujaba el ícono de ayuda afuera del borde de la card en vez de
+   truncarse. Le permite achicarse con "..." y deja el ícono siempre visible. */
+.summary-card .summary-card-header h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card .summary-card-header app-info-tooltip {
+  flex-shrink: 0;
+}
+
 .summary-card h3 {
   margin: 0;
   color: var(--text-secondary);
@@ -969,20 +984,35 @@
     align-items: stretch;
   }
 
-  .buy-action-btn {
-    justify-content: center;
-  }
-
+  /* Eliminar/Reiniciar son acciones administrativas, menos frecuentes que
+     Nueva Operación — en vez de 3 botones a todo el ancho apilados, las dos
+     primeras se achican y comparten una fila, y la acción principal queda
+     sola abajo, más grande. */
   .header-actions {
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .header-actions .buy-action-btn,
-  .header-actions .reset-portfolio-btn,
-  .header-actions .delete-portfolio-btn {
-    width: 100%;
+  .header-actions .delete-portfolio-btn,
+  .header-actions .reset-portfolio-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .header-actions .delete-portfolio-btn mat-icon,
+  .header-actions .reset-portfolio-btn mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  .header-actions .buy-action-btn {
+    flex: 1 1 100%;
     justify-content: center;
   }
 
@@ -1008,10 +1038,18 @@
 
 /* Mobile */
 @media (max-width: 600px) {
+  /* "Ganancia/Pérdida" y "Balance Total" tienen contenido más largo y quedan
+     mejor solas en su fila; "Balance Disponible" y "Operaciones de Hoy" son
+     más cortas, así que esas dos se juntan en una fila al final. */
   .summary-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
+
+  .summary-card:nth-child(2) { grid-column: 1 / -1; grid-row: 1; }
+  .summary-card:nth-child(3) { grid-column: 1 / -1; grid-row: 2; }
+  .summary-card:nth-child(1) { grid-column: 1; grid-row: 3; }
+  .summary-card:nth-child(4) { grid-column: 2; grid-row: 3; }
 
   .summary-card .amount { font-size: 20px; }
   .section-header h2    { font-size: 26px; }
