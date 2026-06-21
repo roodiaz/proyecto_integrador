@@ -234,6 +234,21 @@
   margin: 0;
 }
 
+/* Con las cards ahora a mitad de ancho, el título (flex:0 0 auto, nunca se
+   achica) empujaba el ícono de ayuda afuera del borde de la card en vez de
+   truncarse. Le permite achicarse con "..." y deja el ícono siempre visible. */
+.summary-card .summary-card-header h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card .summary-card-header app-info-tooltip {
+  flex-shrink: 0;
+}
+
 .summary-card h3 {
   margin: 0;
   color: var(--text-secondary);
@@ -1008,10 +1023,18 @@
 
 /* Mobile */
 @media (max-width: 600px) {
+  /* "Ganancia/Pérdida" y "Balance Total" tienen contenido más largo y quedan
+     mejor solas en su fila; "Balance Disponible" y "Operaciones de Hoy" son
+     más cortas, así que esas dos se juntan en una fila al final. */
   .summary-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
+
+  .summary-card:nth-child(2) { grid-column: 1 / -1; grid-row: 1; }
+  .summary-card:nth-child(3) { grid-column: 1 / -1; grid-row: 2; }
+  .summary-card:nth-child(1) { grid-column: 1; grid-row: 3; }
+  .summary-card:nth-child(4) { grid-column: 2; grid-row: 3; }
 
   .summary-card .amount { font-size: 20px; }
   .section-header h2    { font-size: 26px; }
