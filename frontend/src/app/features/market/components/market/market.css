@@ -1110,9 +1110,9 @@
 }
 
 @media (max-width: 480px) {
-  .market-terminal {
-    padding: 12px;
-  }
+  /* El resto de las pantallas (Alertas, Portfolio) no reduce más el padding del
+     contenedor por debajo de 768px — se mantiene en 16px para que las cards
+     queden con el mismo ancho/margen en toda la app. */
 
   .terminal-heading h1 {
     font-size: 26px;
