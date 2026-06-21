@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { TranslateModule } from '@ngx-translate/core';
 
 /**
@@ -14,7 +15,7 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-sell-ticker-modal',
   standalone: true,
-  imports: [FormsModule, TranslateModule],
+  imports: [FormsModule, MatIconModule, TranslateModule],
   templateUrl: './sell-ticker-modal.html',
   styleUrl: './sell-ticker-modal.css'
 })

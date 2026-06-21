@@ -126,6 +126,48 @@
   opacity: 0.7;
 }
 
+/* Botón de lupa junto al ticker: en mobile, confirmar tocando un botón es más
+   cómodo que tener que cerrar el teclado para "enviar" el input. */
+.ticker-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ticker-search .field-input { flex: 1; }
+
+.search-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-on);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.search-btn:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.search-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.search-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
 /* ── Footer ── */
 .modal-footer {
   display: flex;
