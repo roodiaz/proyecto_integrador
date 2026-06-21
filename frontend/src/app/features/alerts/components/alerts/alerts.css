@@ -740,7 +740,10 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 @media (max-width: 600px) {
-  .summary-cards { grid-template-columns: 1fr; }
+  /* 2 por fila en vez de 1: con valores cortos (un número o "6 / 10") cada
+     card de 1fr completo dejaba un montón de espacio vacío sin usar. */
+  .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .summary-card { padding: 12px; }
   .header-info h1 { font-size: 22px; }
   .pagination-container { flex-direction: column; align-items: flex-start; }
 
