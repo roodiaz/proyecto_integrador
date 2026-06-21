@@ -492,16 +492,23 @@ html, body {
   max-height: calc(100vh - 64px) !important;
 }
 
+/* Importante: solo `max-height` (no `height` fija) — si el formulario es corto
+   (p. ej. Crear Alerta) el diálogo se achica a su contenido en vez de quedar
+   forzado a 100vh con un hueco vacío entre el formulario y los botones. */
 @media (max-width: 600px) {
   .mobile-fullscreen-dialog {
     max-width: 100vw !important;
     width: 100vw !important;
-    height: 100vh !important;
     max-height: 100vh !important;
+    margin: 0 !important;
   }
 
   .mobile-fullscreen-dialog .mat-mdc-dialog-container {
-    height: 100vh;
+    max-height: 100vh;
+  }
+
+  .mobile-fullscreen-dialog .mdc-dialog__surface {
+    max-height: 100vh !important;
   }
 }
 

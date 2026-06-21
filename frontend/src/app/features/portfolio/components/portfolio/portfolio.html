@@ -205,11 +205,13 @@
             }
           </div>
           <div class="period-selector">
-            <select [value]="selectedPeriod" (change)="onPeriodChange($event)" class="period-select">
-              @for (period of timePeriods; track period.value) {
-                <option [value]="period.value">{{ period.label }}</option>
-              }
-            </select>
+            @if (!viewportService.isMobile()) {
+              <select [value]="selectedPeriod" (change)="onPeriodChange($event)" class="period-select">
+                @for (period of timePeriods; track period.value) {
+                  <option [value]="period.value">{{ period.label }}</option>
+                }
+              </select>
+            }
           </div>
         </div>
 

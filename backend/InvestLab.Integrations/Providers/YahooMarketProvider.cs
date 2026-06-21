@@ -504,7 +504,7 @@ namespace InvestLab.Integrations.Providers
             return range switch
             {
                 "1d" => ("1d", "5m"),
-                "1w" => ("5d", "15m"),
+                "1w" => ("5d", "1d"),
                 "1m" => ("1mo", "1d"),
                 "3m" => ("3mo", "1d"),
                 "6m" => ("6mo", "1wk"),

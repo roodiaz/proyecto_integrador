@@ -681,6 +681,21 @@
   .bento-card {
     padding: 1rem;
   }
+
+  /* .notif-inline-left tiene min-width:0 (se encoge sin límite), así que flex-wrap
+     nunca llega a activarse solo — el navegador "achica" en vez de pasar de línea,
+     y el texto de la descripción termina aplastado contra el toggle. Forzamos
+     columna para que icono+título+descripción y el switch queden en filas separadas. */
+  .notif-inline-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .notif-inline-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .danger-zone {

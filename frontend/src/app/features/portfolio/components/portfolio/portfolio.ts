@@ -186,6 +186,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: { mode: 'create' },
     });
 
@@ -436,6 +437,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: { mode: 'buy', symbol },
     });
 
@@ -457,6 +459,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: { mode: 'sell', symbol },
     });
 
@@ -849,6 +852,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: {
         mode: 'reset',
         currentName: this.portfolioSummary.portfolioName
@@ -906,6 +910,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: { mode: 'add-portfolio' }
     });
 

@@ -110,12 +110,18 @@
 
 /* ── Register form ── */
 .register-section {
-  width: 500px;
+  width: 580px;
   flex-shrink: 0;
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: #131313;
+  /* "safe center": centra verticalmente cuando el contenido entra; si no entra
+     (el form de registro es más alto que el de login + overflow-y:auto), cae a
+     alineado arriba en vez de recortar el principio de la tarjeta. */
+  align-items: safe center;
+  background:
+    radial-gradient(circle at top right,    rgba(0, 185, 84, 0.12),   transparent 45%),
+    radial-gradient(circle at bottom left,   rgba(77, 142, 255, 0.12), transparent 45%),
+    #131313;
   border-left: 1px solid rgba(255, 255, 255, 0.05);
   padding: clamp(20px, 5vh, 40px);
   overflow-y: auto;
@@ -123,7 +129,13 @@
 
 .register-wrapper {
   width: 100%;
-  max-width: 430px;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
 }
 
 .register-header {
@@ -273,14 +285,21 @@
   .register-section {
     width: 100%;
     min-height: calc(100vh - 72px);
-    align-items: flex-start;
     padding-top: 56px;
     border-left: none;
+  }
+
+  .register-wrapper {
+    padding: 28px 24px;
   }
 }
 
 @media (max-width: 600px) {
   .register-section {
-    padding: 24px;
+    padding: 24px 16px;
+  }
+
+  .register-wrapper {
+    padding: 24px 20px;
   }
 }

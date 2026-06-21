@@ -387,6 +387,14 @@
 
 /* ── Responsive ── */
 
+/* Mobile a pantalla completa (FAB Operar > Crear alerta, o desde Mercado/Alertas):
+   el wrapper ya usa flex column + body flex:1, solo hace falta soltar el tope de
+   92vh para que ocupe lo que necesite (corto = se achica, largo = scrollea adentro). */
+:host-context(.mobile-fullscreen-dialog) .dialog-wrapper {
+  max-height: 100vh;
+  border-radius: 0;
+}
+
 /* Tablet / pantallas medianas */
 @media (max-width: 600px) {
   .dialog-wrapper {

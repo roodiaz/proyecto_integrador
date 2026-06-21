@@ -385,6 +385,36 @@
   box-shadow: none !important;
 }
 
+/* ── Mobile a pantalla completa (Comprar/Vender desde Operar o Mercado) ──
+   El host no tiene flex propio por defecto; sin esto, el footer queda en flujo
+   normal después de un body con max-height fijo, dejando un hueco vacío entre
+   ambos en vez de quedar pegado abajo de la pantalla. */
+:host-context(.mobile-fullscreen-dialog) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100vh;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-body {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-header,
+:host-context(.mobile-fullscreen-dialog) .modal-footer {
+  flex-shrink: 0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .modal-container {

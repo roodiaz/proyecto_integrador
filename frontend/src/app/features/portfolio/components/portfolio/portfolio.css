@@ -963,7 +963,6 @@
 /* Tablet portrait */
 @media (max-width: 900px) {
   .portfolio-container { padding: 1rem; }
-  .portfolio-content   { padding: 16px; }
 
   .section-header {
     flex-direction: column;

@@ -171,6 +171,34 @@
   box-shadow: none !important;
 }
 
+/* ── Mobile a pantalla completa (Crear/Reiniciar/Agregar portfolio) ── */
+:host-context(.mobile-fullscreen-dialog) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100vh;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-body {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-header,
+:host-context(.mobile-fullscreen-dialog) .modal-footer {
+  flex-shrink: 0;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .modal-container {
