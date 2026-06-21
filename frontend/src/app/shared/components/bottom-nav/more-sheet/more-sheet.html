@@ -1,6 +1,24 @@
 <div class="more-sheet">
   <div class="more-handle"></div>
 
+  <div class="market-status-block" [matTooltip]="getStatusTooltip()" matTooltipPosition="above">
+    <div class="market-state-row" [class.closed]="!marketStatusService.isOpen(marketStatus)">
+      <span class="market-state-dot"></span>
+      <span class="market-state-label">{{ marketStatusService.getStatusText(marketStatus) }}</span>
+    </div>
+
+    @if (marketStatusService.getCountdownText(marketStatus); as countdownText) {
+      <div class="market-state-countdown">{{ countdownText }}</div>
+    }
+
+    <div class="market-status">
+      <mat-icon class="market-status-icon">schedule</mat-icon>
+      <span class="market-status-text">{{ updatedText }}</span>
+    </div>
+  </div>
+
+  <div class="more-divider"></div>
+
   <button type="button" class="more-action" (click)="navigateTo('/watchlist')">
     <mat-icon class="more-icon">star_border</mat-icon>
     <span>{{ 'SIDEBAR.WATCHLIST' | translate }}</span>
