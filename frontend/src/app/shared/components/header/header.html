@@ -1,12 +1,16 @@
 <header class="app-header">
 
-  <div class="header-spacer"></div>
+  @if (viewportService.isMobile()) {
+    <span class="brand-wordmark">Invest<span class="brand-accent">Lab</span></span>
+  } @else {
+    <div class="header-spacer"></div>
+  }
 
   <div class="header-actions">
 
     <!-- Notificaciones -->
     <button mat-icon-button class="icon-btn" [matTooltip]="'HEADER.NOTIFICATIONS' | translate" [matMenuTriggerFor]="notifMenu"
-      (menuOpened)="loadRecentNotifications()">
+      (menuOpened)="loadRecentNotifications(); onMenuOpened()" (menuClosed)="onMenuClosed()">
       <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn" matBadgeSize="large">
         notifications
       </mat-icon>
@@ -51,7 +55,8 @@
     </mat-menu>
 
     <!-- Perfil de usuario -->
-    <button class="avatar-btn" [matTooltip]="'HEADER.PROFILE' | translate" [matMenuTriggerFor]="userMenu">
+    <button class="avatar-btn" [matTooltip]="'HEADER.PROFILE' | translate" [matMenuTriggerFor]="userMenu"
+      (menuOpened)="onMenuOpened()" (menuClosed)="onMenuClosed()">
       @if (profileImageUrl) {
         <img [src]="profileImageUrl" alt="Foto de perfil" class="avatar-image">
       } @else {

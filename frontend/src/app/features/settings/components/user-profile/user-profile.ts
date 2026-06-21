@@ -443,7 +443,7 @@ export class UserProfile implements OnInit {
    * de confirmación de forma diferida) y, si confirma, ejecuta la eliminación.
    */
   async confirmDeleteAccount(): Promise<void> {
-    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
+    const ConfirmDialog = await import('../../../../shared/components/confirm-dialog/confirm-dialog');
 
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '430px',

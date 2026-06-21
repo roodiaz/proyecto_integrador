@@ -22,10 +22,21 @@
 }
 
 /* ── Container ── */
+/* Mismo estilo "tarjeta translúcida" que las cards de Login/Registro/Contacto.
+   Sobre un fondo de app que también es oscuro, el blur solo no se notaba —
+   el brillo/borde celeste (el acento de marca de la app)
+   es lo que hace que la tarjeta se despegue del fondo. */
 .modal-container {
-  background: var(--bg);
-  border-radius: 12px;
- /* border: 1px solid var(--border); */ 
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08);
   overflow: hidden;
   min-width: 480px;
   max-width: 560px;
@@ -37,8 +48,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .modal-header h2 {
@@ -75,7 +86,7 @@
 /* ── Body ── */
 .modal-body {
   padding: 20px;
-  background: var(--bg);
+  background: transparent;
   max-height: 60vh;
   overflow-y: auto;
 }
@@ -132,10 +143,53 @@
   letter-spacing: 0.1em;
 }
 
+/* Mat-select (reemplaza al <select> nativo, que se veía con el estilo
+   default del navegador en vez del resto de los inputs del modal). */
+.field-select {
+  width: 100%;
+  background: var(--input-bg);
+  border-radius: 8px;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  box-sizing: border-box;
+  display: block;
+}
+
+::ng-deep .field-select .mat-mdc-select-value {
+  color: var(--text) !important;
+  font-size: 0.875rem !important;
+}
+
+::ng-deep .field-select .mat-mdc-select-arrow {
+  color: var(--text-muted) !important;
+}
+
+::ng-deep .dark-select-panel {
+  background: #1C1B1B !important;
+  border: 1px solid #424754 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+}
+
+::ng-deep .dark-select-panel .mat-mdc-option {
+  background: #1C1B1B !important;
+  color: #E5E2E1 !important;
+}
+
+::ng-deep .dark-select-panel .mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background: #201F1F !important;
+}
+
+::ng-deep .dark-select-panel .mat-mdc-option.mdc-list-item--selected {
+  color: #ADC6FF !important;
+  background: #201F1F !important;
+}
+
 .form-input {
   width: 100%;
   padding: 0.6rem 0.875rem;
-  /* border: 1px solid var(--border); */
+  border: none;
   border-radius: 8px;
   background: var(--input-bg);
   color: var(--text);
@@ -159,7 +213,7 @@
 .price-display {
   width: 100%;
   padding: 0.6rem 0.875rem;
-  /* border: 1px solid var(--border); */
+  border: none;
   border-radius: 8px;
   background: var(--input-bg);
   color: var(--text);
@@ -224,13 +278,16 @@
 }
 
 /* ── Summary Sections ── */
+/* Antes usaban el mismo gris que los inputs — sin nada que las distinga, todo
+   el modal se veía "plano". El tinte celeste (acento de marca) marca que esto
+   es el número importante (el total), no un campo más para completar. */
 .cost-summary,
 .profit-summary {
-  background: var(--surface-mid);
+  background: rgba(173, 198, 255, 0.05);
+  border: 1px solid rgba(173, 198, 255, 0.12);
   border-radius: 10px;
   padding: 16px;
   margin-top: 16px;
-  /* border: 1px solid var(--border); */
 }
 
 .summary-row {
@@ -321,13 +378,13 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 14px 20px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .cancel-btn {
   padding: 0.55rem 1.1rem;
- /* border: 1px solid var(--border); */
+ border: none;
   background: transparent;
   color: var(--text-muted);
   border-radius: 8px;
@@ -402,6 +459,8 @@
   flex: 1;
   min-height: 0;
   max-width: none;
+  border-radius: 0;
+  border: none;
 }
 
 :host-context(.mobile-fullscreen-dialog) .modal-body {

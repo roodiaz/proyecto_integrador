@@ -222,7 +222,7 @@ export class Watchlist implements OnInit {
   async removeFromWatchlist(symbol: string): Promise<void> {
     const normalizedSymbol = symbol.trim().toUpperCase();
 
-    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
+    const ConfirmDialog = await import('../../../../shared/components/confirm-dialog/confirm-dialog');
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',
       backdropClass: 'blur-backdrop',
@@ -257,7 +257,8 @@ export class Watchlist implements OnInit {
     const dialogRef = this.dialog.open(AddFavoriteDialog, {
       width: '420px',
       maxWidth: '95vw',
-      panelClass: 'watchlist-dialog',
+      panelClass: this.viewportService.isMobile() ? ['watchlist-dialog', 'mobile-fullscreen-dialog'] : 'watchlist-dialog',
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       backdropClass: 'blur-backdrop',
     });
 

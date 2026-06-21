@@ -27,11 +27,11 @@ export class BottomNav {
 
   /** Abre el bottom sheet de acciones rápidas de trading (Comprar/Vender/Crear alerta). */
   openOperateSheet(): void {
-    this.bottomSheet.open(OperateSheet);
+    this.bottomSheet.open(OperateSheet, { backdropClass: 'blur-backdrop', panelClass: 'glass-bottom-sheet' });
   }
 
   /** Abre el bottom sheet con el resto de las secciones (Watchlist, Notificaciones, Configuración, Cerrar sesión). */
   openMoreSheet(): void {
-    this.bottomSheet.open(MoreSheet);
+    this.bottomSheet.open(MoreSheet, { backdropClass: 'blur-backdrop', panelClass: 'glass-bottom-sheet' });
   }
 }

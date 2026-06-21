@@ -354,7 +354,7 @@ export class Alerts implements OnInit, OnDestroy {
    * @param alert Alerta a eliminar.
    */
   async deleteAlert(alert: Alert): Promise<void> {
-    const ConfirmDialog = await import('../../../../shared/confirm-dialog/confirm-dialog.component');
+    const ConfirmDialog = await import('../../../../shared/components/confirm-dialog/confirm-dialog');
 
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
       width: '350px',

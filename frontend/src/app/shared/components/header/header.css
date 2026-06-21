@@ -11,12 +11,30 @@
   align-items: center;
   justify-content: flex-end;
   height: 64px;
-  padding: 0 24px;
+  /* 32px en vez de 24px: el mismo padding que ya usan todas las páginas
+     (.dashboard-container, .portfolio-container, etc.), para que los íconos
+     terminen alineados con el borde derecho de las cards de abajo. */
+  padding: 0 32px;
   background: transparent;
 }
 
 .header-spacer {
   flex: 1;
+}
+
+/* Solo en mobile (sin sidebar visible): sin esto, el costado izquierdo del
+   header queda vacío y la app no muestra ninguna marca en ningún lado. */
+.brand-wordmark {
+  flex: 1;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--il-text);
+}
+
+.brand-accent {
+  color: var(--il-accent);
 }
 
 .header-actions {
@@ -173,7 +191,6 @@
 ::ng-deep .notif-menu-panel {
   border-radius: 14px !important;
   overflow: hidden !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
 }
 
 ::ng-deep .user-menu-panel .mat-mdc-menu-content,

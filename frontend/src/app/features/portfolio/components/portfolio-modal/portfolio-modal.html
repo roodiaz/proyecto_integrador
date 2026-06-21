@@ -8,16 +8,17 @@
     @if (showPortfolioSelector) {
       <div class="form-group">
         <label for="portfolioSelect">{{ 'PORTFOLIO.MODAL.PORTFOLIO_LABEL' | translate }}</label>
-        <select
+        <mat-select
           id="portfolioSelect"
-          class="form-input"
+          class="field-select"
+          panelClass="dark-select-panel"
           [ngModel]="selectedPortfolioId"
           (ngModelChange)="onPortfolioChange($event)"
         >
           @for (portfolio of portfolios; track portfolio.id) {
-            <option [ngValue]="portfolio.id">{{ portfolio.name }}</option>
+            <mat-option [value]="portfolio.id">{{ portfolio.name }}</mat-option>
           }
-        </select>
+        </mat-select>
       </div>
     }
 

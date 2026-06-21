@@ -185,7 +185,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       width: '460px',
       maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
-      panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+      panelClass: this.viewportService.isMobile() ? ['portfolio-setup-dialog-panel', 'mobile-fullscreen-dialog'] : undefined,
       position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: { mode: 'create' },
     });
@@ -851,7 +851,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       width: '460px',
       maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
-      panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+      panelClass: this.viewportService.isMobile() ? ['portfolio-setup-dialog-panel', 'mobile-fullscreen-dialog'] : undefined,
       position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: {
         mode: 'reset',
@@ -909,7 +909,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       width: '460px',
       maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
-      panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+      panelClass: this.viewportService.isMobile() ? ['portfolio-setup-dialog-panel', 'mobile-fullscreen-dialog'] : undefined,
       position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: { mode: 'add-portfolio' }
     });
