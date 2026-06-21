@@ -13,6 +13,7 @@ import { ThemeService, Theme } from '../../../../core/services/theme.service';
 import { LanguageService, Language } from '../../../../core/services/language.service';
 import { strongPasswordValidator } from '../../../../shared/validators/password-policy.validator';
 import { PasswordRequirementsComponent } from '../../../../shared/components/password-requirements/password-requirements.component';
+import { ViewportService } from '../../../../core/services/viewport.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -79,7 +80,8 @@ export class UserProfile implements OnInit {
     private dialog: MatDialog,
     private router: Router,
     private themeService: ThemeService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    readonly viewportService: ViewportService
   ) {
     this.profileForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(3)]],
@@ -188,6 +190,25 @@ export class UserProfile implements OnInit {
           this.notificationService.fromResponse(false, error.error?.code, error.error?.message);
         }
       });
+  }
+
+  // ── Fecha de nacimiento (input nativo en mobile) ──
+
+  /** Valor del control `birthDate` en formato `yyyy-MM-dd`, para el input nativo `type="date"` usado en mobile. */
+  get birthDateNative(): string {
+    const value = this.profileForm.get('birthDate')?.value;
+    if (!value) return '';
+
+    const date = value instanceof Date ? value : new Date(value);
+    if (isNaN(date.getTime())) return '';
+
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  set birthDateNative(value: string) {
+    this.profileForm.get('birthDate')?.setValue(value ? new Date(value) : null);
   }
 
   // ── Tema visual ──

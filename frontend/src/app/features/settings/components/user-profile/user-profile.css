@@ -210,7 +210,7 @@
 .field-input {
   width: 100%;
   background: var(--surface-low);
-  /* border: 1px solid var(--border); */
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.6rem 2.5rem 0.6rem 0.875rem;
   font-size: 0.875rem;
@@ -369,7 +369,7 @@
 .field-input-wrap mat-select {
   width: 100%;
   background: var(--surface-low);
-  /* border: 1px solid var(--border); */
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.6rem 0.875rem;
   font-size: 0.875rem;
