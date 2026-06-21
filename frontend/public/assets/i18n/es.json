@@ -38,7 +38,7 @@
       "UPPERCASE": "Una letra mayúscula",
       "LOWERCASE": "Una letra minúscula",
       "NUMBER": "Un número",
-      "SPECIAL": "Un carácter especial (! @ # $ % ^ & * ( ) - _ + = ? . , ; : /)"
+      "SPECIAL": "Un carácter especial"
     }
   },
   "ERRORS": {
@@ -157,7 +157,7 @@
       "CONFIRM_PASSWORD_LABEL": "Confirmar Contraseña",
       "SUBMIT": "Crear Cuenta",
       "HAVE_ACCOUNT": "¿Ya tenés cuenta?",
-      "LOGIN_LINK": "Iniciá sesión",
+      "LOGIN_LINK": "Inicia sesión",
       "VALIDATION": {
         "FULL_NAME_REQUIRED": "El nombre es requerido.",
         "FULL_NAME_MIN": "El nombre debe tener al menos 3 caracteres.",

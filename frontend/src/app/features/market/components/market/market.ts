@@ -165,26 +165,41 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * busca el último activo consultado y arranca el reloj del estado del mercado.
    */
   ngOnInit(): void {
-    const tickerParam = this.route.snapshot.queryParamMap.get('ticker');
-    if (tickerParam) {
-      this.selectedSymbol = tickerParam.toUpperCase();
-      this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
-    }
+    // Si ya había query params especiales al entrar, el bloque de abajo se encarga de
+    // disparar la búsqueda con el símbolo correcto — evita pedir el activo dos veces.
+    const hadSpecialParams = this.route.snapshot.queryParamMap.keys.length > 0;
 
-    if (this.route.snapshot.queryParamMap.has('focusSearch')) {
-      setTimeout(() => {
-        this.symbolInputRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        this.symbolInputRef?.nativeElement.focus();
-      });
+    // Se suscribe (en vez de leer solo el snapshot) porque el FAB "Operar" puede navegar
+    // a /market?focusSearch=true estando ya parado en Mercado: al ser la misma ruta,
+    // Angular reutiliza el componente y NO vuelve a correr ngOnInit, así que un snapshot
+    // one-shot se perdería ese cambio de query params.
+    this.route.queryParams.subscribe(params => {
+      const tickerParam = params['ticker'];
+      const hasFocusSearch = 'focusSearch' in params;
+
+      if (!tickerParam && !hasFocusSearch) return;
+
+      if (tickerParam) {
+        this.selectedSymbol = tickerParam.toUpperCase();
+        this.searchAsset();
+      }
+
+      if (hasFocusSearch) {
+        setTimeout(() => {
+          this.symbolInputRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          this.symbolInputRef?.nativeElement.focus();
+        });
+      }
+
       this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
-    }
+    });
 
     this.loadMarketData();
     this.loadMarketOverview();
     this.loadMarketLists();
     this.loadNews();
     this.loadComparisonHistory();
-    this.searchAsset();
+    if (!hadSpecialParams) this.searchAsset();
   }
 
   /**
@@ -615,6 +630,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: {
         mode: 'buy',
         symbol: finalSymbol
@@ -647,6 +663,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
+      position: this.viewportService.isMobile() ? { top: '0' } : undefined,
       data: {
         mode: 'sell',
         symbol: finalSymbol
@@ -885,6 +902,20 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Convierte una serie de precios absolutos a % de variación respecto de su propio
+   * primer valor (el activo principal y cada índice parten de escalas muy distintas —
+   * p. ej. una acción de $200 vs. el Dow Jones en los ~$40.000 — así que graficarlos
+   * "tal cual" en el mismo eje no tiene sentido; lo comparable es cuánto varió cada uno).
+   * @param values Precios absolutos de la serie, en el mismo orden que las etiquetas del eje.
+   * @returns La misma cantidad de puntos, expresados como % de variación respecto del primero.
+   */
+  private toPercentChange(values: (number | null)[]): (number | null)[] {
+    const baseline = values.find((v): v is number => v !== null && v !== undefined && v !== 0);
+    if (baseline === undefined) return values;
+    return values.map(v => (v === null || v === undefined) ? null : ((v / baseline) - 1) * 100);
+  }
+
+  /**
    * Color de línea/barra asignado a una serie comparativa según su símbolo.
    * @param symbol Símbolo de la serie (por ejemplo `'^GSPC'` para el S&P 500).
    */
@@ -924,7 +955,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     const datasets: any[] = [
       {
         label: this.assetHistory?.series.symbol ?? this.selectedSymbol,
-        data: this.assetHistory?.series.points.map(x => x.close) ?? [],
+        data: this.toPercentChange(this.assetHistory?.series.points.map(x => x.close) ?? []),
         borderColor: '#4a90e2',
         backgroundColor: this.selectedChartType === 'line' ? 'rgba(74, 144, 226, 0.12)' : '#4a90e2',
         borderWidth: 2,
@@ -936,7 +967,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     this.comparisonHistory?.series.filter(series => this.compareSymbols.has(series.symbol)).forEach(series => {
       datasets.push({
         label: series.name || series.symbol,
-        data: this.alignSeriesToLabels(series.points, labels),
+        data: this.toPercentChange(this.alignSeriesToLabels(series.points, labels)),
         borderColor: this.getSeriesColor(series.symbol),
         backgroundColor: this.selectedChartType === 'line' ? this.getSeriesBackgroundColor(series.symbol) : this.getSeriesColor(series.symbol),
         borderWidth: 2,
@@ -1069,7 +1100,13 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
         scales: {
           x: {
             grid: { color: t.gridColor },
-            ticks: { color: t.textColor, font: { size: 11 } }
+            ticks: {
+              color: t.textColor,
+              font: { size: 11 },
+              autoSkip: true,
+              maxTicksLimit: this.viewportService.isMobile() ? 6 : 12,
+              maxRotation: 0
+            }
           },
           y: {
             grid: { color: t.gridColor },

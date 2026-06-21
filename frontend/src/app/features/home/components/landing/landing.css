@@ -914,6 +914,17 @@
     max-width: 100%;
   }
 
+  /* .hero-preview tenía flex:1 1 540px pensado como ANCHO para cuando
+     .hero-section es una fila (desktop). Al pasar a flex-direction:column
+     ese mismo 540px se reinterpreta como ALTO mínimo del contenedor — deja
+     un hueco enorme debajo de la imagen, y los cartelitos (posicionados
+     relativo a esa caja, no a la imagen) terminan flotando en el vacío. */
+  .hero-preview {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
   .hero-actions {
     justify-content: center;
   }
@@ -935,14 +946,63 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .floating-cards {
-    display: none;
+  /* Antes se ocultaban del todo y quedaba la imagen del gráfico sola, sin
+     contexto — ahora se achican y se acomodan hacia adentro (sin los offsets
+     negativos del desktop) para que entren sin desbordar la imagen. */
+  .market-card {
+    min-width: 110px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    gap: 2px;
+  }
+
+  .market-card-symbol  { font-size: 10px; }
+  .market-card-change  { font-size: 9px; }
+  .market-card-name    { font-size: 9px; }
+  .market-card-price   { font-size: 13px; }
+
+  .market-card:nth-child(1) {
+    top: 8px;
+    right: 8px;
+  }
+
+  .market-card:nth-child(2) {
+    bottom: 22%;
+    left: 8px;
+  }
+
+  .market-card:nth-child(3) {
+    bottom: 8px;
+    right: 8px;
   }
 }
 
 @media (max-width: 768px) {
   .landing-header {
-    padding: 0 20px;
+    padding: 0 16px;
+  }
+
+  /* El logo, "Ingresar" y el botón no tenían ningún ajuste para mobile — el
+     botón con min-width:140px + height:44px fijos no entraba en una línea. */
+  .logo-image {
+    height: 32px;
+  }
+
+  .header-actions {
+    gap: 10px;
+  }
+
+  .login-link {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .register-btn {
+    min-width: 0;
+    height: auto;
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
   }
 
   .hero-title {

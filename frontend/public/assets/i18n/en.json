@@ -38,7 +38,7 @@
       "UPPERCASE": "An uppercase letter",
       "LOWERCASE": "A lowercase letter",
       "NUMBER": "A number",
-      "SPECIAL": "A special character (! @ # $ % ^ & * ( ) - _ + = ? . , ; : /)"
+      "SPECIAL": "A special character"
     }
   },
   "ERRORS": {

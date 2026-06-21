@@ -35,7 +35,7 @@ import { PASSWORD_REQUIREMENTS } from '../../validators/password-policy.validato
 
     .password-requirements li {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 6px;
       font-size: 12px;
       color: var(--il-text-muted);
@@ -47,6 +47,8 @@ import { PASSWORD_REQUIREMENTS } from '../../validators/password-policy.validato
       width: 16px;
       height: 16px;
       line-height: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
     .password-requirements li.met {

@@ -700,7 +700,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 @media (max-width: 768px) {
-  .alerts-content { padding: 16px; }
+  .alerts-container { padding: 16px; }
 
   .alerts-header {
     flex-direction: column;
@@ -719,15 +719,23 @@ input:checked + .slider:before { transform: translateX(22px); }
 
   .tabs { border-bottom: none; flex-direction: column; }
 
+  /* El celeste de inactivo (--text-secondary) y el de activo (--accent-primary) son
+     casi el mismo tono — la única señal era una barra de 3px, insuficiente. Ahora el
+     tab activo además cambia el color del texto a blanco y suma un fondo tintado. */
   .tab {
     border-bottom: 1px solid var(--border-color);
     border-left: 3px solid transparent;
     top: 0;
+    color: var(--text-muted);
+    font-weight: 500;
   }
 
   .tab.active {
+    background: rgba(173, 198, 255, 0.1);
     border-bottom-color: var(--border-color);
-    border-left-color: var(--accent-primary);
+    border-left: 4px solid var(--accent-primary);
+    color: var(--text-primary);
+    font-weight: 700;
   }
 }
 

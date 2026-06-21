@@ -259,14 +259,16 @@
           </button>
         </div>
 
-        <div class="time-selector">
-          <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="changeTimeframe('1d')">1D</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '1w'" (click)="changeTimeframe('1w')">1W</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '1m'" (click)="changeTimeframe('1m')">1M</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '3m'" (click)="changeTimeframe('3m')">3M</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '6m'" (click)="changeTimeframe('6m')">6M</button>
-          <button class="time-btn" [class.active]="selectedTimeframe === '1y'" (click)="changeTimeframe('1y')">1Y</button>
-        </div>
+        @if (!viewportService.isMobile()) {
+          <div class="time-selector">
+            <button class="time-btn" [class.active]="selectedTimeframe === '1d'" (click)="changeTimeframe('1d')">1D</button>
+            <button class="time-btn" [class.active]="selectedTimeframe === '1w'" (click)="changeTimeframe('1w')">1W</button>
+            <button class="time-btn" [class.active]="selectedTimeframe === '1m'" (click)="changeTimeframe('1m')">1M</button>
+            <button class="time-btn" [class.active]="selectedTimeframe === '3m'" (click)="changeTimeframe('3m')">3M</button>
+            <button class="time-btn" [class.active]="selectedTimeframe === '6m'" (click)="changeTimeframe('6m')">6M</button>
+            <button class="time-btn" [class.active]="selectedTimeframe === '1y'" (click)="changeTimeframe('1y')">1Y</button>
+          </div>
+        }
 
         <div class="chart-type-selector">
           <button class="chart-type-btn" [class.active]="selectedChartType === 'line'" (click)="changeChartType('line')">

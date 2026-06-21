@@ -306,6 +306,7 @@ export class Alerts implements OnInit, OnDestroy {
         maxHeight: '90vh',
         backdropClass: 'blur-backdrop',
         panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
+        position: this.viewportService.isMobile() ? { top: '0' } : undefined,
         data: {
           isEditing: false,
           alert: symbol ? { symbol } : null

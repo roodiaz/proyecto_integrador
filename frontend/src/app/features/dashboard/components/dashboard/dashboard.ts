@@ -511,7 +511,13 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         scales: {
           x: {
             grid: { color: t.gridColor, borderColor: t.gridBorderColor },
-            ticks: { color: t.textColor, font: { size: 11 } }
+            ticks: {
+              color: t.textColor,
+              font: { size: 11 },
+              autoSkip: true,
+              maxTicksLimit: this.viewportService.isMobile() ? 6 : 12,
+              maxRotation: 0
+            }
           },
           y: {
             grid: { color: t.gridColor, borderColor: t.gridBorderColor },

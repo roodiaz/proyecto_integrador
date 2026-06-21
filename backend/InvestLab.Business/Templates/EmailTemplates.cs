@@ -1,5 +1,24 @@
 ﻿public static class EmailTemplates
 {
+    private const string BrandAccentColor = "#527bd9";
+
+    /// <summary>
+    /// Envuelve el contenido de un correo (el fragmento HTML propio de cada plantilla)
+    /// con el layout compartido de InvestLab: wordmark, tarjeta con barra de acento y footer.
+    /// </summary>
+    /// <param name="content">HTML interno del correo (sin &lt;html&gt;/&lt;body&gt;).</param>
+    /// <param name="accentColor">Color de la barra superior de la tarjeta (por defecto, el azul de marca).</param>
+    /// <returns>El HTML completo del correo, listo para enviar.</returns>
+    private static string WrapInLayout(string content, string accentColor = BrandAccentColor)
+    {
+        var layoutPath = Path.Combine(AppContext.BaseDirectory, "Templates", "EmailLayout.html");
+        var layout = File.ReadAllText(layoutPath);
+
+        return layout
+            .Replace("{{CONTENT}}", content)
+            .Replace("{{ACCENT_COLOR}}", accentColor);
+    }
+
     public static string VerificationCode(string code)
     {
         var path = Path.Combine(
@@ -7,9 +26,9 @@
             "Templates",
             "VerificationCode.html");
 
-        var html = File.ReadAllText(path);
+        var content = File.ReadAllText(path).Replace("{{CODE}}", code);
 
-        return html.Replace("{{CODE}}", code);
+        return WrapInLayout(content);
     }
 
     /// <summary>
@@ -28,13 +47,11 @@
             "Templates",
             "AlertTriggered.html");
 
-        var html = File.ReadAllText(path);
-
         var accentColor = trend switch
         {
             "up" => "#16a34a",
             "down" => "#dc2626",
-            _ => "#4d8eff"
+            _ => BrandAccentColor
         };
 
         var trendIcon = trend switch
@@ -44,12 +61,14 @@
             _ => "🔔"
         };
 
-        return html
+        var content = File.ReadAllText(path)
             .Replace("{{SYMBOL}}", symbol)
             .Replace("{{MESSAGE}}", message)
             .Replace("{{PRICE}}", price.ToString("N2"))
             .Replace("{{DATE}}", triggeredAt.ToString("dd/MM/yyyy HH:mm") + " UTC")
             .Replace("{{ACCENT_COLOR}}", accentColor)
             .Replace("{{TREND_ICON}}", trendIcon);
+
+        return WrapInLayout(content, accentColor);
     }
 }
