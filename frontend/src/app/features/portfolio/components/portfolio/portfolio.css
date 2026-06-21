@@ -984,20 +984,35 @@
     align-items: stretch;
   }
 
-  .buy-action-btn {
-    justify-content: center;
-  }
-
+  /* Eliminar/Reiniciar son acciones administrativas, menos frecuentes que
+     Nueva Operación — en vez de 3 botones a todo el ancho apilados, las dos
+     primeras se achican y comparten una fila, y la acción principal queda
+     sola abajo, más grande. */
   .header-actions {
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .header-actions .buy-action-btn,
-  .header-actions .reset-portfolio-btn,
-  .header-actions .delete-portfolio-btn {
-    width: 100%;
+  .header-actions .delete-portfolio-btn,
+  .header-actions .reset-portfolio-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .header-actions .delete-portfolio-btn mat-icon,
+  .header-actions .reset-portfolio-btn mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+
+  .header-actions .buy-action-btn {
+    flex: 1 1 100%;
     justify-content: center;
   }
 
