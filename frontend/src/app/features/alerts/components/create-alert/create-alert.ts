@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -20,8 +20,7 @@ import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip
     TranslateModule
   ],
   templateUrl: './create-alert.html',
-  styleUrls: ['./create-alert.css'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./create-alert.css']
 })
 export class CreateAlertComponent implements OnInit {
 

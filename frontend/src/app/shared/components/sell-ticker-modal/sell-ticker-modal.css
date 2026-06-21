@@ -1,0 +1,227 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELL TICKER MODAL — Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  --text:          #E5E2E1;
+  --text-muted:    #8c909f;
+  --accent:        #ADC6FF;
+  --accent-on:     #002e6a;
+  --input-bg:      #0e0e0e;
+  --hover:         rgba(255, 255, 255, 0.06);
+}
+
+/* ── Container ── */
+/* Mismo estilo "tarjeta translúcida" que el resto de los modales. */
+.modal-container {
+  background:
+    linear-gradient(160deg, rgba(173, 198, 255, 0.07), transparent 50%),
+    rgba(19, 19, 19, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-radius: 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(173, 198, 255, 0.08);
+  overflow: hidden;
+  width: 420px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* ── Body ── */
+.modal-body {
+  padding: 20px;
+  background: transparent;
+}
+
+.dialog-subtitle {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.field-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.65rem 0.875rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s;
+}
+
+.field-input:focus {
+  box-shadow: 0 0 0 2px rgba(173, 198, 255, 0.15);
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* ── Footer ── */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cancel-btn {
+  padding: 0.55rem 1.1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cancel-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.confirm-btn {
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  min-width: 90px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: var(--accent-on);
+  box-shadow: 0 4px 14px rgba(173, 198, 255, 0.18);
+}
+
+.confirm-btn:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Mobile a pantalla completa ── */
+:host-context(.mobile-fullscreen-dialog) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  width: 100%;
+  border-radius: 0;
+  border: none;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-body {
+  flex: 1;
+}
+
+:host-context(.mobile-fullscreen-dialog) .modal-header,
+:host-context(.mobile-fullscreen-dialog) .modal-footer {
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .modal-container {
+    width: 100%;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .confirm-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}

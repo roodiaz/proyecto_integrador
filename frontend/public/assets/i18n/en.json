@@ -488,6 +488,11 @@
       "PORTFOLIO_LABEL": "Portfolio",
       "LOADING_POSITION": "Looking up your position in each portfolio..."
     },
+    "SELL_PROMPT": {
+      "TITLE": "Sell asset",
+      "SUBTITLE": "Enter the ticker you want to sell. We'll look up which of your portfolios holds that position.",
+      "CONTINUE_BUTTON": "Continue"
+    },
     "EXPORT": {
       "EXPORT_HOLDINGS": "Export Holdings",
       "EXPORT_TRANSACTIONS": "Export Transactions"
@@ -556,7 +561,8 @@
     "TOOLTIP_OP_PRICE": "The price per share at the time the operation was performed.",
     "TOOLTIP_OP_TOTAL": "The total amount of the operation: share price multiplied by the quantity bought or sold.",
     "ERRORS": {
-      "POSITION_NOT_FOUND": "Could not retrieve the position",
+      "POSITION_NOT_FOUND": "You don't have an open position in this asset",
+      "POSITION_CHECK_FAILED": "We couldn't confirm your position in this asset. Try again in a few seconds.",
       "ASSET_NOT_FOUND": "Asset not found",
       "PRICE_FETCH_FAILED": "Could not retrieve the asset price",
       "EXPORT_HOLDINGS_FAILED": "Error exporting holdings",

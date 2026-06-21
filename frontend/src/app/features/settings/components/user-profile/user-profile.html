@@ -182,10 +182,14 @@
             <label class="field-label">{{ 'SETTINGS.PERSONAL_INFO.BIRTH_DATE_LABEL' | translate }}</label>
 
             <div class="field-input-wrap datepicker-wrap">
+              @if (viewportService.isMobile()) {
+              <input type="date" class="field-input" [(ngModel)]="birthDateNative" [ngModelOptions]="{standalone: true}">
+              } @else {
               <input [matDatepicker]="picker" formControlName="birthDate" class="field-input" [placeholder]="'SETTINGS.PERSONAL_INFO.BIRTH_DATE_PLACEHOLDER' | translate"
                 readonly>
               <mat-datepicker-toggle [for]="picker" class="datepicker-toggle-btn"></mat-datepicker-toggle>
               <mat-datepicker #picker></mat-datepicker>
+              }
             </div>
           </div>
 

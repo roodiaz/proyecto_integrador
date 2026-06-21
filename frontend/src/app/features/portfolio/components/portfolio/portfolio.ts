@@ -447,8 +447,9 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Abre el modal de venta para el símbolo indicado y, si la operación se confirma,
-   * ejecuta la venta de la posición.
+   * Abre el modal de venta para el símbolo indicado, fijo sobre el portfolio activo
+   * (ya estamos parados en él, así que no busca entre el resto ni muestra selector)
+   * y, si la operación se confirma, ejecuta la venta de la posición.
    * @param symbol Símbolo del activo a vender.
    */
   openSellModal(symbol: string): void {
@@ -460,7 +461,7 @@ export class Portfolio implements OnInit, OnDestroy, AfterViewInit {
       backdropClass: 'blur-backdrop',
       panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
       position: this.viewportService.isMobile() ? { top: '0' } : undefined,
-      data: { mode: 'sell', symbol },
+      data: { mode: 'sell', symbol, portfolioId: this.activeId },
     });
 
     dialogRef.afterClosed().subscribe((result?: PortfolioModalResult) => {

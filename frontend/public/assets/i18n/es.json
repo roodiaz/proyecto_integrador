@@ -488,6 +488,11 @@
       "PORTFOLIO_LABEL": "Portfolio",
       "LOADING_POSITION": "Buscando tu posición en cada portfolio..."
     },
+    "SELL_PROMPT": {
+      "TITLE": "Vender activo",
+      "SUBTITLE": "Ingresá el ticker que querés vender. Vamos a buscar en cuál de tus portfolios tenés esa posición.",
+      "CONTINUE_BUTTON": "Continuar"
+    },
     "EXPORT": {
       "EXPORT_HOLDINGS": "Exportar Tenencias",
       "EXPORT_TRANSACTIONS": "Exportar Transacciones"
@@ -556,7 +561,8 @@
     "TOOLTIP_OP_PRICE": "El precio por acción al momento de realizar la operación.",
     "TOOLTIP_OP_TOTAL": "El monto total de la operación: precio de la acción multiplicado por la cantidad comprada o vendida.",
     "ERRORS": {
-      "POSITION_NOT_FOUND": "No se pudo obtener la posición",
+      "POSITION_NOT_FOUND": "No tenés una posición abierta en este activo",
+      "POSITION_CHECK_FAILED": "No pudimos confirmar tu posición en este activo. Intentá de nuevo en unos segundos.",
       "ASSET_NOT_FOUND": "No se encontró el activo",
       "PRICE_FETCH_FAILED": "No se pudo obtener el precio del activo",
       "EXPORT_HOLDINGS_FAILED": "Error al exportar las tenencias",

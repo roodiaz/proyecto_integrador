@@ -141,14 +141,9 @@
    Con --dlg-surface (más claro) la sección queda como una "tarjeta" y el
    input como un campo más oscuro adentro, igual que en Comprar/Vender. */
 .form-section {
-  background: var(--dlg-surface);
-  border: 1px solid var(--dlg-border);
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
-  transition: border-color 0.2s;
 }
 
 .section-label {
