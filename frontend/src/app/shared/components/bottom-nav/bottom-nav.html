@@ -1,0 +1,30 @@
+<nav class="bottom-nav">
+
+  <a class="bn-item" routerLink="/dashboard" routerLinkActive="active">
+    <mat-icon class="bn-icon">dashboard</mat-icon>
+    <span class="bn-label">{{ 'SIDEBAR.DASHBOARD' | translate }}</span>
+  </a>
+
+  <a class="bn-item" routerLink="/market" routerLinkActive="active">
+    <mat-icon class="bn-icon">trending_up</mat-icon>
+    <span class="bn-label">{{ 'SIDEBAR.MARKET' | translate }}</span>
+  </a>
+
+  <div class="bn-item bn-item--fab-wrap">
+    <button type="button" class="bn-fab" (click)="openOperateSheet()" [attr.aria-label]="'SIDEBAR.OPERATE' | translate">
+      <mat-icon>add</mat-icon>
+    </button>
+    <span class="bn-label">{{ 'SIDEBAR.OPERATE' | translate }}</span>
+  </div>
+
+  <a class="bn-item" routerLink="/portfolio" routerLinkActive="active">
+    <mat-icon class="bn-icon">account_balance_wallet</mat-icon>
+    <span class="bn-label">{{ 'SIDEBAR.PORTFOLIO' | translate }}</span>
+  </a>
+
+  <button type="button" class="bn-item" (click)="openMoreSheet()">
+    <mat-icon class="bn-icon">menu</mat-icon>
+    <span class="bn-label">{{ 'SIDEBAR.MORE' | translate }}</span>
+  </button>
+
+</nav>

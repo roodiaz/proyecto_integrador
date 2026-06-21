@@ -12,6 +12,7 @@ import { FavoriteItem } from '../../models/watchlist-item';
 import { AddFavoriteDialog } from '../add-favorite-dialog/add-favorite-dialog';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { LanguageService } from '../../../../core/services/language.service';
+import { ViewportService } from '../../../../core/services/viewport.service';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
 @Component({
@@ -52,7 +53,8 @@ export class Watchlist implements OnInit {
     private watchlistService: WatchlistService,
     private dialog: MatDialog,
     private notificationService: SnackBarService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    public viewportService: ViewportService
   ) { }
 
   // ── Ciclo de vida ──

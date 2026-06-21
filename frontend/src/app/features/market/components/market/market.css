@@ -509,6 +509,46 @@
   align-items: center;
 }
 
+/* ─── Chips de comparación (mobile): el activo se grafica solo, el usuario
+   suma índices a propósito en vez de ver las 5 series juntas por defecto. ─── */
+.compare-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compare-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--mkt-btn-border);
+  background: var(--mkt-btn-bg);
+  color: var(--mkt-text-sec);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.compare-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--chip-color);
+  opacity: 0.4;
+}
+
+.compare-chip.active {
+  border-color: var(--chip-color);
+  color: var(--mkt-text);
+}
+
+.compare-chip.active .compare-chip-dot {
+  opacity: 1;
+}
+
 .current-value {
   font-weight: 700;
   color: var(--mkt-text);
@@ -1012,8 +1052,22 @@
 }
 
 @media (max-width: 640px) {
+  /* `overflow: hidden` en .asset-panel recortaría la barra de acciones al
+     pegarla (sticky) al fondo del viewport — en mobile el panel ya es de una
+     sola columna, así que perder el recorte de bordes no afecta el layout. */
+  .asset-panel {
+    overflow: visible;
+  }
+
+  /* Barra de acciones del activo: se mantiene como fila compacta (favorito/alerta + comprar/vender)
+     y queda fija sobre el bottom nav para que comprar/vender esté siempre a un toque, sin tener
+     que volver a desplazarse hasta el panel del activo. */
   .asset-actions {
-    grid-template-columns: 1fr;
+    position: sticky;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0));
+    z-index: 50;
+    grid-template-columns: 96px 1fr 1fr;
+    box-shadow: 0 -8px 18px rgba(0, 0, 0, 0.35);
   }
 
   .symbol-input-wrapper {

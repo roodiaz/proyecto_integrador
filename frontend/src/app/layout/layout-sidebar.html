@@ -1,7 +1,12 @@
-<app-sidebar></app-sidebar>
-<div class="main-content" [class.collapsed]="isSidebarCollapsed">
+@if (!viewportService.isMobile()) {
+  <app-sidebar></app-sidebar>
+}
+<div class="main-content" [class.collapsed]="isSidebarCollapsed && !viewportService.isMobile()" [class.mobile]="viewportService.isMobile()">
   <app-header></app-header>
   <main class="content-area">
     <router-outlet></router-outlet>
   </main>
 </div>
+@if (viewportService.isMobile()) {
+  <app-bottom-nav></app-bottom-nav>
+}

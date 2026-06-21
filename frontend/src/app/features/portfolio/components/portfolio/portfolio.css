@@ -1017,21 +1017,49 @@
   .summary-card .amount { font-size: 20px; }
   .section-header h2    { font-size: 26px; }
 
-  .shared-table th,
-  .shared-table td {
-    padding: 10px;
-    font-size: 11px;
-  }
-
-  /* Ocultar columnas de precio en mobile para no colapsar la tabla */
-  .shared-table th:nth-child(3),
-  .shared-table td:nth-child(3),
-  .shared-table th:nth-child(4),
-  .shared-table td:nth-child(4) {
-    display: none;
-  }
-
   .pagination-info  { flex-wrap: wrap; gap: 8px; }
   .page-numbers     { gap: 2px; }
   .page-btn         { width: 26px; height: 26px; font-size: 11px; }
+
+  /* ─── Holdings / Operaciones: cards en vez de tabla ─── */
+  .holding-cards,
+  .operation-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .holding-card,
+  .operation-card {
+    background: var(--card-bg, var(--hover-bg));
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .holding-card-top,
+  .operation-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .holding-card-row,
+  .operation-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+
+  .holding-card-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .holding-card .sell-btn {
+    padding: 4px;
+  }
 }

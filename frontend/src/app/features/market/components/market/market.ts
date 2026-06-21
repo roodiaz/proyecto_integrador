@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit, effect } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,7 @@ import { PortfolioService } from '../../../portfolio/services/portfolio.service'
 import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
 import { BuyData, SellData, PortfolioModalResult } from '../../../portfolio/models/portfolio.modal.model';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ViewportService } from '../../../../core/services/viewport.service';
 
 import {
   MarketIndex,
@@ -49,6 +50,9 @@ Chart.register(CandlestickController, CandlestickElement, OhlcController, OhlcEl
   styleUrl: './market.css'
 })
 export class Market implements OnInit, AfterViewInit, OnDestroy {
+
+  /** Input de búsqueda de ticker, usado para enfocarlo al llegar desde el acceso rápido "Operar" del bottom nav. */
+  @ViewChild('symbolInput') symbolInputRef?: ElementRef<HTMLInputElement>;
 
   marketIndices: MarketIndex[] = [];
   loadingIndices = false;
@@ -99,6 +103,21 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   private lastComparisonRange = '';
   private chart: Chart | null = null;
 
+  /** Índices disponibles para comparar contra el activo seleccionado. */
+  readonly compareOptions = [
+    { symbol: '^GSPC', label: 'S&P 500' },
+    { symbol: '^IXIC', label: 'NASDAQ' },
+    { symbol: '^DJI', label: 'Dow Jones' },
+    { symbol: '^RUT', label: 'Russell 2000' }
+  ];
+
+  /**
+   * Índices actualmente activos en el gráfico comparativo. En desktop se muestran los
+   * 4 por defecto (comportamiento histórico); en mobile arranca vacío para no saturar
+   * el gráfico — el usuario suma comparaciones a propósito tocando un chip.
+   */
+  compareSymbols = new Set<string>(['^GSPC', '^IXIC', '^DJI', '^RUT']);
+
   // ── Listas del mercado (tendencias, ganadores y perdedores) ──
   loadingTrending = false;
   loadingGainers = false;
@@ -123,7 +142,13 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
     private themeService: ThemeService,
     private route: ActivatedRoute,
     private router: Router,
+    public viewportService: ViewportService,
   ) {
+    if (this.viewportService.isMobile()) {
+      this.compareSymbols.clear();
+      this.selectedTimeframe = '1w';
+    }
+
     effect(() => {
       this.themeService.currentTheme();
       if (this.chart) {
@@ -145,6 +170,15 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       this.selectedSymbol = tickerParam.toUpperCase();
       this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
     }
+
+    if (this.route.snapshot.queryParamMap.has('focusSearch')) {
+      setTimeout(() => {
+        this.symbolInputRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        this.symbolInputRef?.nativeElement.focus();
+      });
+      this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+    }
+
     this.loadMarketData();
     this.loadMarketOverview();
     this.loadMarketLists();
@@ -505,6 +539,26 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Suma o quita un índice de la comparación mostrada en el gráfico (chips de mobile).
+   * @param symbol Símbolo del índice (p. ej. `'^GSPC'`).
+   */
+  toggleCompareSymbol(symbol: string): void {
+    if (this.compareSymbols.has(symbol)) {
+      this.compareSymbols.delete(symbol);
+    } else {
+      this.compareSymbols.add(symbol);
+    }
+    this.setupChart();
+  }
+
+  /** Título del gráfico comparativo, armado solo con los índices actualmente activos. */
+  get chartComparisonTitle(): string {
+    const base = this.selectedAsset ? this.selectedAsset.symbol : this.languageService.instant('MARKET.OVERVIEW');
+    const activeLabels = this.compareOptions.filter(o => this.compareSymbols.has(o.symbol)).map(o => o.label);
+    return activeLabels.length ? `${base} vs ${activeLabels.join(' vs ')}` : base;
+  }
+
+  /**
    * Agrega o quita el activo de la lista de favoritos del usuario, optimizando la
    * actualización visual y revirtiéndola si la petición falla.
    * @param symbol Símbolo del activo a marcar/desmarcar como favorito.
@@ -560,7 +614,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       autoFocus: false,
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
-      panelClass: 'portfolio-dialog-panel',
+      panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
       data: {
         mode: 'buy',
         symbol: finalSymbol
@@ -592,7 +646,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       autoFocus: false,
       restoreFocus: false,
       backdropClass: 'blur-backdrop',
-      panelClass: 'portfolio-dialog-panel',
+      panelClass: this.viewportService.isMobile() ? ['portfolio-dialog-panel', 'mobile-fullscreen-dialog'] : 'portfolio-dialog-panel',
       data: {
         mode: 'sell',
         symbol: finalSymbol
@@ -834,7 +888,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
    * Color de línea/barra asignado a una serie comparativa según su símbolo.
    * @param symbol Símbolo de la serie (por ejemplo `'^GSPC'` para el S&P 500).
    */
-  private getSeriesColor(symbol: string): string {
+  getSeriesColor(symbol: string): string {
     if (symbol === '^GSPC') return '#10b981';
     if (symbol === '^IXIC') return '#f59e0b';
     if (symbol === '^DJI')  return '#a78bfa';
@@ -879,7 +933,7 @@ export class Market implements OnInit, AfterViewInit, OnDestroy {
       }
     ];
 
-    this.comparisonHistory?.series.forEach(series => {
+    this.comparisonHistory?.series.filter(series => this.compareSymbols.has(series.symbol)).forEach(series => {
       datasets.push({
         label: series.name || series.symbol,
         data: this.alignSeriesToLabels(series.points, labels),

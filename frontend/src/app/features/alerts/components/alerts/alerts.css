@@ -735,4 +735,37 @@ input:checked + .slider:before { transform: translateX(22px); }
   .summary-cards { grid-template-columns: 1fr; }
   .header-info h1 { font-size: 22px; }
   .pagination-container { flex-direction: column; align-items: flex-start; }
+
+  /* ─── Alertas → cards (la fila con anchos mínimos fijos desbordaba en mobile) ─── */
+  .alerts-list-header { display: none; }
+
+  .alert-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .alert-column,
+  .alert-column.symbol,
+  .alert-column.condition,
+  .alert-column.status,
+  .alert-column.dates,
+  .alert-column.actions {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    padding: 0;
+  }
+
+  .alert-column.dates {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .alert-column.actions {
+    justify-content: flex-start;
+    gap: 8px;
+  }
 }

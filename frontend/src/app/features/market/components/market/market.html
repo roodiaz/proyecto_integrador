@@ -223,9 +223,7 @@
     <div class="chart-header">
       <div class="chart-title-section">
         <div class="chart-title-row">
-          <h2 class="chart-title">
-            {{ selectedAsset ? selectedAsset.symbol : ('MARKET.OVERVIEW' | translate) }} vs S&P 500 vs NASDAQ vs Dow Jones vs Russell 2000
-          </h2>
+          <h2 class="chart-title">{{ chartComparisonTitle }}</h2>
           <app-info-tooltip [text]="chartTooltipText | translate" />
         </div>
 
@@ -238,11 +236,23 @@
 
           <span class="period">{{ 'MARKET.VS_MARKET' | translate }}</span>
         </div>
+
+        @if (viewportService.isMobile()) {
+          <div class="compare-chips">
+            @for (option of compareOptions; track option.symbol) {
+              <button type="button" class="compare-chip" [class.active]="compareSymbols.has(option.symbol)"
+                [style.--chip-color]="getSeriesColor(option.symbol)" (click)="toggleCompareSymbol(option.symbol)">
+                <span class="compare-chip-dot"></span>
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <div class="chart-controls">
         <div class="symbol-input-wrapper">
-          <input type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" [placeholder]="'MARKET.SEARCH_SYMBOL_PLACEHOLDER' | translate">
+          <input #symbolInput type="text" [(ngModel)]="selectedSymbol" (keyup.enter)="searchAsset()" [placeholder]="'MARKET.SEARCH_SYMBOL_PLACEHOLDER' | translate">
 
           <button type="button" (click)="searchAsset()" [title]="'COMMON.SEARCH' | translate">
             <mat-icon>search</mat-icon>

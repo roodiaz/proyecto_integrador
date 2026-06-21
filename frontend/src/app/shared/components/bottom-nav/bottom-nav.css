@@ -1,0 +1,85 @@
+:host {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  background: var(--il-sidebar-bg);
+  border-top: 1px solid var(--il-border-muted);
+}
+
+.bn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--il-text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.bn-item.active {
+  color: var(--il-accent);
+}
+
+.bn-icon {
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  font-family: 'Material Icons' !important;
+}
+
+.bn-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Acción central "Operar" ─── */
+.bn-item--fab-wrap {
+  justify-content: flex-start;
+  padding-top: 2px;
+}
+
+.bn-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  border: none;
+  border-radius: 50%;
+  background: var(--il-accent);
+  color: #0b0f17;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.bn-fab:active {
+  transform: scale(0.92);
+}
+
+.bn-fab mat-icon {
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  font-family: 'Material Icons' !important;
+}

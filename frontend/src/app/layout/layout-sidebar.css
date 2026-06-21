@@ -13,9 +13,18 @@
   margin-left: 64px;
 }
 
+.main-content.mobile {
+  margin-left: 0;
+}
+
 .content-area {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
   background: transparent;
+}
+
+.main-content.mobile .content-area {
+  padding: 16px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
 }

@@ -198,6 +198,49 @@
   color: var(--text-secondary);
 }
 
+/* ─── Chips de comparación (mobile): el portfolio se grafica solo, el usuario
+   suma benchmarks a propósito en vez de ver las 3 series juntas por defecto. ─── */
+.compare-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compare-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.compare-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+.compare-chip-dot.sp500 { background: #10b981; }
+.compare-chip-dot.nasdaq { background: #f59e0b; }
+
+.compare-chip.active {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.compare-chip.active .compare-chip-dot {
+  opacity: 1;
+}
+
 .chart-controls {
   display: flex;
   gap: 12px;
@@ -675,7 +718,46 @@
   .dashboard-title {
     font-size: 28px;
   }
+
+  /* El gráfico comparativo pasa a un rol secundario: más chico y sin protagonismo. */
+  .chart-section {
+    padding: 16px;
+  }
   .chart-container {
-    height: 320px;
+    height: 200px;
+  }
+  .chart-title {
+    font-size: 16px;
+  }
+
+  /* Tabla de últimas operaciones → cards, sin scroll horizontal. */
+  .operations-table thead {
+    display: none;
+  }
+  .operations-table,
+  .operations-table tbody,
+  .operations-table tr,
+  .operations-table td {
+    display: block;
+    width: 100%;
+  }
+  .operations-table tr {
+    padding: 10px 0;
+    border-top: 1px solid var(--row-border);
+  }
+  .operations-table tr:first-child {
+    border-top: none;
+  }
+  .operations-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-top: none;
+  }
+  .operations-table td::before {
+    content: attr(data-label);
+    color: var(--text-muted);
+    font-size: 12px;
   }
 }
