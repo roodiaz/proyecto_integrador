@@ -208,7 +208,7 @@
     "MARKET": "Market",
     "PORTFOLIO": "Portfolio",
     "ALERTS": "Alerts",
-    "WATCHLIST": "Watchlist",
+    "WATCHLIST": "Favorites",
     "SETTINGS": "Settings",
     "LOGOUT": "Log Out",
     "MORE": "More",
@@ -348,8 +348,8 @@
     "RANGE_6M": "6M",
     "RANGE_1Y": "1Y",
     "BUY_BUTTON": "Buy",
-    "ADD_FAVORITE": "Add to watchlist",
-    "REMOVE_FAVORITE": "Remove from watchlist",
+    "ADD_FAVORITE": "Add to favorites",
+    "REMOVE_FAVORITE": "Remove from favorites",
     "CREATE_ALERT": "Create Alert",
     "LOADING_ASSET": "Loading asset...",
     "NOT_FOUND": "Asset not found",
@@ -403,7 +403,7 @@
       "SYMBOL_REQUIRED": "Enter a symbol to search",
       "ASSET_NOT_FOUND": "No information found for this asset",
       "ASSET_FETCH_FAILED": "Could not retrieve asset information",
-      "WATCHLIST_UPDATE_FAILED": "Could not update watchlist",
+      "WATCHLIST_UPDATE_FAILED": "Could not update favorites",
       "SELECT_ASSET_FIRST": "Select an asset first",
       "BUY_ERROR": "Error placing the purchase",
       "SELL_ERROR": "Error selling the asset",
@@ -769,7 +769,7 @@
     }
   },
   "WATCHLIST": {
-    "TITLE": "Watchlist",
+    "TITLE": "Favorites",
     "FAVORITES_TITLE": "Favorites List",
     "FAVORITES_SUBTITLE": "Manage the assets you follow most frequently",
     "SUBTITLE": "Your favorite assets",
@@ -777,7 +777,7 @@
     "FAVORITES_COUNTER": "★ FAVORITES",
     "ADD_ASSET_BUTTON": "Add Asset",
     "ADD_BUTTON": "Add Favorite",
-    "REMOVE_BUTTON": "Remove from Watchlist",
+    "REMOVE_BUTTON": "Remove from Favorites",
     "SYMBOL": "Symbol",
     "NAME": "Company",
     "PRICE": "Current Price",
@@ -805,11 +805,11 @@
         "SYMBOL_REQUIRED": "Symbol is required.",
         "SYMBOL_MIN": "Symbol must have at least 1 character."
       },
-      "POPULAR_TOOLTIP": "These are some of the most well-known stocks on the US market. Adding them to your favorites lets you track their price from the watchlist without searching each time. It does not imply buying them."
+      "POPULAR_TOOLTIP": "These are some of the most well-known stocks on the US market. Adding them to your favorites lets you track their price from your favorites without searching each time. It does not imply buying them."
     },
     "DELETE_CONFIRM": {
-      "TITLE": "Remove from Watchlist",
-      "MESSAGE": "Are you sure you want to remove {{symbol}} from your watchlist?"
+      "TITLE": "Remove from Favorites",
+      "MESSAGE": "Are you sure you want to remove {{symbol}} from your favorites?"
     },
     "TOOLTIP_SYMBOL": "The unique code that identifies the stock. For example, AAPL is Apple and MSFT is Microsoft.",
     "TOOLTIP_NAME": "The full name of the company issuing the stock.",
@@ -926,7 +926,7 @@
       "FEATURE_PORTFOLIO_DESC": "Practice strategies with USD 10,000 virtual funds risk-free.",
       "FEATURE_ALERTS_TITLE": "Smart Alerts",
       "FEATURE_ALERTS_DESC": "Set price alerts and receive instant notifications.",
-      "FEATURE_WATCHLIST_TITLE": "Watchlist",
+      "FEATURE_WATCHLIST_TITLE": "Favorites",
       "FEATURE_WATCHLIST_DESC": "Keep track of the assets that interest you.",
       "NAV_HOME": "Home",
       "NAV_CONTACT": "Contact",

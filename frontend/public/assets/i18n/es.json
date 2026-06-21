@@ -208,7 +208,7 @@
     "MARKET": "Mercado",
     "PORTFOLIO": "Portfolio",
     "ALERTS": "Alertas",
-    "WATCHLIST": "Watchlist",
+    "WATCHLIST": "Favoritos",
     "SETTINGS": "Configuración",
     "LOGOUT": "Cerrar Sesión",
     "MORE": "Más",
@@ -769,7 +769,7 @@
     }
   },
   "WATCHLIST": {
-    "TITLE": "Watchlist",
+    "TITLE": "Favoritos",
     "FAVORITES_TITLE": "Lista de Favoritos",
     "FAVORITES_SUBTITLE": "Gestiona los activos que sigues con mayor frecuencia",
     "SUBTITLE": "Tus activos favoritos",
@@ -805,7 +805,7 @@
         "SYMBOL_REQUIRED": "El símbolo es requerido.",
         "SYMBOL_MIN": "El símbolo debe tener al menos 1 carácter."
       },
-      "POPULAR_TOOLTIP": "Son algunas de las acciones más conocidas del mercado estadounidense. Agregarlas a favoritos te permite seguir su precio desde la watchlist sin tener que buscarlas cada vez. No implica comprarlas."
+      "POPULAR_TOOLTIP": "Son algunas de las acciones más conocidas del mercado estadounidense. Agregarlas a favoritos te permite seguir su precio desde tus favoritos sin tener que buscarlas cada vez. No implica comprarlas."
     },
     "DELETE_CONFIRM": {
       "TITLE": "Quitar de Favoritos",
@@ -926,7 +926,7 @@
       "FEATURE_PORTFOLIO_DESC": "Practicá estrategias con USD 10.000 virtuales sin riesgo.",
       "FEATURE_ALERTS_TITLE": "Alertas Inteligentes",
       "FEATURE_ALERTS_DESC": "Configurá alertas de precio y recibí notificaciones al instante.",
-      "FEATURE_WATCHLIST_TITLE": "Watchlist",
+      "FEATURE_WATCHLIST_TITLE": "Favoritos",
       "FEATURE_WATCHLIST_DESC": "Seguí de cerca los activos que te interesan.",
       "NAV_HOME": "Inicio",
       "NAV_CONTACT": "Contacto",
