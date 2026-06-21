@@ -18,6 +18,7 @@ import Chart from 'chart.js/auto';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { LanguageService } from '../../../../core/services/language.service';
 import { ActivePortfolioService } from '../../../../core/services/active-portfolio.service';
+import { ViewportService } from '../../../../core/services/viewport.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -42,6 +43,19 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   // ── Controles del gráfico de performance ──────────────────────────────────
   selectedChartType: 'line' | 'bar' = 'line';
   selectedPeriod: '1W' | '1M' | '3M' | '1Y' = '1M';
+
+  /** Benchmarks disponibles para comparar contra el portfolio en el gráfico de performance. */
+  readonly compareOptions: { key: 'sp500' | 'nasdaq'; label: string }[] = [
+    { key: 'sp500', label: 'S&P 500' },
+    { key: 'nasdaq', label: 'NASDAQ' }
+  ];
+
+  /**
+   * Benchmarks activos en el gráfico. En desktop se muestran los 2 por defecto
+   * (comportamiento histórico); en mobile arranca vacío — solo "Portfolio" — para
+   * no saturar el gráfico, y el usuario suma comparación a propósito con un chip.
+   */
+  compareSymbols = new Set<'sp500' | 'nasdaq'>(['sp500', 'nasdaq']);
 
   // ── Filtro de fecha para composición ──────────────────────────────────────
   selectedCompositionDate: string = this.getTodayString();
@@ -68,8 +82,14 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     private dashboardService: DashboardService,
     private activePortfolioService: ActivePortfolioService,
     private themeService: ThemeService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    public viewportService: ViewportService
   ) {
+    if (this.viewportService.isMobile()) {
+      this.compareSymbols.clear();
+      this.selectedPeriod = '1W';
+    }
+
     effect(() => {
       this.themeService.currentTheme();
       if (this.performanceChart?.data?.length) {
@@ -271,6 +291,21 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.loadPerformanceChart();
   }
 
+  /**
+   * Suma o quita un benchmark de la comparación mostrada en el gráfico de performance
+   * (chips de mobile).
+   * @param key Benchmark a alternar (`'sp500'` o `'nasdaq'`).
+   */
+  toggleCompareSymbol(key: 'sp500' | 'nasdaq'): void {
+    if (this.compareSymbols.has(key)) {
+      this.compareSymbols.delete(key);
+    } else {
+      this.compareSymbols.add(key);
+    }
+    this.destroyChart();
+    this.renderChartWhenReady();
+  }
+
   onCompositionDateChange(): void {
     if (this.selectedCompositionDate) {
       this.loadPortfolioComposition(this.selectedCompositionDate);
@@ -394,8 +429,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         borderWidth: 2,
         tension: 0.4,
         fill: this.selectedChartType === 'line'
-      },
-      {
+      }
+    ];
+
+    if (this.compareSymbols.has('sp500')) {
+      datasets.push({
         label: 'S&P 500',
         data: chartPoints.map(x => Number((x.sp500 - 100).toFixed(2))),
         borderColor: '#10b981',
@@ -403,8 +441,11 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         borderWidth: 2,
         tension: 0.4,
         fill: this.selectedChartType === 'line'
-      },
-      {
+      });
+    }
+
+    if (this.compareSymbols.has('nasdaq')) {
+      datasets.push({
         label: 'NASDAQ',
         data: chartPoints.map(x => Number((x.nasdaq - 100).toFixed(2))),
         borderColor: '#f59e0b',
@@ -412,8 +453,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         borderWidth: 2,
         tension: 0.4,
         fill: this.selectedChartType === 'line'
-      }
-    ];
+      });
+    }
 
     return { labels, datasets, chartPoints };
   }
@@ -457,10 +498,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
                 const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`;
                 const label = context.dataset.label || '';
                 if (!pt) return `${label}: ${fmtPct(pct)}`;
-                switch (context.datasetIndex) {
-                  case 0: return `${label}: ${fmtUsd(pt.portfolioValue)} (${fmtPct(pct)})`;
-                  case 1: return `${label}: ${fmtUsd(pt.sp500Value)} (${fmtPct(pct)})`;
-                  case 2: return `${label}: ${fmtUsd(pt.nasdaqValue)} (${fmtPct(pct)})`;
+                switch (label) {
+                  case 'Portfolio': return `${label}: ${fmtUsd(pt.portfolioValue)} (${fmtPct(pct)})`;
+                  case 'S&P 500': return `${label}: ${fmtUsd(pt.sp500Value)} (${fmtPct(pct)})`;
+                  case 'NASDAQ': return `${label}: ${fmtUsd(pt.nasdaqValue)} (${fmtPct(pct)})`;
                   default: return `${label}: ${fmtPct(pct)}`;
                 }
               }

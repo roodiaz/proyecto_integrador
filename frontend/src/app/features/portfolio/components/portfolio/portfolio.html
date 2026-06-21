@@ -269,82 +269,109 @@
           <div class="skeleton skeleton-list-item"></div>
         </div>
       } @else {
-        <table class="shared-table" [class.table-loading]="loadingPositions">
-          <thead>
-            <tr>
-              <th style="width:11%" class="th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSortPositions('symbol')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>{{ 'PORTFOLIO.SYMBOL' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_SYMBOL' | translate" />
+
+        @if (positions.length === 0 && !symbolFilter) {
+          <div class="empty-state">
+            <div class="empty-icon">▭</div>
+            <p class="empty-title">{{ 'PORTFOLIO.EMPTY_HOLDINGS' | translate }}</p>
+            <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_HOLDINGS_TEXT' | translate }}</p>
+            <button class="empty-cta" type="button" (click)="openBuyModal()">+ {{ 'PORTFOLIO.NEW_OPERATION' | translate }}</button>
+          </div>
+        } @else if (positions.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">⌕</div>
+            <p class="empty-title">{{ 'PORTFOLIO.SIN_RESULTADOS' | translate }}</p>
+            <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_FILTER_TEXT' | translate }}</p>
+          </div>
+        } @else if (viewportService.isMobile()) {
+
+          <!-- Cards de tenencias (mobile): solo lo más relevante — símbolo, precio actual, variación y P/L -->
+          <div class="holding-cards">
+            @for (item of positions; track item.symbol) {
+              <div class="holding-card">
+                <div class="holding-card-top">
+                  <span class="ticker-cell">{{ item.symbol }}</span>
+                  <button class="sell-btn" type="button" (click)="openSellModal(item.symbol)" [title]="'PORTFOLIO.SELL_BUTTON' | translate">
+                    <mat-icon>sell</mat-icon>
+                  </button>
                 </div>
-              </th>
-              <th style="width:13%" class="th-sortable" [class.sort-active]="sortField === 'sector'" (click)="onSortPositions('sector')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('sector') }}</span><span>{{ 'PORTFOLIO.SECTOR' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_SECTOR' | translate" />
+                <div class="holding-card-row">
+                  <span class="holding-card-label">{{ 'PORTFOLIO.CURRENT_PRICE' | translate }}</span>
+                  <span>{{ item.currentPrice | currency:'USD' }}</span>
                 </div>
-              </th>
-              <th style="width:9%" class="th-sortable" [class.sort-active]="sortField === 'quantity'" (click)="onSortPositions('quantity')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('quantity') }}</span><span>{{ 'PORTFOLIO.QUANTITY' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_QUANTITY' | translate" />
+                <div class="holding-card-row">
+                  <span class="holding-card-label">{{ 'PORTFOLIO.VARIATION' | translate }}</span>
+                  <span [class.positive]="item.variationPercent >= 0" [class.negative]="item.variationPercent < 0"
+                    [class.neutral]="item.variationPercent === 0">
+                    {{ item.variationPercent | number:'1.2-2' }}%
+                  </span>
                 </div>
-              </th>
-              <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'averagePrice'" (click)="onSortPositions('averagePrice')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('averagePrice') }}</span><span>{{ 'PORTFOLIO.AVG_PRICE' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_AVG_PRICE' | translate" />
+                <div class="holding-card-row">
+                  <span class="holding-card-label">{{ 'PORTFOLIO.PROFIT_LOSS' | translate }}</span>
+                  <span [class.positive]="item.profitLoss >= 0" [class.negative]="item.profitLoss < 0"
+                    [class.neutral]="item.profitLoss === 0">
+                    {{ item.profitLoss | currency:'USD' }}
+                  </span>
                 </div>
-              </th>
-              <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'currentPrice'" (click)="onSortPositions('currentPrice')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('currentPrice') }}</span><span>{{ 'PORTFOLIO.CURRENT_PRICE' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_CURRENT_PRICE' | translate" />
-                </div>
-              </th>
-              <th style="width:12%" class="th-sortable" [class.sort-active]="sortField === 'variationPercent'" (click)="onSortPositions('variationPercent')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>{{ 'PORTFOLIO.VARIATION' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_CHANGE_PCT' | translate" />
-                </div>
-              </th>
-              <th style="width:18%" class="th-sortable" [class.sort-active]="sortField === 'profitLoss'" (click)="onSortPositions('profitLoss')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getSortIcon('profitLoss') }}</span><span>{{ 'PORTFOLIO.PROFIT_LOSS' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_PROFIT' | translate" />
-                </div>
-              </th>
-              <th style="width:9%">
-                <div class="th-with-help">
-                  <span>{{ 'PORTFOLIO.ACTIONS_HEADER' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_ACTIONS' | translate" />
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (positions.length === 0 && !symbolFilter) {
+              </div>
+            }
+          </div>
+
+        } @else {
+          <table class="shared-table" [class.table-loading]="loadingPositions">
+            <thead>
               <tr>
-                <td class="td-empty" colspan="8">
-                  <div class="empty-state">
-                    <div class="empty-icon">▭</div>
-                    <p class="empty-title">{{ 'PORTFOLIO.EMPTY_HOLDINGS' | translate }}</p>
-                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_HOLDINGS_TEXT' | translate }}</p>
-                    <button class="empty-cta" type="button" (click)="openBuyModal()">+ {{ 'PORTFOLIO.NEW_OPERATION' | translate }}</button>
+                <th style="width:11%" class="th-sortable" [class.sort-active]="sortField === 'symbol'" (click)="onSortPositions('symbol')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('symbol') }}</span><span>{{ 'PORTFOLIO.SYMBOL' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_SYMBOL' | translate" />
                   </div>
-                </td>
-              </tr>
-            } @else if (positions.length === 0) {
-              <tr>
-                <td class="td-empty" colspan="8">
-                  <div class="empty-state">
-                    <div class="empty-icon">⌕</div>
-                    <p class="empty-title">{{ 'PORTFOLIO.SIN_RESULTADOS' | translate }}</p>
-                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_FILTER_TEXT' | translate }}</p>
+                </th>
+                <th style="width:13%" class="th-sortable" [class.sort-active]="sortField === 'sector'" (click)="onSortPositions('sector')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('sector') }}</span><span>{{ 'PORTFOLIO.SECTOR' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_SECTOR' | translate" />
                   </div>
-                </td>
+                </th>
+                <th style="width:9%" class="th-sortable" [class.sort-active]="sortField === 'quantity'" (click)="onSortPositions('quantity')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('quantity') }}</span><span>{{ 'PORTFOLIO.QUANTITY' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_QUANTITY' | translate" />
+                  </div>
+                </th>
+                <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'averagePrice'" (click)="onSortPositions('averagePrice')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('averagePrice') }}</span><span>{{ 'PORTFOLIO.AVG_PRICE' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_AVG_PRICE' | translate" />
+                  </div>
+                </th>
+                <th style="width:14%" class="th-sortable" [class.sort-active]="sortField === 'currentPrice'" (click)="onSortPositions('currentPrice')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('currentPrice') }}</span><span>{{ 'PORTFOLIO.CURRENT_PRICE' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_CURRENT_PRICE' | translate" />
+                  </div>
+                </th>
+                <th style="width:12%" class="th-sortable" [class.sort-active]="sortField === 'variationPercent'" (click)="onSortPositions('variationPercent')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('variationPercent') }}</span><span>{{ 'PORTFOLIO.VARIATION' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_CHANGE_PCT' | translate" />
+                  </div>
+                </th>
+                <th style="width:18%" class="th-sortable" [class.sort-active]="sortField === 'profitLoss'" (click)="onSortPositions('profitLoss')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getSortIcon('profitLoss') }}</span><span>{{ 'PORTFOLIO.PROFIT_LOSS' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_PROFIT' | translate" />
+                  </div>
+                </th>
+                <th style="width:9%">
+                  <div class="th-with-help">
+                    <span>{{ 'PORTFOLIO.ACTIONS_HEADER' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_HOLDING_ACTIONS' | translate" />
+                  </div>
+                </th>
               </tr>
-            } @else {
+            </thead>
+            <tbody>
               @for (item of positions; track item.symbol) {
                 <tr>
                   <td class="ticker-cell">{{ item.symbol }}</td>
@@ -372,9 +399,9 @@
                   <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                 </tr>
               }
-            }
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        }
 
         @if (positions.length > 0) {
           <div class="pagination-container">
@@ -463,75 +490,88 @@
           <div class="skeleton skeleton-list-item"></div>
         </div>
       } @else {
-        <table class="shared-table" [class.table-loading]="loadingOperations">
-          <thead>
-            <tr>
-              <th style="width:18%" class="th-sortable" [class.sort-active]="operationSortField === 'date'" (click)="onSortOperations('date')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('date') }}</span><span>{{ 'COMMON.DATE' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_DATE' | translate" />
+
+        @if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null && !operationFromDate && !operationToDate) {
+          <div class="empty-state">
+            <div class="empty-icon">≡</div>
+            <p class="empty-title">{{ 'PORTFOLIO.EMPTY_OPERATIONS' | translate }}</p>
+            <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_OPERATIONS_TEXT' | translate }}</p>
+          </div>
+        } @else if (operations.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">⌕</div>
+            <p class="empty-title">{{ 'PORTFOLIO.SIN_RESULTADOS' | translate }}</p>
+            <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_FILTER_OPS_TEXT' | translate }}</p>
+          </div>
+        } @else if (viewportService.isMobile()) {
+
+          <!-- Cards de operaciones (mobile): solo lo más relevante — fecha, símbolo, tipo y total -->
+          <div class="operation-cards">
+            @for (operation of operations; track operation.operationDate + '-' + operation.symbol + '-' + operation.type) {
+              <div class="operation-card">
+                <div class="operation-card-top">
+                  <span class="ticker-cell">{{ operation.symbol }}</span>
+                  <span class="operation-badge" [class.buy]="operation.type === 1" [class.sell]="operation.type === 2">
+                    {{ operation.type === 1 ? ('PORTFOLIO.BUY_BADGE' | translate) : ('PORTFOLIO.SELL_BADGE' | translate) }}
+                  </span>
                 </div>
-              </th>
-              <th style="width:12%" class="th-sortable" [class.sort-active]="operationSortField === 'symbol'" (click)="onSortOperations('symbol')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('symbol') }}</span><span>{{ 'PORTFOLIO.SYMBOL' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_SYMBOL' | translate" />
+                <div class="operation-card-row">
+                  <span class="holding-card-label">{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                  <span>{{ operation.total | currency:'USD' }}</span>
                 </div>
-              </th>
-              <th style="width:13%" class="th-sortable" [class.sort-active]="operationSortField === 'sector'" (click)="onSortOperations('sector')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('sector') }}</span><span>{{ 'PORTFOLIO.SECTOR' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_SECTOR' | translate" />
-                </div>
-              </th>
-              <th style="width:11%">
-                <div class="th-with-help">
-                  <span>{{ 'COMMON.TYPE' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_TYPE' | translate" />
-                </div>
-              </th>
-              <th style="width:10%" class="th-sortable" [class.sort-active]="operationSortField === 'quantity'" (click)="onSortOperations('quantity')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('quantity') }}</span><span>{{ 'PORTFOLIO.QUANTITY' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_QUANTITY' | translate" />
-                </div>
-              </th>
-              <th style="width:16%" class="th-sortable" [class.sort-active]="operationSortField === 'price'" (click)="onSortOperations('price')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('price') }}</span><span>{{ 'COMMON.PRICE' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_PRICE' | translate" />
-                </div>
-              </th>
-              <th style="width:20%" class="th-sortable" [class.sort-active]="operationSortField === 'total'" (click)="onSortOperations('total')">
-                <div class="th-with-help">
-                  <span class="sort-icon">{{ getOperationSortIcon('total') }}</span><span>{{ 'COMMON.TOTAL' | translate }}</span>
-                  <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_TOTAL' | translate" />
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (operations.length === 0 && !operationSymbolFilter && operationTypeFilter === null && !operationFromDate && !operationToDate) {
+              </div>
+            }
+          </div>
+
+        } @else {
+          <table class="shared-table" [class.table-loading]="loadingOperations">
+            <thead>
               <tr>
-                <td class="td-empty" colspan="7">
-                  <div class="empty-state">
-                    <div class="empty-icon">≡</div>
-                    <p class="empty-title">{{ 'PORTFOLIO.EMPTY_OPERATIONS' | translate }}</p>
-                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_OPERATIONS_TEXT' | translate }}</p>
+                <th style="width:18%" class="th-sortable" [class.sort-active]="operationSortField === 'date'" (click)="onSortOperations('date')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getOperationSortIcon('date') }}</span><span>{{ 'COMMON.DATE' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_DATE' | translate" />
                   </div>
-                </td>
-              </tr>
-            } @else if (operations.length === 0) {
-              <tr>
-                <td class="td-empty" colspan="7">
-                  <div class="empty-state">
-                    <div class="empty-icon">⌕</div>
-                    <p class="empty-title">{{ 'PORTFOLIO.SIN_RESULTADOS' | translate }}</p>
-                    <p class="empty-sub">{{ 'PORTFOLIO.EMPTY_FILTER_OPS_TEXT' | translate }}</p>
+                </th>
+                <th style="width:12%" class="th-sortable" [class.sort-active]="operationSortField === 'symbol'" (click)="onSortOperations('symbol')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getOperationSortIcon('symbol') }}</span><span>{{ 'PORTFOLIO.SYMBOL' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_SYMBOL' | translate" />
                   </div>
-                </td>
+                </th>
+                <th style="width:13%" class="th-sortable" [class.sort-active]="operationSortField === 'sector'" (click)="onSortOperations('sector')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getOperationSortIcon('sector') }}</span><span>{{ 'PORTFOLIO.SECTOR' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_SECTOR' | translate" />
+                  </div>
+                </th>
+                <th style="width:11%">
+                  <div class="th-with-help">
+                    <span>{{ 'COMMON.TYPE' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_TYPE' | translate" />
+                  </div>
+                </th>
+                <th style="width:10%" class="th-sortable" [class.sort-active]="operationSortField === 'quantity'" (click)="onSortOperations('quantity')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getOperationSortIcon('quantity') }}</span><span>{{ 'PORTFOLIO.QUANTITY' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_QUANTITY' | translate" />
+                  </div>
+                </th>
+                <th style="width:16%" class="th-sortable" [class.sort-active]="operationSortField === 'price'" (click)="onSortOperations('price')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getOperationSortIcon('price') }}</span><span>{{ 'COMMON.PRICE' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_PRICE' | translate" />
+                  </div>
+                </th>
+                <th style="width:20%" class="th-sortable" [class.sort-active]="operationSortField === 'total'" (click)="onSortOperations('total')">
+                  <div class="th-with-help">
+                    <span class="sort-icon">{{ getOperationSortIcon('total') }}</span><span>{{ 'COMMON.TOTAL' | translate }}</span>
+                    <app-info-tooltip [text]="'PORTFOLIO.TOOLTIP_OP_TOTAL' | translate" />
+                  </div>
+                </th>
               </tr>
-            } @else {
+            </thead>
+            <tbody>
               @for (operation of operations; track operation.operationDate + '-' + operation.symbol + '-' + operation.type) {
                 <tr>
                   <td>{{ operation.operationDate | date:'dd/MM/yyyy HH:mm' }}</td>
@@ -552,9 +592,9 @@
                   <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td>
                 </tr>
               }
-            }
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        }
 
         @if (operations.length > 0) {
           <div class="pagination-container">

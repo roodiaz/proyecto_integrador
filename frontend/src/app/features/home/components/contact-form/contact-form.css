@@ -253,6 +253,11 @@
     padding-top: 56px;
     border-left: none;
   }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: clamp(10px, 2vh, 20px);
+  }
 }
 
 @media (max-width: 600px) {

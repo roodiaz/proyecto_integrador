@@ -154,6 +154,18 @@
             {{ performanceChart?.variationText || ('DASHBOARD.PERIOD_1M' | translate) }}
           </span>
         </div>
+
+        @if (viewportService.isMobile()) {
+          <div class="compare-chips">
+            @for (option of compareOptions; track option.key) {
+              <button type="button" class="compare-chip" [class.active]="compareSymbols.has(option.key)"
+                (click)="toggleCompareSymbol(option.key)">
+                <span class="compare-chip-dot" [class.sp500]="option.key === 'sp500'" [class.nasdaq]="option.key === 'nasdaq'"></span>
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <div class="chart-controls">
@@ -362,15 +374,15 @@
             <tbody>
               @for (transaction of latestTransactions; track transaction) {
                 <tr>
-                  <td>{{ transaction.assetSymbol }}</td>
+                  <td [attr.data-label]="'DASHBOARD.ASSET' | translate">{{ transaction.assetSymbol }}</td>
 
-                  <td>
+                  <td [attr.data-label]="'COMMON.TYPE' | translate">
                     <span class="operation-badge" [ngClass]="getTransactionClass(transaction.type)">
                       {{ transaction.type }}
                     </span>
                   </td>
 
-                  <td>{{ formatCurrency(transaction.total) }}</td>
+                  <td [attr.data-label]="'COMMON.PRICE' | translate">{{ formatCurrency(transaction.total) }}</td>
                 </tr>
               }
             </tbody>

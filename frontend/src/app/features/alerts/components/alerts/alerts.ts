@@ -11,6 +11,7 @@ import { AlertService } from '../../services/alert.service';
 import { SnackBarService } from '../../../../core/services/snackbar.service';
 import { LanguageService } from '../../../../core/services/language.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ViewportService } from '../../../../core/services/viewport.service';
 import { MaterialModule } from '../../../../shared/material.module';
 import { InfoTooltipComponent } from '../../../../shared/components/info-tooltip/info-tooltip.component';
 
@@ -81,7 +82,8 @@ export class Alerts implements OnInit, OnDestroy {
     private snackBarService: SnackBarService,
     private languageService: LanguageService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public viewportService: ViewportService
   ) { }
 
   ngOnInit(): void {
@@ -97,9 +99,10 @@ export class Alerts implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       const ticker = params['ticker'];
       const view = params['view'];
+      const action = params['action'];
 
       if (view === 'history') this.setActiveView('history');
-      if (!ticker) return;
+      if (!ticker && action !== 'create') return;
 
       this.createNewAlert(ticker);
 
@@ -302,6 +305,7 @@ export class Alerts implements OnInit, OnDestroy {
         maxWidth: '95vw',
         maxHeight: '90vh',
         backdropClass: 'blur-backdrop',
+        panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
         data: {
           isEditing: false,
           alert: symbol ? { symbol } : null
@@ -333,6 +337,7 @@ export class Alerts implements OnInit, OnDestroy {
       maxWidth: '95vw',
       maxHeight: '90vh',
       backdropClass: 'blur-backdrop',
+      panelClass: this.viewportService.isMobile() ? 'mobile-fullscreen-dialog' : undefined,
       data: { alert }
     });
 

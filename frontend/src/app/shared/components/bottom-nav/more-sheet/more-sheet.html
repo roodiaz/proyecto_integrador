@@ -1,0 +1,25 @@
+<div class="more-sheet">
+  <div class="more-handle"></div>
+
+  <button type="button" class="more-action" (click)="navigateTo('/watchlist')">
+    <mat-icon class="more-icon">star_border</mat-icon>
+    <span>{{ 'SIDEBAR.WATCHLIST' | translate }}</span>
+  </button>
+
+  <button type="button" class="more-action" (click)="navigateTo('/alerts', { view: 'history' })">
+    <mat-icon class="more-icon">notifications</mat-icon>
+    <span>{{ 'HEADER.NOTIFICATIONS' | translate }}</span>
+  </button>
+
+  <button type="button" class="more-action" (click)="navigateTo('/profile')">
+    <mat-icon class="more-icon">settings</mat-icon>
+    <span>{{ 'SIDEBAR.SETTINGS' | translate }}</span>
+  </button>
+
+  <div class="more-divider"></div>
+
+  <button type="button" class="more-action more-action--danger" (click)="logout()">
+    <mat-icon class="more-icon">logout</mat-icon>
+    <span>{{ 'SIDEBAR.LOGOUT' | translate }}</span>
+  </button>
+</div>

@@ -61,6 +61,52 @@
           <div class="skeleton skeleton-list-item"></div>
           <div class="skeleton skeleton-list-item"></div>
         </div>
+      } @else if (viewportService.isMobile()) {
+
+        @if (watchlistItems.length === 0) {
+          <div class="empty-state">
+            <mat-icon class="empty-icon">star_border</mat-icon>
+            <h3>{{ 'WATCHLIST.NO_FAVORITES' | translate }}</h3>
+            <p>{{ 'WATCHLIST.NO_FAVORITES_HINT' | translate }}</p>
+            <button class="btn-add" type="button" (click)="openAddFavoriteDialog()">
+              <mat-icon>add</mat-icon>
+              {{ 'WATCHLIST.ADD_ASSET_BUTTON' | translate }}
+            </button>
+          </div>
+        } @else if (filteredItems.length === 0) {
+          <div class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <p>{{ 'COMMON.NO_DATA' | translate }}</p>
+          </div>
+        } @else {
+          <!-- Cards de favoritos (mobile), consistentes con las listas de Mercado -->
+          <div class="watchlist-cards">
+            @for (item of filteredItems; track item.symbol) {
+              <div class="watchlist-card" (click)="goToMarket(item.symbol)">
+                <div class="company-logo">{{ item.symbol.charAt(0) }}</div>
+
+                <div class="watchlist-card-info">
+                  <span class="ticker-symbol">{{ item.symbol }}</span>
+                  <span class="watchlist-card-price">${{ item.price.toFixed(2) }}</span>
+                </div>
+
+                <span class="watchlist-card-variation" [class.positive]="item.variationPercent > 0" [class.negative]="item.variationPercent < 0">
+                  {{ item.variationPercent > 0 ? '+' : '' }}{{ item.variationPercent.toFixed(2) }}%
+                </span>
+
+                <div class="row-actions">
+                  <button mat-icon-button class="action-btn alert-btn" type="button" (click)="goToAlerts(item.symbol); $event.stopPropagation()" [title]="'WATCHLIST.ALERT_TOOLTIP' | translate">
+                    <mat-icon>notifications</mat-icon>
+                  </button>
+                  <button mat-icon-button class="action-btn delete-btn" type="button" (click)="removeFromWatchlist(item.symbol); $event.stopPropagation()" [title]="'WATCHLIST.DELETE_TOOLTIP' | translate">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
       } @else {
         <table class="watchlist-table" [class.table-loading]="loadingWatchlist">
           <thead>

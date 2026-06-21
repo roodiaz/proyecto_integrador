@@ -1,0 +1,19 @@
+<div class="op-sheet">
+  <div class="op-handle"></div>
+  <h3 class="op-title">{{ 'SIDEBAR.OPERATE' | translate }}</h3>
+
+  <button type="button" class="op-action" (click)="goToMarket()">
+    <mat-icon class="op-icon op-icon--buy">north_east</mat-icon>
+    <span>{{ 'SIDEBAR.BUY' | translate }}</span>
+  </button>
+
+  <button type="button" class="op-action" (click)="goToMarket()">
+    <mat-icon class="op-icon op-icon--sell">south_east</mat-icon>
+    <span>{{ 'SIDEBAR.SELL' | translate }}</span>
+  </button>
+
+  <button type="button" class="op-action" (click)="createAlert()">
+    <mat-icon class="op-icon">notifications</mat-icon>
+    <span>{{ 'SIDEBAR.CREATE_ALERT' | translate }}</span>
+  </button>
+</div>
