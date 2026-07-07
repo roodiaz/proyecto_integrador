@@ -27,6 +27,17 @@ Mongo__ConnectionString=mongodb://mongo:27017
 Mongo__Database=investlab
 
 # ===============================
+# REDIS
+# ===============================
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+Redis__ConnectionString=redis:6379
+
+# Intervalo (en segundos) con el que el worker refresca el cache de precios de mercado
+MarketPriceRefresh__IntervalSeconds=180
+
+# ===============================
 # JWT
 # ===============================
 Jwt__SecretKey=fK82kdl39dLskd8234lskdfj2398sdlfj23klsdf8234lkjsdf8234lkjsdf==

@@ -25,9 +25,14 @@ builder.Services.AddExternalProviders(builder.Configuration);
 builder.Services.AddEmailProviders(builder.Configuration);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<LimitsOptions>(builder.Configuration.GetSection("Limits"));
+builder.Services.Configure<MarketPriceRefreshOptions>(builder.Configuration.GetSection("MarketPriceRefresh"));
 builder.Services.AddCustomRateLimiting(builder.Configuration);
 
-builder.Services.AddMemoryCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "investlab:";
+});
 builder.Services.AddHostedService<MarketPriceRefreshWorker>();
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
@@ -41,7 +46,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 
 builder.Services.AddHsts(options =>

@@ -1,31 +1,36 @@
-﻿using InvestLab.Business.Interfaces;
+using System.Text.Json;
+using InvestLab.Business.Interfaces;
 using InvestLab.Business.Interfaces.Api;
 using InvestLab.Integrations.Interfaces;
 using InvestLab.Models.DTOs.Market;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace InvestLab.Business.Services.Api
 {
     public class MarketPriceCacheService : IMarketPriceCacheService
     {
-        private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _cache;
         private readonly IMarketProviderResolver _providerResolver;
         private readonly IMarketStatusService _marketStatusService;
+        private readonly ILogger<MarketPriceCacheService> _logger;
         private const int CacheExpirationMinutes = 5;
         private const int MarketClosedCacheExpirationHours = 24;
         private const string LastUpdatedAtCacheKey = "market-prices:last-updated-at";
 
         /// <summary>
-        /// Inicializa una nueva instancia de <see cref="MarketPriceCacheService"/> con la caché en memoria y el proveedor externo de precios.
+        /// Inicializa una nueva instancia de <see cref="MarketPriceCacheService"/> con la caché distribuida (Redis) y el proveedor externo de precios.
         /// </summary>
-        /// <param name="cache">Caché en memoria utilizada para almacenar los precios de mercado.</param>
+        /// <param name="cache">Caché distribuida utilizada para almacenar los precios de mercado.</param>
         /// <param name="providerResolver">Proveedor externo encargado de obtener los precios de mercado.</param>
         /// <param name="marketStatusService">Servicio que determina si el mercado está abierto o cerrado, usado para congelar la caché fuera de horario.</param>
-        public MarketPriceCacheService(IMemoryCache cache, IMarketProviderResolver providerResolver, IMarketStatusService marketStatusService)
+        /// <param name="logger">Logger utilizado para registrar errores de comunicación con la caché.</param>
+        public MarketPriceCacheService(IDistributedCache cache, IMarketProviderResolver providerResolver, IMarketStatusService marketStatusService, ILogger<MarketPriceCacheService> logger)
         {
             _cache = cache;
             _providerResolver = providerResolver;
             _marketStatusService = marketStatusService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -33,7 +38,7 @@ namespace InvestLab.Business.Services.Api
         /// el mercado está abierto, o un período prolongado mientras está cerrado para "congelar" los precios y
         /// evitar consultas innecesarias al proveedor externo hasta la próxima apertura.
         /// </summary>
-        /// <returns>El tiempo de expiración a utilizar en <see cref="IMemoryCache.Set"/>.</returns>
+        /// <returns>El tiempo de expiración a utilizar en la caché distribuida.</returns>
         private TimeSpan GetCacheExpiration()
         {
             return _marketStatusService.IsMarketOpen()
@@ -53,7 +58,8 @@ namespace InvestLab.Business.Services.Api
 
             symbol = symbol.Trim().ToUpper();
 
-            if (_cache.TryGetValue(GetCacheKey(symbol), out MarketPriceDto? cachedPrice) && cachedPrice != null)
+            var cachedPrice = await TryGetAsync<MarketPriceDto>(GetCacheKey(symbol));
+            if (cachedPrice != null)
                 return cachedPrice;
 
             var freshPrice = await _providerResolver.GetProvider().GetPriceAsync(symbol);
@@ -63,7 +69,7 @@ namespace InvestLab.Business.Services.Api
 
             freshPrice.Symbol = freshPrice.Symbol.Trim().ToUpper();
             freshPrice.UpdatedAt = DateTime.UtcNow;
-            _cache.Set(GetCacheKey(freshPrice.Symbol), freshPrice, GetCacheExpiration());
+            await SetAsync(GetCacheKey(freshPrice.Symbol), freshPrice, GetCacheExpiration());
 
             return freshPrice;
         }
@@ -88,7 +94,8 @@ namespace InvestLab.Business.Services.Api
 
             foreach (var symbol in cleanSymbols)
             {
-                if (_cache.TryGetValue(GetCacheKey(symbol), out MarketPriceDto? cachedPrice) && cachedPrice != null)
+                var cachedPrice = await TryGetAsync<MarketPriceDto>(GetCacheKey(symbol));
+                if (cachedPrice != null)
                     prices.Add(cachedPrice);
                 else
                     missingSymbols.Add(symbol);
@@ -104,7 +111,7 @@ namespace InvestLab.Business.Services.Api
                 {
                     price.Symbol = price.Symbol.Trim().ToUpper();
                     price.UpdatedAt = updatedAt;
-                    _cache.Set(GetCacheKey(price.Symbol), price, expiration);
+                    await SetAsync(GetCacheKey(price.Symbol), price, expiration);
                     prices.Add(price);
                 }
             }
@@ -140,22 +147,19 @@ namespace InvestLab.Business.Services.Api
             {
                 price.Symbol = price.Symbol.Trim().ToUpper();
                 price.UpdatedAt = updatedAt;
-                _cache.Set(GetCacheKey(price.Symbol), price, expiration);
+                await SetAsync(GetCacheKey(price.Symbol), price, expiration);
             }
 
-            _cache.Set(LastUpdatedAtCacheKey, updatedAt, expiration);
+            await SetAsync(LastUpdatedAtCacheKey, updatedAt, expiration);
         }
 
         /// <summary>
         /// Obtiene la fecha y hora de la última actualización de precios de mercado almacenada en la caché.
         /// </summary>
         /// <returns>La fecha y hora de la última actualización, o <c>null</c> si no hay información disponible en la caché.</returns>
-        public Task<DateTime?> GetLastUpdatedAtAsync()
+        public async Task<DateTime?> GetLastUpdatedAtAsync()
         {
-            if (_cache.TryGetValue(LastUpdatedAtCacheKey, out DateTime updatedAt))
-                return Task.FromResult<DateTime?>(updatedAt);
-
-            return Task.FromResult<DateTime?>(null);
+            return await TryGetAsync<DateTime?>(LastUpdatedAtCacheKey);
         }
 
         /// <summary>
@@ -166,6 +170,44 @@ namespace InvestLab.Business.Services.Api
         private static string GetCacheKey(string symbol)
         {
             return $"market-price:{symbol.Trim().ToUpper()}";
+        }
+
+        /// <summary>
+        /// Intenta leer y deserializar un valor de Redis. Si Redis no responde, registra el error y trata la
+        /// operación como un cache-miss en lugar de propagar la excepción, para no afectar la disponibilidad de la API.
+        /// </summary>
+        private async Task<T?> TryGetAsync<T>(string key)
+        {
+            try
+            {
+                var raw = await _cache.GetStringAsync(key);
+                return raw == null ? default : JsonSerializer.Deserialize<T>(raw);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al leer la clave '{Key}' desde Redis", key);
+                return default;
+            }
+        }
+
+        /// <summary>
+        /// Serializa y escribe un valor en Redis con el TTL indicado. Si Redis no responde, registra el error
+        /// sin propagar la excepción, para no afectar la disponibilidad de la API.
+        /// </summary>
+        private async Task SetAsync<T>(string key, T value, TimeSpan expiration)
+        {
+            try
+            {
+                var raw = JsonSerializer.Serialize(value);
+                await _cache.SetStringAsync(key, raw, new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = expiration
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al escribir la clave '{Key}' en Redis", key);
+            }
         }
     }
 }

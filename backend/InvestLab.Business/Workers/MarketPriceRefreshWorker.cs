@@ -1,7 +1,9 @@
 using InvestLab.Business.Interfaces.Workers;
+using InvestLab.Models.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace InvestLab.Business.Workers
 {
@@ -9,16 +11,19 @@ namespace InvestLab.Business.Workers
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<MarketPriceRefreshWorker> _logger;
+        private readonly MarketPriceRefreshOptions _options;
 
         /// <summary>
         /// Inicializa una nueva instancia de <see cref="MarketPriceRefreshWorker"/>.
         /// </summary>
         /// <param name="scopeFactory">Fábrica utilizada para crear los scopes necesarios para resolver dependencias.</param>
         /// <param name="logger">Logger utilizado para registrar información y errores del worker.</param>
-        public MarketPriceRefreshWorker(IServiceScopeFactory scopeFactory, ILogger<MarketPriceRefreshWorker> logger)
+        /// <param name="options">Opciones de configuración del worker, incluyendo el intervalo de refresco.</param>
+        public MarketPriceRefreshWorker(IServiceScopeFactory scopeFactory, ILogger<MarketPriceRefreshWorker> logger, IOptions<MarketPriceRefreshOptions> options)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _options = options.Value;
         }
 
         /// <summary>
@@ -36,7 +41,7 @@ namespace InvestLab.Business.Workers
             {
                 await RefreshAsync();
 
-                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(60));
+                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(_options.IntervalSeconds));
 
                 while (await timer.WaitForNextTickAsync(stoppingToken))
                     await RefreshAsync();
