@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvestLab — Simulador web de inversiones</title>
+
+  <!-- Reveal.js por CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+
+  <style>
+    /* ================= Paleta ================= */
+    :root {
+      --bg: #04060c;
+      --window-bg: #070d1a;
+      --panel: rgba(148, 190, 255, 0.05);
+      --line: rgba(120, 180, 255, 0.14);
+      --line-strong: rgba(96, 165, 250, 0.45);
+      --ink: #eef3fd;
+      --ink-dim: #94a7c7;
+      --blue: #3b82f6;
+      --cyan: #22d3ee;
+      --green: #34d399;
+      --red: #f87171;
+      --violet: #8b5cf6;
+      --grad: linear-gradient(115deg, #8b5cf6, #60a5fa 40%, #22d3ee 80%, #34d399);
+      --grad-border: linear-gradient(120deg, rgba(139, 92, 246, 0.55), rgba(96, 165, 250, 0.55), rgba(34, 211, 238, 0.55));
+      --mono: "Cascadia Code", Consolas, monospace;
+    }
+
+    /* ================= Escenario: fondo fijo de página ================= */
+    html, body { height: 100%; margin: 0; }
+    body {
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    /* grilla sutil */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(120, 180, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 180, 255, 0.06) 1px, transparent 1px);
+      background-size: 54px 54px;
+      -webkit-mask-image: radial-gradient(80% 80% at 50% 45%, #000 25%, transparent 100%);
+      mask-image: radial-gradient(80% 80% at 50% 45%, #000 25%, transparent 100%);
+      pointer-events: none;
+    }
+    /* aurora animada */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -10%;
+      background:
+        radial-gradient(640px 440px at 12% 8%, rgba(59, 130, 246, 0.28), transparent 65%),
+        radial-gradient(580px 420px at 88% 92%, rgba(34, 211, 238, 0.2), transparent 65%),
+        radial-gradient(440px 340px at 80% 10%, rgba(99, 102, 241, 0.16), transparent 65%);
+      animation: aurora 16s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes aurora {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to   { transform: translate3d(0, -2.5%, 0) scale(1.07); }
+    }
+
+    .page-brand {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      color: rgba(148, 167, 199, 0.5);
+      z-index: 1;
+      user-select: none;
+    }
+    .page-brand b { color: rgba(96, 165, 250, 0.85); }
+
+    /* ================= Ventana de navegador ================= */
+    .app-window {
+      position: relative;
+      z-index: 2;
+      width: min(1220px, 92vw);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--window-bg);
+      box-shadow:
+        0 40px 120px rgba(0, 0, 0, 0.65),
+        0 0 110px rgba(59, 130, 246, 0.22),
+        0 0 220px rgba(139, 92, 246, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .app-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 16px;
+      background: rgba(120, 180, 255, 0.055);
+      border-bottom: 1px solid var(--line);
+    }
+    .app-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+    .app-url {
+      flex: 1;
+      max-width: 460px;
+      margin: 0 auto;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: var(--ink-dim);
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 18px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .app-bar .who {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink-dim);
+      white-space: nowrap;
+    }
+    .app-body {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      max-height: calc(92vh - 46px);
+    }
+    .app-body .reveal { width: 100%; height: 100%; }
+
+    /* ================= Base tipográfica ================= */
+    .reveal {
+      font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+      font-size: 36px;
+      color: var(--ink);
+    }
+    .reveal-viewport { background: transparent; }
+    .reveal h1, .reveal h2 {
+      font-family: inherit;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-transform: none;
+      line-height: 1.08;
+    }
+    .reveal h3 { text-transform: none; letter-spacing: -0.01em; }
+    /* neutralizar estilos de imagen del tema (márgenes/bordes descentran los logos) */
+    .reveal section img {
+      margin: 0;
+      background: none;
+      border: none;
+      box-shadow: none;
+      max-width: none;
+      max-height: none;
+    }
+    /* centrado absoluto: inmune a los estilos de img/svg del tema */
+    .icon-tile img, .icon-tile svg {
+      display: block;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* íconos de línea (SVG inline) */
+    .icon-tile svg {
+      width: 1.02em; height: 1.02em;
+      color: #8ec5ff;
+    }
+    .hero-logo svg { width: 1.15em; height: 1.15em; color: #fff; }
+    .arch-zone-tag img {
+      width: 1.15em; height: 1.15em;
+      vertical-align: -0.28em;
+      margin-right: 0.45em;
+    }
+    .reveal h2 { font-size: 1.6em; margin: 0 0 0.15em; }
+    .reveal p { color: var(--ink-dim); }
+    .reveal .slides { text-align: left; }
+    .reveal .center-slide { text-align: center; }
+
+    .grad-text {
+      background: var(--grad);
+      background-size: 220% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: grad-shift 7s ease-in-out infinite alternate;
+    }
+    @keyframes grad-shift {
+      from { background-position: 0% center; }
+      to   { background-position: 100% center; }
+    }
+    /* resplandores de ambiente en cada slide */
+    .reveal .slides > section::before {
+      content: "";
+      position: absolute;
+      inset: -3em -2em;
+      background:
+        radial-gradient(26em 14em at 88% 0%, rgba(139, 92, 246, 0.15), transparent 65%),
+        radial-gradient(22em 13em at 2% 95%, rgba(34, 211, 238, 0.11), transparent 65%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* ================= Encabezado de slide ================= */
+    .slide-head { position: relative; margin-bottom: 1.05em; }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6em;
+      font-family: var(--mono);
+      font-size: 0.46em;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 1.1em;
+    }
+    .kicker::before {
+      content: "";
+      width: 2.2em; height: 2px;
+      background: var(--grad);
+      border-radius: 2px;
+    }
+    .slide-sub { font-size: 0.6em; margin: 0.4em 0 0; }
+
+    /* ================= Piezas compartidas ================= */
+    .icon-tile {
+      position: relative;
+      display: inline-block;
+      width: 1.95em; height: 1.95em;
+      font-size: 0.85em;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(145deg, rgba(59, 130, 246, 0.32), rgba(15, 26, 52, 0.7)) padding-box,
+        var(--grad-border) border-box;
+      box-shadow: 0 8px 28px rgba(59, 130, 246, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      animation: tile-glow 3.2s ease-in-out infinite alternate;
+    }
+    @keyframes tile-glow {
+      from { box-shadow: 0 8px 26px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.14); }
+      to   { box-shadow: 0 8px 36px rgba(34, 211, 238, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.14); }
+    }
+    .icon-tile img { width: 1.1em; height: 1.1em; }
+
+    .chip {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.46em;
+      color: var(--ink);
+      border: 1px solid transparent;
+      background:
+        linear-gradient(180deg, rgba(20, 32, 60, 0.92), rgba(13, 23, 44, 0.92)) padding-box,
+        var(--grad-border) border-box;
+      border-radius: 999px;
+      padding: 0.42em 1em;
+      margin: 0.2em 0.25em 0.2em 0;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .chip:hover { transform: translateY(-2px); filter: brightness(1.25); }
+    .chip img {
+      width: 1.15em; height: 1.15em;
+      vertical-align: -0.25em;
+      margin-right: 0.5em;
+    }
+
+    /* ================= Gráficos financieros (SVG inline) ================= */
+    .hero-chart { width: 92%; height: 2.4em; margin: 0 auto 0.5em; }
+    .hero-chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .hero-chart .line {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 3;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      stroke-dasharray: 1800;
+      stroke-dashoffset: 1800;
+      animation: draw 2.6s ease-out forwards 0.3s;
+      filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.75));
+    }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .hero-chart .area { opacity: 0; animation: fade-in 1.5s ease-out forwards 1.1s; }
+    @keyframes fade-in { to { opacity: 1; } }
+
+    .stat svg {
+      width: 5.2em; height: 1.05em;
+      display: block;
+      margin: 0.35em auto 0;
+      overflow: visible;
+    }
+    .stat polyline {
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* barra EN VIVO de la demo */
+    .live-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5em;
+      width: fit-content;
+      margin: 1.15em auto 0;
+      padding: 0.55em 1.7em;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(20, 32, 60, 0.92), rgba(13, 23, 44, 0.92)) padding-box,
+        var(--grad-border) border-box;
+      box-shadow: 0 0 45px rgba(34, 211, 238, 0.16);
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      font-family: var(--mono);
+      font-size: 0.46em;
+      letter-spacing: 0.2em;
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .live-badge::before {
+      content: "";
+      width: 0.7em; height: 0.7em;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px var(--green);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .live-url {
+      font-family: var(--mono);
+      font-size: 0.78em;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .live-note {
+      display: flex;
+      align-items: center;
+      gap: 0.55em;
+      font-size: 0.46em;
+      color: var(--ink-dim);
+      white-space: nowrap;
+    }
+    .live-note svg { width: 1.5em; height: 1.5em; color: #8ec5ff; flex: none; }
+    .dw-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.4em;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      margin-bottom: 0.4em;
+    }
+    .dw-value { font-size: 0.8em; font-weight: 800; color: var(--ink); }
+    .dw-value b { font-size: 0.62em; color: var(--green); font-weight: 700; margin-left: 0.4em; }
+    .dw-spark { width: 7em; height: 1.8em; overflow: visible; }
+
+    /* ================= Entrada en cascada (sin clicks) ================= */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+    }
+    .reveal section.present .feature,
+    .reveal section.present .stat,
+    .reveal section.present .tech-panel,
+    .reveal section.present .tech-foot,
+    .reveal section.present .flow-step,
+    .reveal section.present .term,
+    .reveal section.present .svc-panel,
+    .reveal section.present .peek,
+    .reveal section.present .split-col,
+    .reveal section.present .timeline li,
+    .reveal section.present .concl-list li,
+    .reveal section.present .future-list li,
+    .reveal section.present .roadmap .chip,
+    .reveal section.present .punchline,
+    .reveal section.present .anode {
+      animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    .reveal section.present :nth-child(1)  { animation-delay: 0.05s; }
+    .reveal section.present :nth-child(2)  { animation-delay: 0.12s; }
+    .reveal section.present :nth-child(3)  { animation-delay: 0.19s; }
+    .reveal section.present :nth-child(4)  { animation-delay: 0.26s; }
+    .reveal section.present :nth-child(5)  { animation-delay: 0.33s; }
+    .reveal section.present :nth-child(6)  { animation-delay: 0.40s; }
+    .reveal section.present :nth-child(7)  { animation-delay: 0.47s; }
+    .reveal section.present :nth-child(8)  { animation-delay: 0.54s; }
+    .reveal section.present :nth-child(9)  { animation-delay: 0.61s; }
+    .reveal section.present :nth-child(10) { animation-delay: 0.68s; }
+    .reveal section.present :nth-child(11) { animation-delay: 0.75s; }
+    .reveal section.present .punchline { animation-delay: 0.6s; }
+
+    /* ================= Portada ================= */
+    .hero-logo {
+      position: relative;
+      width: 2.4em; height: 2.4em;
+      margin: 0.9em auto 0.45em;
+      font-size: 1.35em;
+      display: grid;
+      place-items: center;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      box-shadow: 0 0 60px rgba(59, 130, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      animation: float 5s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-10px); }
+    }
+    .hero-title {
+      font-size: 2.9em;
+      margin: 0;
+      text-shadow: 0 0 80px rgba(59, 130, 246, 0.45);
+    }
+    .hero-sub { font-size: 0.85em; color: var(--ink); margin: 0.2em 0 0.15em; }
+    .hero-tagline { font-size: 0.55em; margin: 0 0 0.7em; }
+    .hero-badges { margin-bottom: 0.7em; }
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.5em;
+      color: var(--ink-dim);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.45em 1.3em;
+      margin: 0 0.3em;
+      background: var(--panel);
+    }
+    .hero-badge b { color: var(--ink); font-weight: 600; }
+
+    /* ticker de mercado */
+    .ticker {
+      position: relative;
+      overflow: hidden;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 0.42em 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
+    .ticker-track {
+      display: inline-flex;
+      gap: 2.2em;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 0.52em;
+      animation: marquee 26s linear infinite;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .tk { color: var(--ink-dim); }
+    .tk b { color: var(--ink); font-weight: 600; margin-right: 0.5em; }
+    .up   { color: var(--green); }
+    .down { color: var(--red); }
+
+    /* ================= Slide 2: problema / solución + stats ================= */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 1.1em;
+      align-items: start;
+    }
+    .split .divider {
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(transparent, var(--line-strong), transparent);
+    }
+    .split-col .tag {
+      font-family: var(--mono);
+      font-size: 0.44em;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      margin-bottom: 0.9em;
+    }
+    .split-col .big {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.35;
+      margin: 0 0 0.5em;
+    }
+    .split-col .big em { font-style: normal; }
+    .split-col .detail { font-size: 0.55em; line-height: 1.6; margin: 0; }
+
+    .stat-strip {
+      display: flex;
+      justify-content: center;
+      gap: 2.2em;
+      margin-top: 2.3em;
+    }
+    .stat { text-align: center; }
+    .stat b {
+      display: block;
+      font-size: 1.2em;
+      font-weight: 800;
+      filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.35));
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .stat span { font-size: 0.48em; color: var(--ink-dim); }
+
+    /* footer de slide: fija las frases "— … —" al borde inferior */
+    /* con center:false apagado, el CSS controla el layout vertical de cada slide.
+       Alto fijo en vez de 100%: las secciones son position:absolute (Reveal), y un
+       porcentaje no siempre resuelve contra una altura definida del contenedor. */
+    .reveal .slides > section {
+      height: 720px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .reveal .slides > section:has(.slide-foot) {
+      padding-top: 0.4em;
+      justify-content: flex-start;
+    }
+    /* cuerpo entre el título y el footer: se centra en el espacio que sobra */
+    .slide-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .slide-foot {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
+      padding-top: 0.45em;
+      border-top: 1px solid var(--line);
+    }
+    .slide-foot .punchline { margin: 0.15em 0 0 !important; }
+
+    .punchline {
+      text-align: center;
+      font-size: 0.58em;
+      color: var(--ink);
+      margin-top: 1.1em;
+    }
+    .punchline::before { content: "— "; color: var(--cyan); }
+    .punchline::after  { content: " —"; color: var(--cyan); }
+    .punchline b { color: var(--cyan); }
+
+    /* ================= Funcionalidades: lista editorial, sin cajas ================= */
+    .feature-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 2.4em;
+      margin-top: 0.4em;
+    }
+    .feature-col { display: flex; flex-direction: column; }
+    .feature {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6em;
+      padding: 0.5em 0 0.45em;
+      border-bottom: 1px solid var(--line);
+    }
+    .feature-col .feature:first-child { border-top: 1px solid var(--line); }
+    .feature .fnum {
+      flex: none;
+      width: 1.3em;
+      font-family: var(--mono);
+      font-size: 0.5em;
+      font-weight: 700;
+      color: transparent;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .feature .ficon {
+      flex: none;
+      width: 1.15em; height: 1.15em;
+      color: #8ec5ff;
+    }
+    .feature-text { flex: 1; min-width: 0; }
+    .feature h3 {
+      display: inline;
+      font-size: 0.56em;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .feature p {
+      display: inline;
+      font-size: 0.46em;
+      color: var(--ink-dim);
+      margin-left: 0.4em;
+    }
+    /* acento de color rotando por fila, para romper la monotonía del azul único */
+    .feature:nth-of-type(4n+2) .ficon { color: #b79bfb; }
+    .feature:nth-of-type(4n+3) .ficon { color: #67e8f9; }
+    .feature:nth-of-type(4n+4) .ficon { color: #6ee7b7; }
+
+    /* ================= Arquitectura: diagrama horizontal ================= */
+    .arch-h {
+      display: grid;
+      grid-template-columns: 1fr auto 2fr auto 1.1fr;
+      align-items: center;
+      gap: 0.4em;
+      width: 100%;
+      font-size: 1.08em;
+      margin-top: 2.3em;
+      margin-bottom: 3em;
+    }
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.45em;
+    }
+    .arch-side { display: flex; flex-direction: column; gap: 0.5em; }
+    .anode {
+      display: flex;
+      align-items: center;
+      gap: 0.55em;
+      text-align: left;
+      background: linear-gradient(180deg, #101a30, #0b1424);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.45em 0.6em;
+      font-size: 0.52em;
+      line-height: 1.35;
+    }
+    .anode .icon-tile { flex: none; font-size: 0.95em; width: 1.8em; height: 1.8em; border-radius: 11px; }
+    .anode b { display: block; color: var(--ink); font-weight: 700; }
+    .anode i { display: block; font-style: normal; color: var(--ink-dim); font-size: 0.82em; }
+    .anode.hl {
+      border: 1px solid transparent;
+      background:
+        linear-gradient(180deg, #142344, #0d1830) padding-box,
+        var(--grad-border) border-box;
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.28);
+    }
+    .anode.tall {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.45em;
+      padding: 0.9em 0.5em;
+    }
+
+    /* flecha horizontal animada */
+    .harrow {
+      position: relative;
+      width: 1.15em;
+      height: 3px;
+      border-radius: 2px;
+      background-image: linear-gradient(90deg, var(--cyan) 55%, transparent 0);
+      background-size: 9px 3px;
+      animation: hflow 0.9s linear infinite;
+      filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.7));
+    }
+    .harrow::after {
+      content: "";
+      position: absolute;
+      right: -0.24em;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 0.2em solid transparent;
+      border-bottom: 0.2em solid transparent;
+      border-left: 0.3em solid var(--cyan);
+    }
+    @keyframes hflow { from { background-position-x: 0; } to { background-position-x: 9px; } }
+
+    .arch-zone {
+      border: 1px dashed rgba(34, 211, 238, 0.35);
+      border-radius: 18px;
+      padding: 0.6em 0.55em 0.55em;
+      background: rgba(34, 211, 238, 0.02);
+    }
+    .arch-zone-tag {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      font-family: var(--mono);
+      font-size: 0.4em;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(34, 211, 238, 0.75);
+      margin-bottom: 0.6em;
+    }
+
+    /* ================= Tecnologías: bento de logos ================= */
+    .tech-bento {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 0.5em;
+    }
+    .tech-panel {
+      position: relative;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(148, 190, 255, 0.08), rgba(148, 190, 255, 0.02)) padding-box,
+        linear-gradient(140deg, rgba(96, 165, 250, 0.5), rgba(34, 211, 238, 0.15) 45%, rgba(139, 92, 246, 0.4)) border-box;
+      padding: 0.55em 0.5em 0.6em;
+      overflow: hidden;
+    }
+    .tech-panel::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--grad);
+      opacity: 0.7;
+    }
+    .tech-panel .cat {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.42em;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 1em;
+      text-align: center;
+    }
+    .span7 { grid-column: span 7; }
+    .span5 { grid-column: span 5; }
+    .span4 { grid-column: span 4; }
+    .span8 { grid-column: span 8; }
+    .tech-items {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      gap: 0.3em;
+    }
+    .tech-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.32em;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .tech-item:hover { transform: translateY(-4px); }
+    .tech-item img {
+      width: 1.4em; height: 1.4em;
+      filter: drop-shadow(0 4px 14px rgba(59, 130, 246, 0.45));
+    }
+    .tech-item .emo { font-size: 1.05em; line-height: 1.2em; }
+    .tech-item b {
+      font-size: 0.42em;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+    .tech-foot {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1em;
+      font-family: var(--mono);
+      font-size: 0.44em;
+      color: var(--ink-dim);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.55em 1.4em;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .tech-foot b { color: var(--cyan); font-weight: 600; letter-spacing: 0.14em; }
+
+    /* ================= Deploy: pipeline horizontal ================= */
+    .flow {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0.4em;
+      margin: 0.6em 0 0.4em;
+    }
+    .flow-step {
+      flex: 1;
+      max-width: 24%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0.3em 0.35em 0.32em;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(148, 190, 255, 0.07), rgba(148, 190, 255, 0.02));
+    }
+    .flow-step .icon-tile { align-self: center; }
+
+    /* fila inferior del deploy: terminal + contenedores */
+    .deploy-cols {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 0.6em;
+      margin-top: 0.75em;
+    }
+    .term {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(2, 6, 14, 0.85);
+      text-align: left;
+    }
+    .term-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.3em;
+      padding: 0.35em 0.6em;
+      background: rgba(120, 180, 255, 0.06);
+      border-bottom: 1px solid var(--line);
+    }
+    .term-dot { width: 0.26em; height: 0.26em; border-radius: 50%; }
+    .term-title {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 0.38em;
+      letter-spacing: 0.14em;
+      color: var(--ink-dim);
+    }
+    .term-body {
+      padding: 0.5em 0.8em 0.6em;
+      font-family: var(--mono);
+      font-size: 0.45em;
+      line-height: 1.95;
+      color: var(--ink-dim);
+    }
+    .term-body p { margin: 0; }
+    .term-body .t-p { color: var(--cyan); }
+    .term-body .t-ok { color: var(--green); }
+    .term-body .t-badge {
+      display: inline-block;
+      background: rgba(52, 211, 153, 0.14);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      color: var(--green);
+      border-radius: 999px;
+      padding: 0 0.8em;
+      margin-left: 0.5em;
+    }
+    .term-body p:last-child::after {
+      content: "▌";
+      color: var(--cyan);
+      margin-left: 0.2em;
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .svc-panel {
+      border: 1px solid transparent;
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(148, 190, 255, 0.07), rgba(148, 190, 255, 0.02)) padding-box,
+        var(--grad-border) border-box;
+      padding: 0.5em 0.75em 0.4em;
+    }
+    .svc-panel .cat {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.4em;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.7em;
+    }
+    .svc {
+      display: flex;
+      align-items: center;
+      gap: 0.55em;
+      font-size: 0.47em;
+      color: var(--ink-dim);
+      padding: 0.3em 0.1em;
+      border-bottom: 1px dashed rgba(120, 180, 255, 0.14);
+    }
+    .svc:last-child { border-bottom: 0; }
+    .svc img, .svc svg { width: 1.2em; height: 1.2em; flex: none; }
+    .svc svg { color: #8ec5ff; }
+    .svc b { color: var(--ink); font-weight: 600; }
+    .svc span { margin-left: auto; font-family: var(--mono); font-size: 0.82em; }
+    .flow-step .icon-tile { font-size: 0.7em; margin-bottom: 0.2em; }
+    .flow-step strong { display: block; font-size: 0.5em; color: var(--ink); margin-bottom: 0.15em; }
+    .flow-step span { display: block; font-size: 0.4em; color: var(--ink-dim); line-height: 1.3; }
+    .flow-sep {
+      align-self: center;
+      font-size: 0.7em;
+      color: var(--cyan);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+    /* ================= Cierre: timeline + roadmap ================= */
+    .timeline { position: relative; margin: 0; padding: 0 0 0 1.5em; list-style: none; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 0.52em; top: 0.4em; bottom: 0.4em;
+      width: 2px;
+      background: linear-gradient(#60a5fa, #22d3ee, transparent);
+      border-radius: 2px;
+    }
+    .timeline li {
+      position: relative;
+      font-size: 0.55em;
+      color: var(--ink-dim);
+      line-height: 1.5;
+      margin-bottom: 0.85em;
+    }
+    .timeline li strong { color: var(--ink); font-weight: 700; }
+    .timeline li::before {
+      content: "";
+      position: absolute;
+      left: -1.72em; top: 0.32em;
+      width: 0.62em; height: 0.62em;
+      border-radius: 50%;
+      background: var(--grad);
+      box-shadow: 0 0 14px rgba(34, 211, 238, 0.8);
+    }
+
+    .close-cols {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.2em;
+      align-items: start;
+    }
+    .close-cols .tag {
+      font-family: var(--mono);
+      font-size: 0.44em;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      margin: 0 0 0.9em;
+    }
+    .roadmap .chip { font-size: 0.48em; }
+
+    /* diapositiva de conclusiones: lista académica + trabajo a futuro */
+    .concl-list { margin: 0; padding: 0; list-style: none; }
+    .concl-list li {
+      position: relative;
+      font-size: 0.52em;
+      color: var(--ink-dim);
+      line-height: 1.55;
+      padding-left: 1.5em;
+      margin-bottom: 0.75em;
+    }
+    .concl-list li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0.35em;
+      width: 0.6em; height: 0.6em;
+      border-radius: 3px;
+      background: var(--grad);
+      box-shadow: 0 0 10px rgba(34, 211, 238, 0.55);
+    }
+    .concl-list li strong { color: var(--ink); font-weight: 700; }
+    .future-col { border-left: 1px solid var(--line); padding-left: 1.4em; }
+    .future-list { margin: 0; padding: 0; list-style: none; }
+    .future-list li {
+      font-size: 0.48em;
+      color: var(--ink-dim);
+      line-height: 1.5;
+      padding: 0.4em 0;
+      border-bottom: 1px dashed rgba(120, 180, 255, 0.16);
+    }
+    .future-list li:last-child { border-bottom: 0; }
+
+    .reveal .progress { color: var(--cyan); height: 4px; }
+    .reveal .controls {
+      color: var(--blue);
+      bottom: 6px;
+      right: 10px;
+      transform: scale(0.7);
+      transform-origin: bottom right;
+    }
+    /* sin navegación vertical, la cruz deja las flechas una fila más arriba: se bajan al piso */
+    .reveal .controls .navigate-left  { right: 3.4em; bottom: 0; }
+    .reveal .controls .navigate-right { right: 0; bottom: 0; }
+    .reveal .slide-number {
+      background: transparent;
+      font-family: var(--mono);
+      color: var(--ink-dim);
+      right: auto; left: 16px; bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ventana de navegador: contiene la presentación -->
+  <div class="app-window">
+    <div class="app-bar">
+      <span class="app-dot" style="background: #f87171;"></span>
+      <span class="app-dot" style="background: #fbbf24;"></span>
+      <span class="app-dot" style="background: #34d399;"></span>
+      <span class="app-url">🔒 investlab-demo.com</span>
+      <span class="who">Rocío Díaz · Proyecto Final</span>
+    </div>
+    <div class="app-body">
+      <div class="reveal">
+        <div class="slides">
+
+          <!-- 1 · Portada -->
+          <section class="center-slide" data-transition="fade">
+            <div class="hero-logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+            <p class="kicker" style="justify-content: center; margin-bottom: 0.7em;">Proyecto Final</p>
+            <h1 class="hero-title grad-text">InvestLab</h1>
+            <p class="hero-sub">Simulador web de inversiones</p>
+            <p class="hero-tagline">Aprendé a invertir con datos reales del mercado, sin arriesgar dinero real.</p>
+            <div class="hero-badges">
+              <span class="hero-badge">Autora · <b>Rocío Díaz</b></span>
+              <span class="hero-badge"><b>investlab-demo.com</b></span>
+            </div>
+            <div class="hero-chart">
+              <svg viewBox="0 0 800 130" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="gHero" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#22d3ee" stop-opacity="0.32"/>
+                    <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- barras de volumen -->
+                <g opacity="0.85">
+                  <rect x="14"  y="112" width="26" height="18" rx="2" fill="rgba(52,211,153,0.28)"/>
+                  <rect x="80"  y="118" width="26" height="12" rx="2" fill="rgba(248,113,113,0.25)"/>
+                  <rect x="146" y="106" width="26" height="24" rx="2" fill="rgba(52,211,153,0.28)"/>
+                  <rect x="212" y="115" width="26" height="15" rx="2" fill="rgba(52,211,153,0.22)"/>
+                  <rect x="278" y="120" width="26" height="10" rx="2" fill="rgba(248,113,113,0.25)"/>
+                  <rect x="344" y="104" width="26" height="26" rx="2" fill="rgba(52,211,153,0.3)"/>
+                  <rect x="410" y="113" width="26" height="17" rx="2" fill="rgba(52,211,153,0.24)"/>
+                  <rect x="476" y="119" width="26" height="11" rx="2" fill="rgba(248,113,113,0.25)"/>
+                  <rect x="542" y="108" width="26" height="22" rx="2" fill="rgba(52,211,153,0.28)"/>
+                  <rect x="608" y="116" width="26" height="14" rx="2" fill="rgba(52,211,153,0.22)"/>
+                  <rect x="674" y="121" width="26" height="9"  rx="2" fill="rgba(248,113,113,0.25)"/>
+                  <rect x="740" y="102" width="26" height="28" rx="2" fill="rgba(52,211,153,0.32)"/>
+                </g>
+                <!-- área y línea de precio -->
+                <path class="area" d="M0,105 L55,96 L110,101 L165,84 L220,90 L275,70 L330,78 L385,58 L440,66 L495,46 L550,54 L605,36 L660,44 L715,24 L770,30 L800,22 L800,130 L0,130 Z" fill="url(#gHero)"/>
+                <path class="line" d="M0,105 L55,96 L110,101 L165,84 L220,90 L275,70 L330,78 L385,58 L440,66 L495,46 L550,54 L605,36 L660,44 L715,24 L770,30 L800,22"/>
+                <circle cx="800" cy="22" r="5" fill="#22d3ee">
+                  <animate attributeName="r" values="4;7;4" dur="2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="1;0.45;1" dur="2s" repeatCount="indefinite"/>
+                </circle>
+              </svg>
+            </div>
+            <div class="ticker">
+              <div class="ticker-track">
+                <!-- secuencia duplicada para el loop infinito -->
+                <span class="tk"><b>AAPL</b> 227.30 <span class="up">▲ 1.24%</span></span>
+                <span class="tk"><b>MSFT</b> 512.10 <span class="up">▲ 0.87%</span></span>
+                <span class="tk"><b>GOOGL</b> 201.55 <span class="down">▼ 0.32%</span></span>
+                <span class="tk"><b>TSLA</b> 318.40 <span class="up">▲ 2.05%</span></span>
+                <span class="tk"><b>AMZN</b> 244.90 <span class="down">▼ 0.18%</span></span>
+                <span class="tk"><b>NVDA</b> 176.20 <span class="up">▲ 3.11%</span></span>
+                <span class="tk"><b>AAPL</b> 227.30 <span class="up">▲ 1.24%</span></span>
+                <span class="tk"><b>MSFT</b> 512.10 <span class="up">▲ 0.87%</span></span>
+                <span class="tk"><b>GOOGL</b> 201.55 <span class="down">▼ 0.32%</span></span>
+                <span class="tk"><b>TSLA</b> 318.40 <span class="up">▲ 2.05%</span></span>
+                <span class="tk"><b>AMZN</b> 244.90 <span class="down">▼ 0.18%</span></span>
+                <span class="tk"><b>NVDA</b> 176.20 <span class="up">▲ 3.11%</span></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2 · Problema y solución -->
+          <section>
+            <div class="slide-head">
+              <p class="kicker">Por qué existe</p>
+              <h2>Invertir intimida. <span class="grad-text">Practicar no debería.</span></h2>
+            </div>
+            <div class="split">
+              <div class="split-col">
+                <p class="tag">El problema</p>
+                <p class="big">Empezar a invertir es <em class="grad-text">complejo y riesgoso</em> para quien no tiene experiencia.</p>
+                <p class="detail">Jerga financiera, mercados que se mueven todo el tiempo y el miedo a perder plata real frenan a la mayoría antes de empezar.</p>
+              </div>
+              <div class="divider"></div>
+              <div class="split-col">
+                <p class="tag">La solución</p>
+                <p class="big">InvestLab: un <em class="grad-text">laboratorio de inversión</em> para aprender haciendo.</p>
+                <p class="detail">Comprás y vendés activos reales con saldo virtual, seguís tu portfolio y recibís alertas — todo el circuito de un inversor, sin el riesgo.</p>
+              </div>
+            </div>
+            <div class="stat-strip">
+              <div class="stat">
+                <b>100%</b><span>dinero virtual, riesgo cero</span>
+                <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,24 14,19 28,22 42,13 56,17 70,8 84,11 100,3" stroke="#22d3ee"/></svg>
+              </div>
+              <div class="stat">
+                <b>Tiempo real</b><span>datos de mercado en vivo</span>
+                <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,20 16,23 32,14 48,18 64,9 80,13 100,4" stroke="#60a5fa"/></svg>
+              </div>
+              <div class="stat">
+                <b>24/7</b><span>alertas y monitoreo automático</span>
+                <svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,14 22,14 30,4 38,24 46,14 64,14 72,6 80,22 88,14 100,14" stroke="#34d399"/></svg>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3 · Funcionalidades -->
+          <section>
+            <div class="slide-head">
+              <p class="kicker">Qué podés hacer</p>
+              <h2>Todo el circuito de un <span class="grad-text">inversor real</span></h2>
+            </div>
+            <div class="slide-body">
+            <div class="feature-cols">
+              <div class="feature-col">
+                <div class="feature"><span class="fnum">01</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg><span class="feature-text"><h3>Trading virtual</h3><p>Comprá y vendé con saldo simulado</p></span></div>
+                <div class="feature"><span class="fnum">02</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="feature-text"><h3>Dashboard</h3><p>Tu situación financiera de un vistazo</p></span></div>
+                <div class="feature"><span class="fnum">03</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg><span class="feature-text"><h3>Portfolios</h3><p>Rendimiento e historial de operaciones</p></span></div>
+                <div class="feature"><span class="fnum">04</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-6 4 4 5-7"/></svg><span class="feature-text"><h3>Gráficos</h3><p>Evolución de precios en varios rangos</p></span></div>
+                <div class="feature"><span class="fnum">05</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="feature-text"><h3>Watchlist</h3><p>Tus activos favoritos, siempre a mano</p></span></div>
+              </div>
+              <div class="feature-col">
+                <div class="feature"><span class="fnum">06</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="feature-text"><h3>Alertas de precio</h3><p>Avisos al cruzar el umbral que definas</p></span></div>
+                <div class="feature"><span class="fnum">07</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><span class="feature-text"><h3>Notificaciones</h3><p>En la app y en tu correo</p></span></div>
+                <div class="feature"><span class="fnum">08</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span class="feature-text"><h3>Cuentas seguras</h3><p>Registro con verificación por email</p></span></div>
+                <div class="feature"><span class="fnum">09</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></svg><span class="feature-text"><h3>A tu medida</h3><p>Modo oscuro/claro · Español e Inglés</p></span></div>
+                <div class="feature"><span class="fnum">10</span><svg class="ficon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M7 19h5"/><rect x="16" y="12" width="6" height="10" rx="2"/></svg><span class="feature-text"><h3>Responsive</h3><p>Escritorio, tablet y móvil</p></span></div>
+              </div>
+            </div>
+            </div>
+            <div class="slide-foot"><p class="punchline">Las operaciones se ejecutan con <b>precios reales al instante</b>, como en un broker de verdad</p></div>
+          </section>
+
+          <!-- 4 · Arquitectura -->
+          <section>
+            <div class="slide-head" style="margin-bottom: 0.55em;">
+              <p class="kicker">Sólido por dentro</p>
+              <h2>Arquitectura <span class="grad-text">general</span></h2>
+            </div>
+            <div class="slide-body">
+            <div class="arch-h">
+              <div class="anode hl tall">
+                <span class="icon-tile"><img src="https://cdn.simpleicons.org/angular/DD0031" alt=""></span>
+                <div><b>Frontend</b><i>Angular 20 · SPA<br>claro/oscuro · ES · EN</i></div>
+              </div>
+              <div class="harrow"></div>
+              <div class="arch-zone">
+                <span class="arch-zone-tag"><img src="https://cdn.simpleicons.org/docker" alt="">Docker · VM Ubuntu Server 24.04</span>
+                <div class="arch-grid">
+                  <div class="anode hl">
+                    <span class="icon-tile"><img src="https://cdn.simpleicons.org/dotnet/8B7CF6" alt=""></span>
+                    <div><b>API · .NET 10</b><i>REST + JWT · caché de mercado</i></div>
+                  </div>
+                  <div class="anode hl">
+                    <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg></span>
+                    <div><b>Workers 24/7</b><i>alertas · históricos · snapshots</i></div>
+                  </div>
+                  <div class="anode"><span class="icon-tile"><img src="https://cdn.simpleicons.org/postgresql" alt=""></span><div><b>PostgreSQL 17</b><i>usuarios · portfolios · alertas</i></div></div>
+                  <div class="anode"><span class="icon-tile"><img src="https://cdn.simpleicons.org/mongodb" alt=""></span><div><b>MongoDB 8</b><i>históricos de mercado</i></div></div>
+                </div>
+              </div>
+              <div class="harrow"></div>
+              <div class="arch-side">
+                <div class="anode">
+                  <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+                  <div><b>Mercados</b><i>Yahoo Finance · EODHD</i></div>
+                </div>
+                <div class="anode">
+                  <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+                  <div><b>Email</b><i>Gmail SMTP · avisos</i></div>
+                </div>
+              </div>
+            </div>
+            </div>
+            <div class="slide-foot"><p class="punchline">La caché reduce llamadas al proveedor; <b>compra y venta siempre con datos en tiempo real</b></p></div>
+          </section>
+
+          <!-- 5 · Tecnologías -->
+          <section style="justify-content: flex-start; padding-top: 0.4em;">
+            <div class="slide-head" style="margin-bottom: 1.8em;">
+              <p class="kicker">Stack</p>
+              <h2>Tecnologías <span class="grad-text">utilizadas</span></h2>
+            </div>
+            <div class="tech-bento">
+              <div class="tech-panel span7">
+                <span class="cat">Frontend</span>
+                <div class="tech-items">
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/angular/DD0031" alt=""><b>Angular 20</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/typescript" alt=""><b>TypeScript</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/reactivex/E535AB" alt=""><b>RxJS</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/materialdesign/78A9F7" alt=""><b>Angular Material</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/chartdotjs" alt=""><b>Chart.js</b></div>
+                </div>
+              </div>
+              <div class="tech-panel span5">
+                <span class="cat">Backend</span>
+                <div class="tech-items">
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/dotnet/8B7CF6" alt=""><b>.NET 10</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/dotnet/8B7CF6" alt=""><b>EF Core</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/jsonwebtokens/D63AFF" alt=""><b>JWT</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/swagger" alt=""><b>Swagger</b></div>
+                </div>
+              </div>
+              <div class="tech-panel span4">
+                <span class="cat">Datos</span>
+                <div class="tech-items">
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/postgresql" alt=""><b>PostgreSQL 17</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/mongodb" alt=""><b>MongoDB 8</b></div>
+                </div>
+              </div>
+              <div class="tech-panel span8">
+                <span class="cat">Infra & CI/CD</span>
+                <div class="tech-items">
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/docker" alt=""><b>Docker Compose</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/nginx" alt=""><b>Nginx</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/ubuntu" alt=""><b>Ubuntu 24.04</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/cloudflare" alt=""><b>Cloudflare Tunnel</b></div>
+                  <div class="tech-item"><img src="https://cdn.simpleicons.org/githubactions" alt=""><b>GitHub Actions</b></div>
+                </div>
+              </div>
+              <div class="tech-foot">
+                <span><b>CALIDAD</b> &nbsp;xUnit · Moq · Jasmine · Karma</span>
+                <span><b>INTEGRACIONES</b> &nbsp;Yahoo Finance · EODHD · Gmail SMTP</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6 · Infraestructura / Deploy -->
+          <section>
+            <div class="slide-head">
+              <p class="kicker">Deploy</p>
+              <h2>Infraestructura propia, <span class="grad-text">costo casi cero</span></h2>
+            </div>
+            <div class="slide-body">
+            <div class="flow">
+              <div class="flow-step">
+                <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+                <strong>Internet</strong>
+                <span>Acceso con HTTPS desde cualquier dispositivo</span>
+              </div>
+              <span class="flow-sep">➜</span>
+              <div class="flow-step">
+                <span class="icon-tile"><img src="https://cdn.simpleicons.org/cloudflare" alt=""></span>
+                <strong>Cloudflare Tunnel + DNS</strong>
+                <span>investlab-demo.com seguro, sin abrir puertos ni IP fija</span>
+              </div>
+              <span class="flow-sep">➜</span>
+              <div class="flow-step">
+                <span class="icon-tile"><img src="https://cdn.simpleicons.org/nginx" alt=""></span>
+                <strong>Nginx</strong>
+                <span>Sirve el frontend y enruta el tráfico</span>
+              </div>
+              <span class="flow-sep">➜</span>
+              <div class="flow-step">
+                <span class="icon-tile"><img src="https://cdn.simpleicons.org/docker" alt=""></span>
+                <strong>Docker · VM Ubuntu</strong>
+                <span>Frontend, API, workers y bases en contenedores</span>
+              </div>
+            </div>
+            <div class="deploy-cols">
+              <div class="term">
+                <div class="term-bar">
+                  <span class="term-dot" style="background: #f87171;"></span>
+                  <span class="term-dot" style="background: #fbbf24;"></span>
+                  <span class="term-dot" style="background: #34d399;"></span>
+                  <span class="term-title">github-actions · self-hosted runner</span>
+                </div>
+                <div class="term-body">
+                  <p><span class="t-p">$</span> git push origin staging</p>
+                  <p class="t-ok">✓ Workflow disparado en el runner de la VM</p>
+                  <p class="t-ok">✓ docker compose up -d --build</p>
+                  <p class="t-ok">✓ investlab-demo.com<span class="t-badge">online</span></p>
+                </div>
+              </div>
+              <div class="svc-panel">
+                <span class="cat">Dentro de la VM · 5 contenedores</span>
+                <div class="svc"><img src="https://cdn.simpleicons.org/nginx" alt=""><b>Nginx + Angular</b><span>frontend</span></div>
+                <div class="svc"><img src="https://cdn.simpleicons.org/dotnet/8B7CF6" alt=""><b>ASP.NET Core</b><span>API REST</span></div>
+                <div class="svc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><b>Workers .NET</b><span>tareas 24/7</span></div>
+                <div class="svc"><img src="https://cdn.simpleicons.org/postgresql" alt=""><b>PostgreSQL 17</b><span>datos</span></div>
+                <div class="svc"><img src="https://cdn.simpleicons.org/mongodb" alt=""><b>MongoDB 8</b><span>históricos</span></div>
+              </div>
+            </div>
+            </div>
+            <div class="slide-foot">
+              <p class="punchline">Deploy automático: <b>push a staging → GitHub Actions</b> reconstruye los contenedores</p>
+              <p class="punchline" style="margin-top: 0.45em !important;">Costo operativo anual: <b>~USD 10</b> — solo el dominio; todo lo demás corre en infraestructura propia</p>
+            </div>
+          </section>
+
+          <!-- 7 · Demo -->
+          <section class="center-slide" data-transition="zoom">
+            <div class="slide-head" style="text-align: center;">
+              <p class="kicker" style="justify-content: center;">En vivo</p>
+              <h2>Veámoslo <span class="grad-text">funcionando</span></h2>
+              <p class="slide-sub">Recorrido real por InvestLab en investlab-demo.com</p>
+            </div>
+            <div class="slide-body">
+            <div class="flow">
+              <div class="flow-step">
+                <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+                <strong>Crear cuenta</strong>
+                <span>Registro, verificación por email y login</span>
+              </div>
+              <span class="flow-sep">➜</span>
+              <div class="flow-step">
+                <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+                <strong>Explorar el mercado</strong>
+                <span>Buscar activos, gráficos y favoritos</span>
+              </div>
+              <span class="flow-sep">➜</span>
+              <div class="flow-step">
+                <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span>
+                <strong>Invertir</strong>
+                <span>Comprar y vender con saldo virtual</span>
+              </div>
+              <span class="flow-sep">➜</span>
+              <div class="flow-step">
+                <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+                <strong>Seguir y ajustar</strong>
+                <span>Portfolio, alertas y notificaciones — también en el móvil</span>
+              </div>
+            </div>
+            <div class="live-bar">
+              <span class="live-badge">EN VIVO</span>
+              <a
+                class="live-url"
+                href="https://investlab-demo.com"
+                target="_blank"
+                rel="noopener noreferrer">
+                🔒 investlab-demo.com
+              </a>
+              <span class="live-note">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M7 19h5"/><rect x="16" y="12" width="6" height="10" rx="2"/></svg>
+                también desde el móvil
+              </span>
+            </div>
+            </div>
+            <div class="slide-foot"><p class="punchline">De la landing al portfolio: <b>el flujo completo de un inversor</b>, en vivo</p></div>
+          </section>
+
+          <!-- 8 · Conclusiones -->
+          <section>
+            <div class="slide-head">
+              <p class="kicker">Cierre del proyecto</p>
+              <h2>Conclusiones y <span class="grad-text">trabajo a futuro</span></h2>
+            </div>
+            <div class="slide-body">
+            <div class="close-cols">
+              <div>
+                <p class="tag">Conclusiones</p>
+                <ul class="concl-list">
+                  <li><strong>Integración completa:</strong> frontend, API REST, procesos en segundo plano, dos motores de base de datos e integraciones externas funcionando de forma coordinada, no como módulos aislados.</li>
+                  <li><strong>Conocimientos aplicados:</strong> arquitectura en capas, modelado relacional y no relacional, autenticación con JWT, consumo de APIs externas y despliegue en infraestructura propia con contenedores.</li>
+                  <li><strong>Valor para el usuario:</strong> el saldo virtual permite operar con datos de mercado reales y practicar la gestión de un portfolio sin exponer capital propio.</li>
+                  <li><strong>Base extensible:</strong> el desacople mediante interfaces (proveedores de datos, envío de correo) permite incorporar nuevos servicios sin modificar la lógica central del sistema.</li>
+                </ul>
+              </div>
+              <div class="future-col">
+                <p class="tag">Trabajo a futuro</p>
+                <ul class="future-list">
+                  <li>Incorporación de criptoactivos como nueva clase de instrumento</li>
+                  <li>Soporte multi-moneda (USD, ARS, EUR)</li>
+                  <li>Exportación del portfolio a CSV / Excel</li>
+                  <li>Ampliación de las métricas de análisis financiero</li>
+                  <li>Caché distribuida con Redis para mejorar la escalabilidad</li>
+                  <li>Aplicación móvil nativa</li>
+                </ul>
+              </div>
+            </div>
+            </div>
+            <div class="slide-foot"><p class="punchline">Gracias · <b>InvestLab</b> · investlab-demo.com</p></div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-brand"><b>InvestLab</b> · Simulador web de inversiones</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      embedded: true,          // la presentación vive dentro de la "ventana"
+      center: false,           // el centrado vertical lo controla nuestro CSS, no Reveal
+      width: 1280,
+      height: 720,
+      margin: 0.04,
+      controls: true,
+      progress: true,
+      hash: true,
+      slideNumber: 'c/t',
+      keyboardCondition: null, // flechas funcionan aunque la ventana no tenga foco
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+  </script>
+</body>
+</html>
