@@ -610,7 +610,7 @@
       gap: 0.4em;
       width: 100%;
       font-size: 1.08em;
-      margin-top: 2.3em;
+      margin-top: 1.6em;
       margin-bottom: 3em;
     }
     .arch-grid {
@@ -618,6 +618,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 0.45em;
     }
+    .anode.wide { grid-column: 1 / -1; }
     .arch-side { display: flex; flex-direction: column; gap: 0.5em; }
     .anode {
       display: flex;
@@ -681,6 +682,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 0.5em;
       white-space: nowrap;
       font-family: var(--mono);
       font-size: 0.4em;
@@ -1143,7 +1145,7 @@
                 <div class="arch-grid">
                   <div class="anode hl">
                     <span class="icon-tile"><img src="https://cdn.simpleicons.org/dotnet/8B7CF6" alt=""></span>
-                    <div><b>API · .NET 10</b><i>REST + JWT · caché de mercado</i></div>
+                    <div><b>API · .NET 10</b><i>REST + JWT</i></div>
                   </div>
                   <div class="anode hl">
                     <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32 2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg></span>
@@ -1151,6 +1153,10 @@
                   </div>
                   <div class="anode"><span class="icon-tile"><img src="https://cdn.simpleicons.org/postgresql" alt=""></span><div><b>PostgreSQL 17</b><i>usuarios · portfolios · alertas</i></div></div>
                   <div class="anode"><span class="icon-tile"><img src="https://cdn.simpleicons.org/mongodb" alt=""></span><div><b>MongoDB 8</b><i>históricos de mercado</i></div></div>
+                  <div class="anode wide">
+                    <span class="icon-tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+                    <div><b>Caché de mercado</b><i>se actualiza cada 3 min · se omite en compra/venta</i></div>
+                  </div>
                 </div>
               </div>
               <div class="harrow"></div>
@@ -1333,37 +1339,25 @@
             <div class="slide-foot"><p class="punchline">De la landing al portfolio: <b>el flujo completo de un inversor</b>, en vivo</p></div>
           </section>
 
-          <!-- 8 · Conclusiones -->
-          <section>
-            <div class="slide-head">
-              <p class="kicker">Cierre del proyecto</p>
-              <h2>Conclusiones y <span class="grad-text">trabajo a futuro</span></h2>
+          <!-- 8 · Trabajo a futuro + cierre -->
+          <section class="center-slide">
+            <div class="slide-head" style="text-align: center;">
+              <p class="kicker" style="justify-content: center;">Cierre del proyecto</p>
+              <h2>Trabajo a <span class="grad-text">futuro</span></h2>
             </div>
             <div class="slide-body">
-            <div class="close-cols">
-              <div>
-                <p class="tag">Conclusiones</p>
-                <ul class="concl-list">
-                  <li><strong>Integración completa:</strong> frontend, API REST, procesos en segundo plano, dos motores de base de datos e integraciones externas funcionando de forma coordinada, no como módulos aislados.</li>
-                  <li><strong>Conocimientos aplicados:</strong> arquitectura en capas, modelado relacional y no relacional, autenticación con JWT, consumo de APIs externas y despliegue en infraestructura propia con contenedores.</li>
-                  <li><strong>Valor para el usuario:</strong> el saldo virtual permite operar con datos de mercado reales y practicar la gestión de un portfolio sin exponer capital propio.</li>
-                  <li><strong>Base extensible:</strong> el desacople mediante interfaces (proveedores de datos, envío de correo) permite incorporar nuevos servicios sin modificar la lógica central del sistema.</li>
-                </ul>
-              </div>
-              <div class="future-col">
-                <p class="tag">Trabajo a futuro</p>
-                <ul class="future-list">
-                  <li>Incorporación de criptoactivos como nueva clase de instrumento</li>
-                  <li>Soporte multi-moneda (USD, ARS, EUR)</li>
-                  <li>Exportación del portfolio a CSV / Excel</li>
-                  <li>Ampliación de las métricas de análisis financiero</li>
-                  <li>Caché distribuida con Redis para mejorar la escalabilidad</li>
-                  <li>Aplicación móvil nativa</li>
-                </ul>
-              </div>
+              <ul class="future-list" style="max-width: 30em; margin: 0 auto; text-align: left; border-left: 1px solid var(--line); padding-left: 1.4em;">
+                <li>Incorporación de criptoactivos como nueva clase de instrumento</li>
+                <li>Soporte multi-moneda (USD, ARS, EUR)</li>
+                <li>Asistente con IA para resolver dudas y sugerir inversiones</li>
+                <li>Caché distribuida con Redis para mejorar la escalabilidad</li>
+                <li>Aplicación móvil nativa</li>
+              </ul>
             </div>
+            <div class="slide-foot">
+              <p style="text-align: center; font-size: 0.95em; font-weight: 800; margin: 0;"><span class="grad-text">¡Muchas gracias!</span></p>
+              <p style="text-align: center; font-size: 0.42em; color: var(--ink-dim); margin: 0.5em 0 0;">InvestLab · investlab-demo.com</p>
             </div>
-            <div class="slide-foot"><p class="punchline">Gracias · <b>InvestLab</b> · investlab-demo.com</p></div>
           </section>
 
         </div>
