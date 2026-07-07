@@ -224,7 +224,8 @@ export class Watchlist implements OnInit {
 
     const ConfirmDialog = await import('../../../../shared/components/confirm-dialog/confirm-dialog');
     const dialogRef = this.dialog.open(ConfirmDialog.ConfirmDialogComponent, {
-      width: '350px',
+      width: '380px',
+      maxWidth: '95vw',
       backdropClass: 'blur-backdrop',
       data: {
         title: this.languageService.instant('WATCHLIST.DELETE_CONFIRM.TITLE'),
