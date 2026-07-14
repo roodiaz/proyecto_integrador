@@ -1,270 +1,232 @@
-# Pantallas y Funcionalidades - Market Alerts
+# Pantallas y Funcionalidades - InvestLab
 
 ## 📋 Visión General
-Descripción detallada de cada pantalla del sistema y qué funcionalidades contiene, sin incluir estructura de tablas de base de datos.
+Descripción de cada pantalla del frontend (Angular) y qué funcionalidades contiene, sin entrar en detalle de la estructura de base de datos.
 
 ---
 
-## 🔐 1. Login/Register
+## 🔐 1. Login / Register
 
-### Pantalla: `login-form/` y `register-form/`
+### Pantalla: `features/auth/components/login-form/`, `register-form/`, `forgot-password-form/`, `registration-success/`
 
 #### Funcionalidades
-- **Formulario de ingreso**: Email y contraseña
-- **Validación en tiempo real**: Email existe, contraseña segura
-- **Recuperación de contraseña**: Enviar link por email
-- **Registro de nuevo usuario**: Nombre completo, email, contraseña, confirmar
-- **Redirección automática**: Post-login → Dashboard, Post-register → Success
+- **Login**: email y contraseña.
+- **Registro de nuevo usuario**: nombre, email, contraseña, confirmación.
+- **Recuperación de contraseña**: flujo de `forgot-password-form` con envío de código y `registration-success` como paso de confirmación.
+- **Redirección automática**: post-login → Dashboard.
 
 #### Elementos de UI
-- Input email con validación
-- Input contraseña con mostrar/ocultar
-- Botón "Ingresar" con loading state
-- Link "¿Olvidaste tu contraseña?"
-- Checkbox "Recordarme"
-- Mensajes de error específicos
-- Botón de registro para nuevos usuarios
+- Input email con validación.
+- Input contraseña con mostrar/ocultar.
+- Botón de ingreso con estado de carga.
+- Link "¿Olvidaste tu contraseña?".
+- Mensajes de error específicos por campo.
 
 #### Estados y Validaciones
-- **Formulario inválido**: Campos vacíos, email inválido, contraseña débil
-- **Credenciales incorrectas**: Email no encontrado, contraseña incorrecta
-- **Usuario ya existe**: Email ya registrado
-- **Éxito**: Redirección con mensaje de bienvenida
+- Formulario inválido: campos vacíos, email inválido, contraseña débil.
+- Credenciales incorrectas.
+- Usuario ya existente (email duplicado).
+- Éxito: redirección con mensaje de bienvenida.
+
+> El token de sesión se guarda en `sessionStorage` (no persiste entre reinicios del navegador) y se renueva mediante `TokenRefreshService`.
 
 ---
 
 ## 👤 2. Dashboard
 
-### Pantalla: `dashboard/`
+### Pantalla: `features/dashboard/`
 
 #### Funcionalidades
-- **Resumen de portafolio**: Valor total, ganancias/pérdidas del día
-- **Alertas activas**: Cards con estadísticas (activas, pausadas, disparadas hoy)
-- **Mercado**: Índices principales y acciones en tendencia
-- **Acceso rápido**: Atajos a alertas, portafolio, mercado, configuración
+- **Selector de portfolio activo**: el usuario puede tener hasta 3 portfolios; el dashboard opera sobre el que esté marcado como activo (`ActivePortfolioService`).
+- **Resumen de portfolio**: balance disponible, valor invertido, valor total y rendimiento.
+- **Gráfico de composición**: distribución entre disponible e invertido.
+- **Comparación contra benchmarks**: chips con rendimiento del portfolio vs. índices (S&P 500, NASDAQ).
+- **Últimas transacciones** y **últimas notificaciones** como widgets de acceso rápido.
 
 #### Elementos de UI
-- **Cards de resumen**: Con iconos, valores y colores según estado
-- **Gráficos circulares**: Distribución de portafolio
-- **Tabla de alertas**: Paginación, filtros, acciones rápidas
-- **Widget de mercado**: Mini-gráficos de tendencias
-- **Notificaciones**: Badges para alertas no leídas
+- Cards de resumen con valores e indicadores de variación.
+- Gráfico de línea/torta (Chart.js).
+- Listas resumidas de transacciones y notificaciones recientes.
 
 #### Datos que muestra
-- **Portafolio**: Desde PostgreSQL en tiempo real
-- **Alertas**: Desde PostgreSQL (activas) + MongoDB (historial)
-- **Mercado**: Desde MongoDB cache + API externa
+- Portfolio y transacciones: PostgreSQL, en tiempo real vía HTTP.
+- Históricos para gráficos: MongoDB (precios y snapshots diarios de portfolio).
 
 ---
 
 ## 🚨 3. Alertas
 
-### Pantalla: `alerts/`
+### Pantalla: `features/alerts/`
 
 #### Funcionalidades
-- **Gestión de alertas**: Crear, editar, eliminar, activar/desactivar
-- **Historial de notificaciones**: Todas las alertas disparadas
-- **Filtros avanzados**: Por símbolo, estado, condición
-- **Paginación**: 8 alertas por página
-- **Creación modal**: Formulario para configurar nuevas alertas
+- **Gestión de alertas**: crear, editar, eliminar, activar/desactivar.
+- **Historial de notificaciones**: alertas disparadas.
+- **Filtros**: por símbolo, estado, condición y rango de fechas (`createdFrom` / `createdTo`).
+- **Navegación por query params**: se puede llegar a esta pantalla desde otra (ej. Mercado) con `ticker`, `view=history` o `action=create` preseteados.
+- **Límite de alertas**: configurado por el backend (`Limits__MaxAlerts`), no es ilimitado; se muestra el conteo usado/total.
 
 #### Elementos de UI
-- **Botón "Nueva Alerta"**: Siempre visible, sin restricciones
-- **Tabs**: "Mis Alertas" y "Notificaciones"
-- **Cards de resumen**: Activas, Pausadas, Disparadas Hoy, Utilizadas
-- **Tabla de alertas**: Columnas con símbolo, condición, estado, fechas, acciones
-- **Switches**: Toggle para activar/desactivar cada alerta
-- **Botones de acción**: Editar y eliminar por cada alerta
-- **Modal de creación**: Campos para símbolo, condición, valor objetivo
+- Tabs: "Mis Alertas" y "Notificaciones".
+- Cards de resumen: activas, pausadas, disparadas hoy, alertas usadas / límite.
+- Tabla de alertas con switches de activar/desactivar y acciones de editar/eliminar.
+- Modal de creación/edición con símbolo, condición, operador y valor objetivo.
 
 #### Estados y Validaciones
-- **Alerta activa**: Verde con check ✓
-- **Alerta pausada**: Gris con icono ⏸️
-- **Alerta disparada**: Rojo con icono 🔴
-- **Sin alertas**: Mensaje con CTA para crear primera alerta
+- Alerta activa / pausada / disparada, con estilos diferenciados.
+- Botón de creación deshabilitado al alcanzar el límite configurado.
+- Sin alertas: mensaje con CTA para crear la primera.
 
 ---
 
 ## 📊 4. Mercado
 
-### Pantalla: `market/`
+### Pantalla: `features/market/`
 
 #### Funcionalidades
-- **Índices de mercado**: S&P 500, NASDAQ, DOW
-- **Acciones en tendencia**: Top 10 acciones más activas
-- **Noticias**: Sección "Próximamente"
-- **Sectores**: Sección "Próximamente"
-- **Búsqueda de tickers**: Buscador con autocomplete
-- **Gráficos de precios**: Sparklines para cada activo
+- **Índices de mercado**: S&P 500, NASDAQ, DOW, Russell 2000.
+- **Acciones en tendencia** (movers) con variación y sparkline.
+- **Market Intelligence (noticias)**: carrusel real de noticias (`loadNews`, `nextNews` / `previousNews`), consumidas desde el backend — ya no es un placeholder "Próximamente".
+- **Búsqueda de activos** con autocomplete.
+- **Gráfico comparativo**: selector de timeframe y tipo de gráfico (línea, barras, velas), con comparación contra hasta 4 índices.
+- **Compra/venta directa**: desde la ficha de un activo, sin pasar por Portafolio.
+- **Favoritos inline**: toggle para agregar/quitar de watchlist directamente desde la tarjeta.
 
 #### Elementos de UI
-- **Header con resumen**: Valores de índices con indicadores positivo/negativo
-- **Tarjetas de acciones**: Logo, símbolo, precio, variación, sparkline
-- **Secciones deshabilitadas**: Noticias y Sectores con mensaje "Próximamente"
-- **Botón "Ver Todos"**: Deshabilitado en secciones "Próximamente"
-- **Buscador flotante**: Input con búsqueda instantánea
+- Header con valores de índices e indicador positivo/negativo.
+- Tarjetas de activos: símbolo, precio, variación, sparkline, botón de favorito.
+- Carrusel de noticias con navegación.
+- Modal de compra/venta (`PortfolioModal`).
+- Buscador con resultados instantáneos.
 
-#### Datos que muestra
-- **Índices**: Desde API externa en tiempo real
-- **Trending stocks**: Desde MongoDB cache
-- **Historial**: Desde MongoDB (si se consulta)
+> No existen actualmente las secciones "Sectores" ni el estado "Próximamente" que aparecían en versiones anteriores del producto.
 
 ---
 
 ## 💼 5. Portafolio
 
-### Pantalla: `portfolio/`
+### Pantalla: `features/portfolio/`
 
 #### Funcionalidades
-- **Resumen general**: Valor total, rendimiento del día, distribución por sector
-- **Lista de posiciones**: Todas las tenencias del usuario
-- **Gráfico circular**: Distribución del portafolio
-- **Transacciones**: Historial de compras/ventas
-- **Métricas**: ROI, volatilidad, rendimiento porcentual
+- **Multi-portfolio**: tabs para navegar entre los portfolios del usuario (hasta 3), con creación de nuevos portfolios mientras no se alcance el límite.
+- **Configuración inicial obligatoria**: wizard (`PortfolioSetupDialog`) para dar de alta un portfolio nuevo con nombre y balance inicial.
+- **Reset de simulación**: opción para reiniciar un portfolio a su estado inicial.
+- **Resumen y posiciones**: valor total, rendimiento, distribución por sector (gráfico de torta) y tabla de posiciones abiertas.
+- **Historial de transacciones** con filtros.
+- **Exportación a Excel**: descarga de tenencias (`downloadHoldings`) y de historial de operaciones (`downloadTransactions`).
 
 #### Elementos de UI
-- **Tarjeta de resumen**: Valor total con indicador de ganancia/pérdida
-- **Gráfico de dona**: Porcentajes por sector con colores
-- **Tabla de posiciones**: Símbolo, cantidad, precio actual, valor total, ganancia/pérdida
-- **Botones de acción**: Comprar, vender, ver detalles
-- **Filtros**: Por sector, por rendimiento
+- Tabs de portfolio (deshabilitado "agregar" si ya hay 3 o si es el único y no se puede eliminar).
+- Tarjeta de resumen con indicador de ganancia/pérdida.
+- Gráfico de torta por sector/activo.
+- Tabla de posiciones: símbolo, cantidad, precio actual, valor, ganancia/pérdida.
+- Botones de comprar/vender y exportar.
 
 #### Datos que muestra
-- **Posiciones**: Desde PostgreSQL en tiempo real
-- **Transacciones**: Desde PostgreSQL
-- **Métricas**: Calculadas en tiempo real desde PostgreSQL
+- Posiciones y transacciones: PostgreSQL, en tiempo real.
+- Evolución histórica del valor del portfolio: MongoDB (snapshots diarios).
 
 ---
 
-## ⭐ 6. Lista de Seguimiento
+## ⭐ 6. Watchlist (Favoritos)
 
-### Pantalla: `watchlist/`
+### Pantalla: `features/watchlist/`
 
 #### Funcionalidades
-- **Favoritos**: Lista de hasta 3 tickers favoritos
-- **Agregar ticker**: Input con autocomplete
-- **Eliminar ticker**: Botón por cada elemento
-- **Sparklines**: Mini-gráficos de tendencia
-- **Límite visual**: Indicador de cuántos favoritos se usan
+- **Favoritos**: lista de activos seguidos, con **límite configurable desde el backend** (`Limits__MaxFavorites`, no un valor fijo en el frontend).
+- **Agregar/eliminar ticker** con autocomplete.
+- **Ordenamiento por columna** y **paginación** (7 elementos por página).
+- **Sparklines**: mini-gráficos de tendencia por activo.
 
 #### Elementos de UI
-- **Input de búsqueda**: Para agregar nuevos símbolos
-- **Lista de favoritos**: Símbolo, precio actual, variación, sparkline, botón eliminar
-- **Indicador de límite**: "X de 3 favoritos usados"
-- **Botón "Agregar": Deshabilitado cuando llega al límite
-- **Sparklines individuales**: Pequeños gráficos para cada ticker
-
-#### Datos que muestra
-- **Favoritos**: Desde PostgreSQL
-- **Límite**: Configurado en el componente (máximo 3)
+- Input de búsqueda para agregar símbolos.
+- Tabla/lista de favoritos: símbolo, precio, variación, sparkline, botón eliminar.
+- Indicador de uso: "X de N favoritos usados" (N viene del backend).
+- Botón "Agregar" deshabilitado al alcanzar el límite.
 
 ---
 
 ## ⚙️ 7. Configuración de Usuario
 
-### Pantalla: `user-profile/`
+### Pantalla: `features/settings/components/user-profile/`
 
 #### Funcionalidades
-- **Información personal**: Nombre, email, fecha nacimiento, teléfono
-- **Preferencias**: Moneda, idioma, zona horaria, tema
-- **Seguridad**: Cambiar contraseña, 2FA
-- **Notificaciones**: Email activado/desactivado
-- **Avatar**: Subir/cambiar foto de perfil
+- **Información personal**: nombre, email, fecha de nacimiento, teléfono.
+- **Preferencias**: moneda, idioma, tema (claro/oscuro).
+- **Cambio de email**: flujo con verificación por código (`onVerifyEmail` / `onValidateEmailCode`).
+- **Cambio de contraseña**.
+- **Avatar**: subida y cambio de foto de perfil (`onFileSelected`, `uploadProfileImage`).
+- **Eliminación de cuenta**: con confirmación (`confirmDeleteAccount` / `deleteAccount`).
+- **Notificaciones**: activación/desactivación de notificaciones por email.
 
 #### Elementos de UI
-- **Formulario de perfil**: Campos organizados en secciones
-- **Avatar interactivo**: Click para cambiar foto
-- **Switches de notificaciones**: Toggle para email
-- **Selector de idioma**: Dropdown con opciones
-- **Selector de tema**: Claro/Oscuro
-- **Botones de seguridad**: Cambiar contraseña, activar 2FA
+- Formulario de perfil organizado en secciones.
+- Avatar interactivo (click para cambiar foto).
+- Switch de notificaciones por email.
+- Selector de idioma y de tema.
+- Sección de seguridad: cambiar contraseña, eliminar cuenta.
 
-#### Datos que muestra
-- **Perfil**: Desde PostgreSQL (users + user_profiles)
-- **Preferencias**: Desde PostgreSQL
-- **Avatar**: URL desde PostgreSQL
+> No hay autenticación de dos factores (2FA) implementada en el producto actual.
 
 ---
 
-## 🧭 8. Sidebar de Navegación
+## 🧭 8. Navegación (Sidebar / Header / Bottom Nav)
 
-### Componente: `sidebar/`
+### Componentes: `shared/components/sidebar/`, `layout/layout-sidebar.ts` (contenedor), `header/`, `bottom-nav/`
 
 #### Funcionalidades
-- **Navegación principal**: Links a todas las secciones
-- **Logo dinámico**: Cambia según estado (colapsado/expandido)
-- **Indicadores**: Badges para notificaciones no leídas
-- **Usuario activo**: Email del usuario logueado
-
-#### Elementos de UI
-- **Menú de navegación**: Iconos + texto para cada sección
-- **Logo**: Con animación de transición
-- **Toggle de colapso**: Botón para expandir/contraer
-- **Badges de notificación**: Números rojos para alertas no leídas
+- **Navegación principal** (desktop): sidebar con links a todas las secciones, colapsable.
+- **Navegación mobile**: barra inferior (`BottomNav`) como alternativa al sidebar en pantallas chicas.
+- **Header**: información del usuario activo y accesos rápidos.
+- **Indicadores**: badges para notificaciones no leídas.
 
 #### Datos que muestra
-- **Usuario**: Desde localStorage (token) + estado global
-- **Notificaciones**: Contador desde estado global
+- Usuario activo: desde el token en `sessionStorage` + estado de la sesión.
+- Notificaciones no leídas: contador desde el servicio correspondiente.
 
 ---
 
-## 🔄 9. Datos en Tiempo Real
+## 🔄 9. Actualización de datos
 
-### WebSocket Connections
+El frontend **no usa WebSockets**: no hay `socket.io`, `SignalR` ni conexiones `WebSocket` en el código. Toda la comunicación es HTTP request/response:
 
-#### Funcionalidades
-- **Actualización de portafolio**: Precios en tiempo real
-- **Disparo de alertas**: Notificaciones instantáneas
-- **Actualización de mercado**: Nuevos datos cada minuto
-- **Sincronización**: Datos consistentes entre componentes
-
-#### Flujo de datos
-- **Conexión WebSocket**: Cliente se conecta al backend
-- **Suscripción a eventos**: Cliente se suscribe a actualizaciones específicas
-- **Broadcast de actualizaciones**: Backend envía cambios a clientes conectados
-- **Reconexión automática**: Manejo de desconexiones inesperadas
-
-#### Datos que se transmiten
-- **Precios de portafolio**: Valores actualizados cada segundo
-- **Estados de alertas**: Cambios de activa/pausada/disparada
-- **Datos de mercado**: Nuevos precios, volúmenes, cambios porcentuales
+- Los datos se cargan al entrar a cada pantalla (`ngOnInit`) y se refrescan tras acciones del usuario (comprar, vender, crear alerta, etc.).
+- No hay reconexión automática ni streaming de precios en tiempo real; la frecuencia de actualización de precios depende del ciclo de refresh interno del backend, no de push hacia el cliente.
 
 ---
 
 ## 📱 10. Estado de la Aplicación
 
-### Estados Globales
-- **Usuario autenticado**: Token válido + datos del perfil
-- **Conexión WebSocket**: Conectado/Desconectado/Reconectando
-- **Sincronización**: Activa/Pausada/Error
-- **Caché**: Funcional/Deshabilitado
+### Servicios de estado global
+- **`ActivePortfolioService`** — portfolios del usuario y cuál está activo.
+- **`TokenRefreshService`** — renovación de JWT.
+- **`ThemeService`** — tema claro/oscuro.
+- **`LanguageService`** — idioma (i18n vía ngx-translate).
+- **`SidebarService`** — estado colapsado/expandido del sidebar.
+- **`ViewportService`** — breakpoints para el layout responsive.
 
-### Manejo de Estados
-- **Loading states**: Indicadores durante cargas
-- **Error states**: Mensajes específicos por tipo de error
-- **Empty states**: Mensajes cuando no hay datos
-- **Success messages**: Confirmaciones de acciones exitosas
+### Manejo de estados
+- Loading states durante cargas.
+- Error states con mensajes específicos.
+- Empty states cuando no hay datos.
+- Confirmaciones de acciones exitosas.
 
 ---
 
 ## 🛡️ 11. Seguridad
 
-### Medidas de Seguridad
-- **Autenticación**: JWT con refresh tokens
-- **Autorización**: Roles y permisos por endpoint
-- **Validación de inputs**: Sanitización y validación estricta
-- **Rate limiting**: Límites de solicitudes por usuario/IP
-- **HTTPS**: Todas las comunicaciones encriptadas
-- **CORS**: Configurado para dominio específico
-- **SQL Injection**: Prepared statements en PostgreSQL
+### Lo que existe realmente
+- **Autenticación**: JWT con refresh token, gestionado por `auth.guard.ts` y `auth.interceptor.ts`.
+- **Manejo de expiración**: el interceptor distingue `INVALID_TOKEN` de `TOKEN_EXPIRED` para decidir si intenta refrescar el token o redirige a login.
+- **Almacenamiento del token**: `sessionStorage` (se pierde al cerrar la pestaña/navegador).
+- **Validación de inputs** en los formularios del frontend.
+- **HTTPS** en el despliegue.
 
-### Funcionalidades de Seguridad
-- **Sesión activa**: Solo una sesión por usuario
-- **Timeout de sesión**: Cierre automático por inactividad
-- **Bloqueo de cuenta**: Demasiados intentos fallidos
-- **Auditoría**: Log de todas las acciones importantes
-- **Recuperación segura**: Token de un solo uso y expiración
+### No implementado actualmente
+- 2FA.
+- Mensajes o lógica de "sesión única por usuario".
+- Bloqueo de cuenta visible desde el frontend (el backend registra intentos fallidos en `users.failed_login_attempts` / `locked_until`, pero no hay una pantalla dedicada a esto).
+- Checkbox "Recordarme" en el login.
 
 ---
 
-Este documento describe completamente cada pantalla y funcionalidad del sistema sin entrar en detalles técnicos de implementación de base de datos, enfocándose en qué hace cada componente y qué datos maneja.
+Este documento describe las pantallas y funcionalidades del frontend tal como existen en el código actual, sin detallar la estructura interna de la base de datos (ver [DATABASE_ARQUITECTURE.md](DATABASE_ARQUITECTURE.md)).
