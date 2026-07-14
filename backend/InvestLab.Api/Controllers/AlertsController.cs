@@ -1,4 +1,5 @@
 ﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Alerts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
+[ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
 public class AlertController : BaseController
 {
     private readonly IAlertService _alertService;
@@ -29,6 +32,8 @@ public class AlertController : BaseController
     /// <response code="200">Alerta creada correctamente</response>
     /// <response code="400">Datos inválidos o error de negocio</response>
     [HttpPost]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateAlertDto dto)
     {
         var userId = UserId;
@@ -54,6 +59,8 @@ public class AlertController : BaseController
     /// <response code="200">Alerta eliminada correctamente</response>
     /// <response code="400">Alerta no encontrada o error</response>
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete(int id)
     {
         var userId = UserId;
@@ -79,6 +86,8 @@ public class AlertController : BaseController
     /// <response code="200">Alerta actualizada correctamente</response>
     /// <response code="400">Datos inválidos o error</response>
     [HttpPut]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update([FromBody] UpdateAlertDto dto)
     {
         var userId = UserId;
@@ -104,6 +113,8 @@ public class AlertController : BaseController
     /// <response code="200">Estado actualizado correctamente</response>
     /// <response code="400">Error en la operación</response>
     [HttpPatch("{id}/toggle")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Toggle(int id)
     {
         var userId = UserId;
@@ -129,6 +140,8 @@ public class AlertController : BaseController
     /// <response code="200">Listado obtenido correctamente</response>
     /// <response code="400">Error en la consulta</response>
     [HttpPost("search")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Get([FromBody] AlertFilterDto filter)
     {
         var userId = UserId;
@@ -153,6 +166,8 @@ public class AlertController : BaseController
     /// <response code="200">Estadísticas obtenidas correctamente</response>
     /// <response code="400">Error en la consulta</response>
     [HttpGet("stats")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetStats()
     {
         var userId = UserId;

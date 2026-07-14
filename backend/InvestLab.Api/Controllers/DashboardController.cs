@@ -1,4 +1,5 @@
 using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,8 @@ namespace InvestLab.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
+[ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
 public class DashboardController : BaseController
 {
     private readonly IDashboardService _service;
@@ -35,6 +38,8 @@ public class DashboardController : BaseController
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("top-cards")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetTopCards([FromQuery] int portfolioId)
     {
         _logger.LogInformation("Consultando dashboard top cards: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
@@ -61,6 +66,8 @@ public class DashboardController : BaseController
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("portfolio-distribution")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPortfolioDistribution([FromQuery] int portfolioId)
     {
         _logger.LogInformation("Consultando dashboard portfolio distribution: UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
@@ -86,6 +93,8 @@ public class DashboardController : BaseController
     /// <response code="200">Información obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("recent-notifications")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRecentNotifications()
     {
         _logger.LogInformation("Consultando dashboard recent notifications: UserId={UserId}", UserId);
@@ -114,7 +123,12 @@ public class DashboardController : BaseController
     /// Serie temporal normalizada del portfolio
     /// y benchmarks junto con el resumen del período.
     /// </returns>
+    /// <response code="200">Información obtenida correctamente</response>
+    /// <response code="400">Error en la consulta</response>
+    /// <response code="401">Usuario no autenticado</response>
     [HttpPost("performance-chart")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPerformanceChart([FromQuery] int portfolioId, [FromBody] DashboardPerformanceChartFilterDto filter)
     {
         _logger.LogInformation("Consultando performance chart para UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);
@@ -140,6 +154,7 @@ public class DashboardController : BaseController
     /// <response code="200">Composición obtenida correctamente</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("portfolio-composition")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPortfolioComposition([FromQuery] int portfolioId, [FromQuery] DateTime date)
     {
         _logger.LogInformation("Consultando composición del portfolio: UserId={UserId}, PortfolioId={PortfolioId}, Date={Date}", UserId, portfolioId, date);
@@ -167,6 +182,8 @@ public class DashboardController : BaseController
     /// <response code="400">Error en la consulta</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("latest-transactions")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetLatestTransactions([FromQuery] int portfolioId)
     {
         _logger.LogInformation("Consultando últimas operaciones para UserId={UserId}, PortfolioId={PortfolioId}", UserId, portfolioId);

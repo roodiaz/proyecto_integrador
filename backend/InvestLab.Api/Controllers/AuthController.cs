@@ -1,4 +1,5 @@
 ﻿using InvestLab.Api.Extensions;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,8 @@ using Microsoft.AspNetCore.RateLimiting;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
+[ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
 public class AuthController : BaseController
 {
     private readonly IAuthService _authService;
@@ -32,6 +35,8 @@ public class AuthController : BaseController
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.Register)]
     [HttpPost("register")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
         var result = await _authService.RegisterAsync(registerDto);
@@ -57,6 +62,8 @@ public class AuthController : BaseController
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.VerificationCode)]
     [HttpPost("verify-code")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Verify([FromBody] VerifyDto verifyDto)
     {
         var result = await _authService.VerifyAsync(verifyDto);
@@ -82,6 +89,8 @@ public class AuthController : BaseController
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.VerificationCode)]
     [HttpPost("resend-code")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResendCode([FromBody] ResendCodeDto dto)
     {
         var result = await _authService.ResendCodeAsync(dto);
@@ -107,6 +116,8 @@ public class AuthController : BaseController
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.Login)]
     [HttpPost("login")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var ipAddress = ClientIpResolver.GetClientIp(HttpContext);
@@ -134,6 +145,8 @@ public class AuthController : BaseController
     /// <response code="400">Refresh token inválido o expirado</response>
     [AllowAnonymous]
     [HttpPost("refresh")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
     {
         var ipAddress = ClientIpResolver.GetClientIp(HttpContext);
@@ -162,6 +175,8 @@ public class AuthController : BaseController
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.PasswordRecovery)]
     [HttpPost("forgot-password")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
         var result = await _authService.ForgotPasswordAsync(dto);
@@ -187,6 +202,8 @@ public class AuthController : BaseController
     [AllowAnonymous]
     [EnableRateLimiting(RateLimitPolicies.PasswordRecovery)]
     [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {
         var result = await _authService.ResetPasswordAsync(dto);
@@ -210,6 +227,8 @@ public class AuthController : BaseController
     /// <response code="200">Logout exitoso</response>
     /// <response code="400">Error en la operación</response>
     [HttpPost("logout")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Logout([FromBody] RefreshTokenDto dto)
     {
         var result = await _authService.LogoutAsync(dto.RefreshToken);

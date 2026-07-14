@@ -1,5 +1,6 @@
 ﻿using InvestLab.Api.Extensions;
 using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Contact;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +8,13 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace InvestLab.Api.Controllers;
 
+/// <summary>
+/// Controlador público encargado de recibir mensajes
+/// del formulario de contacto del sitio.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class ContactController : ControllerBase
 {
     private readonly IContactService _service;
@@ -38,6 +44,8 @@ public class ContactController : ControllerBase
     /// </response>
     [EnableRateLimiting(RateLimitPolicies.Contact)]
     [HttpPost("contact")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Send([FromBody] ContactMessageDto dto)
     {
         _logger.LogInformation("Solicitud de contacto recibida desde {Email}", dto.Email);
