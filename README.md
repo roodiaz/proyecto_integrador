@@ -23,7 +23,7 @@ Un detalle completo de cada pantalla está en [docs/PANTALLAS_Y_FUNCIONALIDADES.
 
 ## 🏗️ Arquitectura
 
-Arquitectura por capas en el backend (.NET) + SPA desacoplada (Angular), con persistencia híbrida y workers en segundo plano.
+Arquitectura por capas en el backend (.NET) + SPA desacoplada (Angular), con integración a proveedores externos de mercado/email y workers en segundo plano.
 
 ```
                 ┌────────────────┐
@@ -34,23 +34,23 @@ Arquitectura por capas en el backend (.NET) + SPA desacoplada (Angular), con per
                 │  InvestLab.Api │
                 └───────┬────────┘
                         │
-                ┌───────▼────────┐
+                ┌───────▼────────────┐
                 │ InvestLab.Business │
-                └───────┬────────┘
-                        │
-                ┌───────▼────────┐
-                │  InvestLab.Data │
-                └───┬────────┬────┘
-                    │        │
-              PostgreSQL   MongoDB
+                └───┬─────────────┬──┘
+                    │             │
+            ┌───────▼──────┐  ┌───▼──────────────────┐
+            │ InvestLab.Data│  │ InvestLab.Integrations│
+            └───┬───────┬──┘  └───┬──────────────────┘
+                │       │         │
+          PostgreSQL  MongoDB   Yahoo / EODHD (mercado)
+                                Gmail / Resend (email)
 
-InvestLab.Workers ──▶ InvestLab.Business   (alertas y precios históricos, corren en background)
-Redis                                       (cache de precios de mercado)
+InvestLab.Workers ──▶ InvestLab.Business   (alertas, snapshots diarios, limpieza de históricos, límites diarios)
 ```
 
-- **PostgreSQL** — datos críticos y transaccionales (usuarios, portfolio, alertas, transacciones).
-- **MongoDB** — históricos de precios, pensado para lectura intensiva.
-- **Redis** — cache del precio de mercado, refrescado periódicamente por los workers.
+- **PostgreSQL** — datos críticos y transaccionales: usuarios, portfolios, holdings, transacciones, alertas, notificaciones.
+- **MongoDB** — históricos de precios (OHLCV), snapshots diarios de portfolio y metadata de sincronización de mercado.
+- **InvestLab.Integrations** — proveedores externos intercambiables: mercado (Yahoo Finance, EOD Historical Data) y email (Gmail, Resend).
 
 Documentación técnica ampliada:
 - [docs/BACKEND_ARQUITECTURE.md](docs/BACKEND_ARQUITECTURE.md)
@@ -63,8 +63,9 @@ Documentación técnica ampliada:
 **Backend**
 - .NET 8 (C#)
 - Entity Framework Core
-- PostgreSQL · MongoDB · Redis
+- PostgreSQL · MongoDB
 - JWT (autenticación) · BCrypt (hash de contraseñas)
+- Proveedores externos: Yahoo Finance / EOD Historical Data (mercado), Gmail / Resend (email)
 - Docker / Docker Compose
 
 **Frontend**
@@ -81,13 +82,14 @@ Documentación técnica ampliada:
 ```
 market_alerts/
 ├── backend/                  # Solución .NET
-│   ├── InvestLab.Api/         # Controllers, middlewares, punto de entrada
-│   ├── InvestLab.Business/    # Lógica de negocio (servicios)
-│   ├── InvestLab.Data/        # EF Core, repositorios, migraciones
-│   ├── InvestLab.Models/      # Entidades, DTOs y enums compartidos
-│   ├── InvestLab.Workers/     # Procesos en background (alertas, históricos)
-│   ├── InvestLab.Tests/       # Tests unitarios de Business
-│   └── docker-compose.yml     # Orquestación de api, workers, frontend, postgres, mongo, redis
+│   ├── InvestLab.Api/          # Controllers, middlewares, extensions, punto de entrada
+│   ├── InvestLab.Business/     # Lógica de negocio (servicios) + worker interno de refresh de precios
+│   ├── InvestLab.Data/         # EF Core, repositorios
+│   ├── InvestLab.Models/       # Entidades, DTOs y enums compartidos
+│   ├── InvestLab.Integrations/ # Proveedores externos de mercado y email
+│   ├── InvestLab.Workers/      # Procesos en background (alertas, snapshots, limpieza, límites diarios)
+│   ├── InvestLab.Tests/        # Tests unitarios de Business e Integrations
+│   └── docker-compose.yml      # Orquestación de api, workers, frontend, postgres, mongo
 ├── frontend/                  # SPA Angular
 │   └── src/app/
 │       ├── core/               # Guards, interceptors, modelos, servicios
@@ -124,7 +126,6 @@ Esto levanta:
 | Frontend (Angular)   | 4200    |
 | PostgreSQL           | 5432    |
 | MongoDB              | 27017   |
-| Redis                | 6379    |
 
 > ⚠️ El archivo `env` incluido es solo un ejemplo para entorno local. No usar esos valores ni el `.env` resultante en un entorno productivo, y no commitear `.env` con credenciales reales.
 
@@ -156,6 +157,7 @@ npm test
 - [docs/BACKEND_ARQUITECTURE.md](docs/BACKEND_ARQUITECTURE.md) — capas, responsabilidades y flujo de una request.
 - [docs/DATABASE_ARQUITECTURE.md](docs/DATABASE_ARQUITECTURE.md) — modelo de datos en PostgreSQL y MongoDB.
 - [docs/Manual_de_Usuario_InvestLab.docx](docs/Manual_de_Usuario_InvestLab.docx) — manual de usuario final.
+- [docs/Documentacion - Diaz Rocio_Entrega final.docx](docs/Documentacion%20-%20Diaz%20Rocio_Entrega%20final.docx) — documentación de entrega final de la materia.
 
 ---
 
