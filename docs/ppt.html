@@ -349,6 +349,50 @@
       white-space: nowrap;
     }
     .live-note svg { width: 1.5em; height: 1.5em; color: #8ec5ff; flex: none; }
+    .qr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4em;
+      width: fit-content;
+      margin: 0.9em auto 0;
+      padding: 0.5em;
+      background: #fff;
+      border-radius: 12px;
+    }
+    .qr-card img { width: 4.6em; height: 4.6em; display: block; }
+    .qr-card span { font-family: var(--mono); font-size: 0.4em; color: #0a1020; font-weight: 700; }
+
+    /* ================= Anexo: capturas del repositorio ================= */
+    .repo-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8em;
+      align-items: start;
+    }
+    .repo-shot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .repo-shot img {
+      width: auto;
+      max-width: 100% !important;
+      height: auto;
+      max-height: 16em !important;
+      display: block;
+      border: 1px solid var(--line) !important;
+      border-radius: 12px !important;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+    }
+    .repo-shot span {
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 0.44em;
+      color: var(--ink-dim);
+      letter-spacing: 0.04em;
+    }
     .dw-label {
       display: block;
       font-family: var(--mono);
@@ -1335,6 +1379,10 @@
                 también desde el móvil
               </span>
             </div>
+            <div class="qr-card">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Finvestlab-demo.com" alt="QR investlab-demo.com">
+              <span>Escaneá y probalo</span>
+            </div>
             </div>
             <div class="slide-foot"><p class="punchline">De la landing al portfolio: <b>el flujo completo de un inversor</b>, en vivo</p></div>
           </section>
@@ -1358,6 +1406,27 @@
               <p style="text-align: center; font-size: 0.95em; font-weight: 800; margin: 0;"><span class="grad-text">¡Muchas gracias!</span></p>
               <p style="text-align: center; font-size: 0.42em; color: var(--ink-dim); margin: 0.5em 0 0;">InvestLab · investlab-demo.com</p>
             </div>
+          </section>
+
+          <!-- 9 · Anexo: Repositorio -->
+          <section>
+            <div class="slide-head">
+              <p class="kicker">Anexo</p>
+              <h2>Repositorio y <span class="grad-text">control de versiones</span></h2>
+            </div>
+            <div class="slide-body">
+              <div class="repo-cols">
+                <div class="repo-shot">
+                  <img src="img/repo-structure.png" alt="Estructura del repositorio en GitHub">
+                  <span>Estructura del repositorio</span>
+                </div>
+                <div class="repo-shot">
+                  <img src="img/repo-branches.png" alt="Ramas de trabajo del repositorio">
+                  <span>Ramas: main · develop · staging</span>
+                </div>
+              </div>
+            </div>
+            <div class="slide-foot"><p class="punchline">Flujo <b>Git Flow</b>: desarrollo en <b>develop</b>, integración en <b>staging</b>, producción en <b>main</b></p></div>
           </section>
 
         </div>
