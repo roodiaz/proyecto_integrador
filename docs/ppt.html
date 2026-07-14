@@ -299,17 +299,24 @@
       stroke-linejoin: round;
     }
 
-    /* barra EN VIVO de la demo */
-    .live-bar {
+    /* fila EN VIVO de la demo: barra a la izquierda, QR a la derecha */
+    .live-scan-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1.5em;
-      width: fit-content;
+      gap: 0.7em;
       margin: 1.15em auto 0;
-      padding: 0.55em 1.7em;
+      width: fit-content;
+    }
+    .live-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4em;
+      width: fit-content;
+      padding: 0.55em 1.3em;
       border: 1px solid transparent;
-      border-radius: 999px;
+      border-radius: 18px;
       background:
         linear-gradient(180deg, rgba(20, 32, 60, 0.92), rgba(13, 23, 44, 0.92)) padding-box,
         var(--grad-border) border-box;
@@ -320,7 +327,7 @@
       align-items: center;
       gap: 0.5em;
       font-family: var(--mono);
-      font-size: 0.46em;
+      font-size: 0.4em;
       letter-spacing: 0.2em;
       color: var(--green);
       white-space: nowrap;
@@ -333,41 +340,48 @@
       box-shadow: 0 0 14px var(--green);
       animation: pulse 1.4s ease-in-out infinite;
     }
+    .live-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      white-space: nowrap;
+    }
+    .live-line .tag {
+      font-family: var(--mono);
+      font-size: 0.36em;
+      color: var(--ink-dim);
+      width: 4.4em;
+      flex: none;
+    }
     .live-url {
       font-family: var(--mono);
-      font-size: 0.78em;
+      font-size: 0.6em;
       font-weight: 700;
       color: var(--ink);
       white-space: nowrap;
     }
-    .live-note {
-      display: flex;
-      align-items: center;
-      gap: 0.55em;
-      font-size: 0.46em;
-      color: var(--ink-dim);
-      white-space: nowrap;
-    }
-    .live-note svg { width: 1.5em; height: 1.5em; color: #8ec5ff; flex: none; }
+    .live-url.swagger { color: #8ec5ff; }
     .qr-card {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.4em;
+      justify-content: center;
+      gap: 0.3em;
+      flex: none;
       width: fit-content;
-      margin: 0.9em auto 0;
-      padding: 0.5em;
+      padding: 0.45em 0.55em;
       background: #fff;
       border-radius: 12px;
+      box-shadow: 0 0 40px rgba(34, 211, 238, 0.18);
     }
-    .qr-card img { width: 4.6em; height: 4.6em; display: block; }
-    .qr-card span { font-family: var(--mono); font-size: 0.4em; color: #0a1020; font-weight: 700; }
+    .qr-card img { width: 3.6em; height: 3.6em; display: block; }
+    .qr-card span { font-family: var(--mono); font-size: 0.36em; color: #0a1020; font-weight: 700; white-space: nowrap; }
 
     /* ================= Anexo: capturas del repositorio ================= */
     .repo-cols {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.8em;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.7em;
       align-items: start;
     }
     .repo-shot {
@@ -380,12 +394,15 @@
       width: auto;
       max-width: 100% !important;
       height: auto;
-      max-height: 16em !important;
       display: block;
       border: 1px solid var(--line) !important;
       border-radius: 12px !important;
       box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
     }
+    /* alto independiente por captura: cada screenshot tiene una proporción distinta */
+    .repo-shot:nth-child(1) img { max-height: 25.5em !important; }
+    .repo-shot:nth-child(2) img { max-height: 8em !important; }
+    .repo-shot:nth-child(3) img { max-height: 12em !important; }
     .repo-shot span {
       text-align: center;
       font-family: var(--mono);
@@ -1365,24 +1382,28 @@
                 <span>Portfolio, alertas y notificaciones — también en el móvil</span>
               </div>
             </div>
-            <div class="live-bar">
-              <span class="live-badge">EN VIVO</span>
-              <a
-                class="live-url"
-                href="https://investlab-demo.com"
-                target="_blank"
-                rel="noopener noreferrer">
-                🔒 investlab-demo.com
-              </a>
-              <span class="live-note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M7 19h5"/><rect x="16" y="12" width="6" height="10" rx="2"/></svg>
-                también desde el móvil
-              </span>
+            <div class="live-scan-row">
+              <div class="live-bar">
+                <span class="live-badge">EN VIVO</span>
+                <span class="live-line">
+                  <span class="tag">App</span>
+                  <a class="live-url" href="https://investlab-demo.com" target="_blank" rel="noopener noreferrer">🔒 investlab-demo.com</a>
+                </span>
+                <span class="live-line">
+                  <span class="tag">API</span>
+                  <a class="live-url swagger" href="https://api.investlab-demo.com/swagger/index.html" target="_blank" rel="noopener noreferrer">🔒 api.investlab-demo.com/swagger</a>
+                </span>
+              </div>
+              <div class="qr-card">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Finvestlab-demo.com" alt="QR investlab-demo.com">
+                <span>Ver la app</span>
+              </div>
+              <div class="qr-card">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fapi.investlab-demo.com%2Fswagger%2Findex.html" alt="QR Swagger API">
+                <span>Ver la API</span>
+              </div>
             </div>
-            <div class="qr-card">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Finvestlab-demo.com" alt="QR investlab-demo.com">
-              <span>Escaneá y probalo</span>
-            </div>
+            <p style="text-align: center; font-size: 0.36em; color: var(--ink-dim); margin: 0.7em 0 0;">Swagger habilitado de forma temporal, solo durante la exposición</p>
             </div>
             <div class="slide-foot"><p class="punchline">De la landing al portfolio: <b>el flujo completo de un inversor</b>, en vivo</p></div>
           </section>
@@ -1394,12 +1415,13 @@
               <h2>Trabajo a <span class="grad-text">futuro</span></h2>
             </div>
             <div class="slide-body">
-              <ul class="future-list" style="max-width: 30em; margin: 0 auto; text-align: left; border-left: 1px solid var(--line); padding-left: 1.4em;">
+              <ul class="future-list" style="max-width: 30em; margin: 1.4em auto 0; text-align: left; border-left: 1px solid var(--line); padding-left: 1.4em;">
                 <li>Incorporación de criptoactivos como nueva clase de instrumento</li>
                 <li>Soporte multi-moneda (USD, ARS, EUR)</li>
                 <li>Asistente con IA para resolver dudas y sugerir inversiones</li>
                 <li>Caché distribuida con Redis para mejorar la escalabilidad</li>
                 <li>Aplicación móvil nativa</li>
+                <li>Planes free y premium, con menos límites de uso en premium</li>
               </ul>
             </div>
             <div class="slide-foot">
@@ -1423,6 +1445,10 @@
                 <div class="repo-shot">
                   <img src="img/repo-branches.png" alt="Ramas de trabajo del repositorio">
                   <span>Ramas: main · develop · staging</span>
+                </div>
+                <div class="repo-shot">
+                  <img src="img/repo-workflow.png" alt="GitHub Actions: deploy automático a staging">
+                  <span>CI/CD: GitHub Actions</span>
                 </div>
               </div>
             </div>
