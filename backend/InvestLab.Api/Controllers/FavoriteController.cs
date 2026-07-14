@@ -1,4 +1,5 @@
 ﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Favorite;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,8 @@ namespace InvestLab.Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
     public class FavoriteController : BaseController
     {
         private readonly IFavoriteService _service;
@@ -33,6 +36,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Error en la consulta</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpPost("list")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Get([FromBody] FavoriteFilterDto filter)
         {
             _logger.LogInformation("Listando favoritos para usuario {UserId}", UserId);
@@ -58,6 +63,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Error de validación (activo inexistente, duplicado o límite alcanzado)</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpPost("add")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Add([FromBody] AddFavoriteDto dto)
         {
             _logger.LogInformation("Agregando favorito {Symbol} para usuario {UserId}", dto.Symbol, UserId);
@@ -82,6 +89,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Activo no encontrado en favoritos</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpDelete("{symbol}")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Remove(string symbol)
         {
             _logger.LogInformation("Eliminando favorito {Symbol} para usuario {UserId}", symbol, UserId);
@@ -106,6 +115,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Error en la consulta</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpGet("exists/{symbol}")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Exists(string symbol)
         {
             _logger.LogInformation("Consultando si el activo {Symbol} está en favoritos para usuario {UserId}", symbol, UserId);

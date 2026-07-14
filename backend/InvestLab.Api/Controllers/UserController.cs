@@ -1,5 +1,6 @@
 ﻿using InvestLab.Api.Extensions;
 using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Auth;
 using InvestLab.Models.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,8 @@ using Microsoft.AspNetCore.RateLimiting;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[Produces("application/json")]
+[ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
 public class UserController : BaseController
 {
     private readonly IUserService _userService;
@@ -32,6 +35,8 @@ public class UserController : BaseController
     /// <response code="400">Error al obtener el perfil</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpGet("get-profile")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetProfile()
     {
         _logger.LogInformation("Obteniendo perfil para usuario {UserId}", UserId);
@@ -56,6 +61,8 @@ public class UserController : BaseController
     /// <response code="400">Datos inválidos o error de negocio</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpPut("update-profile")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
     {
         if (!ModelState.IsValid)
@@ -83,6 +90,8 @@ public class UserController : BaseController
     /// <response code="400">Datos inválidos o contraseña incorrecta</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpPut("change-password")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         if (!ModelState.IsValid)
@@ -112,6 +121,8 @@ public class UserController : BaseController
     /// <response code="401">Usuario no autenticado</response>
     [EnableRateLimiting(RateLimitPolicies.EmailChange)]
     [HttpPost("request-email-change")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RequestEmailChange([FromBody] RequestEmailChangeDto dto)
     {
         if (!ModelState.IsValid)
@@ -141,6 +152,8 @@ public class UserController : BaseController
     /// <response code="401">Usuario no autenticado</response>
     [EnableRateLimiting(RateLimitPolicies.EmailChange)]
     [HttpPost("confirm-email-change")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeDto dto)
     {
         if (!ModelState.IsValid)
@@ -168,6 +181,8 @@ public class UserController : BaseController
     /// <response code="400">Error al subir la imagen</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpPost("profile-image")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
         _logger.LogInformation("Subiendo imagen de perfil para usuario {UserId}", UserId);
@@ -201,6 +216,8 @@ public class UserController : BaseController
     /// <response code="400">Error al eliminar la cuenta</response>
     /// <response code="401">Usuario no autenticado</response>
     [HttpDelete("delete-account")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteAccount()
     {
         _logger.LogInformation("Eliminando cuenta de usuario: UserId={UserId}", UserId);

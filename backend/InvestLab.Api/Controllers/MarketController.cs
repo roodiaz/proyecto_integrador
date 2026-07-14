@@ -1,12 +1,19 @@
 ﻿using InvestLab.Business.Interfaces;
+using InvestLab.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvestLab.Api.Controllers
 {
+    /// <summary>
+    /// Controlador encargado de la consulta de información de mercado.
+    /// Expone panorama general, detalle de activos, tendencias, rankings y noticias.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
     public class MarketController : BaseController
     {
         private readonly IMarketService _service;
@@ -31,6 +38,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener el panorama de mercado.
         /// </response>
         [HttpGet("overview")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMarketOverview()
         {
             _logger.LogInformation("Solicitud de panorama principal del mercado recibida");
@@ -62,6 +71,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener el activo solicitado.
         /// </response>
         [HttpGet("asset/{symbol}")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAssetDetail(string symbol)
         {
             _logger.LogInformation("Solicitud de detalle de activo recibida para {Symbol}", symbol);
@@ -90,6 +101,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener las tendencias.
         /// </response>
         [HttpGet("trending")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTrending()
         {
             _logger.LogInformation("Solicitud de tendencias del mercado recibida");
@@ -118,6 +131,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener los ganadores.
         /// </response>
         [HttpGet("gainers")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetGainers()
         {
             _logger.LogInformation("Solicitud de ganadores del día recibida");
@@ -146,6 +161,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener los perdedores.
         /// </response>
         [HttpGet("losers")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetLosers()
         {
             _logger.LogInformation("Solicitud de perdedores del día recibida");
@@ -174,6 +191,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener las noticias del mercado.
         /// </response>
         [HttpGet("news")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMarketNews()
         {
             _logger.LogInformation("Solicitud de noticias del mercado recibida");
@@ -202,6 +221,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener el estado de actualización.
         /// </response>
         [HttpGet("prices-status")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetMarketPriceStatus()
         {
             _logger.LogInformation("Solicitud de estado de actualización de precios recibida");
@@ -233,6 +254,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener el histórico de comparación.
         /// </response>
         [HttpGet("comparison-history")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetComparisonHistory([FromQuery] string range = "1m")
         {
             _logger.LogInformation("Solicitud de histórico de comparación recibida con rango {Range}", range);
@@ -267,6 +290,8 @@ namespace InvestLab.Api.Controllers
         /// Error al obtener el histórico del activo.
         /// </response>
         [HttpGet("asset/{symbol}/history")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAssetHistory(string symbol, [FromQuery] string range = "1m")
         {
             _logger.LogInformation("Solicitud de histórico de activo recibida para {Symbol} con rango {Range}", symbol, range);

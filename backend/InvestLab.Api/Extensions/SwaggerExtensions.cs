@@ -11,7 +11,24 @@ namespace InvestLab.Api.Extensions
 
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "InvestLab.Api", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "InvestLab API",
+                    Version = "v1",
+                    Description = "API REST de InvestLab, plataforma de simulación de inversiones con datos de mercado en tiempo real. " +
+                        "Expone la gestión de usuarios, portfolios virtuales, operaciones de compra/venta, alertas de precio, " +
+                        "notificaciones, favoritos y consulta de mercado.\n\n" +
+                        "La mayoría de los endpoints requieren autenticación mediante un token JWT (ver botón **Authorize**).",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Rocío Díaz",
+                        Url = new Uri("https://investlab-demo.com")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Proyecto Final — Instituto de Formación Técnica Superior N°24"
+                    }
+                });
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

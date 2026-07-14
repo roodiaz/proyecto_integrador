@@ -1,4 +1,5 @@
 ﻿using InvestLab.Business.Interfaces.Api;
+using InvestLab.Models;
 using InvestLab.Models.DTOs.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,8 @@ namespace InvestLab.Api.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(Response), StatusCodes.Status401Unauthorized)]
     public class NotificationController : BaseController
     {
         private readonly INotificationService _service;
@@ -34,6 +37,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Error en la consulta</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpPost("search")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Get([FromBody] NotificationFilterDto filter)
         {
             _logger.LogInformation("Listando notificaciones para usuario {UserId}", UserId);
@@ -58,6 +63,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Notificación no encontrada o error</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpPatch("{id}/read")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> MarkAsRead(int id)
         {
             _logger.LogInformation("Marcando notificación {NotificationId} como leída para usuario {UserId}", id, UserId);
@@ -81,6 +88,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Error en la operación</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpPatch("read-all")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> MarkAll()
         {
             _logger.LogInformation("Marcando todas las notificaciones como leídas para usuario {UserId}", UserId);
@@ -105,6 +114,8 @@ namespace InvestLab.Api.Controllers
         /// <response code="400">Notificación no encontrada o error</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Delete(int id)
         {
             _logger.LogInformation("Eliminando notificación {NotificationId} para usuario {UserId}", id, UserId);
@@ -127,6 +138,7 @@ namespace InvestLab.Api.Controllers
         /// <response code="200">Cantidad obtenida correctamente</response>
         /// <response code="401">Usuario no autenticado</response>
         [HttpGet("unread-count")]
+        [ProducesResponseType(typeof(Response), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUnread()
         {
             _logger.LogInformation("Obteniendo cantidad de notificaciones no leídas para usuario {UserId}", UserId);
